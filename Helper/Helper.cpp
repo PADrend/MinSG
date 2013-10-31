@@ -37,6 +37,7 @@
 
 #include <cassert>
 #include <memory>
+#include <unordered_map>
 
 namespace MinSG {
 
@@ -83,7 +84,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 	}
 
 	// Material name to material mapping.
-	std::map<std::string, Util::GenericAttributeMap *> materials;
+	std::unordered_map<std::string, Util::GenericAttributeMap *> materials;
 
 	std::deque<Node *> nodes;
 	for (auto & elem : *genericList) {
@@ -95,7 +96,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 			continue;
 		}
 
-		const std::string type=d->getString(Rendering::Serialization::DESCRIPTION_TYPE);
+		const auto type = d->getString(Rendering::Serialization::DESCRIPTION_TYPE);
 		if(type==Rendering::Serialization::DESCRIPTION_TYPE_MESH){ // \todo move this to separate function!
 			Rendering::Serialization::MeshWrapper_t *meshWrapper = dynamic_cast<Rendering::Serialization::MeshWrapper_t*> (d->getValue(Rendering::Serialization::DESCRIPTION_DATA));
 
@@ -121,7 +122,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 
 			// add texture
 			{
-				std::string textureName = d->getString(Rendering::Serialization::DESCRIPTION_TEXTURE_FILE, "");
+				const auto textureName = d->getString(Rendering::Serialization::DESCRIPTION_TEXTURE_FILE, "");
 				if (!textureName.empty()) {
 					std::cout << "TeX: " << textureName << std::endl;
 					node->addState(loadTexture(Util::FileName(textureName), true));
@@ -129,22 +130,22 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 			}
 
 			// add material
-			std::string materialName = d->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_NAME, "");
+			const auto materialName = d->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_NAME, "");
 
 			if (!materialName.empty()) {
-				std::map<std::string, Util::GenericAttributeMap *>::const_iterator materialIt = materials.find(materialName);
+				const auto materialIt = materials.find(materialName);
 				if (materialIt != materials.end()) {
 					Util::GenericAttributeMap * materialDesc = materialIt->second;
-					std::string materialAmbient = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_AMBIENT, "");
-					std::string materialDiffuse = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_DIFFUSE, "");
-					std::string materialSpecular = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_SPECULAR, "");
-					std::string materialShininess = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_SHININESS, "");
+					const auto materialAmbient = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_AMBIENT, "");
+					const auto materialDiffuse = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_DIFFUSE, "");
+					const auto materialSpecular = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_SPECULAR, "");
+					const auto materialShininess = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_SHININESS, "");
 
 					if (!materialAmbient.empty() || !materialDiffuse.empty() || !materialSpecular.empty() || !materialShininess.empty()) {
 						Rendering::MaterialParameters materialParams;
 
 						if (!materialAmbient.empty()) {
-							std::vector<float> values = Util::StringUtils::toFloats(materialAmbient);
+							const auto values = Util::StringUtils::toFloats(materialAmbient);
 							if (values.size() == 4) {
 								materialParams.setAmbient(Util::Color4f(values[0], values[1], values[2], values[3]));
 							} else if (values.size() == 3) {
@@ -155,7 +156,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 						}
 
 						if (!materialDiffuse.empty()) {
-							std::vector<float> values = Util::StringUtils::toFloats(materialDiffuse);
+							const auto values = Util::StringUtils::toFloats(materialDiffuse);
 							if (values.size() == 4) {
 								materialParams.setDiffuse(Util::Color4f(values[0], values[1], values[2], values[3]));
 							} else if (values.size() == 3) {
@@ -166,7 +167,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 						}
 
 						if (!materialSpecular.empty()) {
-							std::vector<float> values = Util::StringUtils::toFloats(materialSpecular);
+							const auto values = Util::StringUtils::toFloats(materialSpecular);
 							if (values.size() == 4) {
 								materialParams.setSpecular(Util::Color4f(values[0], values[1], values[2], values[3]));
 							} else if (values.size() == 3) {
@@ -184,7 +185,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 					}
 
 					// Add texture from material.
-					std::string materialTexture = materialDesc->getString(Rendering::Serialization::DESCRIPTION_TEXTURE_FILE, "");
+					const auto materialTexture = materialDesc->getString(Rendering::Serialization::DESCRIPTION_TEXTURE_FILE, "");
 					if (!materialTexture.empty()) {
 						Util::FileName texturePath;
 						Util::FileUtils::findFile(Util::FileName(materialTexture), filename.getDir(), texturePath);
@@ -297,7 +298,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 					WARN("Error accessing material description");
 					continue;
 				}
-				materials.insert(std::make_pair(mtlDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_NAME), mtlDesc->clone()));
+				materials.emplace(mtlDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_NAME), mtlDesc->clone());
 			}
 		}else{
 			WARN(std::string("Unknown data type: ")+type);
