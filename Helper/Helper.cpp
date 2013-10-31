@@ -291,16 +291,13 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 				WARN("Error loading material library.");
 				continue;
 			}
-			for (auto mtlIt = mtlList->begin(); mtlIt != mtlList->end(); ) {
-				Util::GenericAttributeMap * mtlDesc = dynamic_cast<Util::GenericAttributeMap *> (mtlIt->get());
+			for(const auto & mtlIt : *mtlList) {
+				Util::GenericAttributeMap * mtlDesc = dynamic_cast<Util::GenericAttributeMap *>(mtlIt.get());
 				if (mtlDesc == nullptr || mtlDesc->getString(Rendering::Serialization::DESCRIPTION_TYPE) != Rendering::Serialization::DESCRIPTION_TYPE_MATERIAL) {
 					WARN("Error accessing material description");
-					++mtlIt;
 					continue;
 				}
-				materials.insert(std::make_pair(mtlDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_NAME), mtlDesc));
-				// Remove material description from the list so that it will not be destroyed when the list is destroyed.
-				mtlIt = mtlList->erase(mtlIt);
+				materials.insert(std::make_pair(mtlDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_NAME), mtlDesc->clone()));
 			}
 		}else{
 			WARN(std::string("Unknown data type: ")+type);
