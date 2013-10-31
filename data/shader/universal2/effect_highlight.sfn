@@ -1,0 +1,49 @@
+#version 120
+
+/*
+	This file is part of the MinSG library.
+	Copyright (C) 2012 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2012 Lukas Kopecki
+	Copyright (C) 2012-2013 Ralf Petring <ralf@petring.net>
+	
+	This library is subject to the terms of the Mozilla Public License, v. 2.0.
+	You should have received a copy of the MPL along with this library; see the 
+	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+// ------------------
+// vs
+#ifdef SG_VERTEX_SHADER
+void sg_provideVertexEffect(inout vec3 position_ms, inout vec3 normal_ms) {}
+#endif
+
+// ------------------
+// fs
+#ifdef SG_FRAGMENT_SHADER
+
+struct FragmentColor {
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+};
+
+uniform vec4 color;
+
+void addFragmentEffect(inout FragmentColor pixel) {
+
+	// following code works as long as highlighting is the last step of the fragment shader and produces the desired result
+	pixel.ambient += pixel.diffuse + pixel.specular;
+	pixel.diffuse = vec4(0);
+	pixel.specular = vec4(0);
+	pixel.ambient  = color * color.a + clamp(pixel.ambient,  0.0, 1.0) * (1.0 - color.a);
+	
+	// following code works, but produces a slightly crazy different result because the highlighted pixel gets clamped afterwards when it is written to a BYTE framebuffer
+	//if(color.a > 0.0) {
+	//	float x = color.a/3.0;
+	//	pixel.ambient  = color * x + clamp(pixel.ambient,  0.0, 1.0) * (1.0 - x);
+	//	pixel.diffuse  = color * x + clamp(pixel.diffuse,  0.0, 1.0) * (1.0 - x);
+	//	pixel.specular = color * x + clamp(pixel.specular, 0.0, 1.0) * (1.0 - x);
+	//}
+}
+#endif
+// ------------------

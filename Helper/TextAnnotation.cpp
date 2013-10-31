@@ -1,0 +1,72 @@
+/*
+	This file is part of the MinSG library.
+	Copyright (C) 2013 Benjamin Eikel <benjamin@eikel.org>
+	
+	This library is subject to the terms of the Mozilla Public License, v. 2.0.
+	You should have received a copy of the MPL along with this library; see the 
+	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+#include "TextAnnotation.h"
+#include "../Core/FrameContext.h"
+#include <Geometry/Rect.h>
+#include <Geometry/Vec2.h>
+#include <Geometry/Vec3.h>
+#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingContext.h>
+#include <Rendering/Draw.h>
+#include <Rendering/TextRenderer.h>
+#include <Util/Graphics/Color.h>
+#include <Util/StringUtils.h>
+#include <string>
+
+namespace MinSG {
+namespace TextAnnotation {
+
+void displayText(FrameContext & frameContext,
+				 const Geometry::Vec3f & worldPos,
+				 const Geometry::Vec2i & pinVector,
+				 const float pinWidth,
+				 const Util::Color4f & backgroundColor,
+				 const Rendering::TextRenderer & textRenderer,
+				 const std::string & text,
+				 const Util::Color4f & textColor) {
+	Rendering::RenderingContext & renderingContext = frameContext.getRenderingContext();
+	const auto screenPos = frameContext.convertWorldPosToScreenPos(worldPos);
+	const auto pinEnd = Geometry::Vec2i(screenPos.getX(), screenPos.getY()) + pinVector;
+
+	const auto wideText = Util::StringUtils::utf8_to_utf32(text);
+	const auto textRect = textRenderer.getTextSize(wideText);
+
+	const auto borderWidth = textRenderer.getWidthOfM() / 3.0f;
+	const auto borderHeight = textRenderer.getHeightOfX() / 3.0f;
+
+	const Geometry::Rect bgRect(pinEnd.getX(),
+								pinEnd.getY() - (textRect.getHeight() / 2.0f) - borderHeight,
+								textRect.getWidth() + 2.0f * borderWidth,
+								textRect.getHeight() + 2.0f * borderHeight);
+
+	const Geometry::Vec2i textPos(bgRect.getX() - textRect.getX() + borderWidth,
+								  bgRect.getY() - textRect.getY() + borderHeight);
+
+	Rendering::enable2DMode(renderingContext);
+	renderingContext.pushAndSetBlending(Rendering::BlendingParameters());
+	renderingContext.pushAndSetDepthBuffer(Rendering::DepthBufferParameters(false, false, Rendering::Comparison::LESS));
+	renderingContext.pushAndSetLighting(Rendering::LightingParameters());
+	renderingContext.pushAndSetLine(Rendering::LineParameters(pinWidth));
+	renderingContext.applyChanges(true);
+
+	Rendering::drawRect(renderingContext, bgRect, Util::Color4ub(backgroundColor));
+	Rendering::drawVector(renderingContext, screenPos, Geometry::Vec3f(pinEnd.getX(), pinEnd.getY(), 0.0f), Util::Color4ub(backgroundColor));
+
+	renderingContext.popLine();
+	renderingContext.popLighting();
+	renderingContext.popDepthBuffer();
+	renderingContext.popBlending();
+	Rendering::disable2DMode(renderingContext);
+
+	textRenderer.draw(renderingContext, wideText, textPos, textColor);
+}
+
+}
+}

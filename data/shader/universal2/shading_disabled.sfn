@@ -1,0 +1,35 @@
+#version 120
+
+/*
+	This file is part of the MinSG library.
+	Copyright (C) 2011-2012 Benjamin Eikel <benjamin@eikel.org>
+	Copyright (C) 2012 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2012 Lukas Kopecki
+	Copyright (C) 2011-2012 Ralf Petring <ralf@petring.net>
+	
+	This library is subject to the terms of the Mozilla Public License, v. 2.0.
+	You should have received a copy of the MPL along with this library; see the 
+	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+struct FragmentColor {
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+};
+// ------------------
+// vs
+#ifdef SG_VERTEX_SHADER
+
+void provideShadingVars(in vec3 position_ms,in vec3 normal_ms) {
+}
+#endif
+
+// ------------------
+// fs
+#ifdef SG_FRAGMENT_SHADER
+
+void calcShadedColor(inout FragmentColor color) {
+}
+#endif
+// ------------------

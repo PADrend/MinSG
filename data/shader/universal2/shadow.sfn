@@ -1,0 +1,112 @@
+#version 120
+
+/*
+	This file is part of the MinSG library.
+	Copyright (C) 2011-2012 Benjamin Eikel <benjamin@eikel.org>
+	Copyright (C) 2011-2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2010-2012 Ralf Petring <ralf@petring.net>
+	
+	This library is subject to the terms of the Mozilla Public License, v. 2.0.
+	You should have received a copy of the MPL along with this library; see the 
+	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+uniform bool sg_shadowEnabled;
+varying vec4 var_shadowCoord;
+
+// ------------------
+// vs
+#ifdef SG_VERTEX_SHADER
+
+vec4 sg_modelToWorld_hws(vec4 pos_hms); 			//! \see sgHelper.sfn
+uniform mat4 sg_shadowMatrix;
+
+attribute vec3 sg_Position;
+
+//! \see universal.vs
+void provideShadowVars() {
+	if(sg_shadowEnabled) {
+		var_shadowCoord = sg_shadowMatrix * sg_modelToWorld_hws( vec4(sg_Position, 1.0) );
+	}
+}
+#endif
+
+// ------------------
+// fs
+#ifdef SG_FRAGMENT_SHADER
+
+//! \see sgHelper.sfn
+struct FragmentColor {
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+};
+
+uniform sampler2D sg_shadowTexture;
+uniform int sg_shadowTextureSize = 1024;
+
+uniform vec2 points[16] = vec2[16](
+	vec2(-0.573297,0.39484),
+	vec2(-0.00673674,0.810868),
+	vec2(-0.545758,-0.298327),
+	vec2(-0.420092,-0.284146),
+	vec2(-0.0740884,-0.321956),
+	vec2(0.528959,-0.640733),
+	vec2(-0.241788,0.662894),
+	vec2(-0.167344,0.155723),
+	vec2(0.555928,-0.820999),
+	vec2(-0.781556,-0.506979),
+	vec2(-0.434296,0.0980303),
+	vec2(-0.403425,0.265021),
+	vec2(-0.721056,-0.106324),
+	vec2(-0.366311,-0.174337),
+	vec2(0.541415,0.630838),
+	vec2(0.0607513,0.528244)
+);
+
+float getSingleShadowSample(in sampler2D shadowTexture, in vec3 coord, in vec2 offset) {
+	float depth = texture2D(shadowTexture, coord.xy + (offset / sg_shadowTextureSize)).r;
+	return (depth < coord.z) ? 0.0 : 1.0; 
+}
+
+//! smoot_step implementation
+float smooth(in float edge0,in float edge1,in float x){
+	float t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+	return t * t * (3.0 - 2.0 * t);
+}
+
+//! \see universal.fs
+void addShadow(inout FragmentColor color) {
+	if(sg_shadowEnabled) {
+		vec3 shadowPersp = var_shadowCoord.xyz / var_shadowCoord.w;
+		float sum = 0.0;
+		
+		sum += getSingleShadowSample(sg_shadowTexture, shadowPersp, vec2(0.0,0.0));
+		if(sum==1.0) // sample is lit
+			return;
+		
+		sum += getSingleShadowSample(sg_shadowTexture, shadowPersp, vec2(0.0,4.0));
+		sum += getSingleShadowSample(sg_shadowTexture, shadowPersp, vec2(0.0,-4.0));
+		sum += getSingleShadowSample(sg_shadowTexture, shadowPersp, vec2(4.0,0.0));
+		sum += getSingleShadowSample(sg_shadowTexture, shadowPersp, vec2(-4.0,0.0));
+		
+		if(sum<0.01){ // fully inside shadow
+			color.diffuse.grb *= 0.0;
+			color.specular.grb *= 0.0;
+			return;
+		}
+		// shadow border -> do some sampling to reduce aliasing
+//		color.ambient.g = sum/4.0; // debug, show border
+		for(int i=0;i<16;++i)
+			sum += getSingleShadowSample(sg_shadowTexture, shadowPersp, points[i]*1.5);
+
+		// adjust the gradient
+		sum = smooth(0.0,11.0,sum);
+		
+		// apply to diffuse and specular
+		color.diffuse.grb *= sum;
+		color.specular.grb *= sum;
+	}
+}
+#endif
+// ------------------

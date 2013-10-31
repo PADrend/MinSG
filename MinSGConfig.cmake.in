@@ -1,0 +1,13 @@
+# - Configuration file for the MinSG library
+# It defines the target "MinSG".
+#
+
+@FIND_PACKAGE_BULLET@
+@FIND_PACKAGE_DETRI@
+@FIND_PACKAGE_LPSOLVE@
+@FIND_PACKAGE_OPENCOLLADA@
+
+@PACKAGE_INIT@
+
+# Import the exported targets
+include("@PACKAGE_CMAKE_INSTALL_CMAKECONFIGDIR@/MinSGTargets.cmake")

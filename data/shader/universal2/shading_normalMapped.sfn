@@ -1,0 +1,79 @@
+#version 120
+
+/*
+	This file is part of the MinSG library.
+	Copyright (C) 2012 Benjamin Eikel <benjamin@eikel.org>
+	Copyright (C) 2012-2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2012 Lukas Kopecki
+	Copyright (C) 2012 Ralf Petring <ralf@petring.net>
+	
+	This library is subject to the terms of the Mozilla Public License, v. 2.0.
+	You should have received a copy of the MPL along with this library; see the 
+	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+uniform bool sg_normalMappingEnabled;
+
+varying vec3 var_normal_es;
+varying vec3 var_tangent_es;
+varying vec3 var_bitangent_es;
+varying vec4 var_position_es;
+
+// ------------------
+// vs
+#ifdef SG_VERTEX_SHADER
+
+vec3 sg_calcBitangent_es(vec3 normal_ms);			//! \see sgHelpers.sfn
+vec3 sg_calcTangent_es();							//! \see sgHelpers.sfn
+vec3 sg_calcNormal_es(vec3 normal_ms);				//! \see sgHelpers.sfn
+vec4 sg_calcPosition_hes(vec3 position_ms);			//! \see sgHelpers.sfn
+
+//! \see universal.vs
+void provideShadingVars(vec3 position_ms, vec3 normal_ms) {
+	var_normal_es = sg_calcNormal_es(normal_ms);
+	
+	if(sg_normalMappingEnabled){
+		var_tangent_es = sg_calcTangent_es();
+		var_bitangent_es = sg_calcBitangent_es(normal_ms);
+	}
+	
+	var_position_es = sg_calcPosition_hes(position_ms);
+}
+#endif
+
+// ------------------
+// fs
+#ifdef SG_FRAGMENT_SHADER
+
+//! \see sgHelpers.sfn
+struct FragmentColor {
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+};
+
+void sg_calcLighting(vec3 esPos, vec3 esNormal, inout FragmentColor color);	//! \see sgHelpers.sfn
+
+uniform sampler2D sg_normalMap;
+
+varying vec2 var_texCoord0; //! \see texture.sfn
+
+//! \see universal.fs
+void calcShadedColor(inout FragmentColor color) {
+	vec3 esPos = var_position_es.xyz / var_position_es.w;
+	vec3 esNormal = normalize(var_normal_es);
+
+	if(sg_normalMappingEnabled){
+		vec3 esTangent = normalize(var_tangent_es);
+		vec3 esBitangent = normalize(var_bitangent_es);
+
+		// Calculate eye->tangent space matrix
+		mat3 tbnMat = mat3( esTangent.xyz, esBitangent, esNormal.xyz );
+		vec3 tsNormal = texture2D(sg_normalMap,var_texCoord0).xyz - vec3(0.5,0.5,0.5);
+		
+		esNormal = normalize(tbnMat * tsNormal) ;
+	}
+	sg_calcLighting(esPos, esNormal, color);
+}
+#endif
+// ------------------

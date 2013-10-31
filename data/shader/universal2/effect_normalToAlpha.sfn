@@ -1,0 +1,40 @@
+#version 120
+
+/*
+	This file is part of the MinSG library.
+	Copyright (C) 2013 Benjamin Eikel <benjamin@eikel.org>
+	
+	This library is subject to the terms of the Mozilla Public License, v. 2.0.
+	You should have received a copy of the MPL along with this library; see the 
+	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+// ------------------
+// vs
+#ifdef SG_VERTEX_SHADER
+
+void sg_provideVertexEffect(inout vec3 position_ms, inout vec3 normal_ms) {}
+
+#endif
+// ------------------
+// fs
+#ifdef SG_FRAGMENT_SHADER
+
+struct FragmentColor {
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+};
+
+varying vec4 var_position_es;
+varying vec3 var_normal_es;
+
+void addFragmentEffect(inout FragmentColor color) {
+	float alphaOverride = pow(1.0 - abs(dot(normalize(var_normal_es), normalize(var_position_es.xyz))), 4.0) / 4.0;
+	color.ambient.a = alphaOverride;
+	color.diffuse.a = alphaOverride;
+	color.specular.a = alphaOverride;
+}
+
+#endif
+// ------------------

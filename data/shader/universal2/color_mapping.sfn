@@ -1,0 +1,65 @@
+#version 120
+
+/*
+	This file is part of the MinSG library.
+	Copyright (C) 2012 Benjamin Eikel <benjamin@eikel.org>
+	
+	This library is subject to the terms of the Mozilla Public License, v. 2.0.
+	You should have received a copy of the MPL along with this library; see the 
+	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+varying vec4 var_baseColor;
+varying vec2 var_texCoordSpecularMapping;
+
+#ifdef SG_VERTEX_SHADER
+attribute vec2 sg_TexCoord0;
+
+vec4 sg_getVertexColor();
+
+void provideBaseColor() {
+	var_baseColor = sg_getVertexColor();
+	var_texCoordSpecularMapping = sg_TexCoord0;
+}
+#endif
+
+#ifdef SG_FRAGMENT_SHADER
+struct FragmentColor {
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+};
+
+uniform bool sg_useMaterials;
+
+struct sg_MaterialParameters {
+	//vec4 emission;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	float shininess;
+};
+uniform sg_MaterialParameters sg_Material;
+
+uniform bool sg_specularMappingEnabled;
+uniform sampler2D sg_specularMap;
+
+FragmentColor getBaseColor() {
+	FragmentColor color;
+	if(sg_useMaterials) {
+		color.ambient = sg_Material.ambient;
+		color.diffuse = sg_Material.diffuse;
+	} else {
+		color.ambient = var_baseColor;
+		color.diffuse = var_baseColor;
+	}
+	if(sg_specularMappingEnabled) {
+		color.specular = texture2D(sg_specularMap, var_texCoordSpecularMapping);
+	} else if(sg_useMaterials) {
+		color.specular = sg_Material.specular;
+	} else {
+		color.specular = var_baseColor;
+	}
+	return color;
+}
+#endif

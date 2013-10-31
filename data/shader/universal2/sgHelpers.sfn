@@ -1,0 +1,248 @@
+#version 120
+
+/*
+	This file is part of the MinSG library.
+	Copyright (C) 2012 Benjamin Eikel <benjamin@eikel.org>
+	Copyright (C) 2012 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2012 Lukas Kopecki
+	Copyright (C) 2012 Ralf Petring <ralf@petring.net>
+	
+	This library is subject to the terms of the Mozilla Public License, v. 2.0.
+	You should have received a copy of the MPL along with this library; see the 
+	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+const int DIRECTIONAL = 1;
+const int POINT = 2;
+const int SPOT = 3;
+
+struct sg_LightSourceParameters {
+
+	int type; // has to be DIRECTIONAL, POINT or SPOT
+	
+	vec3 position; // position of the light
+	vec3 direction; // direction of the light, has to be normalized
+	
+	// light colors for all lights
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	
+	// attenuations for point & spot lights
+	float constant;
+	float linear;
+	float quadratic;
+	
+	// spot light parameters
+	float exponent;
+	float cosCutoff;
+	
+};
+
+struct sg_MaterialParameters {
+	//vec4 emission;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	float shininess;
+};
+
+struct FragmentColor {
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+};
+
+#ifdef SG_VERTEX_SHADER
+attribute vec4 sg_Color;
+attribute vec3 sg_Normal;
+attribute vec3 sg_Position;
+attribute vec4 sg_Tangent;
+#endif
+
+uniform mat4 sg_cameraInverseMatrix;
+uniform sg_LightSourceParameters sg_LightSource[8];
+uniform int sg_lightCount;
+uniform sg_MaterialParameters sg_Material;
+uniform mat4 sg_modelViewMatrix;
+uniform mat4 sg_modelViewProjectionMatrix;
+uniform bool sg_useMaterials;
+uniform float sg_pointSize;
+
+//--------------
+/*	sg_ . uses MinSG constants (uniform and attributes) for the calculation
+	h ... homogenous (vec4)
+	cs .. Clipping Space (frustum is the -1...1 cube)
+	es .. EyeSpace or ViewSpace
+	ms .. ModelSpace
+	ss .. ScreenSpace
+	ws .. WorldSpace
+*/
+
+// coordinates and normals
+/*! [vs] Calculate the eye space bitangent based on sg_Normal,sg_Tangent and sg_modelViewMatrix 
+	\note The value is not normalized! If it is passed on as varying, this is not needed.	*/
+vec3 sg_calcDefaultBitangent_es();
+vec3 sg_calcBitangent_es(in vec3 normal_ms);
+
+/*! [vs] Calculate the eye space normal based on sg_Normal and sg_modelViewMatrix 
+	\note The value is not normalized! If it is passed on as varying, this is not needed.	*/
+vec3 sg_calcDefaultNormal_es();
+vec3 sg_calcNormal_es(in vec3 normal_ms);
+
+/*! [vs] Calculate the homogenous clipping space vertex position 
+		based on sg_Position and sg_modelViewProjectionMatrix */
+vec4 sg_calcDefaultPosition_hcs();
+vec4 sg_calcPosition_hcs(in vec3 position_ms);
+
+//! [vs] Calculate the homogenous eye space position based on sg_Position and sg_modelViewMatrix 
+vec4 sg_calcDefaultPosition_hes();
+vec4 sg_calcPosition_hes(in vec3 position_ms);
+
+/*! [vs] Calculate the eye space tangent based on sg_Tangent and sg_modelViewMatrix 
+	\note The value is not normalized! If it is passed on as varying, this is not needed.	*/
+vec3 sg_calcTangent_es();
+
+/*! [vs] return the vertex position. */
+vec3 sg_getVertexPosition_ms();
+
+/*! [vs] returns the vertex normal. */
+vec3 sg_getVertexNormal_ms();
+
+// conversions
+/*! [fs,vs] Use sg_cameraInverseMatrix to convert a 
+	homogenous coordinate in Eye(=View)Space into WorldSpace. */
+vec4 sg_eyeToWorld_hws(vec4 pos_hms);
+
+/*! [fs,vs] Use sg_cameraInverseMatrix and sg_modelViewMatrix to convert a 
+	homogenous coordinate in ModelSpace into WorldSpace. */
+vec4 sg_modelToWorld_hws(vec4 pos_hms);
+
+// colors and shading
+//! [fs,vs]
+void sg_calcLighting(vec3 position_es, vec3 normal_es, inout FragmentColor color);
+
+/*! [vs] Returns the sg_Color attribute. */
+vec4 sg_getVertexColor();
+
+// points
+//! [vs] Return the sg_pointSize uniform.
+float sg_getPointSize();
+
+// -----
+// implementation
+
+#ifdef SG_VERTEX_SHADER
+	vec3 sg_calcDefaultBitangent_es()	{	return sg_calcBitangent_es(sg_Normal);	}
+	vec3 sg_calcBitangent_es(in vec3 normal_ms)  {   return (sg_modelViewMatrix * vec4(cross(normal_ms, sg_Tangent.xyz) * sg_Tangent.w,0)).xyz; }
+
+	vec4 sg_calcDefaultPosition_hcs()	{	return sg_calcPosition_hcs(sg_Position);	}
+	vec4 sg_calcPosition_hcs(in vec3 position_ms) { return sg_modelViewProjectionMatrix * vec4(position_ms,1); }
+
+	vec3 sg_calcDefaultNormal_es()		{	return sg_calcNormal_es(sg_Normal);	}
+	vec3 sg_calcNormal_es(in vec3 normal_ms)		{	return (sg_modelViewMatrix * vec4(normal_ms,0)).xyz;	}
+
+	vec4 sg_calcDefaultPosition_hes()	{	return sg_calcPosition_hes(sg_Position);	}
+	vec4 sg_calcPosition_hes(in vec3 position_ms)	{	return sg_modelViewMatrix * vec4(position_ms, 1);	}
+
+	vec3 sg_calcTangent_es()	{	return (sg_modelViewMatrix * vec4(sg_Tangent.xyz,0)).xyz;	}
+
+	vec4 sg_getVertexColor()	{ return sg_Color; }
+
+	vec3 sg_getVertexPosition_ms() { return sg_Position; }
+	vec3 sg_getVertexNormal_ms() { return sg_Normal; }
+	
+	vec4 sg_calcBaseColor(){
+		if (sg_useMaterials) {
+			return 0.3f * sg_Material.ambient + 0.7f * sg_Material.diffuse + 0.0f * sg_Material.specular;
+		}
+		return sg_Color;
+	}
+#endif
+
+vec4 combineFragmentColor(FragmentColor color){
+	return color.ambient+color.diffuse+color.specular;
+}
+
+void multiplyFragmentColor(inout FragmentColor c, vec4 f){
+	c.ambient *= f;
+	c.diffuse *= f;
+	c.specular *= f;
+}
+
+vec4 sg_eyeToWorld_hws(vec4 pos_hes)	{	return sg_cameraInverseMatrix  * pos_hes;	}
+vec4 sg_modelToWorld_hws(vec4 pos_hms)	{	return sg_cameraInverseMatrix * sg_modelViewMatrix * pos_hms;	}
+
+float sg_getPointSize() {
+	return sg_pointSize;
+}
+
+//! (internal)
+void sg_calcLighting(in sg_LightSourceParameters light, in vec3 position_es, in vec3 normal_es, inout vec4 ambient, inout vec4 diffuse, inout vec4 specular){
+	#ifdef SG_FS
+	if(! gl_FrontFacing)
+		normal_es = -normal_es;
+	#endif
+	// for DIRECTIONAL lights
+	float distPixToLight = 0.0; 
+	float attenuation = 1.0;
+	vec3 pixToLight = -light.direction;
+	
+	// for POINT & SPOT lights
+	if(light.type != DIRECTIONAL){ 
+		pixToLight = light.position - position_es;
+		distPixToLight = length(pixToLight); 
+		pixToLight = normalize(pixToLight); 
+		attenuation	/= ( 	light.constant + light.linear * distPixToLight + light.quadratic * distPixToLight * distPixToLight);
+	}
+	
+	// for SPOT lights
+	if(light.type == SPOT)
+	{
+		float spotDot = dot(pixToLight, -light.direction);
+		float spotAttenuation;
+		if(spotDot < light.cosCutoff) {
+			spotAttenuation = 0.0;
+		} else {
+			spotAttenuation = pow(spotDot, light.exponent);
+		}
+		attenuation *= spotAttenuation;
+	}
+	
+	// for ALL lights
+	ambient += light.ambient * attenuation;
+	
+	float norDotPixToLight = max(0.0, dot(normal_es, pixToLight));
+	
+	if(norDotPixToLight != 0.0)
+	{
+		diffuse += light.diffuse * norDotPixToLight * attenuation;
+		// only if MATERIALS are specified, not if COLORS are specified
+		if(sg_useMaterials){
+			vec3 pixToEye = normalize(-position_es);
+			vec3 refl = reflect(-pixToLight, normal_es);
+			float eyeDotRefl = dot(pixToEye, refl);
+			if(eyeDotRefl>0.0)
+				specular += light.specular * pow(eyeDotRefl, sg_Material.shininess/4.0) * attenuation;
+		}
+	}
+}
+
+void sg_calcLighting(vec3 position_es, vec3 normal_es, inout FragmentColor color){
+
+	vec4 ambiLight = vec4(0.0);
+	vec4 specLight = vec4(0.0);
+	vec4 diffLight = vec4(0.0);
+
+	for(int i = 0; i < 8; i++){
+		if( i >= sg_lightCount )
+			break;
+		sg_calcLighting(sg_LightSource[i], position_es, normal_es, ambiLight, diffLight, specLight);
+	}
+
+	ambiLight.a = diffLight.a = specLight.a = 1.0;
+
+	color.ambient *= ambiLight;
+	color.diffuse *= diffLight;
+	color.specular *= specLight;
+}

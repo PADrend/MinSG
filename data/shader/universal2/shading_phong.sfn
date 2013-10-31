@@ -1,0 +1,48 @@
+#version 120
+
+/*
+	This file is part of the MinSG library.
+	Copyright (C) 2012 Benjamin Eikel <benjamin@eikel.org>
+	Copyright (C) 2012 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2012 Lukas Kopecki
+	Copyright (C) 2012 Ralf Petring <ralf@petring.net>
+	
+	This library is subject to the terms of the Mozilla Public License, v. 2.0.
+	You should have received a copy of the MPL along with this library; see the 
+	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+
+varying vec3 var_normal_es;
+varying vec4 var_position_es;
+varying vec4 var_baseColor;
+
+// ------------------
+// vs
+#ifdef SG_VERTEX_SHADER
+
+vec3 sg_calcNormal_es(in vec3 normal);
+vec4 sg_calcPosition_hes(in vec3 position);
+
+void provideShadingVars(in vec3 position_ms, in vec3 normal_ms) {
+	var_normal_es = sg_calcNormal_es(normal_ms);
+	var_position_es = sg_calcPosition_hes(position_ms);
+}
+#endif
+
+// ------------------
+// fs
+#ifdef SG_FRAGMENT_SHADER
+
+struct FragmentColor {
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+};
+
+void sg_calcLighting(vec3 esPos, vec3 esNormal, inout FragmentColor color);
+
+void calcShadedColor(inout FragmentColor color) {
+	sg_calcLighting(var_position_es.xyz / var_position_es.w, normalize(var_normal_es), color);
+}
+#endif
+// ------------------
