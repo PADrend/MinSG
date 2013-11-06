@@ -13,6 +13,7 @@
 #include <Util/IO/FileName.h>
 #include <Util/IO/FileUtils.h>
 #include <Util/Macros.h>
+#include <algorithm>
 #include <memory>
 #include <string>
 
