@@ -12,6 +12,7 @@
 
 #include <Geometry/Box.h>
 #include <Geometry/Matrix4x4.h>
+#include <Geometry/Vec2.h>
 
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/VertexDescription.h>

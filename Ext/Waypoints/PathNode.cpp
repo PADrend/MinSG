@@ -17,6 +17,7 @@
 #include "../../Helper/TextAnnotation.h"
 #include "../../SceneManagement/Exporter/ExporterTools.h"
 #include "../../SceneManagement/Importer/ImporterTools.h"
+#include <Geometry/Vec2.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/MeshIndexData.h>
 #include <Rendering/Mesh/VertexDescription.h>
