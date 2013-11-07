@@ -12,6 +12,7 @@
 #define MESSAGE_H_
 
 #include <Util/References.h>
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <functional>
