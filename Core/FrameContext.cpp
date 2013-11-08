@@ -60,7 +60,7 @@ FrameContext::FrameContext() : Util::ReferenceCounter<FrameContext>(),
 
 	const auto result = Util::EmbeddedFont::getFont();
 	Util::Reference<Util::Bitmap> fontBitmap(result.first);
-	textRenderer.reset(new Rendering::TextRenderer(result.first, result.second));
+	textRenderer.reset(new Rendering::TextRenderer(result.first.get(), result.second));
 }
 
 FrameContext::~FrameContext() {
