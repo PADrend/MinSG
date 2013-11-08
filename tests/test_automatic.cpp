@@ -30,6 +30,9 @@
 
 using namespace MinSG;
 
+// Prevent warning
+int test_automatic();
+
 int test_automatic() {
 	std::cout << "### MinSG tests ###\n";
 	{
@@ -124,7 +127,7 @@ int test_automatic() {
 		}
 
 		// Destruction
-		ln = NULL;
+		ln = nullptr;
 
 		std::cout << "done.\n";
 	}
@@ -185,7 +188,7 @@ int test_automatic() {
 
 	std::cout << "Destroy scene graph ... ";
 	MinSG::destroy(root.get());
-	root = NULL;
+	root = nullptr;
 	std::cout << "done.\n";
 
 	return EXIT_SUCCESS;
