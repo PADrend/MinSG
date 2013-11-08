@@ -54,7 +54,6 @@ using Geometry::Box;
 using Geometry::Rect;
 using Rendering::FBO;
 using Rendering::Texture;
-using Rendering::TextureUtils;
 using Util::Color4f;
 using Util::Color4ub;
 

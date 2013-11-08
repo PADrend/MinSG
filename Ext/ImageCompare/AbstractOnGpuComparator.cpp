@@ -34,7 +34,6 @@ namespace MinSG {
 namespace ImageCompare {
 
 using Rendering::Texture;
-using Rendering::TextureUtils;
 using Rendering::Shader;
 using Rendering::Uniform;
 using Rendering::FBO;
@@ -60,7 +59,7 @@ Util::Reference<Rendering::Texture> AbstractOnGpuComparator::createTexture(const
 	std::vector<Reference<Texture> > & vec = freeTextures[size];
 
 	if (vec.empty()) {
-		tex = TextureUtils::createHDRTexture(size.getWidth(), size.getHeight(), false, false);
+		tex = Rendering::TextureUtils::createHDRTexture(size.getWidth(), size.getHeight(), false, false);
 		//std::cerr << "created HDR Texture: " << size << endl;
 	}
 	else {

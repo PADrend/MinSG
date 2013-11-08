@@ -31,7 +31,6 @@
 namespace MinSG {
 namespace ImageCompare {
 
-using Rendering::TextureUtils;
 using Geometry::Vec2i;
 using Rendering::Texture;
 using Rendering::RenderingContext;
