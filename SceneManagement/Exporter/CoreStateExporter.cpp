@@ -190,7 +190,7 @@ static void describeTextureState(ExporterContext & ctxt,NodeDescription & desc,S
 			Util::Reference<Util::Bitmap> bitmap = Rendering::TextureUtils::createBitmapFromLocalTexture(texture);
 
 			std::ostringstream stream;
-			if(bitmap.isNotNull() && Util::Serialization::saveBitmap(bitmap.get(), "png", stream)) {
+			if(bitmap.isNotNull() && Util::Serialization::saveBitmap(*bitmap.get(), "png", stream)) {
 				const std::string streamString = stream.str();
 				const std::string encodedData = Util::encodeBase64(std::vector<uint8_t>(streamString.begin(), streamString.end()));
 
