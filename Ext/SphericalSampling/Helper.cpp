@@ -183,7 +183,7 @@ Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const S
 			}
 		}
 	}
-	return Rendering::TextureUtils::createTextureFromBitmap(bitmap.get(), false, true);
+	return Rendering::TextureUtils::createTextureFromBitmap(*bitmap.get(), false, true);
 }
 
 static Geometry::Sphere_f computeLocalBoundingSphere(PreprocessingContext & preprocessingContext __attribute__((unused)),
