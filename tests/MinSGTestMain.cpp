@@ -34,7 +34,7 @@ extern int test_statistics();
 extern int test_valuated_region_node();
 extern int test_visibility_vector();
 
-static Util::UI::Window * init() {
+static std::unique_ptr<Util::UI::Window> init() {
 	std::cout << "Init video system ... ";
 	Util::UI::Window::Properties properties;
 	properties.positioned = true;
@@ -44,7 +44,7 @@ static Util::UI::Window * init() {
 	properties.clientAreaHeight = 768;
 	properties.title = "MinSG Test";
 	properties.compatibilityProfile = true;
-	Util::UI::Window * window = Util::UI::createWindow(properties);
+	auto window = Util::UI::createWindow(properties);
 	Rendering::enableGLErrorChecking();
 	Rendering::RenderingContext::initGLState();
 	std::cout << "done.\n";
@@ -89,38 +89,44 @@ int main(int argc, char * argv[]) {
 		std::cout << "Selected test: " << testNum << "\n";
 	}
 
-	std::unique_ptr<Util::UI::Window> window;
 	Util::UI::EventContext eventContext;
 	switch(testNum) {
-		case 1:
-			window.reset(init());
+		case 1: {
+			auto window = init();
 			eventContext.getEventQueue().registerEventGenerator(std::bind(&Util::UI::Window::fetchEvents, window.get()));
 			return test_simple1(window.get(), eventContext);
-		case 2:
-			window.reset(init());
+		}
+		case 2: {
+			auto window = init();
 			eventContext.getEventQueue().registerEventGenerator(std::bind(&Util::UI::Window::fetchEvents, window.get()));
 			return test_load_scene(window.get(), eventContext);
-		case 4:
-			window.reset(init());
+		}
+		case 4: {
+			auto window = init();
 			// startPreprocessing();
 			return EXIT_SUCCESS;
+		}
 		case 5:
 			return test_automatic();
 		case 6:
 			return test_OutOfCore();
-		case 7:
-			window.reset(init());
+		case 7: {
+			auto window = init();
 			eventContext.getEventQueue().registerEventGenerator(std::bind(&Util::UI::Window::fetchEvents, window.get()));
 			return test_large_scene(window.get(), eventContext);
-		case 8:
-			window.reset(init());
+		}
+		case 8: {
+			auto window = init();
 			return test_node_memory();
-		case 9:
-			window.reset(init());
+		}
+		case 9: {
+			auto window = init();
 			return test_cost_evaluator(window.get());
-		case 10:
-			window.reset(init());
+		}
+		case 10: {
+			auto window = init();
 			return test_spherical_sampling();
+		}
 		case 11:
 			return test_spherical_sampling_serialization();
 		case 12:
