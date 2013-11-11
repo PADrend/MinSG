@@ -187,7 +187,7 @@ static void describeTextureState(ExporterContext & ctxt,NodeDescription & desc,S
 		Util::FileName texFilename(texture->getFileName());
 
 		if(texFilename.empty()) {
-			Util::Reference<Util::Bitmap> bitmap = Rendering::TextureUtils::createBitmapFromLocalTexture(texture);
+			auto bitmap = Rendering::TextureUtils::createBitmapFromLocalTexture(texture);
 
 			std::ostringstream stream;
 			if(bitmap.isNotNull() && Util::Serialization::saveBitmap(*bitmap.get(), "png", stream)) {
