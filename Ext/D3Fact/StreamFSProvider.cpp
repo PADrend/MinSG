@@ -147,7 +147,7 @@ public:
 		return dataWritten;
 	}
 
-	std::istream* openForReading();
+	std::unique_ptr<std::istream> openForReading();
 	std::ostream* openForWriting();
 	std::ostream* openForAppending();
 
@@ -196,9 +196,9 @@ StreamFSProvider::status_t StreamFSProvider::ResourceHandle::dir(std::list<Util:
 }
 
 StreamFSProvider::status_t StreamFSProvider::ResourceHandle::readFile(std::vector<uint8_t> & data) {
-	std::istream* stream = openForReading();
+	auto stream = openForReading();
 
-	if(stream == nullptr || stream->bad())
+	if(!stream || stream->bad())
 		return StreamFSProvider::FAILURE;
 
 	// read data
@@ -220,8 +220,6 @@ StreamFSProvider::status_t StreamFSProvider::ResourceHandle::readFile(std::vecto
 			std::copy(buffer, buffer + read, begin);
 		}
 	}
-
-	delete stream;
 	return StreamFSProvider::OK;
 }
 
@@ -241,7 +239,7 @@ StreamFSProvider::status_t StreamFSProvider::ResourceHandle::writeFile(const std
 	return StreamFSProvider::OK;
 }
 
-std::istream* StreamFSProvider::ResourceHandle::openForReading() {
+std::unique_ptr<std::istream> StreamFSProvider::ResourceHandle::openForReading() {
 	streamStatus = STREAM_WAITING;
 	if(resolve(true) != OK) {
 		std::stringstream ss;
@@ -257,7 +255,7 @@ std::istream* StreamFSProvider::ResourceHandle::openForReading() {
 		return nullptr;
 	}
 
-	std::istream* stream = handler->request(streamId);
+	std::unique_ptr<std::istream> stream(handler->request(streamId));
 
 	//std::cout << "request " << uri << " (" << streamId << ")" << std::endl;
 
@@ -291,11 +289,10 @@ std::istream* StreamFSProvider::ResourceHandle::openForReading() {
 
 	if(streamStatus == STREAM_FAILED) {
 		handler->cancelStream(streamId);
-		delete stream;
 		return nullptr;
 	}
 
-	return stream;
+	return std::move(stream);
 }
 
 std::ostream* StreamFSProvider::ResourceHandle::openForWriting() {
@@ -562,7 +559,7 @@ std::iostream* StreamFSProvider::open(const Util::FileName& /*filename*/) {
 	return nullptr;
 }
 
-std::istream* StreamFSProvider::openForReading(const Util::FileName& filename) {
+std::unique_ptr<std::istream> StreamFSProvider::openForReading(const Util::FileName& filename) {
 	ResourceHandle* handle = getStreamHandle(filename);
 	return handle ? handle->openForReading() : nullptr;
 }
