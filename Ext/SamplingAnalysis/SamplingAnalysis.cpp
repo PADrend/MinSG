@@ -142,11 +142,11 @@ Histogram1D * createClosestPointDistanceHistogram(const std::vector<Geometry::Ve
 }
 
 
-Util::Bitmap * create2dDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets){
+Util::Reference<Util::Bitmap> create2dDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets){
 	Util::Reference<Util::Bitmap> result(new Util::Bitmap(numBuckets,numBuckets,Util::PixelFormat::RGBA));
 
 	if(positions.empty())
-		return result.detachAndDecrease();
+		return std::move(result);
 	// ------------------
 
 	int maxDistance;
@@ -157,7 +157,7 @@ Util::Bitmap * create2dDistanceHistogram(const std::vector<Geometry::Vec3> & pos
 			bb.include(position);
 		maxDistance = bb.getDiameter();
 		if(maxDistance==0)
-			return result.detachAndDecrease();
+			return std::move(result);
 	}
 
 	std::cout << " -1- ";
@@ -203,7 +203,7 @@ Util::Bitmap * create2dDistanceHistogram(const std::vector<Geometry::Vec3> & pos
 
 	// ------------------
 	{ 	// fill bitmap
-		Util::Reference<Util::PixelAccessor> resultPixels( Util::PixelAccessor::create(result.get()) );
+		Util::Reference<Util::PixelAccessor> resultPixels(Util::PixelAccessor::create(result));
 		uint32_t cursor = 0;
 		const float colorScale = 1.0 / logf(static_cast<float>(maxSize));
 		for(uint32_t row=0;row<numBuckets;++row){
@@ -213,7 +213,7 @@ Util::Bitmap * create2dDistanceHistogram(const std::vector<Geometry::Vec3> & pos
 			}
 		}
 	}
-	return result.detachAndDecrease();
+	return std::move(result);
 }
 
 

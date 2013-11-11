@@ -12,8 +12,10 @@
 #ifndef POINTANALYZER_H
 #define POINTANALYZER_H
 
-#include <vector>
 #include <Geometry/Vec3.h>
+#include <Util/References.h>
+#include <vector>
+
 namespace Util{
 class Bitmap;
 }
@@ -32,7 +34,7 @@ struct Histogram1D{
 Histogram1D * createDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets,float maxDistance=-1);
 Histogram1D * createAngleHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
 Histogram1D * createClosestPointDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
-Util::Bitmap * create2dDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
+Util::Reference<Util::Bitmap> create2dDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
 
 }
 }
