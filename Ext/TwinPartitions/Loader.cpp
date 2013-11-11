@@ -36,8 +36,8 @@ namespace MinSG {
 namespace TwinPartitions {
 
 Node * Loader::importPartitions(const Util::FileName & fileName) {
-	std::unique_ptr<std::istream> file(Util::FileUtils::openForReading(fileName));
-	if (file.get() == nullptr) {
+	auto file = Util::FileUtils::openForReading(fileName);
+	if(!file) {
 		WARN("Failed to open file.");
 		return nullptr;
 	}

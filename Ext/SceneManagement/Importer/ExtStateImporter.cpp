@@ -88,10 +88,10 @@ static  bool importAlgoSelector(ImportContext & ctxt, const std::string & type, 
 
 	Util::FileName file(ctxt.fileName);
 	file.setEnding(".mar");
-	std::unique_ptr<std::istream> in(Util::FileUtils::openForReading(file));
+	auto in = Util::FileUtils::openForReading(file);
 
 	MAR::AlgoSelector * as;
-	if(in.get() != nullptr)
+	if(in)
 		as = MAR::AlgoSelector::create(*(in.get()));
 	else{
 		WARN("could not load sampling data");

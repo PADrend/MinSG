@@ -466,7 +466,7 @@ std::deque<Util::Reference<Node>> SceneManager::loadMinSGFile(const Util::FileNa
 std::deque<Util::Reference<Node>> SceneManager::loadMinSGFile(ImportContext & importContext,const Util::FileName & fileName) {
 	importContext.setFileName(fileName);
 
-	std::unique_ptr<std::istream> in(Util::FileUtils::openForReading(fileName));
+	auto in = Util::FileUtils::openForReading(fileName);
 	if(!in) {
 		WARN(std::string("Could not load file: ") + fileName.toString());
 		return std::deque<Util::Reference<Node>>();
@@ -522,7 +522,7 @@ GroupNode * SceneManager::loadCOLLADA(ImportContext & importContext, const Util:
 #ifdef MINSG_EXT_LOADERCOLLADA
     const NodeDescription * sceneDescription = LoaderCOLLADA::loadScene(fileName, invertTransparency);
 #else  
-    std::unique_ptr<std::istream> in(Util::FileUtils::openForReading(fileName));
+    auto in = Util::FileUtils::openForReading(fileName);
 	if(!in) {
 		WARN(std::string("Could not load file: ") + fileName.toString());
 		return nullptr;
