@@ -44,7 +44,9 @@ class StatChart{
 
 		uint32_t getWidth() const;
 		uint32_t getHeight() const;
-		Util::Bitmap * getBitmap()const				{	return bitmap.get();	}
+		const Util::Reference<Util::Bitmap> & getBitmap() const {
+			return bitmap;
+		}
 
 		float getTimeRange()const					{	return timeRange;	}
 		void setTimeRange(float newRange)			{   timeRange=newRange;	}
