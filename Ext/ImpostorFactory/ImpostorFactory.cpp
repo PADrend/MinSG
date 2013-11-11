@@ -121,7 +121,7 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 	vertexDescription.appendPosition3D();
 	vertexDescription.appendColorRGBAByte();
 	vertexDescription.appendNormalByte();
-	Util::Reference<Mesh> mesh = MeshUtils::MeshBuilder::createMeshFromBitmaps(vertexDescription, depthTexture->getLocalBitmap(), colorTexture->getLocalBitmap(), normalTexture->getLocalBitmap());
+	Util::Reference<Mesh> mesh = MeshUtils::MeshBuilder::createMeshFromBitmaps(vertexDescription, depthTexture->getLocalBitmap().get(), colorTexture->getLocalBitmap().get(), normalTexture->getLocalBitmap().get());
 	if (mesh.isNull()) {
 		frameContext.popCamera();
 		return nullptr;

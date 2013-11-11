@@ -199,7 +199,7 @@ float AbstractOnGpuComparator::average(Rendering::RenderingContext & context, Te
 	// shrink on cpu
 	in->get()->downloadGLTexture(context);
 	double quality = 0.0;
-	const Util::Bitmap * localBitmap = in->get()->getLocalBitmap();
+	auto localBitmap = in->get()->getLocalBitmap();
 	const float * tex = reinterpret_cast<const float *>(localBitmap->data());
 	const float * end = reinterpret_cast<const float *>(localBitmap->data() + localBitmap->getDataSize());
 	const uint32_t numFloats = end - tex;
