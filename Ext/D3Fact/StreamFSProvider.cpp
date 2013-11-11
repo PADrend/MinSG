@@ -551,7 +551,7 @@ StreamFSProvider::status_t StreamFSProvider::writeFile(const Util::FileName& fil
 	return handle ? handle->writeFile(data, overwrite) : FAILURE;
 }
 
-std::iostream* StreamFSProvider::open(const Util::FileName& /*filename*/) {
+std::unique_ptr<std::iostream> StreamFSProvider::open(const Util::FileName& /*filename*/) {
 	return nullptr;
 }
 

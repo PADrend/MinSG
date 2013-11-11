@@ -53,7 +53,7 @@ public:
 	virtual status_t readFile(const Util::FileName & filename, std::vector<uint8_t> & data);
 	virtual status_t writeFile(const Util::FileName & filename, const std::vector<uint8_t> & data, bool overwrite);
 
-	virtual std::iostream * open(const Util::FileName & filename);
+	virtual std::unique_ptr<std::iostream> open(const Util::FileName & filename);
 	virtual std::unique_ptr<std::istream> openForReading(const Util::FileName & filename);
 	virtual std::unique_ptr<std::ostream> openForWriting(const Util::FileName & filename);
 	virtual std::unique_ptr<std::ostream> openForAppending(const Util::FileName & filename);
