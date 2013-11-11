@@ -116,7 +116,7 @@ static void describeAlgoSelector(ExporterContext & ctxt,NodeDescription & desc,S
 
 	Util::FileName file(ctxt.sceneFile);
 	file.setEnding(".mar");
-	std::unique_ptr<std::ostream> out(Util::FileUtils::openForWriting(file));
+	auto out = Util::FileUtils::openForWriting(file);
 	as->write(*(out.get()));
 }
 static void describeMARSurfelRenderer(ExporterContext &,NodeDescription & desc,State * state) {

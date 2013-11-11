@@ -197,8 +197,8 @@ bool WriterDAE::saveFile(const FileName & fileName, Node * scene) {
 	char buffer[256];
 	strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", &utcTime);
 
-	std::unique_ptr<std::ostream> outPtr(FileUtils::openForWriting(fileName));
-	if(outPtr.get() == nullptr) {
+	auto outPtr = FileUtils::openForWriting(fileName);
+	if(!outPtr) {
 		WARN("");
 		return false;
 	}

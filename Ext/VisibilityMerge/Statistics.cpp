@@ -38,8 +38,8 @@ Statistics::~Statistics() {
 
 void Statistics::perRun(const std::string & fileName, const std::string & timeStamp, const std::string & description, size_t wsSize, costs_t trianglesMinLimit,
 						costs_t objectCountLimit, costs_t cellCountLimit, unsigned int passBoundary) {
-	std::unique_ptr<std::ostream> out(Util::FileUtils::openForWriting(Util::FileName(fileName)));
-	if(out.get() == nullptr) {
+	auto out = Util::FileUtils::openForWriting(Util::FileName(fileName));
+	if(!out) {
 		throw std::runtime_error("Error: Cannot open file " + fileName);
 	}
 	*out << "Time\t" << "Description\t" << "Working_set_size\t" << "Minimum_number_of_triangles\t" << "Object_limit\t" << "Cell_limit\t" << "Pass_boundary\n";

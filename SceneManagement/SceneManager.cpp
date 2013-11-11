@@ -597,8 +597,8 @@ NodeDescription * SceneManager::createDescriptionForScene(ExporterContext & ctxt
 
 bool SceneManager::saveMinSGFile(const Util::FileName & fileName, const std::deque<Node *> & nodes) {
 	// generate output
-	std::unique_ptr<std::ostream> out(Util::FileUtils::openForWriting(fileName));
-	if(out.get() == nullptr){
+	auto out = Util::FileUtils::openForWriting(fileName);
+	if(!out){
 		WARN(std::string("Cannot write to file ") + fileName.toString());
 		return false;
 	}
