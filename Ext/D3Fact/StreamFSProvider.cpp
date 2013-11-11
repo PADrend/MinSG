@@ -149,7 +149,7 @@ public:
 
 	std::unique_ptr<std::istream> openForReading();
 	std::unique_ptr<std::ostream> openForWriting();
-	std::ostream* openForAppending();
+	std::unique_ptr<std::ostream> openForAppending();
 
 	void parseProperties(const std::string& props);
 
@@ -334,7 +334,7 @@ std::unique_ptr<std::ostream> StreamFSProvider::ResourceHandle::openForWriting()
 	return std::unique_ptr<std::ostream>(handler->send(streamId));
 }
 
-std::ostream* StreamFSProvider::ResourceHandle::openForAppending() {
+std::unique_ptr<std::ostream> StreamFSProvider::ResourceHandle::openForAppending() {
 	return nullptr;
 }
 
@@ -565,7 +565,7 @@ std::unique_ptr<std::ostream> StreamFSProvider::openForWriting(const Util::FileN
 	return handle ? handle->openForWriting() : nullptr;
 }
 
-std::ostream* StreamFSProvider::openForAppending(const Util::FileName& filename) {
+std::unique_ptr<std::ostream> StreamFSProvider::openForAppending(const Util::FileName& filename) {
 	ResourceHandle* handle = getStreamHandle(filename);
 	return handle ? handle->openForAppending() : nullptr;
 }
