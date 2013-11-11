@@ -148,7 +148,7 @@ public:
 	}
 
 	std::unique_ptr<std::istream> openForReading();
-	std::ostream* openForWriting();
+	std::unique_ptr<std::ostream> openForWriting();
 	std::ostream* openForAppending();
 
 	void parseProperties(const std::string& props);
@@ -224,17 +224,15 @@ StreamFSProvider::status_t StreamFSProvider::ResourceHandle::readFile(std::vecto
 }
 
 StreamFSProvider::status_t StreamFSProvider::ResourceHandle::writeFile(const std::vector<uint8_t> & data, bool /*overwrite*/) {
-	std::ostream* stream = openForWriting();
+	auto stream = openForWriting();
 
-	if(stream == nullptr || stream->bad())
+	if(!stream || stream->bad())
 		return StreamFSProvider::FAILURE;
 
 	stream->write(reinterpret_cast<const char *>(data.data()), data.size());
 	*stream << closestream;
 
 	handler->waitFor(streamId);
-
-	delete stream;
 
 	return StreamFSProvider::OK;
 }
@@ -295,7 +293,7 @@ std::unique_ptr<std::istream> StreamFSProvider::ResourceHandle::openForReading()
 	return std::move(stream);
 }
 
-std::ostream* StreamFSProvider::ResourceHandle::openForWriting() {
+std::unique_ptr<std::ostream> StreamFSProvider::ResourceHandle::openForWriting() {
 	streamStatus = STREAM_WAITING;
 	if(resolve(true) != OK) {
 		std::stringstream ss;
@@ -333,9 +331,7 @@ std::ostream* StreamFSProvider::ResourceHandle::openForWriting() {
 	if(streamStatus == STREAM_FAILED)
 		return nullptr;
 
-	std::ostream* stream = handler->send(streamId);
-
-	return stream;
+	return std::unique_ptr<std::ostream>(handler->send(streamId));
 }
 
 std::ostream* StreamFSProvider::ResourceHandle::openForAppending() {
@@ -564,7 +560,7 @@ std::unique_ptr<std::istream> StreamFSProvider::openForReading(const Util::FileN
 	return handle ? handle->openForReading() : nullptr;
 }
 
-std::ostream* StreamFSProvider::openForWriting(const Util::FileName& filename) {
+std::unique_ptr<std::ostream> StreamFSProvider::openForWriting(const Util::FileName& filename) {
 	ResourceHandle* handle = getStreamHandle(filename);
 	return handle ? handle->openForWriting() : nullptr;
 }

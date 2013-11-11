@@ -55,7 +55,7 @@ public:
 
 	virtual std::iostream * open(const Util::FileName & filename);
 	virtual std::unique_ptr<std::istream> openForReading(const Util::FileName & filename);
-	virtual std::ostream * openForWriting(const Util::FileName & filename);
+	virtual std::unique_ptr<std::ostream> openForWriting(const Util::FileName & filename);
 	virtual std::ostream * openForAppending(const Util::FileName & filename);
 
 	virtual void flush();
