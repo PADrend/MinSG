@@ -47,10 +47,10 @@ namespace MinSG {
         ListNode::doAddChild(child);
     }
     
-    NodeVisitor::status AbstractJoint::traverse(NodeVisitor & visitor) {
-        NodeVisitor::status status = visitor.enter(this);
-        return status == NodeVisitor::EXIT_TRAVERSAL ? status : visitor.leave(this);
-    }
+//    NodeVisitor::status AbstractJoint::traverse(NodeVisitor & visitor) {
+//        NodeVisitor::status status = visitor.enter(this);
+//        return status == NodeVisitor::EXIT_TRAVERSAL ? status : visitor.leave(this);
+//    }
     
     void AbstractJoint::setBindMatrix(Geometry::Matrix4x4 _bindMatrix) {
         bindMatrix = Geometry::Matrix4x4(_bindMatrix);

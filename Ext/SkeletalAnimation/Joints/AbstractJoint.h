@@ -80,7 +80,7 @@ namespace MinSG {
 //         ****************************************************************/
 //		virtual AbstractJoint * clone()const = 0;
 //		virtual AbstractJoint * clone(std::unordered_map<std::string, AbstractJoint *> &jMap) = 0;
-        virtual NodeVisitor::status traverse(NodeVisitor & visitor);
+//        virtual NodeVisitor::status traverse(NodeVisitor & visitor);
         
         // do not visit children, in an armature structure there are not states and geometry!
         void doDisplay(FrameContext & /*context*/,const RenderParam & /*rp*/) { }
