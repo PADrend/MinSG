@@ -24,7 +24,7 @@ DebugCamera::~DebugCamera() = default;
 
 void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 
-	mesh->_display(rc);
+	mesh->_display(rc, 0, mesh->isUsingIndexData() ? mesh->getIndexCount() : mesh->getVertexCount());
 
 	if(rc.getColorBufferParameters().isAnyWritingEnabled() || rc.getDepthBufferParameters().isWritingEnabled()) {
 		
@@ -47,7 +47,7 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 			rc.setScissor(Rendering::ScissorParameters());
 		}
 
-		mesh->_display(rc);
+		mesh->_display(rc, 0, mesh->isUsingIndexData() ? mesh->getIndexCount() : mesh->getVertexCount());
 
 		rc.setInverseCameraMatrix(original->getWorldMatrix());
 		
