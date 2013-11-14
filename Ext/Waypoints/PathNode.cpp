@@ -280,7 +280,7 @@ void PathNode::doDisplay(FrameContext & context, const RenderParam & rp) {
 											5,
 											Util::Color4f(0, 0, 0, 1),
 											context.getTextRenderer(),
-											Util::StringUtils::toString(static_cast<int32_t>(std::round(timeWaypointPair.first))),
+											Util::StringUtils::toString(static_cast<int32_t>(round(timeWaypointPair.first))),
 											Util::Color4f(1, 1, 1, 1));
 			}
 		}
