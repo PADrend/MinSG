@@ -57,7 +57,7 @@ void AdaptCullEvaluator::beginMeasure() {
 }
 
 //! ---|> Evaluator
-void AdaptCullEvaluator::measure(FrameContext &  context,Node & node,const Geometry::Rect & /*r*/) {
+void AdaptCullEvaluator::measure(FrameContext & context,Node & node,const Geometry::Rect & /*r*/) {
 	// first pass - fill depth buffer.
 	context.getRenderingContext().clearScreen(Util::Color4f(0.9f,0.9f,0.9f,1.0f));
 	node.display(context,USE_WORLD_MATRIX|FRUSTUM_CULLING);

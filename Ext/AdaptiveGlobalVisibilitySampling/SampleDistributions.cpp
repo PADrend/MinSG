@@ -91,7 +91,7 @@ struct SampleDistributions::Implementation {
 		//! Number of samples with positive contribution
 		uint32_t numContributingSamples;
 
-		SampleDistribution(generator_function_t  genFun,
+		SampleDistribution(generator_function_t genFun,
 						   bool mutationBased) :
 			generator(std::move(genFun)),
 			isMutationBased(mutationBased),

@@ -37,7 +37,7 @@ void BehaviourGroup::getBehaviours(behaviourList_t & list) {
 	list.insert(list.end(), behaviours.begin(), behaviours.end());
 }
 
-size_t BehaviourGroup::count()  {
+size_t BehaviourGroup::count() {
 	return behaviours.size();
 }
 

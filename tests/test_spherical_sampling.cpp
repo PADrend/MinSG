@@ -50,20 +50,20 @@ int test_spherical_sampling() {
 	/*
 	 * Create a 1D array of n unit-size boxes in the x axis
 	 *
-	 *                   /
-	 *                ..L2
-	 *               /   /
-	 *        ......L1   /
-	 *       /       /   /
-	 *   ...L0....   /   /
-	 *   /   /   /   /   /
+	 *          /
+	 *        ..L2
+	 *        /  /
+	 *    ......L1  /
+	 *    /    /  /
+	 *  ...L0....  /  /
+	 *  /  /  /  /  /
 	 * ------------------------- ... -----
-	 * | 0 | 1 | 2 | 3 | 4 | 5 |     | n |
-	 * |   |   |   |   |   |   |     |   |
+	 * | 0 | 1 | 2 | 3 | 4 | 5 |   | n |
+	 * |  |  |  |  |  |  |   |  |
 	 * ------------------------- ... -----
-	 * ^               ^             ^
-	 * |               |             |
-	 * x=0             x=4           x=n
+	 * ^        ^       ^
+	 * |        |       |
+	 * x=0       x=4      x=n
 	 *
 	 * The first three boxes are put into the first list node L0.
 	 * L0 together with the fourth box are put into the second list node L1.

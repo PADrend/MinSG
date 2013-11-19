@@ -62,7 +62,7 @@ class SamplingSphere {
 
 	public:
 		//! Build a new triangulation from the given samples.
-		SamplingSphere(Geometry::Sphere_f  _sphere, const std::vector<SamplePoint> & _samples);
+		SamplingSphere(Geometry::Sphere_f _sphere, const std::vector<SamplePoint> & _samples);
 
 		//! Move the given sphere and the given samples into the sampling sphere.
 		SamplingSphere(Geometry::Sphere_f && _sphere, std::vector<SamplePoint> && _samples);
@@ -75,7 +75,7 @@ class SamplingSphere {
 		 * @param newSphere Geometric representation of the sphere surface of the new sampling sphere
 		 * @param samplingSpheres Sampling spheres that are used to create the new sampling sphere
 		 */
-		SamplingSphere(Geometry::Sphere_f  newSphere,
+		SamplingSphere(Geometry::Sphere_f newSphere,
 					   const std::deque<const SamplingSphere *> & samplingSpheres);
 
 		SamplingSphere(const SamplingSphere &) = default;

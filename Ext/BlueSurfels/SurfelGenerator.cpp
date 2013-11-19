@@ -122,7 +122,7 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 		}
 	} qualitySorter;
 
-	std::vector<std::pair<size_t,float>>  samples; // surfelId , distance to nearest other sample
+	std::vector<std::pair<size_t,float>> samples; // surfelId , distance to nearest other sample
 	std::vector<size_t> newSurfelIds;
 
 	std::cout << "Overall number:" << surfels.size();

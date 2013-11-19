@@ -48,9 +48,9 @@ class MutationCandidate {
 		//! Number of mutations generated from this candidate
 		uint32_t mutationCount;
 
-		MutationCandidate(vec3_t  p_origin,
+		MutationCandidate(vec3_t p_origin,
 						  Node * p_originObject,
-						  vec3_t  p_termination, 
+						  vec3_t p_termination, 
 						  GeometryNode * p_terminationObject) :
 			origin(std::move(p_origin)),
 			termination(std::move(p_termination)),

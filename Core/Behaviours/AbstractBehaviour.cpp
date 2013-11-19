@@ -13,7 +13,7 @@
 #include "../Nodes/Node.h"
 #include "../States/State.h"
 
-#include  <Util/ObjectExtension.h>
+#include <Util/ObjectExtension.h>
 
 namespace MinSG {
 

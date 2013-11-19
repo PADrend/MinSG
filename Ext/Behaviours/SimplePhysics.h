@@ -19,11 +19,11 @@ namespace MinSG {
 /***
  ** SimplePhysics ---|> AbstractNodeBehaviour
  **/
-class SimplePhysics : public AbstractNodeBehaviour    {
+class SimplePhysics : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(SimplePhysics)
 
 	public:
-		SimplePhysics(Node * node,Geometry::Vec3  v);
+		SimplePhysics(Node * node,Geometry::Vec3 v);
 		SimplePhysics(Node * node);
 		virtual ~SimplePhysics();
 
@@ -37,11 +37,11 @@ class SimplePhysics : public AbstractNodeBehaviour    {
 /***
  ** SimplePhysics ---|> Behavior
  **/
-class SimplePhysics2 : public Behavior    {
+class SimplePhysics2 : public Behavior {
 	PROVIDES_TYPE_NAME(SimplePhysics)
 
 	public:
-		SimplePhysics2(Geometry::Vec3  v) : initialDirection(std::move(v)) {}
+		SimplePhysics2(Geometry::Vec3 v) : initialDirection(std::move(v)) {}
 		SimplePhysics2() : initialDirection(0,1,0) {}
 		virtual ~SimplePhysics2() {}
 		

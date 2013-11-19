@@ -23,7 +23,7 @@ namespace D3Fact {
 class Session;
 class IOStreamHandler;
 
-class ConsoleStream : public Util::ReferenceCounter<ConsoleStream>  {
+class ConsoleStream : public Util::ReferenceCounter<ConsoleStream> {
 	PROVIDES_TYPE_NAME(ConsoleStream)
 public:
 	ConsoleStream();

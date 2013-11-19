@@ -75,7 +75,7 @@ float ParticleEmitter::getASpeed() const {
 	return std::uniform_real_distribution<float>(minSpeed, maxSpeed)(engine);
 }
 
-void ParticleEmitter::getSpawnCenter(Geometry::Vec3f& v, ParticleSystemNode* psystem)const  {
+void ParticleEmitter::getSpawnCenter(Geometry::Vec3f& v, ParticleSystemNode* psystem)const {
 	if(spawnNode.isNull()) {
 		// just return zero
 		v.setValue(0.0f);

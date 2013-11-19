@@ -342,9 +342,9 @@ class Node :
 		void setRelRotation_rad(float rad,const Geometry::Vec3 & v)	{	setRelRotation(Geometry::Angle::rad(rad),v); }
 
 		/*! \note As no up vector is specified, the rotation is not fully determined (so just see what happens...) */
-		void  lookAtAbs(const Geometry::Vec3 & pointInWorldCoordiants);
+		void lookAtAbs(const Geometry::Vec3 & pointInWorldCoordiants);
 		/*! \note As no up vector is specified, the rotation is not fully determined (so just see what happens...) */
-		void  rotateToWorldDir(const Geometry::Vec3 & directionInWorldCoordiantes);
+		void rotateToWorldDir(const Geometry::Vec3 & directionInWorldCoordiantes);
 	//@}
 
 	// -----------------

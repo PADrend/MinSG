@@ -32,7 +32,7 @@ namespace MAR {
 
 const Util::Color4ub RegionEvaluator::colorFinished = Util::ColorLibrary::GREEN;
 const Util::Color4ub RegionEvaluator::colorScheduled = Util::ColorLibrary::BLUE;
-const Util::Color4ub RegionEvaluator::colorActive  = Util::ColorLibrary::RED;
+const Util::Color4ub RegionEvaluator::colorActive = Util::ColorLibrary::RED;
 
 /// true --> b before a
 bool PolygonDensityEvaluator::compare(const Region* a, const Region* b)

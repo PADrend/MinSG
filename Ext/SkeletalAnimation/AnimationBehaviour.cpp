@@ -61,7 +61,7 @@ std::vector<AnimationBehaviour *> *AnimationBehaviour::goToAnimationState(std::s
         return tracker;
     }
     
-    tracker->emplace_back(this);    
+    tracker->emplace_back(this);
     for(AnimationBehaviour *beh : toAnimations)
     {
         bool loop = false;

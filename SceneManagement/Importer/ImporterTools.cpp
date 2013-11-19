@@ -147,7 +147,7 @@ Geometry::SRT getSRT(const NodeDescription & d) {
 }
 
 //! (static)
-void setTransformation(const NodeDescription & d, Node * node)  {
+void setTransformation(const NodeDescription & d, Node * node) {
 	Util::GenericAttribute * matrixAttribute = d.getValue(Consts::ATTR_MATRIX);
 	node->reset();
 	if (matrixAttribute != nullptr) {
@@ -167,7 +167,7 @@ void setTransformation(const NodeDescription & d, Node * node)  {
 
 
 //! (static)
-void addAttributes(ImportContext & ctxt, const NodeDescriptionList * subDescriptions, Util::AttributeProvider * attrProvider)  {
+void addAttributes(ImportContext & ctxt, const NodeDescriptionList * subDescriptions, Util::AttributeProvider * attrProvider) {
 	if (subDescriptions == nullptr) {
 		return;
 	}
@@ -251,7 +251,7 @@ static void removeTempNodeId(ImportContext & ctxt, const std::string & nodeId){
 
 
 //! (static)
-void registerNamedNode(ImportContext & ctxt,const NodeDescription & description, Node * node)  {
+void registerNamedNode(ImportContext & ctxt,const NodeDescription & description, Node * node) {
 	static const std::string tmpPrefix("_tmp_");
 	const std::string id = description.getString(Consts::ATTR_NODE_ID);
 	if (!id.empty()) {
@@ -263,7 +263,7 @@ void registerNamedNode(ImportContext & ctxt,const NodeDescription & description,
 }
 
 //! (static)
-void registerNamedState(ImportContext & ctxt,const NodeDescription & description, State * state)  {
+void registerNamedState(ImportContext & ctxt,const NodeDescription & description, State * state) {
 	const std::string id = description.getString(Consts::ATTR_STATE_ID);
 	if (!id.empty()) {
 		ctxt.sceneManager.registerState(id, state);

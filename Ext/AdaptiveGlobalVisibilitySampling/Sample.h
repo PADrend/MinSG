@@ -69,7 +69,7 @@ class Sample {
 		 * 
 		 * @param ray Forward ray defining the sample
 		 */
-		Sample(ray_t  ray) :
+		Sample(ray_t ray) :
 			forwardRay(std::move(ray)),
 			forwardResult(nullptr),
 			forwardIntersection(std::numeric_limits<value_t>::max()),

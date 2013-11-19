@@ -31,7 +31,7 @@ TriangleTree::TriangleTree(Rendering::Mesh * mesh) :
 		level(0) {
 }
 
-TriangleTree::TriangleTree(Geometry::Box  childBound, const TriangleTree & parent) :
+TriangleTree::TriangleTree(Geometry::Box childBound, const TriangleTree & parent) :
 		meshHolder(), 
 		bound(std::move(childBound)), 
 		level(parent.getLevel() + 1) {

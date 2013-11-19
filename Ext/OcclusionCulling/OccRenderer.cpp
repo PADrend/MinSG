@@ -164,7 +164,7 @@ State::stateResult_t OccRenderer::performCulling(FrameContext & context,Node * r
 //	NodeDistancePriorityQueue_F2B distanceQueue(camPos);
 	NodeDistancePriorityQueue_F2B distanceQueue(camPos);
 
-	{	// add  root node's children
+	{	// add root node's children
 		const auto children = getChildNodes(rootNode);
 		for(auto & child : children) {
 			distanceQueue.push(child);

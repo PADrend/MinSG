@@ -29,7 +29,7 @@ Util::StringIdentifier create( const std::string& mainKey, uint32_t flags ){
 		if( (flags&SAVE_TO_FILE) == 0)
 			s<<"s";
 		s<<"$"<<mainKey;
-		return  Util::StringIdentifier(s.str());
+		return Util::StringIdentifier(s.str());
 	}
 }
 uint32_t getFlags( const std::string& str){

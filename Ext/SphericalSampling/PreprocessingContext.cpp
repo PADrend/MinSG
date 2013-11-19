@@ -74,7 +74,7 @@ struct PreprocessingContext::Implementation {
 
 	Implementation(SceneManagement::SceneManager & p_sceneManager,
 				  FrameContext & p_frameContext,
-				  std::vector<Geometry::Vec3f>  p_positions,
+				  std::vector<Geometry::Vec3f> p_positions,
 				  uint32_t p_resolution,
 				  bool p_useExistingVisibilityResults,
 				  bool p_computeTightInnerBoundingSpheres) :

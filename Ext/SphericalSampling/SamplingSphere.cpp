@@ -119,7 +119,7 @@ static Triangulation::Delaunay3d<SampleEntry> * triangulateSamplePoints(std::vec
 	return triangulation;
 }
 
-SamplingSphere::SamplingSphere(Geometry::Sphere_f  _sphere, const std::vector<SamplePoint> & _samples) :
+SamplingSphere::SamplingSphere(Geometry::Sphere_f _sphere, const std::vector<SamplePoint> & _samples) :
 	sphere(std::move(_sphere)), samples(_samples), triangulation(), minimumScaleFactor(1.0f) {
 	if(_samples.empty()) {
 		throw std::invalid_argument("Array of sample points is empty.");
@@ -140,7 +140,7 @@ SamplingSphere::SamplingSphere(Geometry::Sphere_f && _sphere, std::vector<Sample
 	triangulation.reset(triangulateSamplePoints(samples));
 }
 
-SamplingSphere::SamplingSphere(Geometry::Sphere_f  newSphere,
+SamplingSphere::SamplingSphere(Geometry::Sphere_f newSphere,
 							   const std::deque<const SamplingSphere *> & samplingSpheres) :
 	sphere(std::move(newSphere)), samples(), triangulation(), minimumScaleFactor(1.0f) {
 	if(samplingSpheres.empty()) {

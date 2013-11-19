@@ -152,7 +152,7 @@ static bool importParticleSystemNode(ImportContext & ctxt, const std::string & t
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
 
-static  bool importSkeletalAnimationSkeletalNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
+static bool importSkeletalAnimationSkeletalNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
 
 	Node * node = nullptr;
 
@@ -220,7 +220,7 @@ static bool importSkeletalAnimationRigidJoint(ImportContext & ctxt, const std::s
 	return true;
 }
 
-static  bool importSkeletalAnimationJointNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
+static bool importSkeletalAnimationJointNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
 
 	Node * node = nullptr;
 
@@ -250,7 +250,7 @@ static  bool importSkeletalAnimationJointNode(ImportContext & ctxt, const std::s
 	return true;
 }
 
-static  bool importSkeletalAnimationArmatureNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
+static bool importSkeletalAnimationArmatureNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
 
 	Node * node = nullptr;
 

@@ -42,5 +42,5 @@ Geometry::SRT toSRT(const btTransform& t);
 
 
 
-#endif  // MINSG_PHYSICHELPER_H_
+#endif // MINSG_PHYSICHELPER_H_
 #endif // MINSG_EXT_PHYSICS

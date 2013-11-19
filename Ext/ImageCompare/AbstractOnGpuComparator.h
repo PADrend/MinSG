@@ -126,8 +126,8 @@ protected:
 	void checkTextureSize(Geometry::Vec2i size);
 	void checkTextureSize(uint32_t width, uint32_t height);
 
-	float average(Rendering::RenderingContext & context, TexRef_t  src);
-	void filter(Rendering::RenderingContext & context, TexRef_t  src, TexRef_t  dst);
+	float average(Rendering::RenderingContext & context, TexRef_t src);
+	void filter(Rendering::RenderingContext & context, TexRef_t src, TexRef_t dst);
 	void copy(Rendering::RenderingContext & context, TexRef_t src, TexRef_t dst);
 
 	static void deleteTextures();

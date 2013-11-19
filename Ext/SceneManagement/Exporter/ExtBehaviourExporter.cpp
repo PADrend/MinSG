@@ -157,7 +157,7 @@ static NodeDescription * exportParticleBoxEmitter(ExporterContext & ctxt,Abstrac
 	ParticleBoxEmitter * em = dynamic_cast<ParticleBoxEmitter *>(behaviour);
 	exportEmitter(em, behaviourProps, ctxt);
 	std::stringstream box;
-	box <<  em->getEmitBounds().getMinX() << " " << em->getEmitBounds().getMaxX() << " " <<
+	box << em->getEmitBounds().getMinX() << " " << em->getEmitBounds().getMaxX() << " " <<
 		em->getEmitBounds().getMinY() << " " << em->getEmitBounds().getMaxY() << " " <<
 		em->getEmitBounds().getMinZ() << " " << em->getEmitBounds().getMaxZ();
 	behaviourProps->setValue(Consts::ATTR_PARTICLE_EMIT_BOUNDS,Util::GenericAttribute::createString(box.str()));

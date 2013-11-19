@@ -158,7 +158,7 @@ static void filterAndAttachStatus(Util::AttributeProvider * attrProvider,const U
 //! (internal) helper
 static std::vector<BehaviorStatus*> getContainedActiveStatuses(Util::AttributeProvider * attrProvider,const Util::StringIdentifier & attr_name){
 
-	std::vector<BehaviorStatus*>  statuses;
+	std::vector<BehaviorStatus*> statuses;
 	auto * l = attrProvider->getAttribute<Util::GenericAttributeList>(attr_name);
 	if(l){ // filter finished statuses
 		filterFinishedStatuses(l);

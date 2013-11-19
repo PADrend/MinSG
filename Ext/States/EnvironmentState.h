@@ -18,7 +18,7 @@ namespace MinSG {
 /**
  *  A State for displaying an environment at great distance around the observer's
  *  position (like a skydome).
- *  When activated, the environment is displayed  at the current position with
+ *  When activated, the environment is displayed at the current position with
  *  a deactivated depth mask and deactivated depth testing.
  *  [EnvironmentState] ---|> [State]
  */
@@ -36,7 +36,7 @@ class EnvironmentState : public State {
 		EnvironmentState * clone() const override;
 
 	private:
-		Util::Reference<Node>  environment;
+		Util::Reference<Node> environment;
 
 		stateResult_t doEnableState(FrameContext & context,Node *, const RenderParam & rp) override;
 };

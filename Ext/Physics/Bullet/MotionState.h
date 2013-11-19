@@ -38,7 +38,7 @@ class MotionState: public btMotionState{
 
     public:
         //! create a new MotionState
-        MotionState(BtPhysicWorld& _world,  BtPhysicObject& _physObj, const btTransform& _initialpos):
+        MotionState(BtPhysicWorld& _world, BtPhysicObject& _physObj, const btTransform& _initialpos):
 			world(_world), physObj(_physObj), initialPos(_initialpos){}
 
         virtual ~MotionState(){}

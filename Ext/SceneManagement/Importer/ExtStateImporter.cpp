@@ -82,7 +82,7 @@ static void finalizeAlgoSelector(ImportContext & ctxt, MAR::AlgoSelector * as){
 	as->getSampleContext()->getSampleStorage()->initNodeIndices(ctxt.getRootNode());
 }
 
-static  bool importAlgoSelector(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) {
+static bool importAlgoSelector(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) {
 	if(type != Consts::STATE_TYPE_ALGOSELECTOR) // check parent != nullptr is done by SceneManager
 		return false;
 
@@ -104,7 +104,7 @@ static  bool importAlgoSelector(ImportContext & ctxt, const std::string & type, 
 	return true;
 }
 
-static  bool importMARSurfelRenderer(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) {
+static bool importMARSurfelRenderer(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) {
 	if(type != Consts::STATE_TYPE_MAR_SURFEL_RENDERER) // check parent != nullptr is done by SceneManager
 		return false;
 	

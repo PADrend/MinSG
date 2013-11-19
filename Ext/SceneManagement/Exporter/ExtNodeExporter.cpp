@@ -92,7 +92,7 @@ static void describeMultiAlgoGroupNode(ExporterContext & ctxt,NodeDescription & 
 
 //	auto children = new Util::GenericAttributeList();
 //	desc.setValue(Consts::CHILDREN,children);
-//	const auto childrenNodes = getChildNodes(  magn->getNodeForExport() );
+//	const auto childrenNodes = getChildNodes( magn->getNodeForExport() );
 //	for(const auto & child : childrenNodes) 
 //		children->push_back(ctxt.sceneManager.createDescriptionForNode(ctxt, child));
 }
@@ -138,7 +138,7 @@ static void describeSkeletalAnimationNode(ExporterContext & ctxt,NodeDescription
     
 static void describeSkeletalAnimationArmatureNode(ExporterContext & ctxt,NodeDescription & desc,Node * node) {
     desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_SKEL_ARMATURE);
-    ExporterTools::addChildNodesToDescription(ctxt,desc,node);  
+    ExporterTools::addChildNodesToDescription(ctxt,desc,node);
 }
     
 static void describeSkeletalAnimationRigidJoint(ExporterContext & ctxt,NodeDescription & desc,Node * node) {

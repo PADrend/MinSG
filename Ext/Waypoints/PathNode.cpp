@@ -92,7 +92,7 @@ void PathNode::removeLastWaypoint() {
 	std::cout << " " << getMaxTime() << "\n";
 }
 
-PathNode::wayPointMap_t::const_iterator PathNode::getNextWaypoint(AbstractBehaviour::timestamp_t  time)const {
+PathNode::wayPointMap_t::const_iterator PathNode::getNextWaypoint(AbstractBehaviour::timestamp_t time)const {
 	auto it=waypoints.begin();
 	for (;it!=waypoints.end();++it) {
 		if ( (*it).first > time )
@@ -101,7 +101,7 @@ PathNode::wayPointMap_t::const_iterator PathNode::getNextWaypoint(AbstractBehavi
 	return it;
 }
 
-PathNode::wayPointMap_t::iterator PathNode::getNextWaypoint(AbstractBehaviour::timestamp_t  time) {
+PathNode::wayPointMap_t::iterator PathNode::getNextWaypoint(AbstractBehaviour::timestamp_t time) {
 	auto it=waypoints.begin();
 	for (;it!=waypoints.end();++it) {
 		if ( (*it).first > time )

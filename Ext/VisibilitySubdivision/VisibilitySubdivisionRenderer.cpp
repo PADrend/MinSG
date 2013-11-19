@@ -85,7 +85,7 @@ static const VisibilityVector & getVV(const VisibilitySubdivisionRenderer::cell_
 }
 
 VisibilitySubdivisionRenderer::VisibilitySubdivisionRenderer() :
-	State(), hold(false), debugOutput(false),  maxRuntime(500000), viSu(nullptr), currentCell(nullptr), objects(), holdObjects(), 
+	State(), hold(false), debugOutput(false), maxRuntime(500000), viSu(nullptr), currentCell(nullptr), objects(), holdObjects(), 
 			startRuntime(0), lastCamMatrix(), accumRenderingEnabled(false),
 			displayTexturedDepthMeshes(false), depthMeshes(), textures(), polygonOffsetFactor(1.5f), polygonOffsetUnits(4.0f) {
 }

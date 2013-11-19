@@ -45,7 +45,7 @@ int test_node_memory() {
 	double actual = 0, before = Util::Utils::getResidentSetMemorySize();
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " before test\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " before test\n";
 	before = actual;
 
 	while (nodes.size() < count/2){
@@ -68,13 +68,13 @@ int test_node_memory() {
 	count = nodes.size();
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after creating nodes\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after creating nodes\n";
 	before = actual;
 
 	fc.displayNode(root.get(), 0);
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after display\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after display\n";
 	before = actual;
 
 	for(std::deque<Node*>::iterator it = nodes.begin(); it != nodes.end(); it++){
@@ -84,19 +84,19 @@ int test_node_memory() {
 	}
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after setting meshes\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after setting meshes\n";
 	before = actual;
 
 	fc.displayNode(root.get(), 0);
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after display\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after display\n";
 	before = actual;
 
 	fc.displayNode(root.get(), USE_WORLD_MATRIX);
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after display world matrix\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after display world matrix\n";
 	before = actual;
 
 	for(std::deque<Node*>::iterator it = nodes.begin(); it != nodes.end(); it++){
@@ -105,19 +105,19 @@ int test_node_memory() {
 	}
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after moving nodes\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after moving nodes\n";
 	before = actual;
 
 	fc.displayNode(root.get(), 0);
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after display\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after display\n";
 	before = actual;
 
 	fc.displayNode(root.get(), USE_WORLD_MATRIX);
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after display world matrix\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after display world matrix\n";
 	before = actual;
 
 	for(std::deque<Node*>::iterator it = nodes.begin(); it != nodes.end(); it++){
@@ -126,7 +126,7 @@ int test_node_memory() {
 	}
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after first attrib\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after first attrib\n";
 	before = actual;
 
 	for(std::deque<Node*>::iterator it = nodes.begin(); it != nodes.end(); it++){
@@ -135,7 +135,7 @@ int test_node_memory() {
 	}
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after second attrib\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after second attrib\n";
 	before = actual;
 
 	for(std::deque<Node*>::iterator it = nodes.begin(); it != nodes.end(); it++){
@@ -144,7 +144,7 @@ int test_node_memory() {
 	}
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after third attrib\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after third attrib\n";
 	before = actual;
 
 	for(std::deque<Node*>::iterator it = nodes.begin(); it != nodes.end(); it++){
@@ -153,7 +153,7 @@ int test_node_memory() {
 	}
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after fourth attrib\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after fourth attrib\n";
 	before = actual;
 
 	for(std::deque<Node*>::iterator it = nodes.begin(); it != nodes.end(); it++){
@@ -162,7 +162,7 @@ int test_node_memory() {
 	}
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after fifth attrib\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after fifth attrib\n";
 	before = actual;
 
 	for(std::deque<Node*>::iterator it = nodes.begin(); it != nodes.end(); it++){
@@ -171,7 +171,7 @@ int test_node_memory() {
 	}
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after add material\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after add material\n";
 	before = actual;
 
 	SceneManagement::SceneManager sceneManager;
@@ -183,7 +183,7 @@ int test_node_memory() {
 	}
 
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after register node\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after register node\n";
 	before = actual;
 
 	sceneManager.registerNode(Util::StringIdentifier("testroot"), root.get());
@@ -192,7 +192,7 @@ int test_node_memory() {
 	root = NULL;
 	
 	actual = Util::Utils::getResidentSetMemorySize();
-	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) <<  " after destroy\n";
+	std::cerr << Util::StringUtils::toFormattedString((actual - before) / count) << " after destroy\n";
 	before = actual;
 
 	return EXIT_SUCCESS;

@@ -80,7 +80,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 	// first version (display as many triangles of original as SamplingMesh has)
 //	if(hasSamplingMesh(node)){
 //		Rendering::Mesh * m = retrieveSamplingMesh(node);
-//		uint32_t indexCount =  m->getIndexCount();
+//		uint32_t indexCount = m->getIndexCount();
 //		GeometryNode * geoNode = dynamic_cast<GeometryNode *>(node);
 //		Rendering::Mesh * origM = geoNode->getMesh();
 //		if(renderOriginal){
@@ -367,7 +367,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 				case _renderResult::RENDER_SAMPLING_MESH:
 					{
 						Rendering::Mesh * m = retrieveSamplingMesh(node);
-						uint32_t indexCount =  std::min(3*triangleBudget, m->getIndexCount());
+						uint32_t indexCount = std::min(3*triangleBudget, m->getIndexCount());
 
 						if(triangleBudget>0){ // condition is necessary, otherwise VBOs might get drawn and triangle count increases
 							context.getRenderingContext().pushMatrix();
@@ -402,7 +402,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 							} else {
 								// render original mesh with remaining budget
 								Rendering::Mesh * m_orig = geoNode->getMesh();
-								uint32_t indexCount_orig =  std::min(3*triangleBudget-indexCount, m_orig->getIndexCount());
+								uint32_t indexCount_orig = std::min(3*triangleBudget-indexCount, m_orig->getIndexCount());
 
 								context.getRenderingContext().pushMatrix();
 								context.getRenderingContext().multMatrix(geoNode->getMatrix());
@@ -440,7 +440,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 					{
 						if(triangleBudget>0){ // condition is necessary, otherwise VBOs might get drawn and triangle count increases
 							Rendering::Mesh * m = geoNode->getMesh();
-							uint32_t indexCount =  std::min(3*triangleBudget, m->getIndexCount());
+							uint32_t indexCount = std::min(3*triangleBudget, m->getIndexCount());
 
 							context.getRenderingContext().pushMatrix();
 							context.getRenderingContext().multMatrix(geoNode->getMatrix());

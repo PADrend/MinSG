@@ -27,7 +27,7 @@ SimplePhysics::SimplePhysics(Node * node):AbstractNodeBehaviour(node) ,speed(Geo
 	speed=Geometry::Vec3( (j-50)/10.0,i/1.0,(k-50)/10.0);
 	//ctor
 }//! [ctor]
-SimplePhysics::SimplePhysics(Node * node,Geometry::Vec3  v):AbstractNodeBehaviour(node) ,speed(std::move(v)),lastTime(-1){
+SimplePhysics::SimplePhysics(Node * node,Geometry::Vec3 v):AbstractNodeBehaviour(node) ,speed(std::move(v)),lastTime(-1){
 }
 
 //! [dtor]

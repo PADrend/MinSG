@@ -42,7 +42,7 @@ class SurfelGenerator{
 			Util::Color4ub color;
 			float size;
 			Surfel() : size(0){}
-			Surfel(Geometry::Vec3  _pos,Geometry::Vec3  _normal,Util::Color4ub  _color,float s)
+			Surfel(Geometry::Vec3 _pos,Geometry::Vec3 _normal,Util::Color4ub _color,float s)
 					: pos(std::move(_pos)),normal(std::move(_normal)),color(std::move(_color)),size(s){}
 			bool operator==(const Surfel&other)const{
 				return pos==other.pos 

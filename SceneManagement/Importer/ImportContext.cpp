@@ -39,7 +39,7 @@ void ImportContext::unregisterMesh( const std::string & meshFileName){
 
 Rendering::Mesh * ImportContext::getRegisteredMesh( const std::string & meshFileName)const{
 	auto it = registeredMeshes.find(meshFileName);
-	return (it == registeredMeshes.end()) ? nullptr :  it->second.get();
+	return (it == registeredMeshes.end()) ? nullptr : it->second.get();
 }
 
 

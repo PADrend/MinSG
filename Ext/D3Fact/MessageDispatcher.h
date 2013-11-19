@@ -30,7 +30,7 @@ class Session;
 class Message;
 class MessageHandler;
 
-class MessageDispatcher : public Util::ReferenceCounter<MessageDispatcher>  {
+class MessageDispatcher : public Util::ReferenceCounter<MessageDispatcher> {
 	PROVIDES_TYPE_NAME(MessageDispatcher)
 public:
 	MessageDispatcher(Session* session_);

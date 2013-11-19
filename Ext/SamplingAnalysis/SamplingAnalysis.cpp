@@ -106,7 +106,7 @@ Histogram1D * createClosestPointDistanceHistogram(const std::vector<Geometry::Ve
 	bb.invalidate();
 	for(auto & position : positions)
 		bb.include(position);
-	hist->maxValue =  bb.getDiameter();
+	hist->maxValue = bb.getDiameter();
 	if(hist->maxValue==0)
 		return hist;
 

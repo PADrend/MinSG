@@ -92,7 +92,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 #endif /* MINSG_PROFILING */
 
 		if(rp.getFlag(SHOW_META_OBJECTS)) {
-			static const Util::StringIdentifier attributeId(  NodeAttributeModifier::create( "SphericalSampling::Renderer::MetaObject", NodeAttributeModifier::PRIVATE_ATTRIBUTE) ); // don't save or copy to clones or instances
+			static const Util::StringIdentifier attributeId(NodeAttributeModifier::create( "SphericalSampling::Renderer::MetaObject", NodeAttributeModifier::PRIVATE_ATTRIBUTE)); // don't save or copy to clones or instances
 			typedef Util::ReferenceAttribute<GeometryNode> MetaObjectAttribute;
 
 			MetaObjectAttribute * attribute = dynamic_cast<MetaObjectAttribute *>(node->getAttribute(attributeId));

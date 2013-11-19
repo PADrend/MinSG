@@ -45,7 +45,7 @@ StrangeExampleRenderer * StrangeExampleRenderer::clone()const {
 /**
  * ---|> [State]
  */
-State::stateResult_t  StrangeExampleRenderer::doEnableState(FrameContext & context,Node * node, const RenderParam & rp){
+State::stateResult_t StrangeExampleRenderer::doEnableState(FrameContext & context,Node * node, const RenderParam & rp){
 
 	if (rp.getFlag(NO_GEOMETRY) || rp.getFlag(SKIP_RENDERER))
 		return State::STATE_SKIPPED;

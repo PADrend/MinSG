@@ -23,7 +23,7 @@ namespace MinSG {
 /***
  ** SoundReceivingBehaviour ---|> AbstractNodeBehaviour
  **/
-class SoundReceivingBehaviour : public AbstractNodeBehaviour    {
+class SoundReceivingBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(SoundReceivingBehaviour)
 
 	public:

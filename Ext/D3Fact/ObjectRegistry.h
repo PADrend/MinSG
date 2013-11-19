@@ -30,7 +30,7 @@ public:
 	void registerObject( _T * obj );
 
 	void unregisterObject( const std::string & name );
-	void unregisterObject( const Util::StringIdentifier &  id );
+	void unregisterObject( const Util::StringIdentifier & id );
 
 	_T * getRegisteredObject(const std::string & name) const;
 	_T * getRegisteredObject(const Util::StringIdentifier & id) const;

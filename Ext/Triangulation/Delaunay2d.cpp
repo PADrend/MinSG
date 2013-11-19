@@ -25,7 +25,7 @@ class D2D_Node {
 	D2D_Edge * anEdge;
 
 	public:
-		D2D_Node(WrapperPoint  _point): point(std::move(_point)), anEdge(nullptr)		{	}
+		D2D_Node(WrapperPoint _point): point(std::move(_point)), anEdge(nullptr)		{	}
 
 		D2D_Edge * getAnEdge()const		{	return anEdge;	}
 
@@ -133,9 +133,9 @@ class D2D_Edge {
 
 class D2D_Triangle {
 		D2D_Edge *  anEdge;
-		double  circumCirX;
-		double  circumCirY;
-		double  circumCirR2;
+		double circumCirX;
+		double circumCirY;
+		double circumCirR2;
 
 	public:
 		D2D_Triangle(D2D_Edge * e1, D2D_Edge * e2, D2D_Edge * e3) {

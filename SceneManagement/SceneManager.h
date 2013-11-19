@@ -181,7 +181,7 @@ class SceneManager : public Util::AttributeProvider {
 			@param saveRegisteredNodes If true, even already saved meshes are exported.
 
 			\todo Shouldn't this be a StdNodeVisitor or a static helper	function in Helper.cpp? */
-		void saveMeshesInSubtreeAsPLY(Node * rootNode,const  std::string & dirName,
+		void saveMeshesInSubtreeAsPLY(Node * rootNode,const std::string & dirName,
 					bool saveRegisteredNodes=false)const;
 
 		/*!	Traverses the scene graph below @a rootNode and saves all meshes
@@ -192,7 +192,7 @@ class SceneManager : public Util::AttributeProvider {
 			@param dirName Name of directory that is used to store the meshes.
 			@param saveRegisteredNodes If true, even already saved meshes are exported.
 			\todo Shouldn't this be a StdNodeVisitor or a static helper	function in Helper.cpp? */
-		void saveMeshesInSubtreeAsMMF(Node * rootNode,const  std::string & dirName,
+		void saveMeshesInSubtreeAsMMF(Node * rootNode,const std::string & dirName,
 					bool saveRegisteredNodes=false)const;
 
 	private:

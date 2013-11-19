@@ -482,7 +482,7 @@ std::vector<State*> Node::getStates()const{
 // -----------------------------------
 // ---- Transformations
 
-void  Node::lookAtAbs(const Geometry::Vec3 & pointInWorldCoordinates){
+void Node::lookAtAbs(const Geometry::Vec3 & pointInWorldCoordinates){
 	rotateToWorldDir(pointInWorldCoordinates-getWorldPosition());
 }
 

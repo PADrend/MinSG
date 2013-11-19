@@ -21,7 +21,7 @@
 namespace MinSG {
 namespace Physics {
 
-const Util::StringIdentifier PhysicWorld::ATTR_PHYSICS_SHAPE_DESC(  NodeAttributeModifier::create( "PhysicShapeDescription", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+const Util::StringIdentifier PhysicWorld::ATTR_PHYSICS_SHAPE_DESC( NodeAttributeModifier::create( "PhysicShapeDescription", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 static const Util::StringIdentifier ATTR_SHAPE_TYPE( "Physics_shapeType" );
 static const Util::StringIdentifier ATTR_MASS( "Physics_mass" );
 static const Util::StringIdentifier ATTR_FRICTION( "Physics_friction" );

@@ -66,7 +66,7 @@ class BtPhysicWorld: public PhysicWorld{
 		void updateMass(Node* node, float mass) override;
 		void updateFriction(Node* _node, float fric) override;
 		void updateRollingFriction(Node* _node, float rollfric) override;
-		void updateShape(Node* node,  Util::GenericAttributeMap * description) override;
+		void updateShape(Node* node, Util::GenericAttributeMap * description) override;
 
 
 		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;

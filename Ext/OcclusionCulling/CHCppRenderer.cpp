@@ -41,7 +41,7 @@ namespace MinSG {
         std::queue<queue_item_t> queryQueue;
         Util::StringIdentifier nodeInfoId;
         uint32_t frameNumber;
-		CHCppContext(const CHCppContext &  other) = delete;
+		CHCppContext(const CHCppContext & other) = delete;
     };
 	
 	struct CHCppRenderer::NodeInfo {

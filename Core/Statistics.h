@@ -152,7 +152,7 @@ class Statistics {
 			std::string unit;
 			double value;
 
-			Counter(std::string  _description, std::string  _unit) :
+			Counter(std::string _description, std::string _unit) :
 				description(std::move(_description)), unit(std::move(_unit)), value(0.0) {
 			}
 		};

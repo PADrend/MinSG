@@ -61,7 +61,7 @@ struct AssignSpawnNodeAction {
 	ParticleEmitter * emitter;
 	std::string spawnNodeId;
 
-	AssignSpawnNodeAction(ParticleEmitter * _emitter,std::string  _spawnNodeId) :
+	AssignSpawnNodeAction(ParticleEmitter * _emitter,std::string _spawnNodeId) :
 		emitter(_emitter),spawnNodeId(std::move(_spawnNodeId)) {}
 
 	void operator()(ImportContext & ctxt) {

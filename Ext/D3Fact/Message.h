@@ -50,7 +50,7 @@
 
 namespace D3Fact {
 
-class Message  {
+class Message {
 public:
 	enum protocol_t {
 		TCP, UDP

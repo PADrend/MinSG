@@ -96,7 +96,7 @@ private:
 
 	/**
 	 *	On enabling the state a priority queue is created and all nodes, whose color cubes should be displayed, are collected
-	 *	to it. The nodes in the priority queue are sorted  in back-to-front order according to their distance from the camera.
+	 *	to it. The nodes in the priority queue are sorted in back-to-front order according to their distance from the camera.
 	 *	These nodes are also set inactive, so that their subtrees cannot be displayed as geometry. Then the displaying of the
 	 *	subtree will be continued in common way (STATE_OK).
 	 *	If node containing the ColorCubeRenderer is small enough to be drawn as color cube, its color cube will be rendered
@@ -106,7 +106,7 @@ private:
 	 *	@param node containing current ColorCubeRenderer in its state list.
 	 *	@param flats current rendering flags
 	 */
-	stateResult_t doEnableState(FrameContext& context, Node * node,  const RenderParam & rp) override;
+	stateResult_t doEnableState(FrameContext& context, Node * node, const RenderParam & rp) override;
 
 	/**
 	 *	normally the drawing of color cubes is done here after the displaying of the subtree has been finished (if the node

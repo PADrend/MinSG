@@ -1009,7 +1009,7 @@ bool VisitorContext::leave(const std::string & tagName) {
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
 		meshDescription[meshId] = dynamic_cast<NodeDescription *>(currentElement->clone());
 #else
-		mesh_list_t  meshList;
+		mesh_list_t meshList;
 
 		if (createMeshes(currentElement, meshList)) {
 			meshRegistry[meshId] = meshList;
@@ -1310,17 +1310,17 @@ Rendering::Mesh * VisitorContext::createSingleMesh(const std::deque<VertexPart> 
 		}
 		vd.appendFloatAttribute(ATTR_ID_WEIGHTSCOUNT,1);
 	}
-	const VertexAttribute &  weightAttr1 = vd.getAttribute(ATTR_ID_WEIGHTS1);
-	const VertexAttribute &  weightAttr2 = vd.getAttribute(ATTR_ID_WEIGHTS2);
-	const VertexAttribute &  weightAttr3 = vd.getAttribute(ATTR_ID_WEIGHTS3);
-	const VertexAttribute &  weightAttr4 = vd.getAttribute(ATTR_ID_WEIGHTS4);
+	const VertexAttribute & weightAttr1 = vd.getAttribute(ATTR_ID_WEIGHTS1);
+	const VertexAttribute & weightAttr2 = vd.getAttribute(ATTR_ID_WEIGHTS2);
+	const VertexAttribute & weightAttr3 = vd.getAttribute(ATTR_ID_WEIGHTS3);
+	const VertexAttribute & weightAttr4 = vd.getAttribute(ATTR_ID_WEIGHTS4);
 
-	const VertexAttribute &  weightAttrIndex1 = vd.getAttribute(ATTR_ID_WEIGHTSINDEX1);
-	const VertexAttribute &  weightAttrIndex2 = vd.getAttribute(ATTR_ID_WEIGHTSINDEX2);
-	const VertexAttribute &  weightAttrIndex3 = vd.getAttribute(ATTR_ID_WEIGHTSINDEX3);
-	const VertexAttribute &  weightAttrIndex4 = vd.getAttribute(ATTR_ID_WEIGHTSINDEX4);
+	const VertexAttribute & weightAttrIndex1 = vd.getAttribute(ATTR_ID_WEIGHTSINDEX1);
+	const VertexAttribute & weightAttrIndex2 = vd.getAttribute(ATTR_ID_WEIGHTSINDEX2);
+	const VertexAttribute & weightAttrIndex3 = vd.getAttribute(ATTR_ID_WEIGHTSINDEX3);
+	const VertexAttribute & weightAttrIndex4 = vd.getAttribute(ATTR_ID_WEIGHTSINDEX4);
 
-	const VertexAttribute &  weightAttrCount = vd.getAttribute(ATTR_ID_WEIGHTSCOUNT);
+	const VertexAttribute & weightAttrCount = vd.getAttribute(ATTR_ID_WEIGHTSCOUNT);
 #endif
 
 	// create mesh
@@ -1775,7 +1775,7 @@ bool VisitorContext::createMeshes(const NodeDescription * geoDesc, mesh_list_t &
 			++stats_meshCounter;
 		}
 		else if (type == "triangles" || type == "polygons") {
-			   std::deque<VertexPart> vertexParts;
+			std::deque<VertexPart> vertexParts;
 			std::vector<uint32_t> indices;
 			uint32_t triangleCount = Util::StringUtils::toNumber<uint32_t>((primitive)->getString(DAE_ATTR_COUNT));
 			if (triangleCount == 0) {

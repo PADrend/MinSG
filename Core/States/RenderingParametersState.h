@@ -34,7 +34,7 @@ class RenderingParametersState : public State {
 	public:
 		RenderingParametersState() : State(), parameters() {
 		}
-		explicit RenderingParametersState(RenderingParameters  newParameters) : State(), parameters(std::move(newParameters)) {
+		explicit RenderingParametersState(RenderingParameters newParameters) : State(), parameters(std::move(newParameters)) {
 		}
 		RenderingParametersState(const RenderingParametersState & other) : State(other), parameters(other.parameters) {
 		}

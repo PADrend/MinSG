@@ -30,7 +30,7 @@ class SyncBuffer::pimpl {
 public:
 	pimpl() :
 		 buffer(), closed(false),
-		 mutex(createMutex())  {
+		 mutex(createMutex()) {
 		cond = new ConditionVariable(mutex);
 	}
 	pimpl(const pimpl& src) = delete;

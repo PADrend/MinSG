@@ -36,7 +36,7 @@ class Message;
 class ClientUnit;
 class MessageDispatcher;
 
-class Session : public Util::ReferenceCounter<Session>  {
+class Session : public Util::ReferenceCounter<Session> {
 	PROVIDES_TYPE_NAME(Session)
 public:
 	Session(int32_t sessionId_, ClientUnit* client_);

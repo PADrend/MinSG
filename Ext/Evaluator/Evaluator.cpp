@@ -45,7 +45,7 @@ void Evaluator::setMaxValue_i(unsigned int _maxValue) {
 /**
  *
  */
-void Evaluator::setMaxValue(Util::GenericAttribute *  newMaxValue) {
+void Evaluator::setMaxValue(Util::GenericAttribute * newMaxValue) {
 	if(newMaxValue == maxValue.get()) {
 		return;
 	}

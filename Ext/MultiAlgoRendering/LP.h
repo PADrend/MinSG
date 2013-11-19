@@ -40,12 +40,12 @@ public:
 	~LP();
 
 	bool isStopped() {
-		auto lock  = Util::Concurrency::createLock(* mutex );
+		auto lock = Util::Concurrency::createLock(* mutex );
 		return stopped;
 	}
 
 	bool hasResult() {
-		auto lock  = Util::Concurrency::createLock(* mutex );
+		auto lock = Util::Concurrency::createLock(* mutex );
 		return resultComputed;
 	}
 

@@ -152,7 +152,7 @@ void MultiAlgoGroupNode::initAlgorithm(AlgoId _algoId, GroupState * state) {
 		break;
 		case SphericalSampling: {
 			states[_algoId] = new GroupState();
-			auto  svsr = new SphericalSampling::Renderer();
+			auto svsr = new SphericalSampling::Renderer();
 			svsr->setInterpolationMethod(SphericalSampling::INTERPOLATION_MAX3);
 			states[_algoId]->addState(svsr);
 		}
@@ -216,13 +216,13 @@ void MultiAlgoGroupNode::setAlgorithm(AlgoId newAlgoId) {
             color = Util::Color4ub(222, 222, 222);
 			break;
 		case CHCpp:
-			color =  Util::Color4ub(255, 255, 51);
+			color = Util::Color4ub(255, 255, 51);
 			break;
 		case CHCppAggressive:
 			color = Util::ColorLibrary::BLACK;
 			break;
 		case ColorCubes:
-			color =  Util::Color4ub(255, 127, 0);
+			color = Util::Color4ub(255, 127, 0);
 			break;
 		case BlueSurfels:
 			color = Util::Color4ub(128, 177, 211);
@@ -231,10 +231,10 @@ void MultiAlgoGroupNode::setAlgorithm(AlgoId newAlgoId) {
 			color = Util::ColorLibrary::BLUE;
 			break;
 		case SphericalSampling:
-			color =  Util::Color4ub(77, 175, 74);
+			color = Util::Color4ub(77, 175, 74);
 			break;
 		case ClassicLOD:
-			color =  Util::Color4ub(152, 78, 163);
+			color = Util::Color4ub(152, 78, 163);
 			break;
 		case Auto:
 		case SkipRendering:

@@ -7,7 +7,7 @@
     You should have received a copy of the MPL along with this library; see the
     file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifdef  MINSG_EXT_LOADERCOLLADA
+#ifdef MINSG_EXT_LOADERCOLLADA
 
 #ifndef MINSG_LOADERCOLLADA_CORE_NODEIMPORTER_H
 #define MINSG_LOADERCOLLADA_CORE_NODEIMPORTER_H

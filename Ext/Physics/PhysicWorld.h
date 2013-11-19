@@ -85,7 +85,7 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual void updateMass(Node* node, float mass) = 0;
 
 		const Util::GenericAttributeMap* getShapeDescription(Node* node)const			{	return getNodeProperty_shapeDescription(node);	}
-		virtual void updateShape(Node* node,  Util::GenericAttributeMap * description)= 0;
+		virtual void updateShape(Node* node, Util::GenericAttributeMap * description)= 0;
 		float getFriction(Node* node)const												{	return getNodeProperty_friction(node);	}
 		virtual void updateFriction(Node* node, float fric) = 0;
 		float getRollingFriction(Node* node)const										{	return getNodeProperty_rollingFriction(node);	}

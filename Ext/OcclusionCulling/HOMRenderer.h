@@ -24,7 +24,7 @@
 
 namespace Geometry {
 template<typename _T> class _Matrix4x4;
-typedef  _Matrix4x4<float> Matrix4x4f;
+typedef _Matrix4x4<float> Matrix4x4f;
 template<typename _T> class _Vec3;
 typedef _Vec3<float> Vec3f;
 }

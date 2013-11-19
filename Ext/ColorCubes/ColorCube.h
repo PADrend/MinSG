@@ -38,14 +38,14 @@ class ColorCubeGenerator;
  * by the absolute bounding box stored at the corresponding node.
  *
  * @note The processing of color cubes can only be done by an instance of ColorCubeGenerator. It is automatically
- * created  when the color cube of any node is required but is missing and then registered at current rendering context.
+ * created when the color cube of any node is required but is missing and then registered at current rendering context.
  * The appropriate color cube is then available at the next frame see ColorCube::buildColorCubes(FrameContext, Node).
  *
  * @author Paul Justus
  * @date 2010-08-15
  *
  */
-class  ColorCube {
+class ColorCube {
 	/** colors for each of the 6 faces of a box */
 	std::array<Util::Color4ub,6> colors;
 

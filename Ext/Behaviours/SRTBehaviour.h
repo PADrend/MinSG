@@ -21,7 +21,7 @@ namespace MinSG {
 /***
  ** SRTBehaviour ---|> AbstractNodeBehaviour
  **/
-class SRTBehaviour : public AbstractNodeBehaviour    {
+class SRTBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(SRTBehaviour)
 
 	struct BinSRT {

@@ -98,7 +98,7 @@ btCollisionShape* createDynamicBoxShape(Node* node,const Geometry::Vec3 & center
 	btTransform startTransform;
 	startTransform.setIdentity();
 	startTransform.setOrigin(toBtVector3(centerOfMass-bb.getCenter() ));
-	shape->addChildShape( startTransform,  (new btBoxShape(btVector3(bb.getExtentX()*0.5*s,bb.getExtentY()*0.5*s,bb.getExtentZ()*0.5*s))) );
+	shape->addChildShape( startTransform, (new btBoxShape(btVector3(bb.getExtentX()*0.5*s,bb.getExtentY()*0.5*s,bb.getExtentZ()*0.5*s))) );
 	return shape;
 }
 //! (static,internal)
@@ -109,7 +109,7 @@ btCollisionShape* createDynamicSphereShape(Node* node,const Geometry::Vec3 & cen
 	btTransform startTransform;
 	startTransform.setIdentity();
 	startTransform.setOrigin(toBtVector3(centerOfMass-bb.getCenter() ));
-	shape->addChildShape( startTransform,  new btSphereShape(bb.getExtentX()*0.5*s) );
+	shape->addChildShape( startTransform, new btSphereShape(bb.getExtentX()*0.5*s) );
 	return shape;
 }
 
@@ -181,7 +181,7 @@ btRigidBody * BtPhysicWorld::createRigidBody(BtPhysicObject& physObj, ShapeConta
 	btVector3 localInertia(0,0,0);
 	shape->getShape()->calculateLocalInertia(mass,localInertia);
 
-	auto worldSRT =  Transformations::getWorldSRT(node);
+	auto worldSRT = Transformations::getWorldSRT(node);
 	worldSRT.translate( Transformations::localDirToWorldDir(node,physObj.getCenterOfMass() ) );
 
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,
@@ -203,7 +203,7 @@ void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 	if(!localSurfaceVelocity.isZero()){
 		BtPhysicObject * physObjPtr = &physObj;
 		
-		physObj.contactListener = [physObjPtr,localSurfaceVelocity](btManifoldPoint& cp,  BtPhysicObject* physObj0, BtPhysicObject* physObj1){
+		physObj.contactListener = [physObjPtr,localSurfaceVelocity](btManifoldPoint& cp, BtPhysicObject* physObj0, BtPhysicObject* physObj1){
 
 			Geometry::Vec3 worldVelocity;
 			worldVelocity = Transformations::localDirToWorldDir(physObjPtr->getNode(),localSurfaceVelocity);
@@ -285,8 +285,8 @@ void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 // -------------------------------
 // physicObject attribute
 
-static const Util::StringIdentifier ATTR_PHYSICS_OBJECT(  NodeAttributeModifier::create( "btPhysicObject", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
-//static const Util::StringIdentifier ATTR_PHYSICS_SHAPE_DESC(  NodeAttributeModifier::create( "PhysicShapeDescription", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+static const Util::StringIdentifier ATTR_PHYSICS_OBJECT( NodeAttributeModifier::create( "btPhysicObject", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+//static const Util::StringIdentifier ATTR_PHYSICS_SHAPE_DESC( NodeAttributeModifier::create( "PhysicShapeDescription", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 
 
 static BtPhysicObject* getPhysicObject(Node* node){
@@ -312,7 +312,7 @@ static void removePhysicsObject(Node* node){
 //------------------------------
 // shape attribute
 
-static const Util::StringIdentifier ATTR_PHYSICS_SHAPE(  NodeAttributeModifier::create( "ShapeContainer", NodeAttributeModifier::PRIVATE_ATTRIBUTE | NodeAttributeModifier::COPY_TO_CLONES));
+static const Util::StringIdentifier ATTR_PHYSICS_SHAPE( NodeAttributeModifier::create( "ShapeContainer", NodeAttributeModifier::PRIVATE_ATTRIBUTE | NodeAttributeModifier::COPY_TO_CLONES));
 //| NodeAttributeModifier::COPY_TO_INSTANCES ));
 
 static ShapeContainer* findShapeAttribute(Node* node){
@@ -321,7 +321,7 @@ static ShapeContainer* findShapeAttribute(Node* node){
 }
 
 static void attachShapeAttribute(Node* node, ShapeContainer * shape ){
-	node->setAttribute( ATTR_PHYSICS_SHAPE,  new Util::ReferenceAttribute<ShapeContainer>(shape));
+	node->setAttribute( ATTR_PHYSICS_SHAPE, new Util::ReferenceAttribute<ShapeContainer>(shape));
 }
 
 
@@ -344,10 +344,10 @@ BtPhysicWorld::BtPhysicWorld(){
 				BtPhysicObject* physObj1 = reinterpret_cast<BtPhysicObject*>(colObj1->getCollisionObject()->getUserPointer());
 				bool contactPointModified = false;
 				if( physObj0 && physObj0->contactListener ) {
-					contactPointModified |= physObj0->contactListener(cp,  physObj0,physObj1);
+					contactPointModified |= physObj0->contactListener(cp, physObj0,physObj1);
 				}
 				if( physObj1 && physObj1->contactListener ) {
-					contactPointModified |= physObj1->contactListener(cp,  physObj0,physObj1);
+					contactPointModified |= physObj1->contactListener(cp, physObj0,physObj1);
 				}
 				return contactPointModified;
 			}
@@ -362,7 +362,7 @@ BtPhysicWorld::BtPhysicWorld(){
 
 void BtPhysicWorld::createGroundPlane(const Geometry::Plane& plane ){
 	const Geometry::Vec3 normal = plane.getNormal();
-	const Geometry::Vec3 pos =  normal * (plane.getOffset());
+	const Geometry::Vec3 pos = normal * (plane.getOffset());
 	//Creating a static shape which will act as ground
 	{
 //! ToDo..................................................
@@ -493,7 +493,7 @@ void BtPhysicWorld::onNodeTransformed(Node * node){
 		if(physObj){
 			btRigidBody* body = physObj->getRigidBody();
 
-			auto worldSRT =  Transformations::getWorldSRT(node);
+			auto worldSRT = Transformations::getWorldSRT(node);
 			worldSRT.translate( Transformations::localDirToWorldDir(node,physObj->getCenterOfMass() ) );
 
 			body->setWorldTransform( toBtTransform( worldSRT ));
@@ -506,7 +506,7 @@ const Geometry::Vec3 BtPhysicWorld::getGravity(){
 	return toVec3(dynamicsWorld->getGravity());
 }
 
-void BtPhysicWorld::setGravity(const Geometry::Vec3&  gravity){
+void BtPhysicWorld::setGravity(const Geometry::Vec3& gravity){
 	dynamicsWorld->setGravity(toBtVector3(gravity));
 }
 
@@ -522,7 +522,7 @@ void BtPhysicWorld::updateMass(Node* node, float mass){
 		body->setMassProps(mass, localInertia); // \note the static collision flag seems to be set implicitly here...
 		body->updateInertiaTensor();
 
-		dynamicsWorld->addRigidBody(body);  // re-add the body
+		dynamicsWorld->addRigidBody(body); // re-add the body
 		body->activate(true);
 	}
 }
@@ -547,7 +547,7 @@ void BtPhysicWorld::updateRollingFriction(Node* node, float rollfric){
 	}
 }
 
-void BtPhysicWorld::updateShape(Node* node,  Util::GenericAttributeMap * description){
+void BtPhysicWorld::updateShape(Node* node, Util::GenericAttributeMap * description){
 	if(!description){
 		WARN("BtPhysicWorld::updateShape: no shape description!");
 		return;
@@ -580,7 +580,7 @@ void BtPhysicWorld::updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3&
 //Debug!!!!!!!!!!!!!!!!
 void BtPhysicWorld::renderPhysicWorld(Rendering::RenderingContext& rctxt){
 	MyDebugDraw *db = new MyDebugDraw(rctxt);
-	db->setDebugMode(  btIDebugDraw::DBG_DrawWireframe );
+	db->setDebugMode( btIDebugDraw::DBG_DrawWireframe );
 	dynamicsWorld->setDebugDrawer(db);
 	dynamicsWorld->debugDrawWorld();
 

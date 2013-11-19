@@ -41,7 +41,7 @@ void CameraNode::applyHorizontalAngle(const Geometry::Angle & angle) {
 	setAngles(-halfHAngle, halfHAngle, -halfVAngle, halfVAngle);
 }
 
-void CameraNode::applyVerticalAngle(const Geometry::Angle &  angle) {
+void CameraNode::applyVerticalAngle(const Geometry::Angle & angle) {
 	const Geometry::Angle halfVAngle = angle * 0.5f;
 	const float aspectRatio = static_cast<float>(getWidth()) / static_cast<float>(getHeight());
 	const Geometry::Angle halfHAngle = Geometry::Angle::rad(std::atan(aspectRatio * std::tan(halfVAngle.rad())));

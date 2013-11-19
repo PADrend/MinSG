@@ -40,7 +40,7 @@ DirectionalInterpolator::~DirectionalInterpolator(){
  * \note Do not alter or delete the returned value - it's only a reference.
  */
 GenericAttribute * DirectionalInterpolator::getValueForSide(ValuatedRegionNode * node,side_t side){
-	auto i=  assignement_sides_valueIndice.find(side);
+	auto i= assignement_sides_valueIndice.find(side);
 	if(i==assignement_sides_valueIndice.end())
 		return nullptr;
 	int sideIndex=(*i).second;
@@ -51,7 +51,7 @@ GenericAttribute * DirectionalInterpolator::getValueForSide(ValuatedRegionNode *
 	if(!allValues)
 		return nullptr;
 
-	return  allValues->at(sideIndex);
+	return allValues->at(sideIndex);
 }
 /**
  * This implemetation: Interpolate(=blend) Values according to the projected size of the cube sides.

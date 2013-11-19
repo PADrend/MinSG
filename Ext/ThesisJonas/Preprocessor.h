@@ -52,11 +52,11 @@ struct ExtractedTriangle{
 			: triangle(Geometry::Vec3(), Geometry::Vec3(), Geometry::Vec3()),
 			normal(Geometry::Vec3(), Geometry::Vec3(), Geometry::Vec3()),
 			numPixels(1) {}
-	ExtractedTriangle(	Geometry::Triangle<Geometry::Vec3>  _triangle,
-						Geometry::Triangle<Geometry::Vec3>  _normal,
-						Util::Color4f  _color_a,
-						Util::Color4f  _color_b,
-						Util::Color4f  _color_c,
+	ExtractedTriangle(	Geometry::Triangle<Geometry::Vec3> _triangle,
+						Geometry::Triangle<Geometry::Vec3> _normal,
+						Util::Color4f _color_a,
+						Util::Color4f _color_b,
+						Util::Color4f _color_c,
 						bool useCIELab)
 			: triangle(std::move(_triangle)),normal(std::move(_normal)),color_a(std::move(_color_a)),color_b(std::move(_color_b)),color_c(std::move(_color_c)),numPixels(1){
 

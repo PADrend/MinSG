@@ -47,7 +47,7 @@ ParticleSystemNode::ParticleSystemNode() :
 ParticleSystemNode::~ParticleSystemNode() {
 }
 
-//!  Set renderer by typeId
+//! Set renderer by typeId
 void ParticleSystemNode::setRenderer(renderer_t typeId) {
 	if(typeId == ParticleSystemNode::POINT_RENDERER) {
 		setRenderer(ParticlePointRenderer());
