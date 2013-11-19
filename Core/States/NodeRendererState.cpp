@@ -16,7 +16,7 @@
 namespace MinSG {
 
 NodeRendererState::NodeRendererState(Util::StringIdentifier newChannel) :
-	State(), nodeRendererChannel(newChannel) {
+	State(), nodeRendererChannel(std::move(newChannel)) {
 }
 
 

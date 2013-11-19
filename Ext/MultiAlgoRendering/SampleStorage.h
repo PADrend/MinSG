@@ -110,7 +110,7 @@ public:
 
     Util::Reference<SamplePointData> data;
 
-    explicit SamplePoint (const Geometry::Vec3f & pos, uint32_t _id, SamplePointData * _data) : position(pos), id(_id), data(_data) {
+    explicit SamplePoint (Geometry::Vec3f  pos, uint32_t _id, SamplePointData * _data) : position(std::move(pos)), id(_id), data(_data) {
     }
 
 	//! @name Serialization

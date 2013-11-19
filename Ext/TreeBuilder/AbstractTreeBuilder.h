@@ -40,8 +40,8 @@ public:
 			looseBox.invalidate();
 		}
 
-		NodeWrapper(Util::Reference<GroupNode> _group, const Geometry::Box & _tightBox, const Geometry::Box & _looseBox, uint32_t _depth) :
-			group(_group), tightBox(_tightBox), looseBox(_looseBox), depth(_depth) {
+		NodeWrapper(Util::Reference<GroupNode> _group, Geometry::Box  _tightBox, Geometry::Box  _looseBox, uint32_t _depth) :
+			group(std::move(_group)), tightBox(std::move(_tightBox)), looseBox(std::move(_looseBox)), depth(_depth) {
 		}
 	};
 

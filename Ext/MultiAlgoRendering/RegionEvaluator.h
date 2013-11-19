@@ -117,8 +117,8 @@ class PolygonDensityEvaluator: public RegionEvaluator {
 
 	protected:
 
-		virtual void evaluate(Region * r);
-		virtual void init(Region * r);
+		virtual void evaluate(Region * r) override;
+		virtual void init(Region * r) override;
 
 		void calcPriority(Region * r);
 		PrioSplit calcPriority(const std::vector<Geometry::Box> & r);
@@ -141,8 +141,8 @@ class RegionSizeEvaluator: public RegionEvaluator {
 
 	protected:
 
-		virtual void evaluate(Region * r);
-		virtual void init(Region * r);
+		virtual void evaluate(Region * r) override;
+		virtual void init(Region * r) override;
 
 	private:
 
@@ -160,8 +160,8 @@ class PolygonCountEvaluator: public RegionEvaluator {
 
 	protected:
 
-		virtual void evaluate(Region * r);
-		virtual void init(Region * r);
+		virtual void evaluate(Region * r) override;
+		virtual void init(Region * r) override;
 
 	private:
 

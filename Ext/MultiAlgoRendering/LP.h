@@ -51,7 +51,7 @@ public:
 
 	std::vector<int> getResult();
 
-	virtual void run();
+	virtual void run() override;
 
 private:
 

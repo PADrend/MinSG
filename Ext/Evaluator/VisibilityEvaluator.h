@@ -42,9 +42,9 @@ class VisibilityEvaluator : public Evaluator {
 		void setCountPolygons(bool b)	{	countPolygons=b;	}
 
 	// ---|> Evaluator
-		virtual void beginMeasure();
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r);
-		virtual void endMeasure(FrameContext & context);
+		virtual void beginMeasure() override;
+		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		virtual void endMeasure(FrameContext & context) override;
 
 	private:
 		std::map<uintptr_t,Node *> objectsInVF;

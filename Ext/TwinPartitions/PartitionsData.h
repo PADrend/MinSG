@@ -64,8 +64,8 @@ struct PartitionsData {
 			//! Indices into the @a depthMeshes and @a textureFiles array. The indexed textured depth meshes represent the surroundings of the cell.
 			std::vector<uint32_t> surroundingIds;
 
-			cell_t(const Geometry::Box & boundingBox, uint32_t visibleSet, std::vector<uint32_t> surroundings) :
-				bounds(boundingBox), visibleSetId(visibleSet), surroundingIds(surroundings) {
+			cell_t(Geometry::Box  boundingBox, uint32_t visibleSet, std::vector<uint32_t> surroundings) :
+				bounds(std::move(boundingBox)), visibleSetId(visibleSet), surroundingIds(std::move(surroundings)) {
 			}
 		};
 

@@ -53,7 +53,7 @@ public:
 
 	Session* getSession() { return session.get(); }
 protected:
-	virtual void handleMessage(Message* msg);
+	virtual void handleMessage(Message* msg) override;
 private:
 	class OutStreamer;
 

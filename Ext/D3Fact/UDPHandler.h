@@ -46,7 +46,7 @@ private:
 	bool isMsgAvailable();
 	Message* getNextMsg();
 
-	void run();
+	void run() override;
 };
 
 }

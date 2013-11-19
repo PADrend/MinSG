@@ -39,26 +39,26 @@ public:
 	StreamFSProvider();
 	virtual ~StreamFSProvider();
 
-	virtual bool exists(const Util::FileName & filename);
-	virtual bool isFile(const Util::FileName & filename);
-	virtual bool isDir(const Util::FileName & filename);
-	virtual size_t fileSize(const Util::FileName & filename);
+	virtual bool exists(const Util::FileName & filename) override;
+	virtual bool isFile(const Util::FileName & filename) override;
+	virtual bool isDir(const Util::FileName & filename) override;
+	virtual size_t fileSize(const Util::FileName & filename) override;
 
-	virtual status_t makeDir(const Util::FileName & filename);
+	virtual status_t makeDir(const Util::FileName & filename) override;
 
-	virtual status_t remove(const Util::FileName & filename);
+	virtual status_t remove(const Util::FileName & filename) override;
 
-	virtual status_t dir(const Util::FileName & path, std::list<Util::FileName> & result, uint8_t flags);
+	virtual status_t dir(const Util::FileName & path, std::list<Util::FileName> & result, uint8_t flags) override;
 
-	virtual status_t readFile(const Util::FileName & filename, std::vector<uint8_t> & data);
-	virtual status_t writeFile(const Util::FileName & filename, const std::vector<uint8_t> & data, bool overwrite);
+	virtual status_t readFile(const Util::FileName & filename, std::vector<uint8_t> & data) override;
+	virtual status_t writeFile(const Util::FileName & filename, const std::vector<uint8_t> & data, bool overwrite) override;
 
-	virtual std::unique_ptr<std::iostream> open(const Util::FileName & filename);
-	virtual std::unique_ptr<std::istream> openForReading(const Util::FileName & filename);
-	virtual std::unique_ptr<std::ostream> openForWriting(const Util::FileName & filename);
-	virtual std::unique_ptr<std::ostream> openForAppending(const Util::FileName & filename);
+	virtual std::unique_ptr<std::iostream> open(const Util::FileName & filename) override;
+	virtual std::unique_ptr<std::istream> openForReading(const Util::FileName & filename) override;
+	virtual std::unique_ptr<std::ostream> openForWriting(const Util::FileName & filename) override;
+	virtual std::unique_ptr<std::ostream> openForAppending(const Util::FileName & filename) override;
 
-	virtual void flush();
+	virtual void flush() override;
 private:
 	StreamFSProvider(const StreamFSProvider &) = delete;
 	StreamFSProvider(StreamFSProvider &&) = delete;

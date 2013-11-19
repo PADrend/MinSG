@@ -104,8 +104,8 @@ public:
 		STREAM_WAITING, STREAM_READY, STREAM_FAILED
 	};
 
-	explicit ResourceHandle(const std::string & uri_, int32_t clientId_, int32_t sessionId_, int32_t streamId_)
-		: uri(uri_), clientId(clientId_), sessionId(sessionId_),
+	explicit ResourceHandle(std::string  uri_, int32_t clientId_, int32_t sessionId_, int32_t streamId_)
+		: uri(std::move(uri_)), clientId(clientId_), sessionId(sessionId_),
 		  streamId(streamId_), tempStore(), dataWritten(false), resolved(UNRESOLVED), streamStatus(STREAM_READY),
 		  waitResolve(Util::Concurrency::createSemaphore()), waitStream(Util::Concurrency::createSemaphore()),
 		  type(0), resExists(false), mimetype(""), size(-1), timestamp(0), readable(false), writable(false), children(),

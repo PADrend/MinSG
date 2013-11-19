@@ -21,8 +21,8 @@
 namespace MinSG {
 using Geometry::Rect;
 
-BillboardNode::BillboardNode(const Geometry::Rect & _rect, bool _rotateUpAxis, bool _rotateRightAxis) :
-	GeometryNode(), rotateUpAxis(_rotateUpAxis), rotateRightAxis(_rotateRightAxis), rect(_rect) {
+BillboardNode::BillboardNode(Geometry::Rect  _rect, bool _rotateUpAxis, bool _rotateRightAxis) :
+	GeometryNode(), rotateUpAxis(_rotateUpAxis), rotateRightAxis(_rotateRightAxis), rect(std::move(_rect)) {
 }
 
 BillboardNode::~BillboardNode() = default;

@@ -61,8 +61,8 @@ struct AssignSpawnNodeAction {
 	ParticleEmitter * emitter;
 	std::string spawnNodeId;
 
-	AssignSpawnNodeAction(ParticleEmitter * _emitter,const std::string & _spawnNodeId) :
-		emitter(_emitter),spawnNodeId(_spawnNodeId) {}
+	AssignSpawnNodeAction(ParticleEmitter * _emitter,std::string  _spawnNodeId) :
+		emitter(_emitter),spawnNodeId(std::move(_spawnNodeId)) {}
 
 	void operator()(ImportContext & ctxt) {
 		Node * spawnNode=ctxt.sceneManager.getRegisteredNode(spawnNodeId);
@@ -214,8 +214,8 @@ struct AssignPathAction {
 	FollowPathBehaviour * behaviour;
 	std::string pathId;
 
-	AssignPathAction(FollowPathBehaviour * _behaviour,const std::string & _pathId) :
-		behaviour(_behaviour),pathId(_pathId) {}
+	AssignPathAction(FollowPathBehaviour * _behaviour,std::string  _pathId) :
+		behaviour(_behaviour),pathId(std::move(_pathId)) {}
 
 	void operator()(ImportContext & ctxt) {
 		std::cout << "Info: Assigning PathNode to FollowPathBehaviour: "<<pathId<<" ... ";

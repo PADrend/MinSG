@@ -47,7 +47,7 @@ void traverseTopDown<Node>(Node * root, std::function<NodeVisitor::status (Node 
 	if(root) {
 		struct Visitor : public NodeVisitor {
 			std::function<NodeVisitor::status (Node *)> m_func;
-			Visitor(std::function<NodeVisitor::status (Node *)> p_func) : m_func(p_func) {}
+			Visitor(std::function<NodeVisitor::status (Node *)> p_func) : m_func(std::move(p_func)) {}
 			virtual ~Visitor() = default;
 		
 			NodeVisitor::status enter(Node * node) override {	// Use enter() to perform a pre-order tree walk

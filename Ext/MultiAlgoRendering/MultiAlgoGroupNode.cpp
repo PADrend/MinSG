@@ -40,8 +40,8 @@
 namespace MinSG {
 	
 	class SkipRenderer : public State {
-		virtual State* clone()const{return new SkipRenderer();}
-		virtual stateResult_t doEnableState(FrameContext & /*context*/, Node * /*node*/, const RenderParam & /*rp*/){return State::STATE_SKIP_RENDERING;}
+		virtual State* clone()const override{return new SkipRenderer();}
+		virtual stateResult_t doEnableState(FrameContext & /*context*/, Node * /*node*/, const RenderParam & /*rp*/) override{return State::STATE_SKIP_RENDERING;}
 	};
 	
 namespace MAR {

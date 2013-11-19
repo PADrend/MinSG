@@ -73,7 +73,7 @@ namespace MinSG {
         /****************************************************************
          *                  ---|> GroupNode
          ****************************************************************/
-        virtual void doAddChild(Util::Reference<Node> child);
+        virtual void doAddChild(Util::Reference<Node> child) override;
 
 //        /****************************************************************
 //         *                  ---|> Node
@@ -83,7 +83,7 @@ namespace MinSG {
 //        virtual NodeVisitor::status traverse(NodeVisitor & visitor);
         
         // do not visit children, in an armature structure there are not states and geometry!
-        void doDisplay(FrameContext & /*context*/,const RenderParam & /*rp*/) { }
+        void doDisplay(FrameContext & /*context*/,const RenderParam & /*rp*/) override { }
 	};
 }
 

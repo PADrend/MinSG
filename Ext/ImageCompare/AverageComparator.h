@@ -28,9 +28,9 @@ public:
 	virtual ~AverageComparator();
 
 	virtual bool doCompare(Rendering::RenderingContext & context, Rendering::Texture * inA, Rendering::Texture * inB, double & quality,
-			Rendering::Texture * out);
+			Rendering::Texture * out) override;
 
-	virtual bool init(Rendering::RenderingContext & context);
+	virtual bool init(Rendering::RenderingContext & context) override;
 
 private:
 

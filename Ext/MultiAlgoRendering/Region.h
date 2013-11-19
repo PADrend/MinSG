@@ -47,9 +47,9 @@ class Region : public Util::ReferenceCounter<Region>, public Util::AttributeProv
 
 	public:
 
-		Region(const Geometry::Box & _bounds, Region * _parent) :
+		Region(Geometry::Box  _bounds, Region * _parent) :
 			ReferenceCounter_t(), Util::AttributeProvider(),
-			color(Util::ColorLibrary::WHITE), bounds(_bounds), parent(_parent) {
+			color(Util::ColorLibrary::WHITE), bounds(std::move(_bounds)), parent(_parent) {
 			children.shrink_to_fit();
 		}
 

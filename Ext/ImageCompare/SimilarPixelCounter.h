@@ -51,7 +51,7 @@ class SimilarPixelCounter : public AbstractImageComparator {
 							   Rendering::Texture * firstTex,
 							 Rendering::Texture * secondTex,
 							 double & value,
-							 Rendering::Texture * resultTex);
+							 Rendering::Texture * resultTex) override;
 };
 
 }

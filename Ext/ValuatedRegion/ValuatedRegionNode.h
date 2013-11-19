@@ -31,7 +31,7 @@ class ValuatedRegionNode : public ListNode {
 
 	//! @name Main
 	//	@{
-		ValuatedRegionNode(const Geometry::Box & _region, const Geometry::Vec3i & resolution);
+		ValuatedRegionNode(Geometry::Box  _region, Geometry::Vec3i  resolution);
 		ValuatedRegionNode(const ValuatedRegionNode & cn);
 		virtual ~ValuatedRegionNode();
 

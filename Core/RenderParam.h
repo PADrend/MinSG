@@ -40,7 +40,7 @@ class RenderParam {
 	public:
 		RenderParam();
 		RenderParam(renderFlag_t _flags);
-		RenderParam(renderFlag_t _flags, const Util::StringIdentifier & _channel);
+		RenderParam(renderFlag_t _flags, Util::StringIdentifier  _channel);
 
 		renderFlag_t getFlags() const {
 			return flags;

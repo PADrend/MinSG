@@ -49,7 +49,7 @@ struct NodeDistanceCalculator{
 template<typename ElementType_t,typename distanceCalulator,template<typename> class Comparator_t>
 struct _GenericDistancePriorityQueue {
 	const Geometry::Vec3 referencePos;
-	_GenericDistancePriorityQueue(const Geometry::Vec3 & _referencePos) : referencePos(_referencePos){}
+	_GenericDistancePriorityQueue(Geometry::Vec3  _referencePos) : referencePos(std::move(_referencePos)){}
 
 	bool empty()const					{	return data.empty();	}
 	void pop()							{	data.erase(data.begin());	}
@@ -74,8 +74,8 @@ class _DistanceCompare {
 	public:
 
 		//! (ctor)
-		_DistanceCompare(const Geometry::Vec3 & _referencePosition) :
-			referencePosition(_referencePosition) {
+		_DistanceCompare(Geometry::Vec3  _referencePosition) :
+			referencePosition(std::move(_referencePosition)) {
 		}
 
 		//! (ctor)

@@ -153,7 +153,7 @@ class TriangleTree {
 		 * @param childBound Axis-aligned bounding box for the child.
 		 * @param parent Parent node which is used to copy the parameters from.
 		 */
-		explicit TriangleTree(const Geometry::Box & childBound, const TriangleTree & parent);
+		explicit TriangleTree(Geometry::Box  childBound, const TriangleTree & parent);
 
 		/**
 		 * Set the bounding box of this node.

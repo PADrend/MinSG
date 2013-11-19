@@ -30,9 +30,9 @@ class OverdrawFactorEvaluator : public Evaluator {
 		OverdrawFactorEvaluator(DirectionMode mode);
 		virtual ~OverdrawFactorEvaluator();
 
-		virtual void beginMeasure();
-		virtual void measure(FrameContext & frameContext, Node & node, const Geometry::Rect & rect);
-		virtual void endMeasure(FrameContext &);
+		virtual void beginMeasure() override;
+		virtual void measure(FrameContext & frameContext, Node & node, const Geometry::Rect & rect) override;
+		virtual void endMeasure(FrameContext &) override;
 
 		/**
 		 * Return the quantile that is used to calculate a single value from

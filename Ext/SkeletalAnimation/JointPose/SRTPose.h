@@ -31,7 +31,7 @@ namespace MinSG {
         
     protected:
         
-        void init(std::deque<double> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes, double _startTime);
+        void init(std::deque<double> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes, double _startTime) override;
         
     public:
         SRTPose(AbstractJoint *joint);
@@ -43,25 +43,25 @@ namespace MinSG {
         /****************************************************************
          *              ---|> AbstractPose
          ****************************************************************/
-		void setValues(std::deque<double> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes);
-        void setValues(std::deque<Geometry::Matrix4x4> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes);
+		void setValues(std::deque<double> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes) override;
+        void setValues(std::deque<Geometry::Matrix4x4> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes) override;
         
         void addValue(Geometry::Matrix4x4 _value, double _time, uint32_t _interpolationType);
-        void addValue(Geometry::Matrix4x4 _value, double _time, uint32_t _interpolationType, uint32_t _index);
+        void addValue(Geometry::Matrix4x4 _value, double _time, uint32_t _interpolationType, uint32_t _index) override;
         
-        void removeValue(uint32_t _index);
+        void removeValue(uint32_t _index) override;
     
-        void update(double timeSec);
-        void restart();
+        void update(double timeSec) override;
+        void restart() override;
         
-        SRTPose* split(uint32_t start, uint32_t end);
+        SRTPose* split(uint32_t start, uint32_t end) override;
         
-        void bindToJoint(AbstractJoint *_node);
+        void bindToJoint(AbstractJoint *_node) override;
         
         /****************************************************************
          *              ---|> State
          ****************************************************************/
-        SRTPose *clone()const;
+        SRTPose *clone()const override;
     };
 }
 

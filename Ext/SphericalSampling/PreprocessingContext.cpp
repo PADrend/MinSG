@@ -74,14 +74,14 @@ struct PreprocessingContext::Implementation {
 
 	Implementation(SceneManagement::SceneManager & p_sceneManager,
 				  FrameContext & p_frameContext,
-				  const std::vector<Geometry::Vec3f> & p_positions,
+				  std::vector<Geometry::Vec3f>  p_positions,
 				  uint32_t p_resolution,
 				  bool p_useExistingVisibilityResults,
 				  bool p_computeTightInnerBoundingSpheres) :
 		unfinishedNodes(),
 		sceneManager(p_sceneManager),
 		frameContext(p_frameContext),
-		positions(p_positions),
+		positions(std::move(p_positions)),
 		resolution(p_resolution),
 		useExistingVisibilityResults(p_useExistingVisibilityResults),
 		computeTightInnerBoundingSpheres(p_computeTightInnerBoundingSpheres),

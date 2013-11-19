@@ -29,11 +29,11 @@ class SurfelRenderer : public NodeRendererState {
 		SurfelRenderer(Util::StringIdentifier channel = FrameContext::DEFAULT_CHANNEL)
 			: NodeRendererState(channel), surfelCountFac(8), surfelSizeFac(1), maxSurfelSize(10), forceFlag(false){}
 
-		SurfelRenderer(const SurfelRenderer & other): NodeRendererState(other) {};
+		SurfelRenderer(SurfelRenderer  other): NodeRendererState(std::move(other)) {};
 
 		virtual ~SurfelRenderer() {}
 
-		virtual NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp);
+		virtual NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 		float getSurfelCountFactor() const{
 			return surfelCountFac;

@@ -40,9 +40,9 @@ class BoxQualityEvaluator : public Evaluator {
 		virtual ~BoxQualityEvaluator();
 
 	// ---|> Evaluator
-		virtual void beginMeasure();
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r);
-		virtual void endMeasure(FrameContext & context);
+		virtual void beginMeasure() override;
+		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		virtual void endMeasure(FrameContext & context) override;
 
 		// constants determining position of the corresponding results in GenericAttrubuteList values.
 		static const uint8_t OBJECTS_CLASSIFIED_AS_VISIBLE = 0; //equivalent to visible boxes

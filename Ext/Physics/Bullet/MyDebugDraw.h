@@ -35,7 +35,7 @@ class MyDebugDraw : public btIDebugDraw{
     public:
 		MyDebugDraw(Rendering::RenderingContext& ctxt) : renderingContext(ctxt){}
 
-		void setDebugMode(int _debugMode){
+		void setDebugMode(int _debugMode) override{
 			debugMode = _debugMode;
 		}
 

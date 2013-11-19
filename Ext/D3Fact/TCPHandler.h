@@ -28,7 +28,7 @@ private:
 	ClientUnit* client;
 	bool connected;
 
-	void run();
+	void run() override;
 };
 
 }

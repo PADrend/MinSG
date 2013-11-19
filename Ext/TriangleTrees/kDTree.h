@@ -70,7 +70,7 @@ class kDTree : public TriangleTree {
 		 * @return @c true if the node is a leaf and @c false if it is
 		 * an inner node.
 		 */
-		bool isLeaf() const {
+		bool isLeaf() const override {
 			return (firstChild.get() == nullptr);
 		}
 

@@ -21,8 +21,8 @@ RenderParam::RenderParam(uint32_t _flags) :
 	flags(_flags), channel(FrameContext::DEFAULT_CHANNEL) {
 }
 
-RenderParam::RenderParam(uint32_t _flags, const Util::StringIdentifier & _channel) :
-	flags(_flags), channel(_channel) {
+RenderParam::RenderParam(uint32_t _flags, Util::StringIdentifier  _channel) :
+	flags(_flags), channel(std::move(_channel)) {
 }
 
 }

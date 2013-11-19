@@ -13,6 +13,7 @@
 #define MINSG_AGVS_MUTATIONCANDIDATE_H
 
 #include <cstdint>
+#include <utility>
 
 namespace Geometry {
 template<typename T_> class _Vec3;
@@ -47,12 +48,12 @@ class MutationCandidate {
 		//! Number of mutations generated from this candidate
 		uint32_t mutationCount;
 
-		MutationCandidate(const vec3_t & p_origin,
+		MutationCandidate(vec3_t  p_origin,
 						  Node * p_originObject,
-						  const vec3_t & p_termination, 
+						  vec3_t  p_termination, 
 						  GeometryNode * p_terminationObject) :
-			origin(p_origin),
-			termination(p_termination),
+			origin(std::move(p_origin)),
+			termination(std::move(p_termination)),
 			originObject(p_originObject),
 			terminationObject(p_terminationObject),
 			mutationCount(0) {

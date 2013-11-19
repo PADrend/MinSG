@@ -31,7 +31,7 @@ namespace MinSG {
     AbstractJoint::AbstractJoint() : ListNode(), bindMatrix(Geometry::Matrix4x4()), id(0), name(""),
                                     invBindMatrix(Geometry::Matrix4x4()) { }
     
-    AbstractJoint::AbstractJoint(uint32_t _id, std::string _name) : ListNode(), bindMatrix(Geometry::Matrix4x4()), id(_id), name(_name),
+    AbstractJoint::AbstractJoint(uint32_t _id, std::string _name) : ListNode(), bindMatrix(Geometry::Matrix4x4()), id(_id), name(std::move(_name)),
                                     invBindMatrix(Geometry::Matrix4x4()) { }
     
     AbstractJoint::AbstractJoint(const AbstractJoint &source) : ListNode(source), bindMatrix(*source.getBindMatrix()), id(source.getId()),

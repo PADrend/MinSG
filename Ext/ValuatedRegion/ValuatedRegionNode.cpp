@@ -33,9 +33,9 @@ namespace MinSG {
 using namespace VisibilitySubdivision;
 #endif
 
-ValuatedRegionNode::ValuatedRegionNode(const Geometry::Box & _region, const Geometry::Vec3i & _resolution):
+ValuatedRegionNode::ValuatedRegionNode(Geometry::Box  _region, Geometry::Vec3i  _resolution):
 		ListNode(),
-		region(_region), value(), resolution(_resolution), additionalData() {
+		region(std::move(_region)), value(), resolution(std::move(_resolution)), additionalData() {
 	setClosed(true);
 	//ctor
 }

@@ -42,9 +42,9 @@ class ColorVisibilityEvaluator : public Evaluator {
 		virtual ~ColorVisibilityEvaluator();
 
 		// ---|> Evaluator
-		virtual void beginMeasure();
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & rect);
-		virtual void endMeasure(FrameContext & context);
+		virtual void beginMeasure() override;
+		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & rect) override;
+		virtual void endMeasure(FrameContext & context) override;
 
 	private:
 		//! Stores the number of triangles which were detected visible.

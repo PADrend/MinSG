@@ -35,7 +35,7 @@ namespace MinSG {
 	
 	struct CHCppRenderer::CHCppContext {
 	public:
-		CHCppContext(Util::StringIdentifier _nodeInfoId, uint32_t _frameNumber = 1) : nodeInfoId(_nodeInfoId), frameNumber(_frameNumber) {}
+		CHCppContext(Util::StringIdentifier _nodeInfoId, uint32_t _frameNumber = 1) : nodeInfoId(std::move(_nodeInfoId)), frameNumber(_frameNumber) {}
         std::deque<Node*> invisibleQueue;
         std::queue<Node*> visibleQueue;
         std::queue<queue_item_t> queryQueue;

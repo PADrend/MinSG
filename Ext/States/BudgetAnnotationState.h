@@ -96,7 +96,7 @@ class BudgetAnnotationState : public NodeRendererState {
 
 		virtual ~BudgetAnnotationState();
 
-		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp);
+		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 		BudgetAnnotationState * clone() const override;
 

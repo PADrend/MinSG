@@ -104,7 +104,7 @@ namespace MinSG
         /****************************************************************
          *                      ---|> Node
          ****************************************************************/
-		virtual void doAddChild(Util::Reference<Node> child);
+		virtual void doAddChild(Util::Reference<Node> child) override;
 
         /****************************************************************
          *  Debug caller for skeleton. Calls debugMode for all joints.

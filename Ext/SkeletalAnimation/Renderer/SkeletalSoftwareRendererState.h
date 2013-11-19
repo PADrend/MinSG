@@ -44,12 +44,12 @@ namespace MinSG {
         virtual ~SkeletalSoftwareRendererState() {}
         
         /// ---|> [SkeletalAbstractRendererState]
-        virtual void validateMatriceOrder(Node *node);
+        virtual void validateMatriceOrder(Node *node) override;
         
         /// ---|> [State]
         stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
-		SkeletalSoftwareRendererState *clone()const;
+		SkeletalSoftwareRendererState *clone()const override;
     };
 }
 

@@ -45,16 +45,16 @@ class GeometryNode;
 				virtual ~TrianglesEvaluator();
 
 				// ---|> Evaluator
-				virtual void beginMeasure();
-				virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r);
-				virtual void endMeasure(FrameContext & context);
+				virtual void beginMeasure() override;
+				virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+				virtual void endMeasure(FrameContext & context) override;
 
 				/**
 				 * Return the number of visible triangles.
 				 *
 				 * @return Value of @a numTrianglesVisible
 				 */
-				virtual const Util::GenericAttributeList * getResults();
+				virtual const Util::GenericAttributeList * getResults() override;
 
 			private:
 				//! Stores the number of triangles rendered for GeometryNodes.

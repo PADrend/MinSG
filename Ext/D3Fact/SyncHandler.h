@@ -25,12 +25,12 @@ public:
 	SyncHandler(Session* session_, float syncPeriod_=1.0);
 	virtual ~SyncHandler();
 
-	virtual SyncHandler* clone() const;
+	virtual SyncHandler* clone() const override;
 
 	double getSyncTime();
 	float getPing() const { return ping; }
 protected:
-	virtual void handleMessage(Message* msg);
+	virtual void handleMessage(Message* msg) override;
 private:
 	void sync();
 	Util::Reference<Session> session;

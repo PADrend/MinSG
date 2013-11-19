@@ -49,7 +49,7 @@ namespace MinSG {
 		ArmatureNode();
 		virtual ~ArmatureNode() {}
 
-		void generateJointNodeMap(std::unordered_map<std::string, AbstractJoint *> &jMap);
+		void generateJointNodeMap(std::unordered_map<std::string, AbstractJoint *> &jMap) override;
         void catchJointNodes(std::deque<JointNode *> *nodes);
 
 	private:

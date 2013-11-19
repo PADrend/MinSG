@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <Util/Timer.h>
+#include <utility>
 
 namespace Rendering {
 class Mesh;
@@ -151,8 +152,8 @@ class Statistics {
 			std::string unit;
 			double value;
 
-			Counter(const std::string & _description, const std::string & _unit) :
-				description(_description), unit(_unit), value(0.0) {
+			Counter(std::string  _description, std::string  _unit) :
+				description(std::move(_description)), unit(std::move(_unit)), value(0.0) {
 			}
 		};
 		std::vector<Counter> counters;

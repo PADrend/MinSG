@@ -35,9 +35,9 @@ class AreaEvaluator : public Evaluator {
 		virtual ~AreaEvaluator();
 
 	// ---|> Evaluator
-		virtual void beginMeasure();
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r);
-		virtual void endMeasure(FrameContext & context);
+		virtual void beginMeasure() override;
+		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		virtual void endMeasure(FrameContext & context) override;
 
 	private:
 		int whitePixel;

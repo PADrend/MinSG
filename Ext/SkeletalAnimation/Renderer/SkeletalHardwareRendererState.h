@@ -91,10 +91,10 @@ namespace MinSG
         uint32_t getUsingShaderType() const { return shaderType; }
         
         /// ---|> [SkeletalAbstractRendererState]
-        virtual void validateMatriceOrder(Node *node);
+        virtual void validateMatriceOrder(Node *node) override;
         
         /// ---|> [State]
-		SkeletalHardwareRendererState *clone()const;
+		SkeletalHardwareRendererState *clone()const override;
 	};
 
 }

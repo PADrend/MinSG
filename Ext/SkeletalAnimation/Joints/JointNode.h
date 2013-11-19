@@ -38,7 +38,7 @@ namespace MinSG {
 		JointNode(uint32_t _id, std::string _name);
         
 
-		void generateJointNodeMap(std::unordered_map<std::string, AbstractJoint *> &jMap);
+		void generateJointNodeMap(std::unordered_map<std::string, AbstractJoint *> &jMap) override;
         
         void catchJointNodes(std::deque<JointNode *> *nodes);
         

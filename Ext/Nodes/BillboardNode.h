@@ -33,7 +33,7 @@ class BillboardNode : public GeometryNode {
 			@param rotateRightAxis Orient the right-axis automatically orthogonal to the camera
 								E.g. for multiscreen support
 		*/
-		BillboardNode(const Geometry::Rect & _rect,bool rotateUpAxis,bool rotateRightAxis=false);
+		BillboardNode(Geometry::Rect  _rect,bool rotateUpAxis,bool rotateRightAxis=false);
 		virtual ~BillboardNode();
 
 		const Geometry::Rect & getRect()const 	{	return rect;	}

@@ -41,8 +41,8 @@ class ImportContext : public Util::AttributeProvider {
 		std::deque<FinalizeAction> finalizeActions;
 
 		/*! (ctor) */
-		ImportContext(SceneManager & _m,GroupNode * _rootNode,uint32_t _f,const Util::FileName & path) :
-			Util::AttributeProvider(), sceneManager(_m),rootNode(_rootNode),importOptions(_f),fileName(path),finalizeActions(){}
+		ImportContext(SceneManager & _m,GroupNode * _rootNode,uint32_t _f,Util::FileName  path) :
+			Util::AttributeProvider(), sceneManager(_m),rootNode(_rootNode),importOptions(_f),fileName(std::move(path)),finalizeActions(){}
 
 		void addFinalizingAction(const FinalizeAction & action) {
 			finalizeActions.push_back(action);

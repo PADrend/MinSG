@@ -46,7 +46,7 @@ class OccRenderer : public State {
 				NodeInfo():visibleFrameNumber(0),processedFrameNumber(0)/*,actualSubtreeSize(0)*/,actualSubtreeComplexity(0),actualFrustumStatus(0){}
 				virtual ~NodeInfo(){}
 				// ---|> GenericAttribute
-				NodeInfo * clone()const{
+				NodeInfo * clone()const override{
 					NodeInfo * i=new  NodeInfo();
 					i->processedFrameNumber=processedFrameNumber;
 					i->visibleFrameNumber=visibleFrameNumber;

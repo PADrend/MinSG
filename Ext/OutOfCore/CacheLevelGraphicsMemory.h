@@ -44,7 +44,7 @@ class CacheLevelGraphicsMemory : public CacheLevel {
 		uint64_t getCacheObjectSize(CacheObject * object) const override;
 
 		//! Fetch cache objects from below and upload the to GPU memory.
-		void doWork();
+		void doWork() override;
 
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
 		//! Check all cache objects stored in this cache level for inconsistencies.

@@ -46,7 +46,7 @@ public:
 
 class NiceRandomPositionGenerator:public SamplePositionGenerator{
 public:
-	virtual Geometry::Vec3f generateSamplePosition(const SampleContext * context, Geometry::Box bounds);
+	virtual Geometry::Vec3f generateSamplePosition(const SampleContext * context, Geometry::Box bounds) override;
 	virtual ~NiceRandomPositionGenerator(){}
 };
 

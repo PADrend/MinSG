@@ -24,20 +24,20 @@ namespace MinSG {
  * @brief Single particle in a particle system
  */
 struct Particle {
-	Particle(const Geometry::Vec3f & _position,
-			 const Geometry::Vec3f & _direction,
-			 const Geometry::Matrix3x3f & _rotation,
-			 const Util::Color4ub & _color,
+	Particle(Geometry::Vec3f  _position,
+			 Geometry::Vec3f  _direction,
+			 Geometry::Matrix3x3f  _rotation,
+			 Util::Color4ub  _color,
 			 float _timeLeft,
 			 float _lifeTime,
-			 const Geometry::Vec2f & _size) :
-		position(_position),
-		direction(_direction),
-		rotation(_rotation),
-		color(_color),
+			 Geometry::Vec2f  _size) :
+		position(std::move(_position)),
+		direction(std::move(_direction)),
+		rotation(std::move(_rotation)),
+		color(std::move(_color)),
 		timeLeft(_timeLeft),
 		lifeTime(_lifeTime),
-		size(_size) {
+		size(std::move(_size)) {
 	}
 	Geometry::Vec3f position; //!< current position of particle
 	Geometry::Vec3f direction; //!< direction of movement and movement per time unit

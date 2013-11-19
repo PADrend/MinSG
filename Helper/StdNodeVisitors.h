@@ -182,8 +182,8 @@ std::deque<_T *> collectNodesInFrustum(Node * root, const Geometry::Frustum & fr
 			bool includeIntersectingNodes;
 			uint32_t insideFrustum;
 
-			Visitor(const Geometry::Frustum & _frustum, std::deque<_T *> & _nodes, bool _includeIntersectingNodes) :
-				frustum(_frustum), nodes(_nodes),includeIntersectingNodes(_includeIntersectingNodes), insideFrustum(0) {}
+			Visitor(Geometry::Frustum  _frustum, std::deque<_T *> & _nodes, bool _includeIntersectingNodes) :
+				frustum(std::move(_frustum)), nodes(_nodes),includeIntersectingNodes(_includeIntersectingNodes), insideFrustum(0) {}
 			virtual ~Visitor() {}
 
 			NodeVisitor::status enter(Node * node) override {

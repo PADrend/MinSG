@@ -28,15 +28,15 @@ public:
 
 	void close();
 private:
-	int_type underflow();
-	int_type uflow();
-	int_type pbackfail(int_type c);
-	std::streamsize showmanyc();
-	std::streamsize xsgetn( char_type* s, std::streamsize count );
+	int_type underflow() override;
+	int_type uflow() override;
+	int_type pbackfail(int_type c) override;
+	std::streamsize showmanyc() override;
+	std::streamsize xsgetn( char_type* s, std::streamsize count ) override;
 
-	int_type overflow(int_type c);
-	int sync();
-	std::streamsize xsputn( const char_type* s, std::streamsize count );
+	int_type overflow(int_type c) override;
+	int sync() override;
+	std::streamsize xsputn( const char_type* s, std::streamsize count ) override;
 
 	class pimpl;
 	pimpl* impl;

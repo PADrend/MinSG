@@ -53,7 +53,7 @@ protected:
 		TexRef(const Geometry::Vec2i & vec) :
 				ReferenceCounter_t(), autoMode(true), tex(createTexture(vec)) {
 		}
-		TexRef(Util::Reference<Rendering::Texture> _tex) : ReferenceCounter_t(), autoMode(false), tex(_tex){
+		TexRef(Util::Reference<Rendering::Texture> _tex) : ReferenceCounter_t(), autoMode(false), tex(std::move(_tex)){
 		}
 		~TexRef() {
 			if(autoMode)
@@ -82,7 +82,7 @@ public:
 	virtual ~AbstractOnGpuComparator();
 
 	virtual bool compare(Rendering::RenderingContext & context, Rendering::Texture * firstTex, Rendering::Texture * secondTex, double & value,
-			Rendering::Texture * resultTex);
+			Rendering::Texture * resultTex) override;
 
 	virtual bool doCompare(Rendering::RenderingContext & context, Rendering::Texture * firstTex, Rendering::Texture * secondTex, double & value,
 			Rendering::Texture * resultTex) = 0;

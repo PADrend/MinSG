@@ -252,7 +252,7 @@ Node * Loader::importPartitions(const Util::FileName & fileName) {
 
 	struct TwinPartitionsNode : public Node {
 		Geometry::Box bb;
-		TwinPartitionsNode(const Geometry::Box & bounds) : Node(), bb(bounds) {
+		TwinPartitionsNode(Geometry::Box  bounds) : Node(), bb(std::move(bounds)) {
 		}
 		Node * doClone() const override {
 			return nullptr;

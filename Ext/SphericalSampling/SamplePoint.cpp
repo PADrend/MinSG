@@ -21,7 +21,7 @@ struct SamplePoint::Implementation {
 	Geometry::Vec3f position;
 	VisibilitySubdivision::VisibilityVector value;
 
-	Implementation(const Geometry::Vec3f & pos) : position(pos), value() {
+	Implementation(Geometry::Vec3f  pos) : position(std::move(pos)), value() {
 	}
 };
 

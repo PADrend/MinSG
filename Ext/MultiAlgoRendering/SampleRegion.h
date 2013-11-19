@@ -68,7 +68,7 @@ public:
 	class SortB2F {
 		Geometry::Vec3f pos;
 	public:
-		SortB2F(const Geometry::Vec3f & _pos) : pos(_pos) {}
+		SortB2F(Geometry::Vec3f  _pos) : pos(std::move(_pos)) {}
 		bool operator() (const ref_t & a, const ref_t & b) const {
 			return b->getBounds().getDistanceSquared(pos) > a->getBounds().getDistanceSquared(pos);
 		}
@@ -83,11 +83,11 @@ public:
 		void write(std::ostream & out)const;
 	//@}
 		
-	SampleRegion(const SampleStorage * storage, const Geometry::Box & _bounds, int _depth = 0) :
+	SampleRegion(const SampleStorage * storage, Geometry::Box  _bounds, int _depth = 0) :
 		Util::ReferenceCounter<SampleRegion>(),
 		sampleCount(0),
 		sampleQuality(),
-		bounds(_bounds),
+		bounds(std::move(_bounds)),
 		depth(_depth),
 		temporaryPosition(std::numeric_limits<float>::max())
 	{

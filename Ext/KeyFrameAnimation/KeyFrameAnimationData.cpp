@@ -15,9 +15,9 @@
 
 namespace MinSG {
 
-KeyFrameAnimationData::KeyFrameAnimationData(const Rendering::MeshIndexData & _indexData, const std::vector<Rendering::MeshVertexData> &  _framesData,
+KeyFrameAnimationData::KeyFrameAnimationData(Rendering::MeshIndexData  _indexData, std::vector<Rendering::MeshVertexData>   _framesData,
 		std::map<std::string, std::vector<int> > _animationData) : 
-	indexData(_indexData), framesData(_framesData), animationData(_animationData) {
+	indexData(std::move(_indexData)), framesData(std::move(_framesData)), animationData(std::move(_animationData)) {
 }
 
 KeyFrameAnimationData * KeyFrameAnimationData::clone() const {

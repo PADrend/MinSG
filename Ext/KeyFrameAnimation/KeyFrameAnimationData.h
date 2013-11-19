@@ -21,7 +21,7 @@ namespace MinSG {
 
 class KeyFrameAnimationData{
 	public:
-		KeyFrameAnimationData(const Rendering::MeshIndexData & _indexData, const std::vector<Rendering::MeshVertexData> &  _framesData,
+		KeyFrameAnimationData(Rendering::MeshIndexData  _indexData, std::vector<Rendering::MeshVertexData>   _framesData,
 				const std::map<std::string, std::vector<int> > _animationData);
 		~KeyFrameAnimationData();
 

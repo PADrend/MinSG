@@ -77,8 +77,8 @@ namespace MinSG {
          ****************************************************************/
          
         // adds an child by first multiplying the child with the offset matrix and if given by all other children (stacking)
-        virtual void doAddChild(Util::Reference<Node> _child);
-        virtual bool doRemoveChild(Util::Reference<Node> _childToRemove);
+        virtual void doAddChild(Util::Reference<Node> _child) override;
+        virtual bool doRemoveChild(Util::Reference<Node> _childToRemove) override;
         
         
 	private:
