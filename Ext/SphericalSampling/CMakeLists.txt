@@ -14,6 +14,7 @@ minsg_add_sources(
 	Renderer.cpp
 	SamplePoint.cpp
 	SamplingSphere.cpp
+	SphereVisualizationRenderer.cpp
 	Statistics.cpp
 )
 

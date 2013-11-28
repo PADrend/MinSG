@@ -16,28 +16,16 @@
 #include "../../Core/Nodes/GeometryNode.h"
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/Nodes/Node.h"
-#include "../../Core/States/BlendingState.h"
-#include "../../Core/States/CullFaceState.h"
-#include "../../Core/States/MaterialState.h"
-#include "../../Core/States/ShaderState.h"
-#include "../../Core/States/TextureState.h"
 #include "../../Core/FrameContext.h"
-#include "../../Core/NodeAttributeModifier.h"
-#include "../../Helper/DataDirectory.h"
 #include "../../Helper/DistanceSorting.h"
 #include "../../Helper/FrustumTest.h"
-#include "../../Helper/Helper.h"
 #include "../../Helper/StdNodeVisitors.h"
 #include <Geometry/Sphere.h>
 #include <Geometry/Vec3.h>
-#include <Rendering/Mesh/VertexDescription.h>
-#include <Rendering/Mesh/Mesh.h>
-#include <Rendering/MeshUtils/MeshBuilder.h>
+#include <Rendering/RenderingContext/ParameterStructs.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
-#include <Rendering/Shader/Shader.h>
 #include <Rendering/Draw.h>
 #include <Rendering/OcclusionQuery.h>
-#include <Util/IO/FileUtils.h>
 #include <Util/GenericAttribute.h>
 #include <Util/Macros.h>
 #include <Util/References.h>
@@ -90,70 +78,6 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 #ifdef MINSG_PROFILING
 		++numSpheresVisited;
 #endif /* MINSG_PROFILING */
-
-		if(rp.getFlag(SHOW_META_OBJECTS)) {
-			static const Util::StringIdentifier attributeId(NodeAttributeModifier::create( "SphericalSampling::Renderer::MetaObject", NodeAttributeModifier::PRIVATE_ATTRIBUTE)); // don't save or copy to clones or instances
-			typedef Util::ReferenceAttribute<GeometryNode> MetaObjectAttribute;
-
-			MetaObjectAttribute * attribute = dynamic_cast<MetaObjectAttribute *>(node->getAttribute(attributeId));
-			if(attribute == nullptr) {
-				Rendering::VertexDescription vertexDescription;
-				vertexDescription.appendPosition3D();
-				vertexDescription.appendNormalFloat();
-				vertexDescription.appendColorRGBFloat();
-				vertexDescription.appendTexCoord();
-				Util::Reference<Rendering::Mesh> sphereMesh = Rendering::MeshUtils::MeshBuilder::createSphere(vertexDescription, 64, 64);
-				Util::Reference<GeometryNode> sphereNode = new GeometryNode(sphereMesh);
-				sphereNode->setWorldPosition(sphere.getCenter());
-				sphereNode->setScale(sphere.getRadius());
-
-				Rendering::MaterialParameters materialParams;
-				materialParams.setAmbient(Util::Color4f(0.0f, 1.0f, 0.0f, 1.0f));
-				materialParams.setDiffuse(Util::Color4f(0.0f, 1.0f, 0.0f, 1.0f));
-				materialParams.setSpecular(Util::Color4f(1.0f, 1.0f, 1.0f, 1.0f));
-				materialParams.setShininess(32.0f);
-				sphereNode->addState(new MaterialState(materialParams));
-				//sphereNode->addState(new TextureState(createColorTexture(256, 128, samplingSphere, interpolationMethod)));
-
-				auto blendingState = new BlendingState;
-				blendingState->changeParameters().setBlendFunc(Rendering::BlendingParameters::SRC_ALPHA, Rendering::BlendingParameters::ONE_MINUS_SRC_ALPHA);
-				blendingState->setBlendDepthMask(false);
-				sphereNode->addState(blendingState);
-
-				auto cullFaceState = new CullFaceState;
-				cullFaceState->changeParameters().disable();
-				sphereNode->addState(cullFaceState);
-
-				static Util::Reference<ShaderState> sphereShader;
-				if(sphereShader.isNull()) {
-					sphereShader = new ShaderState;
-					std::deque<std::string> vsFiles;
-					vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/universal.vs");
-					vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/sgHelpers.sfn");
-					vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/shading_phong.sfn");
-					vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/texture_disabled.sfn");
-					vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/shadow_disabled.sfn");
-					vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/effect_normalToAlpha.sfn");
-					vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/color_standard.sfn");
-					std::deque<std::string> gsFiles;
-					std::deque<std::string> fsFiles(vsFiles);
-					fsFiles.pop_front();
-					fsFiles.push_front(DataDirectory::getPath() + "/shader/universal2/universal.fs");
-					initShaderState(sphereShader.get(), vsFiles, gsFiles, fsFiles, Rendering::Shader::USE_UNIFORMS);
-				}
-				if(sphereShader.isNotNull()) {
-					sphereNode->addState(sphereShader.get());
-				}
-
-				attribute = new MetaObjectAttribute(sphereNode.get());
-				node->setAttribute(attributeId, attribute);
-			}
-			context.getRenderingContext().pushMatrix();
-			context.getRenderingContext().resetMatrix();
-			context.getRenderingContext().multMatrix(groupNode->getWorldMatrix());
-			attribute->get()->display(context, FRUSTUM_CULLING);
-			context.getRenderingContext().popMatrix();
-		}
 
 		const Geometry::Vec3f cameraPos = context.getCamera()->getWorldPosition();
 		if(!worldSphere.isOutside(cameraPos)) {
