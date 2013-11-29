@@ -200,7 +200,7 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 			@return true if the node could be handled by a renderer. */
 		bool displayNode(Node * node, const RenderParam & rp);
 
-		void pushNodeRenderer(const Util::StringIdentifier & channelName, const NodeRenderer & renderer);
+		void pushNodeRenderer(const Util::StringIdentifier & channelName, NodeRenderer renderer);
 		void popNodeRenderer(const Util::StringIdentifier & channelName);
 
 		const channelMap_t & getRenderingChannels() const {

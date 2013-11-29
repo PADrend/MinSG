@@ -206,8 +206,8 @@ bool FrameContext::displayNode(Node * node, const RenderParam & rp) {
 	return false;
 }
 
-void FrameContext::pushNodeRenderer(const Util::StringIdentifier & channelName, const NodeRenderer & renderer) {
-	renderingChannels[channelName].emplace_back(renderer);
+void FrameContext::pushNodeRenderer(const Util::StringIdentifier & channelName, NodeRenderer renderer) {
+	renderingChannels[channelName].emplace_back(std::move(renderer));
 }
 
 void FrameContext::popNodeRenderer(const Util::StringIdentifier & channelName) {
