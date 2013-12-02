@@ -11,6 +11,7 @@
 #ifndef RENDERINGCONTEXT_H
 #define RENDERINGCONTEXT_H
 
+#include "NodeRenderer.h"
 #include "RenderParam.h"
 
 #include <Util/ReferenceCounter.h>
@@ -42,17 +43,10 @@ class Color4f;
 }
 
 namespace MinSG {
-
 class Node;
 class AbstractCameraNode;
 class Statistics;
 class State;
-
-//! Return type used by node renderer functions.
-enum class NodeRendererResult : bool {
-	NODE_HANDLED,
-	PASS_ON
-};
 
 // -----------------------------------
 
@@ -187,8 +181,6 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 	/*!	@name Rendering  */
 	//	@{
 	public:
-		//! Type of a node renderer function used in rendering channels.
-		typedef std::function<NodeRendererResult (FrameContext &, Node *, const RenderParam &)> NodeRenderer;
 		typedef std::vector<NodeRenderer> renderingChannel_t;
 		typedef std::unordered_map<Util::StringIdentifier, renderingChannel_t> channelMap_t;
 
