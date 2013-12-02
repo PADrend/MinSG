@@ -8,8 +8,8 @@
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifndef RENDERINGCONTEXT_H
-#define RENDERINGCONTEXT_H
+#ifndef MINSG_CORE_FRAMECONTEXT_H
+#define MINSG_CORE_FRAMECONTEXT_H
 
 #include "NodeRenderer.h"
 #include "RenderParam.h"
@@ -254,4 +254,4 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 };
 }
 
-#endif // RENDERINGCONTEXT_H
+#endif // MINSG_CORE_FRAMECONTEXT_H
