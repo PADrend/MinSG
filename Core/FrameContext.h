@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 2007-2012 Benjamin Eikel <benjamin@eikel.org>
+	Copyright (C) 2007-2013 Benjamin Eikel <benjamin@eikel.org>
 	Copyright (C) 2007-2012 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2007-2012 Ralf Petring <ralf@petring.net>
 	
@@ -16,9 +16,11 @@
 
 #include <Util/ReferenceCounter.h>
 #include <Util/References.h>
+#include <Util/Registry.h>
 #include <Util/StringIdentifier.h>
 #include <Geometry/Vec4.h>
 #include <functional>
+#include <list>
 #include <memory>
 #include <stack>
 #include <string>
@@ -181,7 +183,8 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 	/*!	@name Rendering  */
 	//	@{
 	public:
-		typedef std::vector<NodeRenderer> renderingChannel_t;
+		typedef Util::Registry<std::list<NodeRenderer>> renderingChannel_t;
+		typedef renderingChannel_t::handle_t node_renderer_registration_t;
 		typedef std::unordered_map<Util::StringIdentifier, renderingChannel_t> channelMap_t;
 
 		static const Util::StringIdentifier DEFAULT_CHANNEL;
@@ -192,8 +195,8 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 			@return true if the node could be handled by a renderer. */
 		bool displayNode(Node * node, const RenderParam & rp);
 
-		void pushNodeRenderer(const Util::StringIdentifier & channelName, NodeRenderer renderer);
-		void popNodeRenderer(const Util::StringIdentifier & channelName);
+		node_renderer_registration_t registerNodeRenderer(const Util::StringIdentifier & channelName, NodeRenderer renderer);
+		void unregisterNodeRenderer(const Util::StringIdentifier & channelName, node_renderer_registration_t handle);
 
 		const channelMap_t & getRenderingChannels() const {
 			return renderingChannels;

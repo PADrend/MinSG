@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 2007-2012 Benjamin Eikel <benjamin@eikel.org>
+	Copyright (C) 2007-2013 Benjamin Eikel <benjamin@eikel.org>
 	Copyright (C) 2007-2012 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2007-2012 Ralf Petring <ralf@petring.net>
 	
@@ -12,6 +12,7 @@
 #define MINSG_NODERENDERERSTATE_H
 
 #include "State.h"
+#include "../../Helper/NodeRendererRegistrationHolder.h"
 #include <Util/StringIdentifier.h>
 
 namespace MinSG {
@@ -34,6 +35,9 @@ class NodeRendererState : public State {
 		//! Identifier of the channel the node renderer is registered to.
 		Util::StringIdentifier nodeRendererChannel;
 
+		//! Handle storing the registration of this state as NodeRenderer
+		NodeRendererRegistrationHolder registrationHolder;
+
 		/**
 		 * Node renderer function.
 		 * This function is registered at the configured channel when the state is activated.
@@ -55,6 +59,9 @@ class NodeRendererState : public State {
 		 * @param newChannel Rendering channel identifier
 		 */
 		NodeRendererState(Util::StringIdentifier newChannel);
+
+		NodeRendererState(const NodeRendererState & other);
+		~NodeRendererState();
 
 		/**
 		 * Return the channel that is treated by the node renderer.

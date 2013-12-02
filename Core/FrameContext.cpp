@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 2007-2012 Benjamin Eikel <benjamin@eikel.org>
+	Copyright (C) 2007-2013 Benjamin Eikel <benjamin@eikel.org>
 	Copyright (C) 2007-2012 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2007-2012 Ralf Petring <ralf@petring.net>
 	
@@ -55,8 +55,8 @@ FrameContext::FrameContext() : Util::ReferenceCounter<FrameContext>(),
 		renderingContext(new Rendering::RenderingContext),
 		statistics(new Statistics) {
 
-	pushNodeRenderer(DEFAULT_CHANNEL, &defaultNodeRenderer);
-	pushNodeRenderer(APPROXIMATION_CHANNEL, &boxNodeRenderer);
+	registerNodeRenderer(DEFAULT_CHANNEL, &defaultNodeRenderer);
+	registerNodeRenderer(APPROXIMATION_CHANNEL, &boxNodeRenderer);
 
 	const auto result = Util::EmbeddedFont::getFont();
 	Util::Reference<Util::Bitmap> fontBitmap(result.first);
@@ -198,20 +198,20 @@ const Util::StringIdentifier FrameContext::APPROXIMATION_CHANNEL("APPROXIMATION_
 bool FrameContext::displayNode(Node * node, const RenderParam & rp) {
 	renderingChannel_t & renderingChannel = renderingChannels[rp.getChannel()];
 
-	for(auto it = renderingChannel.rbegin(); it != renderingChannel.rend(); ++it) {
-		if((*it)(*this, node, rp) == NodeRendererResult::NODE_HANDLED) {
+	for(const auto & renderer : renderingChannel.getElements()) {
+		if(renderer(*this, node, rp) == NodeRendererResult::NODE_HANDLED) {
 			return true;
 		}
 	}
 	return false;
 }
 
-void FrameContext::pushNodeRenderer(const Util::StringIdentifier & channelName, NodeRenderer renderer) {
-	renderingChannels[channelName].emplace_back(std::move(renderer));
+FrameContext::node_renderer_registration_t FrameContext::registerNodeRenderer(const Util::StringIdentifier & channelName, NodeRenderer renderer) {
+	return renderingChannels[channelName].registerElement(std::move(renderer));
 }
 
-void FrameContext::popNodeRenderer(const Util::StringIdentifier & channelName) {
-	renderingChannels[channelName].pop_back();
+void FrameContext::unregisterNodeRenderer(const Util::StringIdentifier & channelName, node_renderer_registration_t handle) {
+	renderingChannels[channelName].unregisterElement(std::move(handle));
 }
 
 void FrameContext::displayMesh(Rendering::Mesh * mesh) {

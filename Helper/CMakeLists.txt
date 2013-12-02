@@ -10,6 +10,7 @@ minsg_add_sources(
 	DataDirectory.cpp
 	GraphVizOutput.cpp
 	Helper.cpp
+	NodeRendererRegistrationHolder.cpp
 	StdNodeVisitors.cpp
 	TextAnnotation.cpp
 	VisibilityTester.cpp
