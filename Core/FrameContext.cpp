@@ -36,16 +36,6 @@ using Geometry::Vec3;
 
 namespace MinSG {
 
-static NodeRendererResult defaultNodeRenderer(FrameContext & context, Node * node, const RenderParam & rp) {
-	node->display(context, rp);
-	return NodeRendererResult::NODE_HANDLED;
-}
-
-static NodeRendererResult boxNodeRenderer(FrameContext & context, Node * node, const RenderParam & /*rp*/) {
-	Rendering::drawAbsBox(context.getRenderingContext(), node->getWorldBB(), Util::ColorLibrary::LIGHT_GREY);
-	return NodeRendererResult::NODE_HANDLED;
-}
-
 // -----------------------------------
 // --- Main
 
@@ -55,8 +45,16 @@ FrameContext::FrameContext() : Util::ReferenceCounter<FrameContext>(),
 		renderingContext(new Rendering::RenderingContext),
 		statistics(new Statistics) {
 
-	registerNodeRenderer(DEFAULT_CHANNEL, &defaultNodeRenderer);
-	registerNodeRenderer(APPROXIMATION_CHANNEL, &boxNodeRenderer);
+	registerNodeRenderer(	DEFAULT_CHANNEL,
+							[](FrameContext & context, Node * node, const RenderParam & rp) {
+								node->display(context, rp);
+								return NodeRendererResult::NODE_HANDLED;
+							});
+	registerNodeRenderer(	APPROXIMATION_CHANNEL, 
+							[](FrameContext & context, Node * node, const RenderParam & /*rp*/) {
+								Rendering::drawAbsBox(context.getRenderingContext(), node->getWorldBB(), Util::ColorLibrary::LIGHT_GREY);
+								return NodeRendererResult::NODE_HANDLED;
+							});
 
 	const auto result = Util::EmbeddedFont::getFont();
 	Util::Reference<Util::Bitmap> fontBitmap(result.first);
