@@ -487,7 +487,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 			deactivate();
 
 			// Do this here because doDisableState is not called for inactive states.
-			context.popNodeRenderer(getSourceChannel());
+			doDisableState(context, node, rp);
 		}
 
 		return NodeRendererResult::NODE_HANDLED;

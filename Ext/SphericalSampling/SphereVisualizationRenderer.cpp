@@ -45,7 +45,7 @@ SphereVisualizationRenderer * SphereVisualizationRenderer::clone() const {
 	return new SphereVisualizationRenderer(*this);
 }
 
-NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & context, Node * node, const RenderParam & /*rp*/) {
+NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & context, Node * node, const RenderParam & rp) {
 	try {
 		if(!node->isActive()) {
 			return NodeRendererResult::NODE_HANDLED;
@@ -130,7 +130,7 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 		deactivate();
 
 		// Do this here because doDisableState is not called for inactive states.
-		context.popNodeRenderer(getSourceChannel());
+		doDisableState(context, node, rp);
 	}
 
 	return NodeRendererResult::PASS_ON;
