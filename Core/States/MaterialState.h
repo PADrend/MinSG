@@ -12,7 +12,7 @@
 #define MINSG_MATERIALSTATESTATE_H
 
 #include "RenderingParametersState.h"
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 
 namespace MinSG {
 

@@ -15,7 +15,7 @@
 #include "../../Core/FrameContext.h"
 #include "../../Helper/StdNodeVisitors.h"
 #include <Geometry/Box.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Draw.h>

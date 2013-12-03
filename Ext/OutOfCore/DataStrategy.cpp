@@ -12,7 +12,7 @@
 #include "DataStrategy.h"
 #include "CacheManager.h"
 #include <Rendering/Mesh/Mesh.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Draw.h>
 #include <Util/Graphics/ColorLibrary.h>

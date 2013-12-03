@@ -12,7 +12,7 @@
 #include "../Nodes/AbstractCameraNode.h"
 #include "../Nodes/GroupNode.h"
 #include "../FrameContext.h"
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Util/Macros.h>
 #include <functional>

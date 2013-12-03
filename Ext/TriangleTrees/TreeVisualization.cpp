@@ -15,7 +15,7 @@
 #include "../../SceneManagement/SceneManager.h"
 #include <Geometry/Box.h>
 #include <Rendering/Draw.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Util/Graphics/ColorLibrary.h>
 #include <Util/Graphics/Color.h>

@@ -13,7 +13,7 @@
 #include "../../Core/Nodes/AbstractCameraNode.h"
 #include <Geometry/Tools.h>
 #include <Rendering/Mesh/Mesh.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 
 namespace MinSG {

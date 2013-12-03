@@ -17,7 +17,7 @@
 #include <Geometry/Vec2.h>
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Shader/Uniform.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Texture/Texture.h>
 #include <Rendering/Texture/TextureUtils.h>

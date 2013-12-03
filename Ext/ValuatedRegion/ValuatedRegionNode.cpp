@@ -15,7 +15,7 @@
 #include "../../Helper/StdNodeVisitors.h"
 
 #include <Geometry/BoxHelper.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Draw.h>
 #include <Util/Graphics/Color.h>

@@ -14,7 +14,7 @@
 #include "Node.h"
 #include <Util/Graphics/Color.h>
 #include <Util/References.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 
 // Forward declaration
 namespace Rendering {

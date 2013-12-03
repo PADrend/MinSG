@@ -8,7 +8,7 @@
 */
 #include "DebugCamera.h"
 #include <Rendering/Mesh/Mesh.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/FBO.h>
 

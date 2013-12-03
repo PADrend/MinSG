@@ -18,7 +18,7 @@
 #include "../../Helper/StdNodeVisitors.h"
 #include "../../Helper/VisibilityTester.h"
 #include <Geometry/Box.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <algorithm>
 #include <functional>

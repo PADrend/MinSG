@@ -24,7 +24,7 @@
 #include <Geometry/Rect.h>
 #include <Geometry/SRT.h>
 #include <Geometry/Vec3.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Shader/Uniform.h>

@@ -10,7 +10,7 @@
 
 #include "OverdrawFactorEvaluator.h"
 #include "../../Core/FrameContext.h"
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Texture/TextureUtils.h>
 #include <Rendering/Texture/Texture.h>

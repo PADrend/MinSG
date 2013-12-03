@@ -23,7 +23,7 @@
 #include <Rendering/Mesh/MeshDataStrategy.h>
 #include <Rendering/Mesh/VertexAttributeIds.h>
 #include <Rendering/MeshUtils/MeshBuilder.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Draw.h>
 

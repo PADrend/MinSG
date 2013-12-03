@@ -12,7 +12,7 @@
 #include <Geometry/Rect.h>
 #include <Geometry/Vec2.h>
 #include <Geometry/Vec3.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Draw.h>
 #include <Rendering/TextRenderer.h>

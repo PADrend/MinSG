@@ -10,7 +10,7 @@
 */
 #include "BlendingState.h"
 #include "../FrameContext.h"
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Util/Graphics/Color.h>
 

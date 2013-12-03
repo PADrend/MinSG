@@ -17,7 +17,7 @@
 #include <Geometry/Box.h>
 #include <Rendering/Draw.h>
 #include <Rendering/OcclusionQuery.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Shader/Shader.h>
 #include <Util/Graphics/Color.h>

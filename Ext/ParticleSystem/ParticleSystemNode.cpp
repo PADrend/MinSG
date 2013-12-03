@@ -21,7 +21,7 @@
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/FrameContext.h"
 
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Draw.h>
 

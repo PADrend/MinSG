@@ -25,7 +25,7 @@
 #include "../OutOfCore/OutOfCore.h"
 #endif /* MINSG_EXT_OUTOFCORE */
 
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Serialization/Serialization.h>
@@ -273,11 +273,12 @@ State::stateResult_t VisibilitySubdivisionRenderer::doEnableState(
 		auto texIt = textures.cbegin();
 		for (const auto & depthMesh : depthMeshes) {
 			context.getRenderingContext().pushAndSetShader(getTDMShader());
-			(*texIt)->_enable(context.getRenderingContext());
+			context.getRenderingContext().pushAndSetTexture(0,texIt->get());
+			
 			if (conditionalFrustumTest(frustum, depthMesh->getBoundingBox(), rp)) {
 				context.displayMesh(depthMesh.get());
 			}
-			(*texIt)->_disable();
+			context.getRenderingContext().popTexture(0);
 			context.getRenderingContext().popShader();
 #ifdef MINSG_EXT_OUTOFCORE
 			OutOfCore::getCacheManager().setUserPriority(depthMesh.get(), 2);

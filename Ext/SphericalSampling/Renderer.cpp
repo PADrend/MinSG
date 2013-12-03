@@ -22,7 +22,7 @@
 #include "../../Helper/StdNodeVisitors.h"
 #include <Geometry/Sphere.h>
 #include <Geometry/Vec3.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Draw.h>
 #include <Rendering/OcclusionQuery.h>

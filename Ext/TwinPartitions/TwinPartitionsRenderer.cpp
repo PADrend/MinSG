@@ -20,7 +20,7 @@
 // #include "../OutOfCore/OutOfCore.h"
 // #endif /* MINSG_EXT_OUTOFCORE */
 
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Serialization/Serialization.h>
 #include <Rendering/Texture/Texture.h>

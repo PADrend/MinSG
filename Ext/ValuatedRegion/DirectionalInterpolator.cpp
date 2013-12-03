@@ -11,7 +11,7 @@
 #include "DirectionalInterpolator.h"
 #include "ValuatedRegionNode.h"
 #include <Geometry/Frustum.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Draw.h>
 #include <Rendering/OcclusionQuery.h>

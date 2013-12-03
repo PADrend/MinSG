@@ -15,7 +15,7 @@
 #include <Geometry/Box.h>
 #include <Geometry/BoxIntersection.h>
 #include <Geometry/Matrix4x4.h>
-#include <Rendering/RenderingContext/ParameterStructs.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/OcclusionQuery.h>
 #include <Util/Graphics/Color.h>
