@@ -31,7 +31,7 @@ class State :
 		PROVIDES_TYPE_NAME(State)
 	public:
 
-		State() : ReferenceCounter_t(), Util::AttributeProvider(), active(true) {}
+		State() : ReferenceCounter_t(), Util::AttributeProvider(), statusFlags(STATUS_ACTIVE) {}
 		State(const State &) = default;
 		State(State &&) = default;
 		State & operator=(const State &) = default;
@@ -94,18 +94,18 @@ class State :
 		//! Create a duplicate of this State object.
 		virtual State * clone() const = 0;
 
-		bool isActive() const {
-			return active;
-		}
-		void activate() {
-			active = true;
-		}
-		void deactivate() {
-			active = false;
-		}
+		bool isActive() const							{	return statusFlags&STATUS_ACTIVE;	}
+		void activate()									{	statusFlags |= STATUS_ACTIVE;	}
+		void deactivate()								{	statusFlags &= ~STATUS_ACTIVE;	}
+
+		//! If a State is marked as tempState, it is ignored when saving the scene.
+		bool isTempState()const							{	return statusFlags&STATUS_TEMPORARY;	}
+		void setTempState(bool b)						{	statusFlags = b ? statusFlags|STATUS_TEMPORARY : statusFlags&~STATUS_TEMPORARY;	}
 
 	private:
-		bool active;
+		static const uint8_t STATUS_ACTIVE = 1<<0;
+		static const uint8_t STATUS_TEMPORARY = 1<<1;
+		uint8_t statusFlags;
 
 		/**
 		 * Enable this state for the given node (=subtree).

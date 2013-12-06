@@ -162,9 +162,11 @@ void ExporterTools::addChildNodesToDescription(ExporterContext & ctxt,NodeDescri
 void ExporterTools::addStatesToDescription(ExporterContext & ctxt,NodeDescription & description,Node * node){
 	if( node->hasStates() ){
 		for(const auto & state : node->getStates()){
-			std::unique_ptr<NodeDescription> stateDescription(ctxt.sceneManager.createDescriptionForState(ctxt, state));
-			if(stateDescription)
-				ExporterTools::addChildEntry(description,std::move(*stateDescription));
+			if(!state->isTempState()){
+				std::unique_ptr<NodeDescription> stateDescription(ctxt.sceneManager.createDescriptionForState(ctxt, state));
+				if(stateDescription)
+					ExporterTools::addChildEntry(description,std::move(*stateDescription));
+			}
 		}
 	}
 }
