@@ -23,9 +23,7 @@ class FileName;
 }
 namespace MinSG {
 class FrameContext;
-namespace SceneManagement {
-class SceneManager;
-}
+
 namespace OutOfCore {
 class CacheManager;
 class DataStrategy;
@@ -36,11 +34,11 @@ CacheManager & getCacheManager();
 //! Return the single instance of DataStrategy.
 DataStrategy & getDataStrategy();
 
-//! Associate the out-of-core system to the FrameContext (so that it is triggered every frame) and to the SceneManager (so that new meshes are registered).
-void setUp(FrameContext * context, SceneManagement::SceneManager * sceneManager);
+//! Associate the out-of-core system to the FrameContext (so that it is triggered every frame) and register the MeshImport function.
+void setUp(FrameContext& context);
 
 //! Remove the association of the out-of-core system and remove all cache levels.
-void shutDown(SceneManagement::SceneManager * sceneManager);
+void shutDown();
 
 //! Return @c true, if setUp() has been called at least once.
 bool isSystemEnabled();

@@ -22,6 +22,7 @@
 #include <Util/Macros.h>
 #include <Util/Utils.h>
 #include <limits>
+#include <map>
 #include <unordered_set>
 
 using namespace Rendering;

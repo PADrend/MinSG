@@ -11,4 +11,6 @@ minsg_add_sources(
 	CoreStateExporter.cpp
 	ExporterContext.cpp
 	ExporterTools.cpp
+	WriterDAE.cpp
+	WriterMinSG.cpp
 )

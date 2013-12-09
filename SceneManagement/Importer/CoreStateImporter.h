@@ -14,9 +14,7 @@
 namespace MinSG {
 namespace SceneManagement {
 
-class SceneManager;
-
-void initCoreStateImporter(SceneManager & sm);
+void initCoreStateImporter();
 
 }
 }

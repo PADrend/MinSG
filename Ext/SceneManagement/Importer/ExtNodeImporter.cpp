@@ -379,29 +379,28 @@ static bool importPathNode(ImportContext & ctxt, const std::string & type, const
 //  return true;
 // }
 
-void initExtNodeImporter(SceneManager & sm) {
-
-	sm.addNodeImporter(&importBillboardNode);
-	sm.addNodeImporter(&importGenericMetaNode);
-	sm.addNodeImporter(&importValuatedRegionNode);
+void initExtNodeImporter() {
+	ImporterTools::registerNodeImporter(&importBillboardNode);
+	ImporterTools::registerNodeImporter(&importGenericMetaNode);
+	ImporterTools::registerNodeImporter(&importValuatedRegionNode);
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
-	sm.addNodeImporter(&importMultiAlgoGroupNode);
+	ImporterTools::registerNodeImporter(&importMultiAlgoGroupNode);
 #endif
 
 #ifdef MINSG_EXT_PARTICLE
-	sm.addNodeImporter(&importParticleSystemNode);
+	ImporterTools::registerNodeImporter(&importParticleSystemNode);
 #endif
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-	sm.addNodeImporter(&importSkeletalAnimationSkeletalNode);
-	sm.addNodeImporter(&importSkeletalAnimationJointNode);
-	sm.addNodeImporter(&importSkeletalAnimationArmatureNode);
-    sm.addNodeImporter(&importSkeletalAnimationRigidJoint);
+	ImporterTools::registerNodeImporter(&importSkeletalAnimationSkeletalNode);
+	ImporterTools::registerNodeImporter(&importSkeletalAnimationJointNode);
+	ImporterTools::registerNodeImporter(&importSkeletalAnimationArmatureNode);
+    ImporterTools::registerNodeImporter(&importSkeletalAnimationRigidJoint);
 #endif
 
 #ifdef MINSG_EXT_WAYPOINTS
-	sm.addNodeImporter(&importPathNode);
+	ImporterTools::registerNodeImporter(&importPathNode);
 #endif
 }
 

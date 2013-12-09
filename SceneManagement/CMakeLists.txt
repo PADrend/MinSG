@@ -7,14 +7,11 @@
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
 minsg_add_sources(
-	MeshImportHandler.cpp
-	ReaderDAE.cpp
-	ReaderMinSG.cpp
+	ExportFunctions.cpp
+	ImportFunctions.cpp
 	SceneDescription.cpp
 	SceneManager.cpp
 	ShaderFactory.cpp
-	WriterDAE.cpp
-	WriterMinSG.cpp
 )
 add_subdirectory(Exporter)
 add_subdirectory(Importer)

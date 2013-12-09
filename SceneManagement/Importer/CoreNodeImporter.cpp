@@ -12,8 +12,10 @@
 
 #include "../SceneManager.h"
 #include "../SceneDescription.h"
+#include "../ImportFunctions.h"
 #include "ImporterTools.h"
 #include "ImportContext.h"
+#include "MeshImportHandler.h"
 
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/Nodes/ListNode.h"
@@ -156,7 +158,7 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 		const Util::FileName fileName(ImporterTools::checkRelativePaths(ctxt, Util::FileName(fileNameString)));
 
 		// if the mesh registry is used; look if the mesh is already available in the registry
-		bool useMeshRegistry = (ctxt.importOptions & SceneManager::IMPORT_OPTION_USE_MESH_REGISTRY)>0 ;
+		const bool useMeshRegistry = (ctxt.importOptions & IMPORT_OPTION_USE_MESH_REGISTRY)>0 ;
 		if(useMeshRegistry) {
 			Rendering::Mesh * mesh = ctxt.getRegisteredMesh(fileName.toString());
 			if(mesh!=nullptr) {
@@ -166,7 +168,7 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 		}
 
 		if(node==nullptr) {
-			node = ctxt.sceneManager.getMeshImportHandler()->handleImport(fileName, dataDesc);
+			node = ImporterTools::getMeshImportHandler()->handleImport(fileName, dataDesc);
 
 			if(node == nullptr) {
 				WARN("Loading the mesh failed.");
@@ -212,7 +214,7 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 	}
 
 	// if the mesh hashing registry is used; look if the mesh is already available in the registry by its hash
-	bool useMeshHashingRegistry = (ctxt.importOptions & SceneManager::IMPORT_OPTION_USE_MESH_HASHING_REGISTRY)>0 ;
+	const bool useMeshHashingRegistry = (ctxt.importOptions & IMPORT_OPTION_USE_MESH_HASHING_REGISTRY)>0 ;
 	if(useMeshHashingRegistry) {
 		GeometryNode * gn = dynamic_cast<GeometryNode *>(node);
 		if(gn!=nullptr && !gn->getMesh()->empty()) {
@@ -249,13 +251,13 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 //  return true;
 // }
 
-void initCoreNodeImporter(SceneManager & sm) {
+void initCoreNodeImporter() {
 
-	sm.addNodeImporter(&importLightNode);
-	sm.addNodeImporter(&importClone);
-	sm.addNodeImporter(&importCameraNode);
-	sm.addNodeImporter(&importListNode);
-	sm.addNodeImporter(&importGeometryNode);
+	ImporterTools::registerNodeImporter(&importLightNode);
+	ImporterTools::registerNodeImporter(&importClone);
+	ImporterTools::registerNodeImporter(&importCameraNode);
+	ImporterTools::registerNodeImporter(&importListNode);
+	ImporterTools::registerNodeImporter(&importGeometryNode);
 }
 
 }

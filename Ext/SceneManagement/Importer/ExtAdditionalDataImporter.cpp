@@ -110,10 +110,10 @@ static bool importAdditionalVisibilityVectorData(ImportContext & ctxt, const std
 }
 #endif
 
-void initExtAdditionalDataImporter(SceneManager & sm) {
+void initExtAdditionalDataImporter() {
 
 #ifdef MINSG_EXT_VISIBILITY_SUBDIVISION
-	sm.addAdditionalDataImporter(&importAdditionalVisibilityVectorData);
+	ImporterTools::registerAdditionalDataImporter(&importAdditionalVisibilityVectorData);
 #endif
 }
 

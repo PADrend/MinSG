@@ -12,6 +12,7 @@
 
 #include "../SceneManager.h"
 #include "../SceneDescription.h"
+#include "../ImportFunctions.h"
 #include "ImporterTools.h"
 
 #include "../../Core/Nodes/Node.h"
@@ -163,7 +164,7 @@ static bool importShaderUniformState(ImportContext & ctxt, const std::string & s
 }
 
 static bool reuseState(ImportContext & ctxt, const std::string & /*stateType*/, const NodeDescription & d, Node * parent) {
-	if(parent==nullptr || d.getString(Consts::TYPE) != Consts::TYPE_STATE || (ctxt.importOptions & SceneManager::IMPORT_OPTION_REUSE_EXISTING_STATES) == 0)
+	if(parent==nullptr || d.getString(Consts::TYPE) != Consts::TYPE_STATE || (ctxt.importOptions & IMPORT_OPTION_REUSE_EXISTING_STATES) == 0)
 		return false;
 
 	// special case if old states should be reused
@@ -228,7 +229,7 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 						 true,
 						 false,
 						 textureUnit,
-						 (ctxt.importOptions & SceneManager::IMPORT_OPTION_USE_TEXTURE_REGISTRY) > 0 ? &ctxt.getTextureRegistry() : nullptr);
+						 (ctxt.importOptions & IMPORT_OPTION_USE_TEXTURE_REGISTRY) > 0 ? &ctxt.getTextureRegistry() : nullptr);
 	}
 
 	ImporterTools::finalizeState(ctxt, ts, d);
@@ -471,25 +472,25 @@ static bool importBlendingState(ImportContext & ctxt, const std::string & stateT
 //  return true;
 // }
 
-void initCoreStateImporter(SceneManager & sm) {
+void initCoreStateImporter() {
 
 	{
 		//! have to be called in this order as first importers
-		sm.addStateImporter(&reuseState);
-		sm.addStateImporter(&importReference);
+		ImporterTools::registerStateImporter(&reuseState);
+		ImporterTools::registerStateImporter(&importReference);
 	}
 
-	sm.addStateImporter(&importShaderState);
-	sm.addStateImporter(&importShaderUniformState);
-	sm.addStateImporter(&importTextureState);
-	sm.addStateImporter(&importTransparencyRenderer);
-	sm.addStateImporter(&importLightingState);
-	sm.addStateImporter(&importPolygonModeState);
-	sm.addStateImporter(&importGroupState);
-	sm.addStateImporter(&importAlphaTestState);
-	sm.addStateImporter(&importCullFaceState);
-	sm.addStateImporter(&importMaterialState);
-	sm.addStateImporter(&importBlendingState);
+	ImporterTools::registerStateImporter(&importShaderState);
+	ImporterTools::registerStateImporter(&importShaderUniformState);
+	ImporterTools::registerStateImporter(&importTextureState);
+	ImporterTools::registerStateImporter(&importTransparencyRenderer);
+	ImporterTools::registerStateImporter(&importLightingState);
+	ImporterTools::registerStateImporter(&importPolygonModeState);
+	ImporterTools::registerStateImporter(&importGroupState);
+	ImporterTools::registerStateImporter(&importAlphaTestState);
+	ImporterTools::registerStateImporter(&importCullFaceState);
+	ImporterTools::registerStateImporter(&importMaterialState);
+	ImporterTools::registerStateImporter(&importBlendingState);
 }
 
 }

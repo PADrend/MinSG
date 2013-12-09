@@ -325,32 +325,32 @@ static bool importLODRenderer(ImportContext & ctxt, const std::string & stateTyp
 //  return true;
 // }
 
-void initExtStateImporter(SceneManager & sm) {
+void initExtStateImporter() {
 
-	sm.addStateImporter(&importLODRenderer);
-	sm.addStateImporter(&importCHCppRenderer);
-	sm.addStateImporter(&importOccRenderer);
-	sm.addStateImporter(&importBudgetAnnotationState);
-	sm.addStateImporter(&importMirrorState);
-	sm.addStateImporter(&importProjSizeFilterState);
-	sm.addStateImporter(&importSkyboxState);
+	ImporterTools::registerStateImporter(&importLODRenderer);
+	ImporterTools::registerStateImporter(&importCHCppRenderer);
+	ImporterTools::registerStateImporter(&importOccRenderer);
+	ImporterTools::registerStateImporter(&importBudgetAnnotationState);
+	ImporterTools::registerStateImporter(&importMirrorState);
+	ImporterTools::registerStateImporter(&importProjSizeFilterState);
+	ImporterTools::registerStateImporter(&importSkyboxState);
 
 #ifdef MINSG_EXT_COLORCUBES
-	sm.addStateImporter(&importColorCubeRenderer);
+	ImporterTools::registerStateImporter(&importColorCubeRenderer);
 #endif
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-	sm.addStateImporter(&importSkeletalHardwareRendererState);
+	ImporterTools::registerStateImporter(&importSkeletalHardwareRendererState);
 #endif
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
-	sm.addStateImporter(&importAlgoSelector);
-	sm.addStateImporter(&importMARSurfelRenderer);
+	ImporterTools::registerStateImporter(&importAlgoSelector);
+	ImporterTools::registerStateImporter(&importMARSurfelRenderer);
 #endif
 
 #ifdef MINSG_EXT_SPHERICALSAMPLING
-	sm.addStateImporter(&importSVSRenderer);
-	sm.addStateImporter(&importSVSBudgetRenderer);
+	ImporterTools::registerStateImporter(&importSVSRenderer);
+	ImporterTools::registerStateImporter(&importSVSBudgetRenderer);
 #endif
 }
 

@@ -19,8 +19,7 @@
 #include "CacheLevel.h"
 #include "../../Core/FrameContext.h"
 #include "../../Core/Statistics.h"
-#include "../../SceneManagement/MeshImportHandler.h"
-#include "../../SceneManagement/SceneManager.h"
+#include "../../SceneManagement/Importer/ImporterTools.h"
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Serialization/Serialization.h>
 #include <cstdint>
@@ -70,23 +69,25 @@ class TriggerCallback {
 		}
 };
 
-void setUp(FrameContext * context, SceneManagement::SceneManager * sceneManager) {
+void setUp(FrameContext & context) {
 	CacheManager & manager = getCacheManager();
 
 	// Let meshes that are loaded by the SceneManager be handled by the OutOfCore system.
-	sceneManager->setMeshImportHandler(new ImportHandler);
+	std::unique_ptr<SceneManagement::MeshImportHandler> handler(new ImportHandler);
+	SceneManagement::ImporterTools::setMeshImportHandler(std::move(handler));
 	initMeshAttributeSerialization();
 
-	context->addEndFrameListener(TriggerCallback(manager));
+	context.addEndFrameListener(TriggerCallback(manager));
 
 	systemEnabled = true;
 }
 
-void shutDown(SceneManagement::SceneManager * sceneManager) {
+void shutDown() {
 	systemEnabled = false;
 
 	// Restore default import handler for meshes.
-	sceneManager->setMeshImportHandler(new SceneManagement::MeshImportHandler);
+	std::unique_ptr<SceneManagement::MeshImportHandler> handler(new SceneManagement::MeshImportHandler);
+	SceneManagement::ImporterTools::setMeshImportHandler(std::move(handler));
 
 	getCacheManager().clear();
 }

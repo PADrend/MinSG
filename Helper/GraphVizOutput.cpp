@@ -41,9 +41,10 @@ static void writeGraphVizOutput(Node * node,
 	}
 	std::string extraLabel;
 	if(sceneManager != nullptr) {
-		if(sceneManager->isNodeRegistered(node)) {
+		const auto id = sceneManager->getNodeId(node);
+		if(!id.empty()) {
 			extraLabel = "\\n\\\"";
-			extraLabel += sceneManager->getNameOfRegisteredNode(node);
+			extraLabel += id.toString();
 			extraLabel += "\\\"";
 		}
 	}

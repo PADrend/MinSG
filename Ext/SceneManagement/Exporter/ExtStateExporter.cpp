@@ -157,31 +157,31 @@ static void describeLODRenderer(ExporterContext &,NodeDescription & desc,State *
 	desc.setValue(Consts::ATTR_LOD_RENDERER_SOURCE_CHANNEL, Util::GenericAttribute::createString(renderer->getSourceChannel().toString()));
 }
 
-void initExtStateExporter(SceneManager & sm) {
-	sm.addStateExporter(OccRenderer::getClassId(),&describeOccRenderer);
-	sm.addStateExporter(CHCppRenderer::getClassId(),&describeCHCppRenderer);
-	sm.addStateExporter(BudgetAnnotationState::getClassId(),&describeBudgetAnnotationState);
-	sm.addStateExporter(MirrorState::getClassId(),&describeMirrorState);
-	sm.addStateExporter(ProjSizeFilterState::getClassId(),&describeProjSizeFilterState);
-	sm.addStateExporter(MinSG::LODRenderer::getClassId(),&describeLODRenderer);
+void initExtStateExporter() {
+	ExporterTools::registerStateExporter(OccRenderer::getClassId(),&describeOccRenderer);
+	ExporterTools::registerStateExporter(CHCppRenderer::getClassId(),&describeCHCppRenderer);
+	ExporterTools::registerStateExporter(BudgetAnnotationState::getClassId(),&describeBudgetAnnotationState);
+	ExporterTools::registerStateExporter(MirrorState::getClassId(),&describeMirrorState);
+	ExporterTools::registerStateExporter(ProjSizeFilterState::getClassId(),&describeProjSizeFilterState);
+	ExporterTools::registerStateExporter(MinSG::LODRenderer::getClassId(),&describeLODRenderer);
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
-	sm.addStateExporter(MAR::AlgoSelector::getClassId(),&describeAlgoSelector);
-	sm.addStateExporter(MAR::SurfelRenderer::getClassId(),&describeMARSurfelRenderer);
+	ExporterTools::registerStateExporter(MAR::AlgoSelector::getClassId(),&describeAlgoSelector);
+	ExporterTools::registerStateExporter(MAR::SurfelRenderer::getClassId(),&describeMARSurfelRenderer);
 #endif
 
 #ifdef MINSG_EXT_COLORCUBES
-	sm.addStateExporter(ColorCubeRenderer::getClassId(),&describeColorCubeRenderer);
+	ExporterTools::registerStateExporter(ColorCubeRenderer::getClassId(),&describeColorCubeRenderer);
 #endif
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-	sm.addStateExporter(SkeletalHardwareRendererState::getClassId(),&describeSkeletalRendererState);
-	sm.addStateExporter(SkeletalSoftwareRendererState::getClassId(),&describeSkeletalRendererState);
+	ExporterTools::registerStateExporter(SkeletalHardwareRendererState::getClassId(),&describeSkeletalRendererState);
+	ExporterTools::registerStateExporter(SkeletalSoftwareRendererState::getClassId(),&describeSkeletalRendererState);
 #endif
 
 #ifdef MINSG_EXT_SPHERICALSAMPLING
-	sm.addStateExporter(SphericalSampling::Renderer::getClassId(), &describeSVSRenderer);
-	sm.addStateExporter(SphericalSampling::BudgetRenderer::getClassId(), &describeSVSBudgetRenderer);
+	ExporterTools::registerStateExporter(SphericalSampling::Renderer::getClassId(), &describeSVSRenderer);
+	ExporterTools::registerStateExporter(SphericalSampling::BudgetRenderer::getClassId(), &describeSVSBudgetRenderer);
 #endif
 
 }

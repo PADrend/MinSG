@@ -298,28 +298,28 @@ static void describeValuatedRegionNode(ExporterContext & ctxt,NodeDescription & 
 }
 
 
-void initExtNodeExporter(SceneManager & sm) {
-	sm.addNodeExporter(BillboardNode::getClassId(),&describeBillboardNode);
-	sm.addNodeExporter(GenericMetaNode::getClassId(),&describeGenericMetaNode);
-	sm.addNodeExporter(ValuatedRegionNode::getClassId(),&describeValuatedRegionNode);
+void initExtNodeExporter() {
+	ExporterTools::registerNodeExporter(BillboardNode::getClassId(),&describeBillboardNode);
+	ExporterTools::registerNodeExporter(GenericMetaNode::getClassId(),&describeGenericMetaNode);
+	ExporterTools::registerNodeExporter(ValuatedRegionNode::getClassId(),&describeValuatedRegionNode);
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-	sm.addNodeExporter(SkeletalNode::getClassId(),&describeSkeletalAnimationNode);
-   	sm.addNodeExporter(JointNode::getClassId(),&describeSkeletalAnimationJointNode);
-  	sm.addNodeExporter(ArmatureNode::getClassId(),&describeSkeletalAnimationArmatureNode);
-    sm.addNodeExporter(RigidJoint::getClassId(),&describeSkeletalAnimationRigidJoint);
+	ExporterTools::registerNodeExporter(SkeletalNode::getClassId(),&describeSkeletalAnimationNode);
+   	ExporterTools::registerNodeExporter(JointNode::getClassId(),&describeSkeletalAnimationJointNode);
+  	ExporterTools::registerNodeExporter(ArmatureNode::getClassId(),&describeSkeletalAnimationArmatureNode);
+    ExporterTools::registerNodeExporter(RigidJoint::getClassId(),&describeSkeletalAnimationRigidJoint);
 #endif
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
-	sm.addNodeExporter(MAR::MultiAlgoGroupNode::getClassId(),&describeMultiAlgoGroupNode);
+	ExporterTools::registerNodeExporter(MAR::MultiAlgoGroupNode::getClassId(),&describeMultiAlgoGroupNode);
 #endif
 
 #ifdef MINSG_EXT_PARTICLE
-	sm.addNodeExporter(ParticleSystemNode::getClassId(),&describeParticleSystemNode);
+	ExporterTools::registerNodeExporter(ParticleSystemNode::getClassId(),&describeParticleSystemNode);
 #endif
 
 #ifdef MINSG_EXT_WAYPOINTS
-	sm.addNodeExporter(PathNode::getClassId(),&describePathNode);
+	ExporterTools::registerNodeExporter(PathNode::getClassId(),&describePathNode);
 #endif
 }
 

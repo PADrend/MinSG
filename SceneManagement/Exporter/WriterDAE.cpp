@@ -9,14 +9,14 @@
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
 #include "WriterDAE.h"
-#include "SceneDescription.h"
-#include "../Core/Nodes/AbstractCameraNode.h"
-#include "../Core/Nodes/LightNode.h"
-#include "../Core/Nodes/CameraNode.h"
-#include "../Core/Nodes/CameraNodeOrtho.h"
-#include "../Core/Nodes/GeometryNode.h"
-#include "../Core/Nodes/Node.h"
-#include "../Core/States/TextureState.h"
+#include "../SceneDescription.h"
+#include "../../Core/Nodes/AbstractCameraNode.h"
+#include "../../Core/Nodes/LightNode.h"
+#include "../../Core/Nodes/CameraNode.h"
+#include "../../Core/Nodes/CameraNodeOrtho.h"
+#include "../../Core/Nodes/GeometryNode.h"
+#include "../../Core/Nodes/Node.h"
+#include "../../Core/States/TextureState.h"
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/VertexAttributeAccessors.h>
 #include <Rendering/Mesh/VertexAttributeIds.h>

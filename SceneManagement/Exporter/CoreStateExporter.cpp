@@ -259,7 +259,7 @@ static void describeGroupState(ExporterContext & ctxt,NodeDescription & desc,Sta
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_GROUP);
 
 	for(const auto & childState : dynamic_cast<GroupState *>(state)->getStates()) {
-		std::unique_ptr<NodeDescription> stateDescription( ctxt.sceneManager.createDescriptionForState(ctxt, childState.get()) );
+		std::unique_ptr<NodeDescription> stateDescription( ExporterTools::createDescriptionForState(ctxt, childState.get()) );
 		if(stateDescription)
 			ExporterTools::addChildEntry(desc,std::move(*stateDescription));
 	}
@@ -308,18 +308,18 @@ static void describeTransparencyRenderer(ExporterContext &,NodeDescription & des
 	desc.setString(Consts::ATTR_TRANSPARENY_USE_PREMULTIPLIED_ALPHA, n->getUsePremultipliedAlpha() ? "true" : "false");
 }
 
-void initCoreStateExporter(SceneManager & sm) {
-	sm.addStateExporter(AlphaTestState::getClassId(),&describeAlphaTestState);
-	sm.addStateExporter(BlendingState::getClassId(),&describeBlendingState);
-	sm.addStateExporter(CullFaceState::getClassId(),&describeCullFaceState);
-	sm.addStateExporter(GroupState::getClassId(),&describeGroupState);
-	sm.addStateExporter(LightingState::getClassId(),&describeLightingState);
-	sm.addStateExporter(MaterialState::getClassId(),&describeMaterialState);
-	sm.addStateExporter(PolygonModeState::getClassId(),&describePolygonModeState);
-	sm.addStateExporter(ShaderState::getClassId(),&describeShaderState);
-	sm.addStateExporter(ShaderUniformState::getClassId(),&describeShaderUniformState);
-	sm.addStateExporter(TextureState::getClassId(),&describeTextureState);
-	sm.addStateExporter(TransparencyRenderer::getClassId(),&describeTransparencyRenderer);
+void initCoreStateExporter() {
+	ExporterTools::registerStateExporter(AlphaTestState::getClassId(),&describeAlphaTestState);
+	ExporterTools::registerStateExporter(BlendingState::getClassId(),&describeBlendingState);
+	ExporterTools::registerStateExporter(CullFaceState::getClassId(),&describeCullFaceState);
+	ExporterTools::registerStateExporter(GroupState::getClassId(),&describeGroupState);
+	ExporterTools::registerStateExporter(LightingState::getClassId(),&describeLightingState);
+	ExporterTools::registerStateExporter(MaterialState::getClassId(),&describeMaterialState);
+	ExporterTools::registerStateExporter(PolygonModeState::getClassId(),&describePolygonModeState);
+	ExporterTools::registerStateExporter(ShaderState::getClassId(),&describeShaderState);
+	ExporterTools::registerStateExporter(ShaderUniformState::getClassId(),&describeShaderUniformState);
+	ExporterTools::registerStateExporter(TextureState::getClassId(),&describeTextureState);
+	ExporterTools::registerStateExporter(TransparencyRenderer::getClassId(),&describeTransparencyRenderer);
 }
 
 }

@@ -351,23 +351,23 @@ static bool importerSkeletalAnimationBehaviour(ImportContext & ctxt, const std::
 //  return true;
 // }
 
-void initExtBehaviourImporter(SceneManager & sm) {
+void initExtBehaviourImporter() {
 
 #ifdef MINSG_EXT_PARTICLE
-	sm.addBehaviourImporter(&importParticlePointEmitter);
-	sm.addBehaviourImporter(&importParticleBoxEmitter);
-	sm.addBehaviourImporter(&importParticleGravityEffector);
-	sm.addBehaviourImporter(&importParticleFadeOutAffector);
-	sm.addBehaviourImporter(&importParticleAnimator);
+	ImporterTools::registerBehaviourImporter(&importParticlePointEmitter);
+	ImporterTools::registerBehaviourImporter(&importParticleBoxEmitter);
+	ImporterTools::registerBehaviourImporter(&importParticleGravityEffector);
+	ImporterTools::registerBehaviourImporter(&importParticleFadeOutAffector);
+	ImporterTools::registerBehaviourImporter(&importParticleAnimator);
 #endif
 
 
 #ifdef MINSG_EXT_WAYPOINTS
-	sm.addBehaviourImporter(&importFollowPathBehaviour);
+	ImporterTools::registerBehaviourImporter(&importFollowPathBehaviour);
 #endif
     
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-    sm.addBehaviourImporter(&importerSkeletalAnimationBehaviour);
+    ImporterTools::registerBehaviourImporter(&importerSkeletalAnimationBehaviour);
 #endif
 }
 

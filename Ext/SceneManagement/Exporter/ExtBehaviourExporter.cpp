@@ -258,22 +258,22 @@ static NodeDescription * exportParticleBoxEmitter(ExporterContext & ctxt,Abstrac
 	}
 #endif
 
-void initExtBehaviourExporter(SceneManager & sm) {
+void initExtBehaviourExporter() {
 
 #ifdef MINSG_EXT_WAYPOINTS
-	sm.addBehaviourExporter(&exportFollowPathBehaviour);
+	ExporterTools::registerBehaviourExporter(&exportFollowPathBehaviour);
 #endif
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-	sm.addBehaviourExporter(&exportSkeletalAnimationBehaviour);
+	ExporterTools::registerBehaviourExporter(&exportSkeletalAnimationBehaviour);
 #endif
 
 #ifdef MINSG_EXT_PARTICLE
-	sm.addBehaviourExporter(&exportParticleAnimator);
-	sm.addBehaviourExporter(&exportParticleBoxEmitter);
-	sm.addBehaviourExporter(&exportParticleFadeOutAffector);
-	sm.addBehaviourExporter(&exportParticleGravityAffector);
-	sm.addBehaviourExporter(&exportParticlePointEmitter);
+	ExporterTools::registerBehaviourExporter(&exportParticleAnimator);
+	ExporterTools::registerBehaviourExporter(&exportParticleBoxEmitter);
+	ExporterTools::registerBehaviourExporter(&exportParticleFadeOutAffector);
+	ExporterTools::registerBehaviourExporter(&exportParticleGravityAffector);
+	ExporterTools::registerBehaviourExporter(&exportParticlePointEmitter);
 #endif
 }
 

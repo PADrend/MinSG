@@ -11,4 +11,7 @@ minsg_add_sources(
 	CoreStateImporter.cpp
 	ImportContext.cpp
 	ImporterTools.cpp
+	MeshImportHandler.cpp
+	ReaderDAE.cpp
+	ReaderMinSG.cpp
 )

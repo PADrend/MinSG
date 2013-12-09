@@ -11,7 +11,7 @@
 #ifndef OUTOFCORE_IMPORTHANDLER_H_
 #define OUTOFCORE_IMPORTHANDLER_H_
 
-#include "../../SceneManagement/MeshImportHandler.h"
+#include "../../SceneManagement/Importer/MeshImportHandler.h"
 
 namespace Util {
 class FileName;

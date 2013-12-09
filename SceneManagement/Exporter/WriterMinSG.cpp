@@ -9,7 +9,7 @@
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
 #include "WriterMinSG.h"
-#include "SceneDescription.h"
+#include "../SceneDescription.h"
 #include <Util/IO/FileName.h>
 #include <Util/IO/FileUtils.h>
 #include <Util/Macros.h>

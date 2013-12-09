@@ -9,7 +9,7 @@
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
 #include "MeshImportHandler.h"
-#include "../Helper/Helper.h"
+#include "../../Helper/Helper.h"
 
 namespace MinSG {
 namespace SceneManagement {

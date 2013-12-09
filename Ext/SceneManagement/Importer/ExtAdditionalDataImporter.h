@@ -12,13 +12,11 @@
 #define EXTADDITIONALDATAIMPORTER_H
 
 namespace MinSG {
-	namespace SceneManagement {
+namespace SceneManagement {
 
-		class SceneManager;
+void initExtAdditionalDataImporter();
 
-		void initExtAdditionalDataImporter(SceneManager & sm);
-
-	}
+}
 }
 
 #endif // EXTADDITIONALDATAIMPORTER_H

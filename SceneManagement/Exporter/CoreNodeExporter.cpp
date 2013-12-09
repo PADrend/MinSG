@@ -112,10 +112,10 @@ static void describeLightNode(ExporterContext &,NodeDescription & desc, Node * n
 	
 }
 
-void initCoreNodeExporter(SceneManager & sm) {
-	sm.addNodeExporter(GeometryNode::getClassId(),&describeGeometryNode);
-	sm.addNodeExporter(ListNode::getClassId(),&describeListNode);
-	sm.addNodeExporter(LightNode::getClassId(),&describeLightNode);
+void initCoreNodeExporter() {
+	ExporterTools::registerNodeExporter(GeometryNode::getClassId(),&describeGeometryNode);
+	ExporterTools::registerNodeExporter(ListNode::getClassId(),&describeListNode);
+	ExporterTools::registerNodeExporter(LightNode::getClassId(),&describeLightNode);
 }
 
 }

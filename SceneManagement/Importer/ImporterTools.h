@@ -29,6 +29,8 @@ class State;
 namespace SceneManagement {
 typedef Util::GenericAttributeList NodeDescriptionList;
 typedef Util::GenericAttributeMap NodeDescription;
+class MeshImportHandler;
+
 namespace ImporterTools {
 
 std::deque<const NodeDescription *> filterElements(const std::string & type, 
@@ -51,27 +53,24 @@ void finalizeState(ImportContext & ctxt, State * state,const NodeDescription & d
 
 Geometry::SRT getSRT(const NodeDescription & d) ;
 
-void setTransformation(const NodeDescription & d, Node * node) ;
-
 void addAttributes(ImportContext & ctxt, const NodeDescriptionList * subDescriptions, Util::AttributeProvider * attrProvider) ;
 
-/**
- * If the given @a description contains a node identifier, the given @a node is registered with that identifier in the local SceneManager.
- *
- * @param description Description, which was used to generate @a node.
- * @param node Generated node.
- */
-void registerNamedNode(ImportContext & ctxt,const NodeDescription & description, Node * node);
-
-/**
- * If the given @a description contains a state identifier, the given @a state is registered with that identifier in the local SceneManager.
- *
- * @param description Description, which was used to generate @a state.
- * @param state Generated state.
- */
-void registerNamedState(ImportContext & ctxt,const NodeDescription & description, State * state) ;
-
 Util::FileName checkRelativePaths(const ImportContext & ctxt,const Util::FileName & fileName);
+
+typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description, GroupNode * parent)> NodeImport_Fn_t;
+typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description, Node * parent)> StateImport_Fn_t;
+typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description, Node * parent)> BehaviourImport_Fn_t;
+typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description)> AdditionalDataImport_Fn_t;
+
+void registerNodeImporter(NodeImport_Fn_t);
+void registerStateImporter(StateImport_Fn_t);
+void registerBehaviourImporter(BehaviourImport_Fn_t);
+void registerAdditionalDataImporter(AdditionalDataImport_Fn_t);
+
+MeshImportHandler * getMeshImportHandler();
+void setMeshImportHandler(std::unique_ptr<MeshImportHandler> handler);
+
+void buildSceneFromDescription(ImportContext & importContext,const NodeDescription * d);
 
 }
 }
