@@ -13,9 +13,9 @@ minsg_add_sources(
 	PreprocessingContext.cpp
 	Renderer.cpp
 	SamplePoint.cpp
-	SamplingSphere.cpp
 	SphereVisualizationRenderer.cpp
 	Statistics.cpp
+	VisibilitySphere.cpp
 )
 
 minsg_add_extension(MINSG_EXT_SVS "Defines if the MinSG extension Spherical Visibility Sampling (SVS) is built.")

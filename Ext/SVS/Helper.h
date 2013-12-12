@@ -35,7 +35,7 @@ class GroupNode;
 class Node;
 namespace SVS {
 class PreprocessingContext;
-class SamplingSphere;
+class VisibilitySphere;
 
 /**
  * Create an orthographic camera, whose frustum fully contains the given sphere, and which uses the given resolution in pixels.
@@ -58,24 +58,24 @@ CameraNodeOrtho * createSamplingCamera(const Geometry::Sphere_f & sphere, const 
 void transformCamera(AbstractCameraNode * camera, const Geometry::Sphere_f & sphere, const Geometry::Matrix4x4f & worldMatrix, const Geometry::Vec3f & position);
 
 /**
- * Create a color texture from the sample values of the given sampling sphere.
+ * Create a color texture from the sample values of the given visibility sphere.
  * The values will be scaled to the range [0, 255] and encoded into the green channel of the texture.
  *
  * @param width Width in pixels of the texture
  * @param height Height in pixels of the texture
- * @param samplingSphere Sampling sphere containing sample values
+ * @param visibilitySphere Sampling sphere containing sample values
  * @param interpolation Type of interpolation to use when requesting values between sample positions
  * @return Color texture containing the encoded values
  */
-Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const SamplingSphere & samplingSphere, interpolation_type_t interpolation);
+Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const VisibilitySphere & visibilitySphere, interpolation_type_t interpolation);
 
 /**
  * Perform the preprocessing for the given node.
- * First it is checked if the node already has a sampling sphere.
- * If that sampling sphere is valid, the preprocessing is skipped for the node.
- * If it is invalid, the sampling sphere is removed.
- * Then, if the node is without a sampling sphere, a new one is created.
- * When the function returns, the node has a valid sampling sphere.
+ * First it is checked if the node already has a visibility sphere.
+ * If that visibility sphere is valid, the preprocessing is skipped for the node.
+ * If it is invalid, the visibility sphere is removed.
+ * Then, if the node is without a visibility sphere, a new one is created.
+ * When the function returns, the node has a valid visibility sphere.
  *
  * @param preprocessingContext Context object holding required data (e.g. 
  * scene manager, frame context, resolution, sample positions)
@@ -86,57 +86,57 @@ void preprocessNode(PreprocessingContext & preprocessingContext,
 
 /**
  * Calculate a sphere for the given node, and do a sampling run for the given positions.
- * A SamplingSphere is created, and stored as attribute at the given node.
+ * A VisibilitySphere is created, and stored as attribute at the given node.
  *
  * @param preprocessingContext Context object holding required data (e.g. 
  * scene manager, frame context, resolution, sample positions)
  * @param node Node to do the sampling for
  */
-void createSamplingSphere(PreprocessingContext & preprocessingContext,
+void createVisibilitySphere(PreprocessingContext & preprocessingContext,
 						  GroupNode * node);
 
 /**
- * Check if the given sampling sphere is valid.
- * An invalid sampling sphere contains no samples, contains samples without, or has been cloned.
+ * Check if the given visibility sphere is valid.
+ * An invalid visibility sphere contains no samples, contains samples without, or has been cloned.
  * 
- * @param node Root node of the subtree that the sampling sphere is stored at
- * @param samplingSphere Sampling sphere to check
- * @return @c true if the sampling sphere is valid, @c false otherwise
+ * @param node Root node of the subtree that the visibility sphere is stored at
+ * @param visibilitySphere Sampling sphere to check
+ * @return @c true if the visibility sphere is valid, @c false otherwise
  */
-bool isSamplingSphereValid(GroupNode * node, const SamplingSphere & samplingSphere);
+bool isVisibilitySphereValid(GroupNode * node, const VisibilitySphere & visibilitySphere);
 
 /**
- * Check if a sampling sphere is stored at the node.
+ * Check if a visibility sphere is stored at the node.
  * 
  * @param node Inner node of a tree structure
- * @return @c true if there is a sampling sphere, @c false otherwise
+ * @return @c true if there is a visibility sphere, @c false otherwise
  */
-bool hasSamplingSphere(GroupNode * node);
+bool hasVisibilitySphere(GroupNode * node);
 
 /**
- * Retrieve a sampling sphere from a node.
+ * Retrieve a visibility sphere from a node.
  *
  * @param node Inner node of a tree structure
  * @return Sampling sphere stored at the given node
  * @throw std::logic_error If the attribute was not found, or has wrong type
  */
-const SamplingSphere & retrieveSamplingSphere(GroupNode * node);
+const VisibilitySphere & retrieveVisibilitySphere(GroupNode * node);
 
 /**
- * Store a sampling sphere at a node.
+ * Store a visibility sphere at a node.
  *
  * @param node Inner node of a tree structure
- * @param samplingSphere Sampling sphere that will be stored at the given node
+ * @param visibilitySphere Sampling sphere that will be stored at the given node
  * @throw std::logic_error If the attribute did already exist
  */
-void storeSamplingSphere(GroupNode * node, SamplingSphere && samplingSphere);
+void storeVisibilitySphere(GroupNode * node, VisibilitySphere && visibilitySphere);
 
 /**
- * Remove all sampling spheres stored at nodes on the path from the given node to the root.
+ * Remove all visibility spheres stored at nodes on the path from the given node to the root.
  * 
  * @param node Beginning of the path
  */
-void removeSamplingSphereUpwards(GroupNode * node);
+void removeVisibilitySphereUpwards(GroupNode * node);
 
 /**
  * Change the coordinate system from world coordinates to local coordinates for

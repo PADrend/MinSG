@@ -8,7 +8,7 @@
 */
 #ifdef MINSG_EXT_SVS
 
-#include "SamplingSphere.h"
+#include "VisibilitySphere.h"
 #include "Helper.h"
 #include "../Evaluator/Evaluator.h"
 #include "../Triangulation/Delaunay3d.h"
@@ -119,7 +119,7 @@ static Triangulation::Delaunay3d<SampleEntry> * triangulateSamplePoints(std::vec
 	return triangulation;
 }
 
-SamplingSphere::SamplingSphere(Geometry::Sphere_f _sphere, const std::vector<SamplePoint> & _samples) :
+VisibilitySphere::VisibilitySphere(Geometry::Sphere_f _sphere, const std::vector<SamplePoint> & _samples) :
 	sphere(std::move(_sphere)), samples(_samples), triangulation(), minimumScaleFactor(1.0f) {
 	if(_samples.empty()) {
 		throw std::invalid_argument("Array of sample points is empty.");
@@ -128,7 +128,7 @@ SamplingSphere::SamplingSphere(Geometry::Sphere_f _sphere, const std::vector<Sam
 	triangulation.reset(triangulateSamplePoints(samples));
 }
 
-SamplingSphere::SamplingSphere(Geometry::Sphere_f && _sphere, std::vector<SamplePoint> && _samples) :
+VisibilitySphere::VisibilitySphere(Geometry::Sphere_f && _sphere, std::vector<SamplePoint> && _samples) :
 		sphere(std::forward<Geometry::Sphere_f>(_sphere)),
 		samples(std::forward<std::vector<SamplePoint>>(_samples)),
 		triangulation(),
@@ -140,21 +140,21 @@ SamplingSphere::SamplingSphere(Geometry::Sphere_f && _sphere, std::vector<Sample
 	triangulation.reset(triangulateSamplePoints(samples));
 }
 
-SamplingSphere::SamplingSphere(Geometry::Sphere_f newSphere,
-							   const std::deque<const SamplingSphere *> & samplingSpheres) :
+VisibilitySphere::VisibilitySphere(Geometry::Sphere_f newSphere,
+							   const std::deque<const VisibilitySphere *> & visibilitySpheres) :
 	sphere(std::move(newSphere)), samples(), triangulation(), minimumScaleFactor(1.0f) {
-	if(samplingSpheres.empty()) {
+	if(visibilitySpheres.empty()) {
 		throw std::invalid_argument("Array of sample points is empty.");
 	}
 
 	// Check consistency
-	const std::size_t numSpheres = samplingSpheres.size();
-	const SamplingSphere * firstSphere = samplingSpheres.front();
+	const std::size_t numSpheres = visibilitySpheres.size();
+	const VisibilitySphere * firstSphere = visibilitySpheres.front();
 	const std::size_t firstNumSamples = firstSphere->samples.size();
 	for(std::size_t s = 0; s < firstNumSamples; ++s) {
 		const Geometry::Vec3f & firstPos = firstSphere->samples[s].getPosition();
 		for(std::size_t i = 1; i < numSpheres; ++i) {
-			const Geometry::Vec3f & currentPos = samplingSpheres[i]->samples[s].getPosition();
+			const Geometry::Vec3f & currentPos = visibilitySpheres[i]->samples[s].getPosition();
 			if(firstPos != currentPos) {
 				throw std::invalid_argument("Sample positions are not consistent.");
 			}
@@ -165,11 +165,11 @@ SamplingSphere::SamplingSphere(Geometry::Sphere_f newSphere,
 	triangulation = firstSphere->triangulation;
 }
 
-bool SamplingSphere::operator==(const SamplingSphere & other) const {
+bool VisibilitySphere::operator==(const VisibilitySphere & other) const {
 	return sphere == other.sphere && samples == other.samples;
 }
 
-ListNode * SamplingSphere::getTriangulationMinSGNodes() const {
+ListNode * VisibilitySphere::getTriangulationMinSGNodes() const {
 	return Triangulation::createMinSGNodes(*triangulation.get(), false);
 }
 
@@ -194,7 +194,7 @@ static void evaluateSample(SamplePoint & sample,
 	sample.setValue(vva->ref());
 }
 
-void SamplingSphere::evaluateAllSamples(FrameContext & frameContext,
+void VisibilitySphere::evaluateAllSamples(FrameContext & frameContext,
 										Evaluators::Evaluator & evaluator,
 										CameraNodeOrtho * camera,
 										Node * node) {
@@ -203,11 +203,11 @@ void SamplingSphere::evaluateAllSamples(FrameContext & frameContext,
 	}
 }
 
-void SamplingSphere::evaluateAllSamples(FrameContext & frameContext,
+void VisibilitySphere::evaluateAllSamples(FrameContext & frameContext,
 										Evaluators::Evaluator & evaluator,
 										CameraNodeOrtho * camera,
 										Node * node,
-										const std::deque<const SamplingSphere *> & samplingSpheres,
+										const std::deque<const VisibilitySphere *> & visibilitySpheres,
 										const std::deque<GeometryNode *> & explicitNodes) {
 	auto allNodes = collectNodes<GeometryNode>(node);
 	std::sort(allNodes.begin(), allNodes.end());
@@ -216,8 +216,8 @@ void SamplingSphere::evaluateAllSamples(FrameContext & frameContext,
 	for(std::size_t s = 0; s < numSamples; ++s) {
 		// Combine results from all spheres to get all visible nodes
 		VisibilityVector maxVV;
-		for(const auto & samplingSphere : samplingSpheres) {
-			const auto & currentValue = samplingSphere->samples[s].getValue();
+		for(const auto & visibilitySphere : visibilitySpheres) {
+			const auto & currentValue = visibilitySphere->samples[s].getValue();
 			if(maxVV.getVisibleNodeCount() == 0) {
 				maxVV = currentValue;
 			} else {
@@ -254,8 +254,8 @@ void SamplingSphere::evaluateAllSamples(FrameContext & frameContext,
 	}
 }
 
-size_t SamplingSphere::getMemoryUsage() const {
-	size_t size = sizeof(SamplingSphere);
+size_t VisibilitySphere::getMemoryUsage() const {
+	size_t size = sizeof(VisibilitySphere);
 	for(const auto & sample : samples) {
 		size += sample.getMemoryUsage();
 	}
@@ -264,7 +264,7 @@ size_t SamplingSphere::getMemoryUsage() const {
 	return size;
 }
 
-VisibilityVector SamplingSphere::queryValue(const Geometry::Vec3f & query, interpolation_type_t interpolationMethod) const {
+VisibilityVector VisibilitySphere::queryValue(const Geometry::Vec3f & query, interpolation_type_t interpolationMethod) const {
 	if(interpolationMethod == INTERPOLATION_NEAREST) {
 		std::size_t closestSampleIndex = 0;
 		float minSquaredDistance = samples[0].getPosition().distanceSquared(query);

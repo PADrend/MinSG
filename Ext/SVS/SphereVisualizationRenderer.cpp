@@ -10,7 +10,7 @@
 
 #include "SphereVisualizationRenderer.h"
 #include "Helper.h"
-#include "SamplingSphere.h"
+#include "VisibilitySphere.h"
 #include "../../Core/Nodes/GeometryNode.h"
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/Nodes/Node.h"
@@ -57,13 +57,13 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 			return NodeRendererResult::PASS_ON;
 		}
 
-		// Simply ignore nodes without a sampling sphere.
-		if(!hasSamplingSphere(groupNode)) {
+		// Simply ignore nodes without a visibility sphere.
+		if(!hasVisibilitySphere(groupNode)) {
 			return NodeRendererResult::PASS_ON;
 		}
 
-		const SamplingSphere & samplingSphere = retrieveSamplingSphere(groupNode);
-		const auto & sphere = samplingSphere.getSphere();
+		const VisibilitySphere & visibilitySphere = retrieveVisibilitySphere(groupNode);
+		const auto & sphere = visibilitySphere.getSphere();
 
 		static const Util::StringIdentifier attributeId(NodeAttributeModifier::create( "SVS::SphereVisualizationRenderer::MetaObject", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 		typedef Util::ReferenceAttribute<GeometryNode> MetaObjectAttribute;

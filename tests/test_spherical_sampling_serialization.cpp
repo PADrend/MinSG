@@ -10,7 +10,7 @@
 #include <Geometry/Vec3.h>
 #include <MinSG/Core/Nodes/GeometryNode.h>
 #include <MinSG/Ext/SVS/SamplePoint.h>
-#include <MinSG/Ext/SVS/SamplingSphere.h>
+#include <MinSG/Ext/SVS/VisibilitySphere.h>
 #include <MinSG/Ext/VisibilitySubdivision/VisibilityVector.h>
 #include <MinSG/SceneManagement/SceneManager.h>
 #include <Rendering/MeshUtils/PlatonicSolids.h>
@@ -93,12 +93,12 @@ int test_spherical_sampling_serialization() {
 			}
 		}
 	}
-	SamplingSphere samplingSphere(Geometry::Sphere_f(Geometry::Vec3f(1.0f, 2.0f, 3.0f), 17.0f), samples);
+	VisibilitySphere visibilitySphere(Geometry::Sphere_f(Geometry::Vec3f(1.0f, 2.0f, 3.0f), 17.0f), samples);
 	{
 		std::stringstream stream;
 		stream.precision(std::numeric_limits<long double>::digits10);
 		// Serialize
-		stream << samplingSphere.getSphere() << ' ' << samples.size();
+		stream << visibilitySphere.getSphere() << ' ' << samples.size();
 		for(const auto & sample : samples) {
 			stream << ' ' << sample.getPosition() << ' ';
 			sample.getValue().serialize(stream, sceneManager);
@@ -119,14 +119,14 @@ int test_spherical_sampling_serialization() {
 			newSamples.push_back(sample);
 		}
 		
-		SamplingSphere newSamplingSphere(sphere, newSamples);
-		if(!(samplingSphere.getSphere() == newSamplingSphere.getSphere())) {
+		VisibilitySphere newVisibilitySphere(sphere, newSamples);
+		if(!(visibilitySphere.getSphere() == newVisibilitySphere.getSphere())) {
 			std::cout << "Serialization/unserialization failed." << std::endl;
 			return EXIT_FAILURE;
 		}
 		for(std::size_t s = 0; s < samples.size(); ++s) {
-			const SamplePoint & oldSample = samplingSphere.getSamples()[s];
-			const SamplePoint & newSample = newSamplingSphere.getSamples()[s];
+			const SamplePoint & oldSample = visibilitySphere.getSamples()[s];
+			const SamplePoint & newSample = newVisibilitySphere.getSamples()[s];
 			if(oldSample.getPosition().distance(newSample.getPosition()) > std::numeric_limits<float>::epsilon()) {
 				std::cout << "Serialization/unserialization failed." << std::endl;
 				return EXIT_FAILURE;

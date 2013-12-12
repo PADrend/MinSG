@@ -8,8 +8,8 @@
 */
 #ifdef MINSG_EXT_SVS
 
-#ifndef MINSG_SVS_SAMPLINGSPHERE_H_
-#define MINSG_SVS_SAMPLINGSPHERE_H_
+#ifndef MINSG_SVS_VISIBILITYSPHERE_H_
+#define MINSG_SVS_VISIBILITYSPHERE_H_
 
 #include "Definitions.h"
 #include "SamplePoint.h"
@@ -43,7 +43,7 @@ struct SampleEntry;
  * @author Benjamin Eikel
  * @date 2012-01-17
  */
-class SamplingSphere {
+class VisibilitySphere {
 	private:
 		//! Geometric representation of the sphere surface.
 		Geometry::Sphere_f sphere;
@@ -57,33 +57,33 @@ class SamplingSphere {
 		//! Factor that is used to scale the query vector to find a point inside the triangulation.
 		mutable float minimumScaleFactor;
 
-		SamplingSphere & operator=(const SamplingSphere &) = delete;
-		SamplingSphere & operator=(SamplingSphere &&) = delete;
+		VisibilitySphere & operator=(const VisibilitySphere &) = delete;
+		VisibilitySphere & operator=(VisibilitySphere &&) = delete;
 
 	public:
 		//! Build a new triangulation from the given samples.
-		SamplingSphere(Geometry::Sphere_f _sphere, const std::vector<SamplePoint> & _samples);
+		VisibilitySphere(Geometry::Sphere_f _sphere, const std::vector<SamplePoint> & _samples);
 
-		//! Move the given sphere and the given samples into the sampling sphere.
-		SamplingSphere(Geometry::Sphere_f && _sphere, std::vector<SamplePoint> && _samples);
+		//! Move the given sphere and the given samples into the visibility sphere.
+		VisibilitySphere(Geometry::Sphere_f && _sphere, std::vector<SamplePoint> && _samples);
 
 		/**
-		 * Build a new sampling sphere.
-		 * Firstly, the given set of sampling spheres is checked for consistency (same sample positions).
-		 * Secondly, a new sampling sphere is created for the given sphere and sample positions.
+		 * Build a new visibility sphere.
+		 * Firstly, the given set of visibility spheres is checked for consistency (same sample positions).
+		 * Secondly, a new visibility sphere is created for the given sphere and sample positions.
 		 *
-		 * @param newSphere Geometric representation of the sphere surface of the new sampling sphere
-		 * @param samplingSpheres Sampling spheres that are used to create the new sampling sphere
+		 * @param newSphere Geometric representation of the sphere surface of the new visibility sphere
+		 * @param visibilitySpheres Sampling spheres that are used to create the new visibility sphere
 		 */
-		SamplingSphere(Geometry::Sphere_f newSphere,
-					   const std::deque<const SamplingSphere *> & samplingSpheres);
+		VisibilitySphere(Geometry::Sphere_f newSphere,
+					   const std::deque<const VisibilitySphere *> & visibilitySpheres);
 
-		SamplingSphere(const SamplingSphere &) = default;
-		SamplingSphere(SamplingSphere &&) = default;
-		~SamplingSphere() = default;
+		VisibilitySphere(const VisibilitySphere &) = default;
+		VisibilitySphere(VisibilitySphere &&) = default;
+		~VisibilitySphere() = default;
 
 		//! Equality comparison
-		bool operator==(const SamplingSphere & other) const;
+		bool operator==(const VisibilitySphere & other) const;
 
 		const Geometry::Sphere_f & getSphere() const {
 			return sphere;
@@ -100,7 +100,7 @@ class SamplingSphere {
 		ListNode * getTriangulationMinSGNodes() const;
 
 		/**
-		 * Calculate the amount of memory that is required to store the sampling sphere.
+		 * Calculate the amount of memory that is required to store the visibility sphere.
 		 * 
 		 * @return Overall amount of memory in bytes
 		 */
@@ -124,14 +124,14 @@ class SamplingSphere {
 		 * Iterate over all sample points on the sphere and perform an evaluation for each point.
 		 * The given evaluator is used for the evaluation.
 		 * When evaluating a sample point, only those nodes are taken into account, which are visible
-		 * for at least one of the corresponding sample points of the given sampling spheres, or which
+		 * for at least one of the corresponding sample points of the given visibility spheres, or which
 		 * are given explicitly.
 		 *
 		 * @param frameContext Frame context used for rendering
 		 * @param evaluator Evaluator that is used to generate values
 		 * @param camera Orthographic camera that is used for rendering
 		 * @param node Root node of the scene that is given to the evaluator
-		 * @param samplingSpheres Sampling spheres that define the visible nodes for the sampling
+		 * @param visibilitySpheres Visibility spheres that define the visible nodes for the sampling
 		 * @param explicitNodes Additional nodes that are explicitly taken into account.
 		 * The range has to be sorted.
 		 */
@@ -139,7 +139,7 @@ class SamplingSphere {
 								Evaluators::Evaluator & evaluator,
 								CameraNodeOrtho * camera,
 								Node * node,
-								const std::deque<const SamplingSphere *> & samplingSpheres,
+								const std::deque<const VisibilitySphere *> & visibilitySpheres,
 								const std::deque<GeometryNode *> & explicitNodes);
 
 		/**
@@ -156,6 +156,6 @@ class SamplingSphere {
 }
 }
 
-#endif /* MINSG_SVS_SAMPLINGSPHERE_H_ */
+#endif /* MINSG_SVS_VISIBILITYSPHERE_H_ */
 
 #endif /* MINSG_EXT_SVS */

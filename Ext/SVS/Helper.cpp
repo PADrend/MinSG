@@ -11,7 +11,7 @@
 #include "Helper.h"
 #include "PreprocessingContext.h"
 #include "SamplePoint.h"
-#include "SamplingSphere.h"
+#include "VisibilitySphere.h"
 #include "../Evaluator/Evaluator.h"
 #include "../VisibilitySubdivision/CostEvaluator.h"
 #include "../VisibilitySubdivision/VisibilityVector.h"
@@ -52,7 +52,7 @@
 #include "../Profiling/Profiler.h"
 #endif /* MINSG_EXT_SVS_PROFILING */
 
-typedef Util::WrapperAttribute<MinSG::SVS::SamplingSphere> SamplingSphereAttribute;
+typedef Util::WrapperAttribute<MinSG::SVS::VisibilitySphere> VisibilitySphereAttribute;
 
 namespace MinSG {
 namespace SceneManagement {
@@ -69,8 +69,8 @@ namespace SVS {
 static const Util::StringIdentifier CONTEXT_DATA_SCENEMANAGER("SceneManager");
 typedef Util::WrapperAttribute<SceneManagement::SceneManager &> scene_manager_attribute_t;
 
-std::string GATypeNameSamplingSphere = "SamplingSphere";
-static std::pair<std::string, std::string> serializeGASamplingSphere(const std::pair<const Util::GenericAttribute *, const Util::GenericAttributeMap *> & attributeAndContext) {
+std::string GATypeNameVisibilitySphere = "VisibilitySphere";
+static std::pair<std::string, std::string> serializeGAVisibilitySphere(const std::pair<const Util::GenericAttribute *, const Util::GenericAttributeMap *> & attributeAndContext) {
 	auto context = attributeAndContext.second;
 	auto sceneManagerAttribute = dynamic_cast<const scene_manager_attribute_t *>(context->getValue(CONTEXT_DATA_SCENEMANAGER));
 	if(sceneManagerAttribute == nullptr) {
@@ -78,18 +78,18 @@ static std::pair<std::string, std::string> serializeGASamplingSphere(const std::
 	}
 	const SceneManagement::SceneManager & sceneManager = sceneManagerAttribute->ref();
 
-	auto samplingSphereAttribute = dynamic_cast<const SamplingSphereAttribute *>(attributeAndContext.first);
-	const auto & samplingSphere = samplingSphereAttribute->ref();
+	auto visibilitySphereAttribute = dynamic_cast<const VisibilitySphereAttribute *>(attributeAndContext.first);
+	const auto & visibilitySphere = visibilitySphereAttribute->ref();
 	std::ostringstream stream;
 	stream.precision(std::numeric_limits<long double>::digits10);
-	stream << samplingSphere.getSphere() << ' ' << samplingSphere.getSamples().size();
-	for(const auto & sample : samplingSphere.getSamples()) {
+	stream << visibilitySphere.getSphere() << ' ' << visibilitySphere.getSamples().size();
+	for(const auto & sample : visibilitySphere.getSamples()) {
 		stream << ' ' << sample.getPosition() << ' ';
 		sample.getValue().serialize(stream, sceneManager);
 	}
-	return std::make_pair(GATypeNameSamplingSphere, stream.str());
+	return std::make_pair(GATypeNameVisibilitySphere, stream.str());
 }
-static SamplingSphereAttribute * unserializeGASamplingSphere(const std::pair<std::string, const Util::GenericAttributeMap *> & contentAndContext) {
+static VisibilitySphereAttribute * unserializeGAVisibilitySphere(const std::pair<std::string, const Util::GenericAttributeMap *> & contentAndContext) {
 	auto context = contentAndContext.second;
 	auto sceneManagerAttribute = dynamic_cast<const scene_manager_attribute_t *>(context->getValue(CONTEXT_DATA_SCENEMANAGER));
 	if(sceneManagerAttribute == nullptr) {
@@ -111,10 +111,10 @@ static SamplingSphereAttribute * unserializeGASamplingSphere(const std::pair<std
 		sample.setValue(VisibilitySubdivision::VisibilityVector::unserialize(stream, sceneManager));
 		samples.emplace_back(std::move(sample));
 	}
-	return new SamplingSphereAttribute(std::move(sphere), std::move(samples));
+	return new VisibilitySphereAttribute(std::move(sphere), std::move(samples));
 }
 
-static bool serializerRegistered = Util::GenericAttributeSerialization::registerSerializer<SamplingSphereAttribute>(GATypeNameSamplingSphere, serializeGASamplingSphere, unserializeGASamplingSphere);
+static bool serializerRegistered = Util::GenericAttributeSerialization::registerSerializer<VisibilitySphereAttribute>(GATypeNameVisibilitySphere, serializeGAVisibilitySphere, unserializeGAVisibilitySphere);
 
 CameraNodeOrtho * createSamplingCamera(const Geometry::Sphere_f & sphere, const Geometry::Matrix4x4f & worldMatrix, int resolution) {
 	const auto worldSphere = transformSphere(sphere, worldMatrix);
@@ -136,7 +136,7 @@ void transformCamera(AbstractCameraNode * camera, const Geometry::Sphere_f & sph
 	camera->rotateToWorldDir(position);
 }
 
-Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const SamplingSphere & samplingSphere, interpolation_type_t interpolation) {
+Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const VisibilitySphere & visibilitySphere, interpolation_type_t interpolation) {
 	std::vector<std::size_t> values;
 	values.reserve(width * height);
 	std::size_t minValue = std::numeric_limits<std::size_t>::max();
@@ -152,7 +152,7 @@ Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const S
 
 			const Geometry::Vec3f position = Geometry::Sphere_f::calcCartesianCoordinateUnitSphere(inclination, azimuth);
 
-			const auto vv = samplingSphere.queryValue(position, interpolation);
+			const auto vv = visibilitySphere.queryValue(position, interpolation);
 			const std::size_t value = vv.getVisibleNodeCount();
 
 			values[y * width + x] = value;
@@ -231,8 +231,8 @@ static Geometry::Sphere_f computeLocalBoundingSphere(PreprocessingContext & prep
 		for(const auto & childNode : children) {
 			GroupNode * groupChild = dynamic_cast<GroupNode *>(childNode);
 			if(groupChild != nullptr) {
-				const SamplingSphere & childSamplingSphere = retrieveSamplingSphere(groupChild);
-				const auto & childSphere = childSamplingSphere.getSphere();
+				const VisibilitySphere & childVisibilitySphere = retrieveVisibilitySphere(groupChild);
+				const auto & childSphere = childVisibilitySphere.getSphere();
 
 				// Transform sphere from child local to parent local coordinates
 				sphere.include(transformSphere(childSphere, groupChild->getMatrix()));
@@ -258,15 +258,15 @@ static Geometry::Sphere_f computeLocalBoundingSphere(PreprocessingContext & prep
 }
 
 void preprocessNode(PreprocessingContext & preprocessingContext, GroupNode * node) {
-	if(hasSamplingSphere(node)) {
-		const SamplingSphere & samplingSphere = retrieveSamplingSphere(node);
-		if(isSamplingSphereValid(node, samplingSphere)) {
+	if(hasVisibilitySphere(node)) {
+		const VisibilitySphere & visibilitySphere = retrieveVisibilitySphere(node);
+		if(isVisibilitySphereValid(node, visibilitySphere)) {
 			return;
 		} else {
-			removeSamplingSphereUpwards(node);
+			removeVisibilitySphereUpwards(node);
 		}
 	}
-	createSamplingSphere(preprocessingContext, node);
+	createVisibilitySphere(preprocessingContext, node);
 }
 
 #ifdef MINSG_EXT_SVS_PROFILING
@@ -290,7 +290,7 @@ static void enrichActionWithVVInformation(Profiling::Action & action,
 }
 #endif /* MINSG_EXT_SVS_PROFILING */
 
-void createSamplingSphere(PreprocessingContext & preprocessingContext, GroupNode * node) {
+void createVisibilitySphere(PreprocessingContext & preprocessingContext, GroupNode * node) {
 #ifdef MINSG_EXT_SVS_PROFILING
 	auto & profiling = preprocessingContext.getProfiler();
 	auto collectChildrenAction = profiling.beginTimeMemoryAction("Collect child nodes");
@@ -323,9 +323,9 @@ void createSamplingSphere(PreprocessingContext & preprocessingContext, GroupNode
 #endif /* MINSG_EXT_SVS_PROFILING */
 
 	// Collect visibility data from child nodes
-	std::deque<const SamplingSphere *> samplingSpheres;
+	std::deque<const VisibilitySphere *> visibilitySpheres;
 	for(const auto & groupNode : childrenGroupNode) {
-		samplingSpheres.push_back(&retrieveSamplingSphere(groupNode));
+		visibilitySpheres.push_back(&retrieveVisibilitySphere(groupNode));
 	}
 
 #ifdef MINSG_EXT_SVS_PROFILING
@@ -353,7 +353,7 @@ void createSamplingSphere(PreprocessingContext & preprocessingContext, GroupNode
 #endif /* MINSG_EXT_SVS_PROFILING */
 
 		std::vector<SamplePoint> samplePoints(preprocessingContext.getPositions().begin(), preprocessingContext.getPositions().end());
-		SamplingSphere samplingSphere(sphere, samplePoints);
+		VisibilitySphere visibilitySphere(sphere, samplePoints);
 
 #ifdef MINSG_EXT_SVS_PROFILING
 		profiling.endTimeMemoryAction(triangulationAction);
@@ -361,22 +361,22 @@ void createSamplingSphere(PreprocessingContext & preprocessingContext, GroupNode
 		auto testVisibilityAction = profiling.beginTimeMemoryAction("Test visibility");
 #endif /* MINSG_EXT_SVS_PROFILING */
 
-		samplingSphere.evaluateAllSamples(preprocessingContext.getFrameContext(), evaluator, camera.get(), node);
+		visibilitySphere.evaluateAllSamples(preprocessingContext.getFrameContext(), evaluator, camera.get(), node);
 
 #ifdef MINSG_EXT_SVS_PROFILING
-		const auto vv = samplingSphere.queryValue(Geometry::Vec3f(), INTERPOLATION_MAXALL);
+		const auto vv = visibilitySphere.queryValue(Geometry::Vec3f(), INTERPOLATION_MAXALL);
 		enrichActionWithVVInformation(testVisibilityAction, vv);
 		enrichActionWithTreeInformation(testVisibilityAction, node);
 		profiling.endTimeMemoryAction(testVisibilityAction);
 #endif /* MINSG_EXT_SVS_PROFILING */
 
-		storeSamplingSphere(node, std::move(samplingSphere));
+		storeVisibilitySphere(node, std::move(visibilitySphere));
 	} else {
 #ifdef MINSG_EXT_SVS_PROFILING
 		auto mergeSpheresAction = profiling.beginTimeMemoryAction("Merge spheres");
 #endif /* MINSG_EXT_SVS_PROFILING */
 
-		SamplingSphere samplingSphere(sphere, samplingSpheres);
+		VisibilitySphere visibilitySphere(sphere, visibilitySpheres);
 		std::sort(childrenGeometryNode.begin(), childrenGeometryNode.end());
 
 #ifdef MINSG_EXT_SVS_PROFILING
@@ -385,27 +385,27 @@ void createSamplingSphere(PreprocessingContext & preprocessingContext, GroupNode
 		auto testVisibilityAction = profiling.beginTimeMemoryAction("Test visibility");
 #endif /* MINSG_EXT_SVS_PROFILING */
 
-		samplingSphere.evaluateAllSamples(preprocessingContext.getFrameContext(), evaluator, camera.get(), node, samplingSpheres, childrenGeometryNode);
+		visibilitySphere.evaluateAllSamples(preprocessingContext.getFrameContext(), evaluator, camera.get(), node, visibilitySpheres, childrenGeometryNode);
 
 #ifdef MINSG_EXT_SVS_PROFILING
-		const auto vv = samplingSphere.queryValue(Geometry::Vec3f(), INTERPOLATION_MAXALL);
+		const auto vv = visibilitySphere.queryValue(Geometry::Vec3f(), INTERPOLATION_MAXALL);
 		enrichActionWithVVInformation(testVisibilityAction, vv);
 		enrichActionWithTreeInformation(testVisibilityAction, node);
 		profiling.endTimeMemoryAction(testVisibilityAction);
 #endif /* MINSG_EXT_SVS_PROFILING */
 
-		storeSamplingSphere(node, std::move(samplingSphere));
+		storeVisibilitySphere(node, std::move(visibilitySphere));
 	}
 
 	preprocessingContext.getFrameContext().popCamera();
 }
 
-static const Util::StringIdentifier attributeId("SamplingSphere");
+static const Util::StringIdentifier attributeId("VisibilitySphere");
 
-bool isSamplingSphereValid(GroupNode * node, const SamplingSphere & samplingSphere) {
-	const auto & samples = samplingSphere.getSamples();
+bool isVisibilitySphereValid(GroupNode * node, const VisibilitySphere & visibilitySphere) {
+	const auto & samples = visibilitySphere.getSamples();
 	if(samples.empty()) {
-		// A sampling sphere without samples should not be treated as valid.
+		// A visibility sphere without samples should not be treated as valid.
 		return false;
 	}
 	// Check if the node has been cloned.
@@ -427,49 +427,49 @@ bool isSamplingSphereValid(GroupNode * node, const SamplingSphere & samplingSphe
 	return false;
 }
 
-bool hasSamplingSphere(GroupNode * node) {
+bool hasVisibilitySphere(GroupNode * node) {
 	return node->isAttributeSet(attributeId);
 }
 
-static SamplingSphere & accessSamplingSphere(GroupNode * node) {
+static VisibilitySphere & accessVisibilitySphere(GroupNode * node) {
 	Util::GenericAttribute * attribute = node->getAttribute(attributeId);
 	if(attribute == nullptr) {
 		throw std::logic_error("Attribute not found");
 	}
-	SamplingSphereAttribute * samplingSphereAttribute = dynamic_cast<SamplingSphereAttribute *>(attribute);
-	if(samplingSphereAttribute == nullptr) {
+	VisibilitySphereAttribute * visibilitySphereAttribute = dynamic_cast<VisibilitySphereAttribute *>(attribute);
+	if(visibilitySphereAttribute == nullptr) {
 		throw std::logic_error("Attribute has wrong type");
 	}
-	return samplingSphereAttribute->ref();
+	return visibilitySphereAttribute->ref();
 }
 
-const SamplingSphere & retrieveSamplingSphere(GroupNode * node) {
-	return accessSamplingSphere(node);
+const VisibilitySphere & retrieveVisibilitySphere(GroupNode * node) {
+	return accessVisibilitySphere(node);
 }
 
-void storeSamplingSphere(GroupNode * node, SamplingSphere && samplingSphere) {
+void storeVisibilitySphere(GroupNode * node, VisibilitySphere && visibilitySphere) {
 	Util::GenericAttribute * attribute = node->getAttribute(attributeId);
 	if(attribute != nullptr) {
 		throw std::logic_error("Attribute already exists");
 	}
-	auto samplingSphereAttribute = new SamplingSphereAttribute(std::move(samplingSphere));
-	node->setAttribute(attributeId, samplingSphereAttribute);
+	auto visibilitySphereAttribute = new VisibilitySphereAttribute(std::move(visibilitySphere));
+	node->setAttribute(attributeId, visibilitySphereAttribute);
 }
 
-void removeSamplingSphereUpwards(GroupNode * node) {
+void removeVisibilitySphereUpwards(GroupNode * node) {
 	for(Node * someNode = node; someNode != nullptr; someNode = someNode->getParent()) {
 		node->unsetAttribute(attributeId);
 	}
 }
 
 static void transformSphereWorlToLocal(GroupNode * node) {
-	if(!hasSamplingSphere(node)) {
+	if(!hasVisibilitySphere(node)) {
 		return;
 	}
-	SamplingSphere & samplingSphere = accessSamplingSphere(node);
-	const auto & oldSphere = samplingSphere.getSphere();
+	VisibilitySphere & visibilitySphere = accessVisibilitySphere(node);
+	const auto & oldSphere = visibilitySphere.getSphere();
 	const auto inverseWorldMatrix = node->getWorldMatrix().inverse();
-	samplingSphere.setSphere(transformSphere(oldSphere, inverseWorldMatrix));
+	visibilitySphere.setSphere(transformSphere(oldSphere, inverseWorldMatrix));
 }
 
 void transformSpheresFromWorldToLocal(GroupNode * rootNode) {

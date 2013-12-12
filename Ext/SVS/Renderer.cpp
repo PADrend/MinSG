@@ -11,7 +11,7 @@
 #include "Renderer.h"
 #include "BudgetRenderer.h"
 #include "Helper.h"
-#include "SamplingSphere.h"
+#include "VisibilitySphere.h"
 #include "../VisibilitySubdivision/VisibilityVector.h"
 #include "../../Core/Nodes/GeometryNode.h"
 #include "../../Core/Nodes/GroupNode.h"
@@ -67,13 +67,13 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 			return NodeRendererResult::PASS_ON;
 		}
 
-		// Simply ignore nodes without a sampling sphere.
-		if(!hasSamplingSphere(groupNode)) {
+		// Simply ignore nodes without a visibility sphere.
+		if(!hasVisibilitySphere(groupNode)) {
 			return NodeRendererResult::PASS_ON;
 		}
 
-		const SamplingSphere & samplingSphere = retrieveSamplingSphere(groupNode);
-		const auto & sphere = samplingSphere.getSphere();
+		const VisibilitySphere & visibilitySphere = retrieveVisibilitySphere(groupNode);
+		const auto & sphere = visibilitySphere.getSphere();
 		const auto worldSphere = transformSphere(sphere, groupNode->getWorldMatrix());
 #ifdef MINSG_PROFILING
 		++numSpheresVisited;
@@ -137,13 +137,13 @@ static void setOrUpdateAttribute(Node * node, const Util::StringIdentifier & att
 }
 
 void Renderer::displaySphere(FrameContext & context, GroupNode * groupNode, const RenderParam & rp, bool skipGeometryOcclusionTest) {
-	const SamplingSphere & samplingSphere = retrieveSamplingSphere(groupNode);
-	const Geometry::Sphere_f & sphere = samplingSphere.getSphere();
+	const VisibilitySphere & visibilitySphere = retrieveVisibilitySphere(groupNode);
+	const Geometry::Sphere_f & sphere = visibilitySphere.getSphere();
 	const auto worldCenter = groupNode->getWorldMatrix().transformPosition(sphere.getCenter());
 
 	const Geometry::Vec3f cameraPos = context.getCamera()->getWorldPosition();
 	const Geometry::Vec3f direction = (cameraPos - worldCenter).getNormalized();
-	const auto vv = samplingSphere.queryValue(direction, interpolationMethod);
+	const auto vv = visibilitySphere.queryValue(direction, interpolationMethod);
 	const uint32_t maxIndex = vv.getIndexCount();
 
 	const auto & frustum = context.getCamera()->getFrustum();
