@@ -15,7 +15,6 @@
 #include <MinSG/Ext/OutOfCore/CacheObjectPriority.h>
 #include <MinSG/Ext/OutOfCore/Definitions.h>
 #include <MinSG/Ext/OutOfCore/OutOfCore.h>
-#include <MinSG/SceneManagement/SceneManager.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/MeshIndexData.h>
 #include <Rendering/Mesh/MeshVertexData.h>
@@ -100,9 +99,8 @@ int test_OutOfCore() {
 	
 	// Set up the OutOfCore system.
 	MinSG::FrameContext frameContext;
-	MinSG::SceneManagement::SceneManager sceneManager;
 	
-	MinSG::OutOfCore::setUp(&frameContext, &sceneManager);
+	MinSG::OutOfCore::setUp(frameContext);
 
 	MinSG::OutOfCore::CacheManager & manager = MinSG::OutOfCore::getCacheManager();
 	manager.addCacheLevel(MinSG::OutOfCore::CacheLevelType::FILE_SYSTEM, 0);
@@ -218,7 +216,7 @@ int test_OutOfCore() {
 	overallTimer.stop();
 	std::cout << "Overall duration: " << overallTimer.getSeconds() << " s" << std::endl;
 	
-	MinSG::OutOfCore::shutDown(&sceneManager);
+	MinSG::OutOfCore::shutDown();
 	
 	return EXIT_SUCCESS;
 #else /* MINSG_EXT_OUTOFCORE */

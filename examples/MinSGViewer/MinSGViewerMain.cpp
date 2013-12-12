@@ -16,6 +16,7 @@
 #include <MinSG/Helper/DataDirectory.h>
 #include <MinSG/Helper/Helper.h>
 
+#include <MinSG/SceneManagement/ImportFunctions.h>
 #include <MinSG/SceneManagement/SceneManager.h>
 
 #include <Rendering/RenderingContext/RenderingContext.h>
@@ -105,7 +106,7 @@ class Application {
 		void loadScene(const Util::FileName & sceneFile) {
 			if(Util::FileUtils::isFile(sceneFile)) {
 				std::cout << "Loading scene from \"" << sceneFile << '\"' << std::endl;
-				const auto nodes = sceneMgr.loadMinSGFile(sceneFile);
+				const auto nodes = MinSG::SceneManagement::loadMinSGFile(sceneMgr, sceneFile);
 				if(nodes.empty()) {
 					std::cerr << "Error: Empty scene file." << std::endl;
 				} else if(nodes.size() == 1) {

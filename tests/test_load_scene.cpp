@@ -16,6 +16,7 @@
 #include <MinSG/Core/FrameContext.h>
 #include <MinSG/Core/RenderParam.h>
 #include <MinSG/Helper/Helper.h>
+#include <MinSG/SceneManagement/ImportFunctions.h>
 #include <MinSG/SceneManagement/SceneManager.h>
 #include <Rendering/Helper.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
@@ -65,7 +66,7 @@ int test_load_scene(Util::UI::Window * window, Util::UI::EventContext & eventCon
 	{
 		const Util::FileName sceneFile("test-scene.minsg");
 		std::cout << "Loading scene \"" << sceneFile.toString() << "\"." << std::endl;
-		std::deque<Util::Reference<MinSG::Node>> nodes = sceneManager.loadMinSGFile(sceneFile);
+		const auto nodes = MinSG::SceneManagement::loadMinSGFile(sceneManager, sceneFile);
 		std::cout << "Loaded " << nodes.size() << " node(s)." << std::endl;
 		for(const auto & node : nodes) {
 			root->addChild(node.get());

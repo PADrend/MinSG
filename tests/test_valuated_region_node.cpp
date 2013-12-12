@@ -11,6 +11,8 @@
 #include <MinSG/Ext/VisibilitySubdivision/VisibilityVector.h>
 #include <MinSG/Helper/Helper.h>
 #include <MinSG/Helper/StdNodeVisitors.h>
+#include <MinSG/SceneManagement/ExportFunctions.h>
+#include <MinSG/SceneManagement/ImportFunctions.h>
 #include <MinSG/SceneManagement/SceneManager.h>
 #include <Geometry/Box.h>
 #include <Geometry/Vec3.h>
@@ -67,12 +69,12 @@ int test_valuated_region_node() {
 		}
 		std::deque<MinSG::Node *> nodes;
 		nodes.push_back(rootRegion.get());
-		sceneManager.saveMinSGFile(tempFile, nodes);
+		MinSG::SceneManagement::saveMinSGFile(sceneManager, tempFile, nodes);
 		MinSG::destroy(rootRegion.get());
 	}
 	
 	{ // ----- IMPORT -----
-		std::deque<Util::Reference<MinSG::Node>> nodes = sceneManager.loadMinSGFile(tempFile);
+		const auto nodes = MinSG::SceneManagement::loadMinSGFile(sceneManager, tempFile);
 		
 		if(nodes.size() != 1) {
 			std::cout << "Import failed (line " << __LINE__ << "): Not one but " << nodes.size() << " nodes loaded." << std::endl;
