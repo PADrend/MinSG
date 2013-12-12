@@ -70,6 +70,7 @@ static const Util::StringIdentifier CONTEXT_DATA_SCENEMANAGER("SceneManager");
 typedef Util::WrapperAttribute<SceneManagement::SceneManager &> scene_manager_attribute_t;
 
 std::string GATypeNameVisibilitySphere = "VisibilitySphere";
+std::string GATypeNameVisibilitySphereDeprecated = "SamplingSphere";
 static std::pair<std::string, std::string> serializeGAVisibilitySphere(const std::pair<const Util::GenericAttribute *, const Util::GenericAttributeMap *> & attributeAndContext) {
 	auto context = attributeAndContext.second;
 	auto sceneManagerAttribute = dynamic_cast<const scene_manager_attribute_t *>(context->getValue(CONTEXT_DATA_SCENEMANAGER));
@@ -114,6 +115,7 @@ static VisibilitySphereAttribute * unserializeGAVisibilitySphere(const std::pair
 	return new VisibilitySphereAttribute(std::move(sphere), std::move(samples));
 }
 
+static bool serializerRegisteredDeprecated = Util::GenericAttributeSerialization::registerSerializer<VisibilitySphereAttribute>(GATypeNameVisibilitySphereDeprecated, serializeGAVisibilitySphere, unserializeGAVisibilitySphere);
 static bool serializerRegistered = Util::GenericAttributeSerialization::registerSerializer<VisibilitySphereAttribute>(GATypeNameVisibilitySphere, serializeGAVisibilitySphere, unserializeGAVisibilitySphere);
 
 CameraNodeOrtho * createSamplingCamera(const Geometry::Sphere_f & sphere, const Geometry::Matrix4x4f & worldMatrix, int resolution) {
@@ -401,6 +403,7 @@ void createVisibilitySphere(PreprocessingContext & preprocessingContext, GroupNo
 }
 
 static const Util::StringIdentifier attributeId("VisibilitySphere");
+static const Util::StringIdentifier attributeIdDeprecated("SamplingSphere");
 
 bool isVisibilitySphereValid(GroupNode * node, const VisibilitySphere & visibilitySphere) {
 	const auto & samples = visibilitySphere.getSamples();
@@ -428,13 +431,21 @@ bool isVisibilitySphereValid(GroupNode * node, const VisibilitySphere & visibili
 }
 
 bool hasVisibilitySphere(GroupNode * node) {
-	return node->isAttributeSet(attributeId);
+	return node->isAttributeSet(attributeId) || node->isAttributeSet(attributeIdDeprecated);
 }
 
 static VisibilitySphere & accessVisibilitySphere(GroupNode * node) {
 	Util::GenericAttribute * attribute = node->getAttribute(attributeId);
 	if(attribute == nullptr) {
-		throw std::logic_error("Attribute not found");
+		// Check if visibility sphere is stored under the depreacted name.
+		Util::GenericAttribute * deprecatedAttribute = node->getAttribute(attributeIdDeprecated);
+		if(deprecatedAttribute == nullptr) {
+			throw std::logic_error("Attribute not found");
+		}
+		// Rename the attribute to the new name.
+		node->setAttribute(attributeId, deprecatedAttribute->clone());
+		node->unsetAttribute(attributeIdDeprecated);
+		attribute = node->getAttribute(attributeId);
 	}
 	VisibilitySphereAttribute * visibilitySphereAttribute = dynamic_cast<VisibilitySphereAttribute *>(attribute);
 	if(visibilitySphereAttribute == nullptr) {
@@ -459,6 +470,7 @@ void storeVisibilitySphere(GroupNode * node, VisibilitySphere && visibilitySpher
 void removeVisibilitySphereUpwards(GroupNode * node) {
 	for(Node * someNode = node; someNode != nullptr; someNode = someNode->getParent()) {
 		node->unsetAttribute(attributeId);
+		node->unsetAttribute(attributeIdDeprecated);
 	}
 }
 
