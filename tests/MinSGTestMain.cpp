@@ -77,8 +77,8 @@ int main(int argc, char * argv[]) {
 		std::cout << " 7 ... Test with large scene\n";
 		std::cout << " 8 ... Test memory consumption\n";
 		std::cout << " 9 ... Test CostEvaluator (and implicitly VisibilityTester)\n";
-		std::cout << "10 ... Test SphericalSampling\n";
-		std::cout << "11 ... Test serialization of SphericalSampling object\n";
+		std::cout << "10 ... Test SVS\n";
+		std::cout << "11 ... Test serialization of SVS object\n";
 		std::cout << "12 ... Test ValuatedRegionNode\n";
 		std::cout << "13 ... Test VisibilityVector\n";
 		std::cout << "14 ... Test Statistics\n";

@@ -1,12 +1,12 @@
 /*
-	This file is part of the MinSG library extension SphericalSampling.
+	This file is part of the MinSG library extension SVS.
 	Copyright (C) 2013 Benjamin Eikel <benjamin@eikel.org>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 
 #include "PreprocessingContext.h"
 #include "Helper.h"
@@ -25,16 +25,16 @@
 #include <memory>
 #include <vector>
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 #include "../Profiling/Logger.h"
 #include "../Profiling/Profiler.h"
 #include <fstream>
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 namespace MinSG {
-namespace SphericalSampling {
+namespace SVS {
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 const Util::StringIdentifier PreprocessingContext::ATTR_numDescendantsGeometryNode("numDescendantsGeometryNode");
 const Util::StringIdentifier PreprocessingContext::ATTR_numDescendantsGroupNode("numDescendantsGroupNode");
 const Util::StringIdentifier PreprocessingContext::ATTR_numDescendantsTriangles("numDescendantsTriangles");
@@ -45,7 +45,7 @@ const Util::StringIdentifier PreprocessingContext::ATTR_numChildrenGeometryNode(
 const Util::StringIdentifier PreprocessingContext::ATTR_numChildrenGroupNode("numChildrenGroupNode");
 const Util::StringIdentifier PreprocessingContext::ATTR_numVertices("numVertices");
 const Util::StringIdentifier PreprocessingContext::ATTR_sphereRadius("sphereRadius");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 struct PreprocessingContext::Implementation {
 	/**
@@ -66,11 +66,11 @@ struct PreprocessingContext::Implementation {
 	Util::Reference<Rendering::Texture> depthTexture;
 	Util::Reference<Rendering::FBO> fbo;
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	std::unique_ptr<Profiling::LoggerTSV> tsvLogger;
 	std::ofstream tsvLoggerStream;
 	Profiling::Profiler profiler;
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 	Implementation(SceneManagement::SceneManager & p_sceneManager,
 				  FrameContext & p_frameContext,
@@ -110,7 +110,7 @@ PreprocessingContext::PreprocessingContext(SceneManagement::SceneManager & scene
 	impl->fbo->attachDepthTexture(impl->frameContext.getRenderingContext(), impl->depthTexture.get());
 	impl->frameContext.getRenderingContext().popFBO();
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	const auto fileNamePrefix = Util::Utils::createTimeStamp() + "_SVS_Preprocessing";
 
 	impl->tsvLoggerStream.open(fileNamePrefix + ".tsv");
@@ -129,28 +129,28 @@ PreprocessingContext::PreprocessingContext(SceneManagement::SceneManager & scene
 	impl->profiler.registerLogger(impl->tsvLogger.get());
 
 	auto action = impl->profiler.beginTimeMemoryAction("Initial tree traversal");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 	// Do a bottom-up tree traversal to collect all internal nodes
 	forEachNodeBottomUp<GroupNode>(rootNode,
 								   [this](GroupNode * groupNode) { impl->unfinishedNodes.push_back(groupNode); });
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	impl->profiler.endTimeMemoryAction(action);
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 }
 
 PreprocessingContext::~PreprocessingContext() {
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	impl->profiler.unregisterLogger(impl->tsvLogger.get());
 	impl->tsvLogger.reset();
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 }
 
 void PreprocessingContext::preprocessSingleNode() {
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	auto action = impl->profiler.beginTimeMemoryAction("Node preprocessing");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 	GroupNode * currentNode = impl->unfinishedNodes.front();
 	impl->unfinishedNodes.pop_front();
@@ -159,9 +159,9 @@ void PreprocessingContext::preprocessSingleNode() {
 	preprocessNode(*this, currentNode);
 	impl->frameContext.getRenderingContext().popFBO();
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	impl->profiler.endTimeMemoryAction(action);
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 }
 
 bool PreprocessingContext::isFinished() const {
@@ -196,13 +196,13 @@ bool PreprocessingContext::getComputeTightInnerBoundingSpheres() const {
 	return impl->computeTightInnerBoundingSpheres;
 }
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 Profiling::Profiler & PreprocessingContext::getProfiler() {
 	return impl->profiler;
 }
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 }
 }
 
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */

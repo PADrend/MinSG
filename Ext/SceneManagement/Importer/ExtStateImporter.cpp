@@ -47,10 +47,10 @@
 #include <Util/IO/FileUtils.h>
 #endif
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING
-#include "../../SphericalSampling/BudgetRenderer.h"
-#include "../../SphericalSampling/Helper.h"
-#include "../../SphericalSampling/Renderer.h"
+#ifdef MINSG_EXT_SVS
+#include "../../SVS/BudgetRenderer.h"
+#include "../../SVS/Helper.h"
+#include "../../SVS/Renderer.h"
 #endif
 
 #include <Rendering/Shader/Uniform.h>
@@ -248,15 +248,15 @@ static bool importSkeletalHardwareRendererState(ImportContext & ctxt, const std:
 }
 #endif
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 static bool importSVSRenderer(ImportContext & ctxt, const std::string & stateType, const NodeDescription & desc, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_SVS_RENDERER) { // check parent != nullptr is done by SceneManager
 		return false;
 	}
 
-	auto renderer = new SphericalSampling::Renderer;
+	auto renderer = new SVS::Renderer;
 	if(desc.contains(Consts::ATTR_SVS_INTERPOLATION_METHOD)) {
-		renderer->setInterpolationMethod(SphericalSampling::interpolationFromString(desc.getString(Consts::ATTR_SVS_INTERPOLATION_METHOD)));
+		renderer->setInterpolationMethod(SVS::interpolationFromString(desc.getString(Consts::ATTR_SVS_INTERPOLATION_METHOD)));
 	}
 	if(desc.contains(Consts::ATTR_SVS_RENDERER_SPHERE_OCCLUSION_TEST)) {
 		if(desc.getBool(Consts::ATTR_SVS_RENDERER_SPHERE_OCCLUSION_TEST)) {
@@ -283,7 +283,7 @@ static bool importSVSBudgetRenderer(ImportContext & ctxt, const std::string & st
 		return false;
 	}
 
-	auto renderer = new SphericalSampling::BudgetRenderer;
+	auto renderer = new SVS::BudgetRenderer;
 	if(desc.contains(Consts::ATTR_SVS_BUDGETRENDERER_BUDGET)) {
 		renderer->setBudget(desc.getValue(Consts::ATTR_SVS_BUDGETRENDERER_BUDGET)->toUnsignedInt());
 	}
@@ -348,7 +348,7 @@ void initExtStateImporter() {
 	ImporterTools::registerStateImporter(&importMARSurfelRenderer);
 #endif
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 	ImporterTools::registerStateImporter(&importSVSRenderer);
 	ImporterTools::registerStateImporter(&importSVSBudgetRenderer);
 #endif

@@ -26,7 +26,7 @@
 #include "../../Core/States/ShaderUniformState.h"
 #include "../../Core/Nodes/GeometryNode.h"
 #include "../TreeBuilder/TreeBuilder.h"
-#include "../SphericalSampling/Renderer.h"
+#include "../SVS/Renderer.h"
 
 #include <Rendering/Draw.h>
 #include <Rendering/Mesh/Mesh.h>
@@ -152,8 +152,8 @@ void MultiAlgoGroupNode::initAlgorithm(AlgoId _algoId, GroupState * state) {
 		break;
 		case SphericalSampling: {
 			states[_algoId] = new GroupState();
-			auto svsr = new SphericalSampling::Renderer();
-			svsr->setInterpolationMethod(SphericalSampling::INTERPOLATION_MAX3);
+			auto svsr = new SVS::Renderer();
+			svsr->setInterpolationMethod(SVS::INTERPOLATION_MAX3);
 			states[_algoId]->addState(svsr);
 		}
 		break;

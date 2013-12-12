@@ -1,15 +1,15 @@
 /*
-	This file is part of the MinSG library extension SphericalSampling.
+	This file is part of the MinSG library extension SVS.
 	Copyright (C) 2013 Benjamin Eikel <benjamin@eikel.org>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 
-#ifndef MINSG_SPHERICALSAMPLING_GEOMETRYNODECOLLECTOR_H
-#define MINSG_SPHERICALSAMPLING_GEOMETRYNODECOLLECTOR_H
+#ifndef MINSG_SVS_GEOMETRYNODECOLLECTOR_H
+#define MINSG_SVS_GEOMETRYNODECOLLECTOR_H
 
 #include "../../Core/States/NodeRendererState.h"
 #include "Definitions.h"
@@ -24,7 +24,7 @@ class FrameContext;
 class GeometryNode;
 class Node;
 class RenderParam;
-namespace SphericalSampling {
+namespace SVS {
 
 /**
  * State to collect the GeometryNodes that are going through a rendering
@@ -37,7 +37,7 @@ namespace SphericalSampling {
  * @date 2013-06-26
  */
 class GeometryNodeCollector : public NodeRendererState {
-		PROVIDES_TYPE_NAME(SphericalSampling::GeometryNodeCollector)
+		PROVIDES_TYPE_NAME(SVS::GeometryNodeCollector)
 	private:
 		std::unordered_set<GeometryNode *> collectedNodes;
 
@@ -61,6 +61,6 @@ class GeometryNodeCollector : public NodeRendererState {
 }
 }
 
-#endif /* MINSG_SPHERICALSAMPLING_GEOMETRYNODECOLLECTOR_H */
+#endif /* MINSG_SVS_GEOMETRYNODECOLLECTOR_H */
 
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */

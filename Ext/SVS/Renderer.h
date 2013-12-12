@@ -1,15 +1,15 @@
 /*
-	This file is part of the MinSG library extension SphericalSampling.
+	This file is part of the MinSG library extension SVS.
 	Copyright (C) 2012 Benjamin Eikel <benjamin@eikel.org>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 
-#ifndef MINSG_SPHERICALSAMPLING_RENDERER_H_
-#define MINSG_SPHERICALSAMPLING_RENDERER_H_
+#ifndef MINSG_SVS_RENDERER_H_
+#define MINSG_SVS_RENDERER_H_
 
 #include "../../Core/States/NodeRendererState.h"
 #include "Definitions.h"
@@ -28,7 +28,7 @@ class GeometryNode;
 class GroupNode;
 class Node;
 class RenderParam;
-namespace SphericalSampling {
+namespace SVS {
 
 /**
  * Renderer that uses preprocessed visibility information.
@@ -39,7 +39,7 @@ namespace SphericalSampling {
  * @date 2012-01-30
  */
 class Renderer : public NodeRendererState {
-		PROVIDES_TYPE_NAME(SphericalSampling::Renderer)
+		PROVIDES_TYPE_NAME(SVS::Renderer)
 	private:
 		interpolation_type_t interpolationMethod;
 
@@ -136,6 +136,6 @@ class Renderer : public NodeRendererState {
 }
 }
 
-#endif /* MINSG_SPHERICALSAMPLING_RENDERER_H_ */
+#endif /* MINSG_SVS_RENDERER_H_ */
 
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */

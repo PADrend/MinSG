@@ -1,12 +1,12 @@
 /*
-	This file is part of the MinSG library extension SphericalSampling.
+	This file is part of the MinSG library extension SVS.
 	Copyright (C) 2012 Benjamin Eikel <benjamin@eikel.org>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 
 #include "Helper.h"
 #include "PreprocessingContext.h"
@@ -48,11 +48,11 @@
 #include <utility>
 #include <vector>
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 #include "../Profiling/Profiler.h"
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
-typedef Util::WrapperAttribute<MinSG::SphericalSampling::SamplingSphere> SamplingSphereAttribute;
+typedef Util::WrapperAttribute<MinSG::SVS::SamplingSphere> SamplingSphereAttribute;
 
 namespace MinSG {
 namespace SceneManagement {
@@ -64,7 +64,7 @@ namespace Rendering {
 class Texture;
 }
 namespace MinSG {
-namespace SphericalSampling {
+namespace SVS {
 
 static const Util::StringIdentifier CONTEXT_DATA_SCENEMANAGER("SceneManager");
 typedef Util::WrapperAttribute<SceneManagement::SceneManager &> scene_manager_attribute_t;
@@ -188,18 +188,18 @@ Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const S
 
 static Geometry::Sphere_f computeLocalBoundingSphere(PreprocessingContext & preprocessingContext __attribute__((unused)),
 													 GeometryNode * geoNode) {
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	auto & profiling = preprocessingContext.getProfiler();
 	auto computeBoundingSphereAction = profiling.beginTimeMemoryAction("Compute leaf bounding sphere");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 	const auto geoSphere = Rendering::MeshUtils::calculateBoundingSphere(geoNode->getMesh());
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	computeBoundingSphereAction.setValue(PreprocessingContext::ATTR_numVertices, Util::GenericAttribute::create(geoNode->getVertexCount()));
 	computeBoundingSphereAction.setValue(PreprocessingContext::ATTR_sphereRadius, Util::GenericAttribute::create(geoSphere.getRadius()));
 	profiling.endTimeMemoryAction(computeBoundingSphereAction);
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 	return geoSphere;
 }
@@ -269,7 +269,7 @@ void preprocessNode(PreprocessingContext & preprocessingContext, GroupNode * nod
 	createSamplingSphere(preprocessingContext, node);
 }
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 static void enrichActionWithTreeInformation(Profiling::Action & action,
 											const Node * node) {
 	const auto geoNodes = collectNodes<GeometryNode>(node);
@@ -288,13 +288,13 @@ static void enrichActionWithVVInformation(Profiling::Action & action,
 	action.setValue(PreprocessingContext::ATTR_numTrianglesVisible, Util::GenericAttribute::create(vv.getTotalCosts()));
 	action.setValue(PreprocessingContext::ATTR_numPixelsVisible, Util::GenericAttribute::create(vv.getTotalBenefits()));
 }
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 void createSamplingSphere(PreprocessingContext & preprocessingContext, GroupNode * node) {
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	auto & profiling = preprocessingContext.getProfiler();
 	auto collectChildrenAction = profiling.beginTimeMemoryAction("Collect child nodes");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 	// Retrieve direct child nodes
 	const auto children = getChildNodes(node);
@@ -313,14 +313,14 @@ void createSamplingSphere(PreprocessingContext & preprocessingContext, GroupNode
 		}
 	}
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	collectChildrenAction.setValue(PreprocessingContext::ATTR_numChildrenGeometryNode, Util::GenericAttribute::create(childrenGeometryNode.size()));
 	collectChildrenAction.setValue(PreprocessingContext::ATTR_numChildrenGroupNode, Util::GenericAttribute::create(childrenGroupNode.size()));
 	enrichActionWithTreeInformation(collectChildrenAction, node);
 	profiling.endTimeMemoryAction(collectChildrenAction);
 
 	auto collectSpheresAction = profiling.beginTimeMemoryAction("Collect visibility spheres");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 	// Collect visibility data from child nodes
 	std::deque<const SamplingSphere *> samplingSpheres;
@@ -328,17 +328,17 @@ void createSamplingSphere(PreprocessingContext & preprocessingContext, GroupNode
 		samplingSpheres.push_back(&retrieveSamplingSphere(groupNode));
 	}
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	profiling.endTimeMemoryAction(collectSpheresAction);
 	auto computeBoundingSphereAction = profiling.beginTimeMemoryAction("Compute inner bounding sphere");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 	const auto sphere = computeLocalBoundingSphere(preprocessingContext, node);
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 	computeBoundingSphereAction.setValue(PreprocessingContext::ATTR_sphereRadius, Util::GenericAttribute::create(sphere.getRadius()));
 	profiling.endTimeMemoryAction(computeBoundingSphereAction);
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 	VisibilitySubdivision::CostEvaluator evaluator(Evaluators::Evaluator::SINGLE_VALUE);
 
@@ -348,51 +348,51 @@ void createSamplingSphere(PreprocessingContext & preprocessingContext, GroupNode
 	// Check if there are only leaves below this node
 	if(!preprocessingContext.getUseExistingVisibilityResults() ||
 			childrenGroupNode.empty()) {
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 		auto triangulationAction = profiling.beginTimeMemoryAction("Sample point triangulation");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 		std::vector<SamplePoint> samplePoints(preprocessingContext.getPositions().begin(), preprocessingContext.getPositions().end());
 		SamplingSphere samplingSphere(sphere, samplePoints);
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 		profiling.endTimeMemoryAction(triangulationAction);
 
 		auto testVisibilityAction = profiling.beginTimeMemoryAction("Test visibility");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 		samplingSphere.evaluateAllSamples(preprocessingContext.getFrameContext(), evaluator, camera.get(), node);
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 		const auto vv = samplingSphere.queryValue(Geometry::Vec3f(), INTERPOLATION_MAXALL);
 		enrichActionWithVVInformation(testVisibilityAction, vv);
 		enrichActionWithTreeInformation(testVisibilityAction, node);
 		profiling.endTimeMemoryAction(testVisibilityAction);
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 		storeSamplingSphere(node, std::move(samplingSphere));
 	} else {
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 		auto mergeSpheresAction = profiling.beginTimeMemoryAction("Merge spheres");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 		SamplingSphere samplingSphere(sphere, samplingSpheres);
 		std::sort(childrenGeometryNode.begin(), childrenGeometryNode.end());
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 		profiling.endTimeMemoryAction(mergeSpheresAction);
 
 		auto testVisibilityAction = profiling.beginTimeMemoryAction("Test visibility");
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 		samplingSphere.evaluateAllSamples(preprocessingContext.getFrameContext(), evaluator, camera.get(), node, samplingSpheres, childrenGeometryNode);
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 		const auto vv = samplingSphere.queryValue(Geometry::Vec3f(), INTERPOLATION_MAXALL);
 		enrichActionWithVVInformation(testVisibilityAction, vv);
 		enrichActionWithTreeInformation(testVisibilityAction, node);
 		profiling.endTimeMemoryAction(testVisibilityAction);
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 		storeSamplingSphere(node, std::move(samplingSphere));
 	}
@@ -530,4 +530,4 @@ interpolation_type_t interpolationFromString(const std::string & str) {
 }
 }
 
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */

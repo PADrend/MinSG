@@ -11,9 +11,9 @@
 #include <MinSG/Core/Nodes/GeometryNode.h>
 #include <MinSG/Core/Nodes/ListNode.h>
 #include <MinSG/Core/FrameContext.h>
-#include <MinSG/Ext/SphericalSampling/Helper.h>
-#include <MinSG/Ext/SphericalSampling/PreprocessingContext.h>
-#include <MinSG/Ext/SphericalSampling/SamplingSphere.h>
+#include <MinSG/Ext/SVS/Helper.h>
+#include <MinSG/Ext/SVS/PreprocessingContext.h>
+#include <MinSG/Ext/SVS/SamplingSphere.h>
 #include <MinSG/Ext/VisibilitySubdivision/VisibilityVector.h>
 #include <MinSG/Helper/Helper.h>
 #include <MinSG/Helper/StdNodeVisitors.h>
@@ -35,8 +35,8 @@
 int test_spherical_sampling();
 
 int test_spherical_sampling() {
-#ifdef MINSG_EXT_SPHERICALSAMPLING
-	std::cout << "Test SphericalSampling ... ";
+#ifdef MINSG_EXT_SVS
+	std::cout << "Test SVS ... ";
 	Util::Timer timer;
 	timer.reset();
 
@@ -99,7 +99,7 @@ int test_spherical_sampling() {
 	positions.emplace_back(0, 0, 1); // back
 
 	// The resolution has to be at least the number of boxes. Otherwise, boxes will be missed during visibility testing.
-	MinSG::SphericalSampling::PreprocessingContext preprocessingContext(sceneManager, frameContext, listNodes.back().get(), positions, count, false, false);
+	MinSG::SVS::PreprocessingContext preprocessingContext(sceneManager, frameContext, listNodes.back().get(), positions, count, false, false);
 	while(!preprocessingContext.isFinished()) {
 		preprocessingContext.preprocessSingleNode();
 	}
@@ -107,7 +107,7 @@ int test_spherical_sampling() {
 	// Validate the results
 	for(uint_fast32_t listIndex = 0; listIndex < count - 2; ++listIndex) {
 		MinSG::ListNode * listNode = listNodes[listIndex].get();
-		const MinSG::SphericalSampling::SamplingSphere & samplingSphere = MinSG::SphericalSampling::retrieveSamplingSphere(listNode);
+		const MinSG::SVS::SamplingSphere & samplingSphere = MinSG::SVS::retrieveSamplingSphere(listNode);
 		{
 			// Because the geometry is built of axis-aligned bounding boxes only, the sphere has to contain the group's bounding box.
 			assert(samplingSphere.getSphere().distance(listNode->getBB().getMin()) < 1.0e-9);
@@ -115,7 +115,7 @@ int test_spherical_sampling() {
 		}
 		{
 			// left => only first box must be visible
-			const auto vv = samplingSphere.queryValue(positions[0], MinSG::SphericalSampling::INTERPOLATION_NEAREST);
+			const auto vv = samplingSphere.queryValue(positions[0], MinSG::SVS::INTERPOLATION_NEAREST);
 			assert(vv.getBenefits(boxNodes.front().get()) > 0);
 			for(uint_fast32_t boxIndex = 1; boxIndex < count; ++boxIndex) {
 				MinSG::GeometryNode * geoNode = boxNodes[boxIndex].get();
@@ -124,7 +124,7 @@ int test_spherical_sampling() {
 		}
 		{
 			// right => only last box inside the subtree must be visible
-			const auto vv = samplingSphere.queryValue(positions[1], MinSG::SphericalSampling::INTERPOLATION_NEAREST);
+			const auto vv = samplingSphere.queryValue(positions[1], MinSG::SVS::INTERPOLATION_NEAREST);
 			const uint32_t lastBoxIndex = listIndex + 2;
 			assert(vv.getBenefits(boxNodes[lastBoxIndex].get()) > 0);
 			for(uint_fast32_t boxIndex = 0; boxIndex < count; ++boxIndex) {
@@ -136,7 +136,7 @@ int test_spherical_sampling() {
 		}
 		// top, back => all boxes in the subtree must be visible
 		for(uint_fast32_t posIndex = 2; posIndex <= 3; ++posIndex) {
-			const auto vv = samplingSphere.queryValue(positions[posIndex], MinSG::SphericalSampling::INTERPOLATION_NEAREST);
+			const auto vv = samplingSphere.queryValue(positions[posIndex], MinSG::SVS::INTERPOLATION_NEAREST);
 			const auto geoNodes = MinSG::collectNodes<MinSG::GeometryNode>(listNode);
 			for(const auto & geoNode : geoNodes) {
 				assert(vv.getBenefits(geoNode) > 0);
@@ -150,6 +150,6 @@ int test_spherical_sampling() {
 
 	timer.stop();
 	std::cout << "done (duration: " << timer.getSeconds() << " s).\n";
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */
 	return EXIT_SUCCESS;
 }

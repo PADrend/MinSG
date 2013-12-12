@@ -1,15 +1,15 @@
 /*
-	This file is part of the MinSG library extension SphericalSampling.
+	This file is part of the MinSG library extension SVS.
 	Copyright (C) 2013 Benjamin Eikel <benjamin@eikel.org>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 
-#ifndef MINSG_SPHERICALSAMPLING_BUDGETRENDERER_H
-#define MINSG_SPHERICALSAMPLING_BUDGETRENDERER_H
+#ifndef MINSG_SVS_BUDGETRENDERER_H
+#define MINSG_SVS_BUDGETRENDERER_H
 
 #include "../../Core/States/NodeRendererState.h"
 #include <Util/TypeNameMacro.h>
@@ -28,7 +28,7 @@ class FrameContext;
 class GeometryNode;
 class Node;
 class RenderParam;
-namespace SphericalSampling {
+namespace SVS {
 
 /**
  * @brief Budget rendering
@@ -50,7 +50,7 @@ namespace SphericalSampling {
  * @date 2013-07-23
  */
 class BudgetRenderer : public NodeRendererState {
-		PROVIDES_TYPE_NAME(SphericalSampling::BudgetRenderer)
+		PROVIDES_TYPE_NAME(SVS::BudgetRenderer)
 	private:
 		uint32_t budget;
 
@@ -85,6 +85,6 @@ class BudgetRenderer : public NodeRendererState {
 }
 }
 
-#endif /* MINSG_SPHERICALSAMPLING_BUDGETRENDERER_H */
+#endif /* MINSG_SVS_BUDGETRENDERER_H */
 
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */

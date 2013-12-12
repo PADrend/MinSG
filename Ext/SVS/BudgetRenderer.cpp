@@ -1,12 +1,12 @@
 /*
-	This file is part of the MinSG library extension SphericalSampling.
+	This file is part of the MinSG library extension SVS.
 	Copyright (C) 2013 Benjamin Eikel <benjamin@eikel.org>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 
 #include "BudgetRenderer.h"
 #include "../../Core/Nodes/GeometryNode.h"
@@ -20,7 +20,7 @@
 #include <vector>
 
 namespace MinSG {
-namespace SphericalSampling {
+namespace SVS {
 
 const Util::StringIdentifier BudgetRenderer::projectedSizeId("ProjectedSize");
 
@@ -97,4 +97,4 @@ BudgetRenderer * BudgetRenderer::clone() const {
 }
 }
 
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */

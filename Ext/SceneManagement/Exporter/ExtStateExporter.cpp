@@ -39,10 +39,10 @@
 #include <Util/IO/FileUtils.h>
 #endif
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING
-#include "../../SphericalSampling/BudgetRenderer.h"
-#include "../../SphericalSampling/Helper.h"
-#include "../../SphericalSampling/Renderer.h"
+#ifdef MINSG_EXT_SVS
+#include "../../SVS/BudgetRenderer.h"
+#include "../../SVS/Helper.h"
+#include "../../SVS/Renderer.h"
 #endif
 
 #include <cassert>
@@ -132,17 +132,17 @@ static void describeMARSurfelRenderer(ExporterContext &,NodeDescription & desc,S
 }
 #endif
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 static void describeSVSRenderer(ExporterContext &, NodeDescription & desc, State * state) {
-	auto renderer = dynamic_cast<SphericalSampling::Renderer *>(state);
+	auto renderer = dynamic_cast<SVS::Renderer *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SVS_RENDERER);
-	desc.setString(Consts::ATTR_SVS_INTERPOLATION_METHOD, SphericalSampling::interpolationToString(renderer->getInterpolationMethod()));
+	desc.setString(Consts::ATTR_SVS_INTERPOLATION_METHOD, SVS::interpolationToString(renderer->getInterpolationMethod()));
 	desc.setValue(Consts::ATTR_SVS_RENDERER_SPHERE_OCCLUSION_TEST, Util::GenericAttribute::createBool(renderer->isSphereOcclusionTestEnabled()));
 	desc.setValue(Consts::ATTR_SVS_RENDERER_GEOMETRY_OCCLUSION_TEST, Util::GenericAttribute::createBool(renderer->isGeometryOcclusionTestEnabled()));
 }
 
 static void describeSVSBudgetRenderer(ExporterContext &, NodeDescription & desc, State * state) {
-	auto renderer = dynamic_cast<SphericalSampling::BudgetRenderer *>(state);
+	auto renderer = dynamic_cast<SVS::BudgetRenderer *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SVS_BUDGETRENDERER);
 	desc.setValue(Consts::ATTR_SVS_BUDGETRENDERER_BUDGET, Util::GenericAttribute::createNumber<uint32_t>(renderer->getBudget()));
 }
@@ -179,9 +179,9 @@ void initExtStateExporter() {
 	ExporterTools::registerStateExporter(SkeletalSoftwareRendererState::getClassId(),&describeSkeletalRendererState);
 #endif
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING
-	ExporterTools::registerStateExporter(SphericalSampling::Renderer::getClassId(), &describeSVSRenderer);
-	ExporterTools::registerStateExporter(SphericalSampling::BudgetRenderer::getClassId(), &describeSVSBudgetRenderer);
+#ifdef MINSG_EXT_SVS
+	ExporterTools::registerStateExporter(SVS::Renderer::getClassId(), &describeSVSRenderer);
+	ExporterTools::registerStateExporter(SVS::BudgetRenderer::getClassId(), &describeSVSBudgetRenderer);
 #endif
 
 }

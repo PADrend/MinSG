@@ -9,8 +9,8 @@
 #include <Geometry/Sphere.h>
 #include <Geometry/Vec3.h>
 #include <MinSG/Core/Nodes/GeometryNode.h>
-#include <MinSG/Ext/SphericalSampling/SamplePoint.h>
-#include <MinSG/Ext/SphericalSampling/SamplingSphere.h>
+#include <MinSG/Ext/SVS/SamplePoint.h>
+#include <MinSG/Ext/SVS/SamplingSphere.h>
 #include <MinSG/Ext/VisibilitySubdivision/VisibilityVector.h>
 #include <MinSG/SceneManagement/SceneManager.h>
 #include <Rendering/MeshUtils/PlatonicSolids.h>
@@ -30,12 +30,12 @@
 int test_spherical_sampling_serialization();
 
 int test_spherical_sampling_serialization() {
-#ifdef MINSG_EXT_SPHERICALSAMPLING
-	std::cout << "Test serialization of SphericalSampling objects ... ";
+#ifdef MINSG_EXT_SVS
+	std::cout << "Test serialization of SVS objects ... ";
 	Util::Timer timer;
 	timer.reset();
 
-	using namespace MinSG::SphericalSampling;
+	using namespace MinSG::SVS;
 	MinSG::SceneManagement::SceneManager sceneManager;
 
 	const uint32_t count = 10;
@@ -144,6 +144,6 @@ int test_spherical_sampling_serialization() {
 
 	timer.stop();
 	std::cout << "done (duration: " << timer.getSeconds() << " s).\n";
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */
 	return EXIT_SUCCESS;
 }

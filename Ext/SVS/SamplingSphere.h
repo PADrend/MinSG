@@ -1,15 +1,15 @@
 /*
-	This file is part of the MinSG library extension SphericalSampling.
+	This file is part of the MinSG library extension SVS.
 	Copyright (C) 2012 Benjamin Eikel <benjamin@eikel.org>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 
-#ifndef MINSG_SPHERICALSAMPLING_SAMPLINGSPHERE_H_
-#define MINSG_SPHERICALSAMPLING_SAMPLINGSPHERE_H_
+#ifndef MINSG_SVS_SAMPLINGSPHERE_H_
+#define MINSG_SVS_SAMPLINGSPHERE_H_
 
 #include "Definitions.h"
 #include "SamplePoint.h"
@@ -33,7 +33,7 @@ template<typename Point_t> class Delaunay3d;
 namespace VisibilitySubdivision {
 class VisibilityVector;
 }
-namespace SphericalSampling {
+namespace SVS {
 struct SampleEntry;
 
 /**
@@ -156,6 +156,6 @@ class SamplingSphere {
 }
 }
 
-#endif /* MINSG_SPHERICALSAMPLING_SAMPLINGSPHERE_H_ */
+#endif /* MINSG_SVS_SAMPLINGSPHERE_H_ */
 
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */

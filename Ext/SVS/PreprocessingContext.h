@@ -1,23 +1,23 @@
 /*
-	This file is part of the MinSG library extension SphericalSampling.
+	This file is part of the MinSG library extension SVS.
 	Copyright (C) 2013 Benjamin Eikel <benjamin@eikel.org>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#ifdef MINSG_EXT_SPHERICALSAMPLING
+#ifdef MINSG_EXT_SVS
 
 #include <cstdint>
 #include <memory>
 #include <vector>
 
-#ifndef MINSG_SPHERICALSAMPLING_PREPROCESSINGCONTEXT_H_
-#define MINSG_SPHERICALSAMPLING_PREPROCESSINGCONTEXT_H_
+#ifndef MINSG_SVS_PREPROCESSINGCONTEXT_H_
+#define MINSG_SVS_PREPROCESSINGCONTEXT_H_
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 #include <Util/StringIdentifier.h>
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 
 namespace Geometry {
 template<typename _T> class _Vec3;
@@ -26,15 +26,15 @@ typedef _Vec3<float> Vec3f;
 namespace MinSG {
 class FrameContext;
 class GroupNode;
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 namespace Profiling {
 class Profiler;
 }
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 namespace SceneManagement {
 class SceneManager;
 }
-namespace SphericalSampling {
+namespace SVS {
 
 /**
  * @brief State storage for Spherical Visibility Sampling preprocessing
@@ -124,7 +124,7 @@ class PreprocessingContext {
 		//! Read if tight bounding spheres for inner nodes are to be computed.
 		bool getComputeTightInnerBoundingSpheres() const;
 
-#ifdef MINSG_EXT_SPHERICALSAMPLING_PROFILING
+#ifdef MINSG_EXT_SVS_PROFILING
 		//! Access the profiler.
 		Profiling::Profiler & getProfiler();
 
@@ -138,12 +138,12 @@ class PreprocessingContext {
 		static const Util::StringIdentifier ATTR_numChildrenGroupNode;
 		static const Util::StringIdentifier ATTR_numVertices;
 		static const Util::StringIdentifier ATTR_sphereRadius;
-#endif /* MINSG_EXT_SPHERICALSAMPLING_PROFILING */
+#endif /* MINSG_EXT_SVS_PROFILING */
 };
 
 }
 }
 
-#endif /* MINSG_SPHERICALSAMPLING_PREPROCESSINGCONTEXT_H_ */
+#endif /* MINSG_SVS_PREPROCESSINGCONTEXT_H_ */
 
-#endif /* MINSG_EXT_SPHERICALSAMPLING */
+#endif /* MINSG_EXT_SVS */
