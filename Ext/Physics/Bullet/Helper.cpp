@@ -30,7 +30,7 @@ COMPILER_WARN_POP
 
 namespace MinSG {
 namespace Physics{
-	
+
 btMatrix3x3 toBtMatrix3x3(const Geometry::Matrix3x3& m){
     btMatrix3x3 btM;
     btM.setValue(	m.at(0), m.at(1), m.at(2),
@@ -39,7 +39,7 @@ btMatrix3x3 toBtMatrix3x3(const Geometry::Matrix3x3& m){
 	return btM;
 }
 
-btTransform toBtTransform(const Geometry::SRT& s){	
+btTransform toBtTransform(const Geometry::SRT& s){
 	btTransform t;
 	t.setIdentity();
 	t.setOrigin( toBtVector3(s.getTranslation()) );

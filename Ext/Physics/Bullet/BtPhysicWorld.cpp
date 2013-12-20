@@ -13,6 +13,7 @@
 
 #include "BtPhysicWorld.h"
 #include "BtPhysicObject.h"
+#include "BtConstraintObject.h"
 #include "Helper.h"
 #include "MotionState.h"
 #include "ShapeContainer.h"
@@ -98,7 +99,7 @@ btCollisionShape* createDynamicBoxShape(Node* node,const Geometry::Vec3 & center
 	btTransform startTransform;
 	startTransform.setIdentity();
 	startTransform.setOrigin(toBtVector3(centerOfMass-bb.getCenter() ));
-	shape->addChildShape( startTransform, (new btBoxShape(btVector3(bb.getExtentX()*0.5*s,bb.getExtentY()*0.5*s,bb.getExtentZ()*0.5*s))) );
+	shape->addChildShape( startTransform,  (new btBoxShape(btVector3(bb.getExtentX()*0.5*s,bb.getExtentY()*0.5*s,bb.getExtentZ()*0.5*s))) );
 	return shape;
 }
 //! (static,internal)
@@ -109,7 +110,7 @@ btCollisionShape* createDynamicSphereShape(Node* node,const Geometry::Vec3 & cen
 	btTransform startTransform;
 	startTransform.setIdentity();
 	startTransform.setOrigin(toBtVector3(centerOfMass-bb.getCenter() ));
-	shape->addChildShape( startTransform, new btSphereShape(bb.getExtentX()*0.5*s) );
+	shape->addChildShape( startTransform,  new btSphereShape(bb.getExtentX()*0.5*s) );
 	return shape;
 }
 
@@ -181,7 +182,7 @@ btRigidBody * BtPhysicWorld::createRigidBody(BtPhysicObject& physObj, ShapeConta
 	btVector3 localInertia(0,0,0);
 	shape->getShape()->calculateLocalInertia(mass,localInertia);
 
-	auto worldSRT = Transformations::getWorldSRT(node);
+	auto worldSRT =  Transformations::getWorldSRT(node);
 	worldSRT.translate( Transformations::localDirToWorldDir(node,physObj.getCenterOfMass() ) );
 
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,
@@ -197,13 +198,13 @@ btRigidBody * BtPhysicWorld::createRigidBody(BtPhysicObject& physObj, ShapeConta
 
 void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 	bool enableCallback = false;
-	
+
 	// surface velocity
 	const auto& localSurfaceVelocity = PhysicWorld::getNodeProperty_localSurfaceVelocity(physObj.getNode());
 	if(!localSurfaceVelocity.isZero()){
 		BtPhysicObject * physObjPtr = &physObj;
-		
-		physObj.contactListener = [physObjPtr,localSurfaceVelocity](btManifoldPoint& cp, BtPhysicObject* physObj0, BtPhysicObject* physObj1){
+
+		physObj.contactListener = [physObjPtr,localSurfaceVelocity](btManifoldPoint& cp,  BtPhysicObject* physObj0, BtPhysicObject* physObj1){
 
 			Geometry::Vec3 worldVelocity;
 			worldVelocity = Transformations::localDirToWorldDir(physObjPtr->getNode(),localSurfaceVelocity);
@@ -216,63 +217,63 @@ void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 			cp.m_combinedRestitution = btManifoldResult::calculateCombinedRestitution( body0,body1);
 
 			cp.m_lateralFrictionInitialized = true;
-			
+
 			if(physObj0==physObjPtr){
 
 				// apply surface movement
 				cp.m_lateralFrictionDir1 = toBtVector3(worldVelocity);
 				cp.m_lateralFrictionDir1.normalize();
 				cp.m_contactMotion1 = worldVelocity.length();
-			
-				
+
+
 				// apply friction
-				if(body1->getInvMass()!=0){	
+				if(body1->getInvMass()!=0){
 					// v1 is the velocity of the moving object relative to the movement of the surface
 					const Geometry::Vec3 v1 = worldVelocity+toVec3(physObj1->getRigidBody()->getInterpolationLinearVelocity());
-				
+
 					// v2 is the velocity of the moving object projected on the collision plane; this velocity should
 					//  be reduced by friction but this seems not to happen automatically...
 					const Geometry::Vec3 contaceNormal = toVec3(cp.m_normalWorldOnB).normalize();
 					const Geometry::Vec3 v2 = v1 - contaceNormal * v1.dot(contaceNormal);
-														
+
 //					std::cout << v2.length() << " " <<v2 << " on "<< toVec3(cp.m_normalWorldOnB)<<"\n";
-					
+
 					/* apply force to reduce v2.
 						\note this is a heuristic to simulate friction on the conveyor belt. One problem is that the friction force is applied to the object's center
 								and not at the contact point. This could possibly be improved. */
 					body1->applyCentralForce(toBtVector3(-v2)*cp.m_combinedFriction/body1->getInvMass());
 				}
-				
+
 			}else{
 				cp.m_lateralFrictionDir1 = toBtVector3(-worldVelocity);
 				cp.m_lateralFrictionDir1.normalize();
 				cp.m_contactMotion1 = worldVelocity.length();
-				
+
 				// apply friction
-				if(body0->getInvMass()!=0){	
+				if(body0->getInvMass()!=0){
 					const Geometry::Vec3 v1 = worldVelocity+toVec3(physObj0->getRigidBody()->getInterpolationLinearVelocity());
-			
+
 					// v2 is the velocity of the moving object projected on the collision plane; this velocity should
 					//  be reduced by friction but this seems not to happen automatically...
 					const Geometry::Vec3 contaceNormal = toVec3(cp.m_normalWorldOnB).normalize();
 					const Geometry::Vec3 v2 = v1 - contaceNormal * v1.dot(contaceNormal);
-														
+
 					std::cout << v2.length() << " " <<v2 << " on "<< toVec3(cp.m_normalWorldOnB)<<"\n";
-					
+
 					/* apply force to reduce v2.
 						\note this is a heuristic to simulate friction on the conveyor belt. One problem is that the friction force is applied to the object's center
 								and not at the contact point. This could possibly be improved. */
 					body0->applyCentralForce(toBtVector3(-v2)*cp.m_combinedFriction/body0->getInvMass());
 				}
-				
+
 			}
 			return true;
 		};
 		enableCallback = true;
 	}
-	
+
 	// add further collision handlers here...
-	
+
 	btRigidBody* body = physObj.getRigidBody();
 	if(enableCallback){
 		body->setCollisionFlags(body->getCollisionFlags()  | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
@@ -280,13 +281,13 @@ void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 		body->setCollisionFlags(body->getCollisionFlags()  &  ~btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 	}
 }
-		
+
 
 // -------------------------------
 // physicObject attribute
 
-static const Util::StringIdentifier ATTR_PHYSICS_OBJECT( NodeAttributeModifier::create( "btPhysicObject", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
-//static const Util::StringIdentifier ATTR_PHYSICS_SHAPE_DESC( NodeAttributeModifier::create( "PhysicShapeDescription", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+static const Util::StringIdentifier ATTR_PHYSICS_OBJECT(  NodeAttributeModifier::create( "btPhysicObject", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+//static const Util::StringIdentifier ATTR_PHYSICS_SHAPE_DESC(  NodeAttributeModifier::create( "PhysicShapeDescription", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 
 
 static BtPhysicObject* getPhysicObject(Node* node){
@@ -312,7 +313,7 @@ static void removePhysicsObject(Node* node){
 //------------------------------
 // shape attribute
 
-static const Util::StringIdentifier ATTR_PHYSICS_SHAPE( NodeAttributeModifier::create( "ShapeContainer", NodeAttributeModifier::PRIVATE_ATTRIBUTE | NodeAttributeModifier::COPY_TO_CLONES));
+static const Util::StringIdentifier ATTR_PHYSICS_SHAPE(  NodeAttributeModifier::create( "ShapeContainer", NodeAttributeModifier::PRIVATE_ATTRIBUTE | NodeAttributeModifier::COPY_TO_CLONES));
 //| NodeAttributeModifier::COPY_TO_INSTANCES ));
 
 static ShapeContainer* findShapeAttribute(Node* node){
@@ -321,7 +322,7 @@ static ShapeContainer* findShapeAttribute(Node* node){
 }
 
 static void attachShapeAttribute(Node* node, ShapeContainer * shape ){
-	node->setAttribute( ATTR_PHYSICS_SHAPE, new Util::ReferenceAttribute<ShapeContainer>(shape));
+	node->setAttribute( ATTR_PHYSICS_SHAPE,  new Util::ReferenceAttribute<ShapeContainer>(shape));
 }
 
 
@@ -336,7 +337,7 @@ BtPhysicWorld::BtPhysicWorld(){
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
 
 	dynamicsWorld->setGravity(btVector3(0,-10,0));
-	
+
 	{	// custom surface properties (like conveyor effect)
 		struct _{
 			static bool onNewContact(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0,int /*partId0*/,int /*index0*/,const btCollisionObjectWrapper* colObj1,int /*partId1*/,int /*index1*/){
@@ -344,10 +345,10 @@ BtPhysicWorld::BtPhysicWorld(){
 				BtPhysicObject* physObj1 = reinterpret_cast<BtPhysicObject*>(colObj1->getCollisionObject()->getUserPointer());
 				bool contactPointModified = false;
 				if( physObj0 && physObj0->contactListener ) {
-					contactPointModified |= physObj0->contactListener(cp, physObj0,physObj1);
+					contactPointModified |= physObj0->contactListener(cp,  physObj0,physObj1);
 				}
 				if( physObj1 && physObj1->contactListener ) {
-					contactPointModified |= physObj1->contactListener(cp, physObj0,physObj1);
+					contactPointModified |= physObj1->contactListener(cp,  physObj0,physObj1);
 				}
 				return contactPointModified;
 			}
@@ -357,12 +358,12 @@ BtPhysicWorld::BtPhysicWorld(){
 		///this flag will use the friction information from the contact point, if contactPoint.m_lateralFrictionInitialized==true
 		dynamicsWorld->getSolverInfo().m_solverMode |= SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
 	}
-	
+
 }
 
 void BtPhysicWorld::createGroundPlane(const Geometry::Plane& plane ){
 	const Geometry::Vec3 normal = plane.getNormal();
-	const Geometry::Vec3 pos = normal * (plane.getOffset());
+	const Geometry::Vec3 pos =  normal * (plane.getOffset());
 	//Creating a static shape which will act as ground
 	{
 //! ToDo..................................................
@@ -420,11 +421,13 @@ void BtPhysicWorld::addNodeToPhyiscWorld(Node* node){
 void BtPhysicWorld::removeNode(Node* node){
 	BtPhysicObject *physObj = getPhysicObject(node);
 	if(physObj){
-		std::cout<<"Node is removed!\n";
+		removeConstraints(node);
+
 		btRigidBody* body = physObj->getRigidBody();
 		dynamicsWorld->removeRigidBody(body);
 		delete body->getMotionState();
 		removePhysicsObject(node);
+		std::cout<<"Node is removed!\n";
 	}
 }
 
@@ -493,7 +496,7 @@ void BtPhysicWorld::onNodeTransformed(Node * node){
 		if(physObj){
 			btRigidBody* body = physObj->getRigidBody();
 
-			auto worldSRT = Transformations::getWorldSRT(node);
+			auto worldSRT =  Transformations::getWorldSRT(node);
 			worldSRT.translate( Transformations::localDirToWorldDir(node,physObj->getCenterOfMass() ) );
 
 			body->setWorldTransform( toBtTransform( worldSRT ));
@@ -506,7 +509,7 @@ const Geometry::Vec3 BtPhysicWorld::getGravity(){
 	return toVec3(dynamicsWorld->getGravity());
 }
 
-void BtPhysicWorld::setGravity(const Geometry::Vec3& gravity){
+void BtPhysicWorld::setGravity(const Geometry::Vec3&  gravity){
 	dynamicsWorld->setGravity(toBtVector3(gravity));
 }
 
@@ -522,7 +525,7 @@ void BtPhysicWorld::updateMass(Node* node, float mass){
 		body->setMassProps(mass, localInertia); // \note the static collision flag seems to be set implicitly here...
 		body->updateInertiaTensor();
 
-		dynamicsWorld->addRigidBody(body); // re-add the body
+		dynamicsWorld->addRigidBody(body);  // re-add the body
 		body->activate(true);
 	}
 }
@@ -547,7 +550,7 @@ void BtPhysicWorld::updateRollingFriction(Node* node, float rollfric){
 	}
 }
 
-void BtPhysicWorld::updateShape(Node* node, Util::GenericAttributeMap * description){
+void BtPhysicWorld::updateShape(Node* node,  Util::GenericAttributeMap * description){
 	if(!description){
 		WARN("BtPhysicWorld::updateShape: no shape description!");
 		return;
@@ -568,7 +571,6 @@ void BtPhysicWorld::updateShape(Node* node, Util::GenericAttributeMap * descript
 	}
 }
 
-
 void BtPhysicWorld::updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localSurfaceVelocity){
 	setNodeProperty_localSurfaceVelocity(node,localSurfaceVelocity);
 	BtPhysicObject* physObj = getPhysicObject(node);
@@ -576,15 +578,92 @@ void BtPhysicWorld::updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3&
 		initCollisionCallbacks(*physObj);
 }
 
-
 //Debug!!!!!!!!!!!!!!!!
 void BtPhysicWorld::renderPhysicWorld(Rendering::RenderingContext& rctxt){
 	MyDebugDraw *db = new MyDebugDraw(rctxt);
-	db->setDebugMode( btIDebugDraw::DBG_DrawWireframe );
+	db->setDebugMode(  btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints);
 	dynamicsWorld->setDebugDrawer(db);
 	dynamicsWorld->debugDrawWorld();
 
 }
+
+static Geometry::Vec3 worldPosToLocalBodyPos(const BtPhysicObject& obj,const Geometry::Vec3 & worldPos){
+    return (Transformations::worldPosToLocalPos(obj.getNode(),worldPos) - obj.getCenterOfMass()) * obj.getNode()->getScale();
+}
+
+void BtPhysicWorld::applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA ){
+    const auto worldPivot = Transformations::localPosToWorldPos(nodeA, pivotLocalA);
+
+    BtPhysicObject * physObjA = getPhysicObject(nodeA);
+    BtPhysicObject * physObjB = getPhysicObject(nodeB);
+    const auto pivotLocalBtBodyA = worldPosToLocalBodyPos(*physObjA,worldPivot);
+    const auto pivotLocalBtBodyB = worldPosToLocalBodyPos(*physObjB,worldPivot);
+
+    btRigidBody* rbA = physObjA->getRigidBody();
+    btRigidBody* rbB = physObjB->getRigidBody();
+    btTypedConstraint* p;
+    if(rbA && rbB){
+        p = new btPoint2PointConstraint(*rbA, *rbB, toBtVector3(pivotLocalBtBodyA), toBtVector3(pivotLocalBtBodyB));
+        std::cout<<"p2p created";
+        BtConstraintObject* cObj = new BtConstraintObject(nodeA, nodeB, p);
+        physObjA->addConstraintObject(*cObj);
+        physObjB->addConstraintObject(*cObj);
+        p->setDbgDrawSize(5);
+        dynamicsWorld->addConstraint(p, true);
+    }
+}
+
+void BtPhysicWorld::applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir ){
+   const auto worldPivot = Transformations::localPosToWorldPos(nodeA, pivotLocalA);
+
+    BtPhysicObject * physObjA = getPhysicObject(nodeA);
+    BtPhysicObject * physObjB = getPhysicObject(nodeB);
+    const auto pivotLocalBtBodyA = worldPosToLocalBodyPos(*physObjA,worldPivot);
+    const auto pivotLocalBtBodyB = worldPosToLocalBodyPos(*physObjB,worldPivot);
+
+    btRigidBody* rbA = physObjA->getRigidBody();
+    btRigidBody* rbB = physObjB->getRigidBody();
+    btTypedConstraint* p;
+    if(rbA && rbB){
+        p = new btHingeConstraint(*rbA, *rbB, toBtVector3(pivotLocalBtBodyA), toBtVector3(pivotLocalBtBodyB), toBtVector3(dir), toBtVector3(dir), true);
+        BtConstraintObject* cObj = new BtConstraintObject(nodeA, nodeB, p);
+        physObjA->addConstraintObject(*cObj);
+        physObjB->addConstraintObject(*cObj);
+        p->setDbgDrawSize(5);
+        dynamicsWorld->addConstraint(p, true);
+    }
+}
+
+void BtPhysicWorld::updateConstraintPivot(Node* node, const std::string &name){
+    setNodeProperty_constraintPivot(node,name);
+
+}
+
+void BtPhysicWorld::removeConstraints(Node* node){
+    BtPhysicObject* physObjA = getPhysicObject(node);
+    auto constraints = physObjA->getConstraints();
+    for( auto &cons : constraints) {
+        dynamicsWorld->removeConstraint(cons->getConstraint());
+        BtPhysicObject* physObjB = getPhysicObject(cons->getNodeB());
+        physObjA->removeConstraint(*cons.get());
+        physObjB->removeConstraint(*cons.get());
+    }
+}
+
+void BtPhysicWorld::removeConstraintBetweenNodes(Node* nodeA,Node* nodeB){
+    BtPhysicObject* physObjA = getPhysicObject(nodeA);
+    BtPhysicObject* physObjB = getPhysicObject(nodeB);
+    auto constraintsA = physObjA->getConstraints();
+    for( auto &cons : constraintsA) {
+       if(cons->getNodeB() == nodeB || cons->getNodeA() == nodeB ){
+            physObjA->removeConstraint(*cons.get());
+            physObjB->removeConstraint(*cons.get());
+            dynamicsWorld->removeConstraint(cons->getConstraint());
+            break;
+       }
+    }
+}
+
 }
 }
 #endif //MINSG_EXT_PHYSICS

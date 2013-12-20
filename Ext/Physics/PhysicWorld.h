@@ -62,6 +62,9 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		static Geometry::Vec3 getNodeProperty_localSurfaceVelocity(const Node* node);
 		static void setNodeProperty_localSurfaceVelocity(Node* node, const Geometry::Vec3& value);
 
+		static std::string getNodeProperty_constraintPivot(const Node* node);
+		static void setNodeProperty_constraintPivot(Node* node, const std::string &name);
+
 		static std::vector<Node*> collectNodesWithPhysicsProperties(Node* root);
 
 	public:
@@ -94,8 +97,16 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		Geometry::Vec3 getLocalSurfaceVelocity(Node* node);
 		virtual void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) = 0;
 
+        std::string getConstraintPivot(Node* node);
+		virtual void updateConstraintPivot(Node* node, const std::string &name) = 0;
+
 		//Debug!!!!!!!
 		virtual void renderPhysicWorld(Rendering::RenderingContext&) = 0;
+
+		virtual void applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA)= 0;
+		virtual void applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir )= 0;
+		virtual void removeConstraints(Node* node)=0;
+		virtual void removeConstraintBetweenNodes(Node* nodeA,Node* nodeB)=0;
 };
 
 

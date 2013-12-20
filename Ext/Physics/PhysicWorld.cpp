@@ -27,6 +27,7 @@ static const Util::StringIdentifier ATTR_MASS( "Physics_mass" );
 static const Util::StringIdentifier ATTR_FRICTION( "Physics_friction" );
 static const Util::StringIdentifier ATTR_ROLLING_FRICTION( "Physics_rollingFriction" );
 static const Util::StringIdentifier ATTR_LOCAL_SURFACE_FORCE( "Physics_localSurfaceVelocity" );
+static const Util::StringIdentifier ATTR_CONSTRAINT_PIVOT( "Physics_constraintPivot" );
 
 const Util::StringIdentifier PhysicWorld::SHAPE_TYPE("type");
 
@@ -107,6 +108,17 @@ void PhysicWorld::setNodeProperty_localSurfaceVelocity(Node* node, const Geometr
 }
 
 //! (static)
+std::string PhysicWorld::getNodeProperty_constraintPivot(const Node* node){
+	const auto *attr = node->findAttribute(ATTR_CONSTRAINT_PIVOT);
+	return attr? attr->toString(): "";
+}
+//! (static)
+void PhysicWorld::setNodeProperty_constraintPivot(Node* node, const std::string &name){
+    node->unsetAttribute(ATTR_CONSTRAINT_PIVOT);
+    node->setAttribute( ATTR_CONSTRAINT_PIVOT, Util::GenericAttribute::createString( name ) );
+}
+
+//! (static)
 PhysicWorld * PhysicWorld::createBulletWorld(){
 	return new BtPhysicWorld;
 
@@ -126,6 +138,11 @@ std::vector<Node*> PhysicWorld::collectNodesWithPhysicsProperties(Node* root){
 
 Geometry::Vec3 PhysicWorld::getLocalSurfaceVelocity(Node* node) {
 	return getNodeProperty_localSurfaceVelocity(node);
+}
+
+std::string PhysicWorld::getConstraintPivot(Node* node){
+    return getNodeProperty_constraintPivot(node);
+
 }
 
 }

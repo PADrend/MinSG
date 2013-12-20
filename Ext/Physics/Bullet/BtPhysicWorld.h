@@ -29,7 +29,6 @@ COMPILER_WARN_OFF_GCC(-Wshadow)
 #include <btBulletDynamicsCommon.h>
 COMPILER_WARN_POP
 
-
 namespace MinSG {
 class GroupNode;
 namespace Physics {
@@ -70,9 +69,15 @@ class BtPhysicWorld: public PhysicWorld{
 
 
 		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
+		void updateConstraintPivot(Node* node, const std::string &name) override;
 
 		//debug!!!!
 		void renderPhysicWorld(Rendering::RenderingContext& rctxt) override;
+		void applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA) override;
+		virtual void applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir ) override;
+		void removeConstraints(Node* node) override;
+		virtual void removeConstraintBetweenNodes(Node* nodeA,Node* nodeB)override;
+
 };
 }
 }

@@ -13,6 +13,7 @@
 
 #include "BtPhysicObject.h"
 #include "Helper.h"
+#include<algorithm>
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-W#warnings)
 COMPILER_WARN_OFF_GCC(-Wswitch-default)
@@ -27,6 +28,11 @@ namespace Physics {
 
 BtPhysicObject::~BtPhysicObject(){}
 
+void BtPhysicObject::removeConstraint(BtConstraintObject& constraint){
+    auto it = std::find(constraints.begin(),constraints.end(),&constraint);
+    if(it!=constraints.end())
+        constraints.erase(it);
+}
 
 }
 }
