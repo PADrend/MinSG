@@ -11,7 +11,7 @@
 #ifndef MINSG_H_INCLUDED
 #define MINSG_H_INCLUDED
 
-const char * const MINSG_VERSION = "MinSG 0.1.1";
+const char * const MINSG_VERSION = "MinSG 0.2.0";
 
 /**
  * @mainpage MinSG: Minimalist Scene Graph
