@@ -35,19 +35,19 @@ add_library(MinSG ${MinSG_SOURCES})
 
 # Dependency to Geometry
 if(NOT TARGET Geometry)
-	find_package(Geometry 0.1.3 REQUIRED NO_MODULE)
+	find_package(Geometry 0.2.0 REQUIRED NO_MODULE)
 endif()
 target_link_libraries(MinSG LINK_PUBLIC Geometry)
 
 # Dependency to Rendering
 if(NOT TARGET Rendering)
-	find_package(Rendering 0.1.3 REQUIRED NO_MODULE)
+	find_package(Rendering 0.2.0 REQUIRED NO_MODULE)
 endif()
 target_link_libraries(MinSG LINK_PUBLIC Rendering)
 
 # Dependency to Util
 if(NOT TARGET Util)
-	find_package(Util 0.1.3 REQUIRED NO_MODULE)
+	find_package(Util 0.2.0 REQUIRED NO_MODULE)
 endif()
 target_link_libraries(MinSG LINK_PUBLIC Util)
 
@@ -67,7 +67,7 @@ endif()
 
 # Dependency to Sound
 if(NOT TARGET Sound)
-	find_package(Sound 0.1.2 QUIET NO_MODULE)
+	find_package(Sound 0.2.0 QUIET NO_MODULE)
 endif()
 if(TARGET Sound)
 	append_property(MINSG_COMPILE_DEFINITIONS MINSG_HAVE_LIB_SOUND)
