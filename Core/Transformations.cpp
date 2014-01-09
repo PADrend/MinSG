@@ -71,7 +71,7 @@ Geometry::SRT worldSRTToRelSRT(const Node * node, const Geometry::SRT & worldSRT
 		const auto relPos = worldPosToLocalPos( parent, worldSRT.getTranslation() ); 
 		const auto relDir = worldDirToLocalDir( parent, worldSRT.getDirVector() ); 
 		const auto relUp = worldDirToLocalDir( parent, worldSRT.getUpVector() ); 
-		return Geometry::SRT( relPos,relDir,relUp,relDir.length() ); // untested!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		return Geometry::SRT( relPos,relDir,relUp,relDir.length()*worldSRT.getScale() ); 
 	}
 }
 
