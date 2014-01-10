@@ -7,6 +7,7 @@
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
 minsg_add_sources(
+	StreamerVOX.cpp
 	VoxelWorld.cpp
 )
 minsg_add_extension(MINSG_EXT_VOXEL_WORLD "Defines if the MinSG extension VoxelWorld is built.")
