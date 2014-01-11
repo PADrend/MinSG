@@ -62,8 +62,8 @@ struct VoxelGrid{
 		}
 		return space;
 	}
-	Util::Color4ub getOcclusionColor(int32_t x,int32_t y,int32_t z){
-		int space = 0;
+	uint32_t getFreeSpace(int32_t x,int32_t y,int32_t z){
+		uint32_t space = 0;
 		
 		space += getSpace(x,  y,  z,	 1, 1, 1);
 		space += getSpace(x,  y,  z-1,	 1, 1,-1);
@@ -73,10 +73,62 @@ struct VoxelGrid{
 		space += getSpace(x-1,y,  z-1,	-1, 1,-1);
 		space += getSpace(x-1,y-1,z,	-1,-1, 1);
 		space += getSpace(x-1,y-1,z-1,	-1,-1,-1);
-		return Util::Color4ub(space,space,space);
-
+		return space;
+	}
+	
+	float cast(const Geometry::Vec3& source, const Geometry::Vec3& target)const{
+		Geometry::Vec3 dir = target-source;
+		const float distance=dir.length();
+		if(distance==0)
+			return -1;
+		dir/=distance;
+		
+		const float stepSize = 0.13;
+		const Geometry::Vec3 step(dir*stepSize);
+		
+		Geometry::Vec3 v = source + dir*0.01f;
+		int32_t x=source.x()-10/*arbitrary invalid value*/, y=0, z=0;
+		
+		for(float currentRayLength = 0.01f; currentRayLength<distance; currentRayLength+=stepSize){
+			if(static_cast<int32_t>(v.x())!=x || static_cast<int32_t>(v.y())!=y || static_cast<int32_t>(v.z())!=z){
+				x = static_cast<int32_t>(v.x());
+				y = static_cast<int32_t>(v.y());
+				z = static_cast<int32_t>(v.z());
+				if(get(x,y,z)!=0 ){
+					return -currentRayLength;
+				}
+			}
+			v += step;
+		}
+		return distance;
+		
 	}
 };
+
+
+static void createVertex(Rendering::MeshUtils::MeshBuilder&mb, VoxelGrid& grid,int32_t x,int32_t y,int32_t z, const Geometry::Vec3& normal){
+//	mb.color( grid.getOcclusionColor(x,y,z) );
+	static const Geometry::Vec3 light( 7.49,7.57,7.55);
+	const float s = grid.getFreeSpace(x,y,z)/128.0f;
+	
+	const Geometry::Vec3 pos(x,y,z);
+	float l = -1;
+	if( normal.dot( light-pos )>0)
+		l = grid.cast(pos,light);
+//	float l = grid.cast(pos+normal*0.05,light);
+//	if(l<0){
+//		const uint32_t s = getFreeSpace(x,y,z);
+//		mb.color( Util::Color4ub(s,s,s,255) );
+//	}
+//		
+//	else
+//		mb.color( Util::Color4f( 1.0/l,0,0,1.0  ) );
+//	mb.color( Util::Color4f( s+std::max(0.0f, 1.0f/l),s,s,1.0  ) );
+	mb.color( Util::Color4f( s+std::max(0.0f,2.0f/l),s,s,1.0  ) );
+	mb.position(Geometry::Vec3(x,y,z));
+	mb.addVertex();
+
+}
 
 Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStorage_t& voxelStorage, const Geometry::_Box<int32_t>& boundary){
 	const auto data=voxelStorage.serialize(boundary);
@@ -160,63 +212,63 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 					continue;
 //				plate(x,y,z,-1,0,0)
 				if(grid.get(x-1,y,z)!=0){
-					mb.color( Util::Color4f(0.5,0.0,0.0) );
+					static const Geometry::Vec3f normal(1.0f,0,0);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( Geometry::Vec3b(127,0,0) );
-					mb.color( grid.getOcclusionColor(x,y,z) );			mb.position(Geometry::Vec3(x,y,z));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x,y+1,z) );		mb.position(Geometry::Vec3(x,y+1,z));	mb.addVertex();
-					mb.color( grid.getOcclusionColor(x,y+1,z+1) );		mb.position(Geometry::Vec3(x,y+1,z+1));	mb.addVertex();
-					mb.color( grid.getOcclusionColor(x,y,z+1) );		mb.position(Geometry::Vec3(x,y,z+1));	mb.addVertex();
+					mb.normal( normal );
+					createVertex(mb, grid, x  ,y  ,z  ,normal);
+					createVertex(mb, grid, x  ,y+1,z  ,normal);
+					createVertex(mb, grid, x  ,y+1,z+1,normal);
+					createVertex(mb, grid, x  ,y  ,z+1,normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
 				if(grid.get(x+1,y,z)!=0){
-					mb.color( Util::Color4f(0.5,0.0,0.0) );
+					static const Geometry::Vec3f normal(-1.0f,0,0);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( Geometry::Vec3b(127,0,0) );
-					mb.color( grid.getOcclusionColor(x+1,y,  z) );		mb.position(Geometry::Vec3(x+1,y,z));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y,  z+1) );	mb.position(Geometry::Vec3(x+1,y,z+1));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y+1,z+1) );	mb.position(Geometry::Vec3(x+1,y+1,z+1));	mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y+1,z) );		mb.position(Geometry::Vec3(x+1,y+1,z));		mb.addVertex();
+					mb.normal( normal );
+					createVertex(mb, grid, x+1,y  ,z  ,normal);
+					createVertex(mb, grid, x+1,y  ,z+1,normal);
+					createVertex(mb, grid, x+1,y+1,z+1,normal);
+					createVertex(mb, grid, x+1,y+1,z  ,normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
 				if(grid.get(x,y+1,z)!=0){
-					mb.color( Util::Color4f(0.0,0.5,0.0) );
+					static const Geometry::Vec3f normal(0,-1.0f,0);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( Geometry::Vec3b(0,127,0) );
-					mb.color( grid.getOcclusionColor(x,  y+1,z) );		mb.position(Geometry::Vec3(x,  y+1,z));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y+1,z) );		mb.position(Geometry::Vec3(x+1,y+1,z));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y+1,z+1) );	mb.position(Geometry::Vec3(x+1,y+1,z+1));	mb.addVertex();
-					mb.color( grid.getOcclusionColor(x,  y+1,z+1) );	mb.position(Geometry::Vec3(x,  y+1,z+1));	mb.addVertex();
+					mb.normal( normal );
+					createVertex(mb, grid, x  ,y+1,z  ,normal);
+					createVertex(mb, grid, x+1,y+1,z  ,normal);
+					createVertex(mb, grid, x+1,y+1,z+1,normal);
+					createVertex(mb, grid, x  ,y+1,z+1,normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
 				if(grid.get(x,y-1,z)!=0){
-					mb.color( Util::Color4f(0.0,0.5,0.0) );
+					static const Geometry::Vec3f normal(0,1.0f,0);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( Geometry::Vec3b(0,127,0) );
-					mb.color( grid.getOcclusionColor(x,y,z) );			mb.position(Geometry::Vec3(x,y,z));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x,y,z+1) );		mb.position(Geometry::Vec3(x,y,z+1));	mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y,z+1) );		mb.position(Geometry::Vec3(x+1,y,z+1));	mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y,z) );		mb.position(Geometry::Vec3(x+1,y,z));	mb.addVertex();
+					mb.normal( normal );
+					createVertex(mb, grid, x  ,y  ,z  ,normal);
+					createVertex(mb, grid, x  ,y  ,z+1,normal);
+					createVertex(mb, grid, x+1,y  ,z+1,normal);
+					createVertex(mb, grid, x+1,y  ,z  ,normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
 				if(grid.get(x,y,z+1)!=0){
-					mb.color( Util::Color4f(0.0,0.0,0.5) );
+					static const Geometry::Vec3f normal(0,0,-1.0f);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( Geometry::Vec3b(0,0,127) );
-					mb.color( grid.getOcclusionColor(x,  y,  z+1) );	mb.position(Geometry::Vec3(x,y,z+1));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x,  y+1,z+1) );	mb.position(Geometry::Vec3(x,y+1,z+1));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y+1,z+1) );	mb.position(Geometry::Vec3(x+1,y+1,z+1));	mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y,  z+1) );	mb.position(Geometry::Vec3(x+1,y,z+1));		mb.addVertex();
+					mb.normal( normal );
+					createVertex(mb, grid, x  ,y  ,z+1,normal);
+					createVertex(mb, grid, x  ,y+1,z+1,normal);
+					createVertex(mb, grid, x+1,y+1,z+1,normal);
+					createVertex(mb, grid, x+1,y  ,z+1,normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
 				if(grid.get(x,y,z-1)!=0){
-					mb.color( Util::Color4f(0.0,0.0,0.5) );
+					static const Geometry::Vec3f normal(0,0,1.0f);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( Geometry::Vec3b(0,0,127) );
-					mb.color( grid.getOcclusionColor(x,y,z) );		mb.position(Geometry::Vec3(x,y,z));			mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y,z) );	mb.position(Geometry::Vec3(x+1,y,z));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x+1,y+1,z) );	mb.position(Geometry::Vec3(x+1,y+1,z));		mb.addVertex();
-					mb.color( grid.getOcclusionColor(x,y+1,z) );	mb.position(Geometry::Vec3(x,y+1,z));		mb.addVertex();
+					mb.normal( normal );
+					createVertex(mb, grid, x  ,y  ,z  ,normal);
+					createVertex(mb, grid, x+1,y  ,z  ,normal);
+					createVertex(mb, grid, x+1,y+1,z  ,normal);
+					createVertex(mb, grid, x  ,y+1,z  ,normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
 			}
