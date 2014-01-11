@@ -43,39 +43,128 @@ struct VoxelGrid{
 				std::max( std::min(v.z(),static_cast<int32_t>(wz)),0 )
 		);
 	}
-	uint32_t getSpace(int32_t x,int32_t y,int32_t z,int32_t dx,int32_t dy,int32_t dz)const{
-		int32_t space = 0;
-		if(get(x,y,z)==0){
-			++space;
-			int32_t xt = x+dx;
-			for(int32_t i=1; i<4&&get(xt,y,z)==0 ;++i,xt+=dx)
-				++space;
-			int32_t yt = y+dy;
-			for(int32_t i=1; i<4&&get(x,yt,z)==0 ;++i,yt+=dy)
-				++space;
-			int32_t zt = z+dz;
-			for(int32_t i=1; i<4&&get(x,y,zt)==0 ;++i,zt+=dz)
-				++space;
-			xt = x+dx, yt = y+dy, zt = z+dz;
-			for(int32_t i=1; i<4&&get(xt,yt,zt)==0 ;++i,xt+=dx,yt+=dy,zt+=dz)
-				++space;
+
+	// (internal)
+	void addLocalLight(int32_t x,int32_t y,int32_t z, Util::Color4f & localLight,uint8_t dist)const{
+		if( (x%7)==0 && (y%7)<3 &&  (z%7)==0 ){
+			localLight += Util::Color4f(0.0, std::max( 0.0f,1.0f/(dist*dist+1)),0,0);
 		}
-		return space;
 	}
-	uint32_t getFreeSpace(int32_t x,int32_t y,int32_t z){
-		uint32_t space = 0;
+	// (internal)
+	void _collectLocalData(int32_t x,int32_t y,int32_t z,int32_t dx,int32_t dy,int32_t dz, uint32_t& freeVolume,Util::Color4f & localLight)const{
+		if(get(x,y,z)==0){
+			int32_t space = 1;
+			int32_t xt = x+dx;
+			for(int32_t i=1; i<4 ;++i,xt+=dx){ // x
+				if(get(xt,y,z)==0){
+					++space;
+				}else{ 
+					addLocalLight(xt,y,z,localLight,i);
+					break;
+				}
+			}
+			int32_t yt = y+dy;
+			for(int32_t i=1; i<4 ; ++i,yt+=dy){ // y
+				if(get(x,yt,z)==0){
+					++space;
+				}else{
+					addLocalLight(x,yt,z,localLight,i);
+					break;
+				}
+			}
+			int32_t zt = z+dz;
+			for(int32_t i=1; i<4 ;++i,zt+=dz){  // z
+				if(get(x,y,zt)==0){
+					++space;
+				}else{
+					addLocalLight(x,y,zt,localLight,i);
+					break;
+				}
+			}
+			
+			xt = x+dx, yt = y+dy;
+			for(int32_t i=1; i<4; ++i,xt+=dx,yt+=dy){ //xy
+				if(get(xt,yt,z)==0){
+					++space;
+				}else{
+					addLocalLight(xt,yt,z,localLight,i*2);
+					break;
+				}
+			} 
+			
+			xt = x+dx,  zt = z+dz;
+			for(int32_t i=1; i<4; ++i,xt+=dx,zt+=dz){ //xz
+				if(get(xt,y,zt)==0){
+					++space;
+				}else{
+					addLocalLight(xt,y,zt,localLight,i*2);
+					break;
+				}
+			} 
+			
+			yt = y+dy, zt = z+dz;
+			for(int32_t i=1; i<4; ++i,yt+=dy,zt+=dz){ //yz
+				if(get(x,yt,zt)==0){
+					++space;
+				}else{
+					addLocalLight(x,yt,zt,localLight,i*2);
+					break;
+				}
+			} 
+			
+			
+			
+			xt = x+dx, yt = y+dy, zt = z+dz;
+			for(int32_t i=1; i<4; ++i,xt+=dx,yt+=dy,zt+=dz){
+				if(get(xt,yt,zt)==0){
+					++space;
+				}else{
+					addLocalLight(xt,yt,zt,localLight,i*3);
+					break;
+				}
+			}
+			freeVolume += space;
+		}else{
+			addLocalLight(x,y,z,localLight,0);
+		}
 		
-		space += getSpace(x,  y,  z,	 1, 1, 1);
-		space += getSpace(x,  y,  z-1,	 1, 1,-1);
-		space += getSpace(x,  y-1,z,	 1,-1, 1);
-		space += getSpace(x,  y-1,z-1,	 1,-1,-1);
-		space += getSpace(x-1,y,  z,	-1, 1, 1);
-		space += getSpace(x-1,y,  z-1,	-1, 1,-1);
-		space += getSpace(x-1,y-1,z,	-1,-1, 1);
-		space += getSpace(x-1,y-1,z-1,	-1,-1,-1);
-		return space;
+	}
+	//! \return [freeVolume,localLight]
+	std::pair<uint32_t,Util::Color4f> collectLocalData(int32_t x,int32_t y,int32_t z,const Geometry::Vec3& normal){
+		uint32_t freeVolume = 0;
+		Util::Color4f localLight(0,0,0,1);
+		
+		if(normal.x()>0 || normal.y()>0 || normal.z()>0)
+			_collectLocalData(x,  y,  z,	 1, 1, 1, freeVolume,localLight);
+
+		if(normal.x()>0 || normal.y()>0 || normal.z()<0)
+			_collectLocalData(x,  y,  z-1,	 1, 1,-1, freeVolume,localLight);
+
+		if(normal.x()>0 || normal.y()<0 || normal.z()>0)
+			_collectLocalData(x,  y-1,z,	 1,-1, 1, freeVolume,localLight);
+
+		if(normal.x()>0 || normal.y()<0 || normal.z()<0)
+			_collectLocalData(x,  y-1,z-1,	 1,-1,-1, freeVolume,localLight);
+			
+		if(normal.x()<0 || normal.y()>0 || normal.z()>0)
+			_collectLocalData(x-1,y,  z,	-1, 1, 1, freeVolume,localLight);
+			
+		if(normal.x()<0 || normal.y()>0 || normal.z()<0)
+			_collectLocalData(x-1,y,  z-1,	-1, 1,-1, freeVolume,localLight);
+			
+		if(normal.x()<0 || normal.y()<0 || normal.z()>0)
+			_collectLocalData(x-1,y-1,z,	-1,-1, 1, freeVolume,localLight);
+			
+		if(normal.x()<0 || normal.y()<0 || normal.z()<0)
+			_collectLocalData(x-1,y-1,z-1,	-1,-1,-1, freeVolume,localLight);
+		return std::make_pair(freeVolume,localLight);
 	}
 	
+	/*! Cast a ray from @p source to @p target.
+		If no block was hit, the distance is returned;
+		Otherwise, the negative distance to the first intersection is returned.
+		\todo support casting beyond the grid's boundaries.	
+	*/
 	float cast(const Geometry::Vec3& source, const Geometry::Vec3& target)const{
 		Geometry::Vec3 dir = target-source;
 		const float distance=dir.length();
@@ -108,23 +197,20 @@ struct VoxelGrid{
 
 static void createVertex(Rendering::MeshUtils::MeshBuilder&mb, VoxelGrid& grid,int32_t x,int32_t y,int32_t z, const Geometry::Vec3& normal){
 //	mb.color( grid.getOcclusionColor(x,y,z) );
-	static const Geometry::Vec3 light( 7.49,7.57,7.55);
-	const float s = grid.getFreeSpace(x,y,z)/128.0f;
+	const auto localData = grid.collectLocalData(x,y,z,normal);
+	
+	const float freeVolume = localData.first/128.0f;
 	
 	const Geometry::Vec3 pos(x,y,z);
 	float l = -1;
+
+	// collect long range lighting 
+	static const Geometry::Vec3 light( 7.49,7.57,7.55);
 	if( normal.dot( light-pos )>0)
 		l = grid.cast(pos,light);
-//	float l = grid.cast(pos+normal*0.05,light);
-//	if(l<0){
-//		const uint32_t s = getFreeSpace(x,y,z);
-//		mb.color( Util::Color4ub(s,s,s,255) );
-//	}
-//		
-//	else
-//		mb.color( Util::Color4f( 1.0/l,0,0,1.0  ) );
+
 //	mb.color( Util::Color4f( s+std::max(0.0f, 1.0f/l),s,s,1.0  ) );
-	mb.color( Util::Color4f( s+std::max(0.0f,2.0f/l),s,s,1.0  ) );
+	mb.color( Util::Color4f( freeVolume+std::max(0.0f,2.0f/l),freeVolume,freeVolume,1.0  )+localData.second );
 	mb.position(Geometry::Vec3(x,y,z));
 	mb.addVertex();
 
@@ -134,25 +220,6 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 	const auto data=voxelStorage.serialize(boundary);
 
 	Rendering::MeshUtils::MeshBuilder mb;
-//	for(const auto & area : data.first){
-//		const auto sidelength = std::get<1>(area);
-//		Rendering::MeshUtils::MeshBuilder::addBox(mb,Geometry::Box(	Geometry::Vec3(std::get<0>(area)), 
-//																	Geometry::Vec3(sidelength,sidelength,sidelength)));
-//	}
-//	const Geometry::Vec3 unit(1,1,1);
-//	for(const auto & voxels : data.second){
-//		const Geometry::Vec3 origin( std::get<0>(voxels) );
-//		const auto block = std::get<1>(voxels);
-//		for(uint32_t i=0;i<simpleVoxelStorage_t::blockSize;++i){
-//			const uint32_t value = block[i];
-//			if(value!=0){
-//				const auto pos = origin + Geometry::Vec3(	i%simpleVoxelStorage_t::blockSideLength,
-//															(i/simpleVoxelStorage_t::blockSideLength)%simpleVoxelStorage_t::blockSideLength,
-//															(i/(simpleVoxelStorage_t::blockSideLength*simpleVoxelStorage_t::blockSideLength))%simpleVoxelStorage_t::blockSideLength);
-//				Rendering::MeshUtils::MeshBuilder::addBox(mb,Geometry::Box(Geometry::Box(pos,pos+unit)));
-//			}
-//		}
-//	}
 	
 	VoxelGrid grid(boundary.getExtentX(),boundary.getExtentY(),boundary.getExtentZ());
 	
@@ -192,25 +259,12 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 	const Geometry::Vec3 unit(1,1,1);
 	
 	mb.color( Util::Color4f(0.5,0.5,0.5) );
-//	for(uint32_t z=0; z<grid.wz; ++z){
-//		for(uint32_t y=0; y<grid.wy; ++y){
-//			uint32_t i = y*grid.wx + grid.wxy*z;
-//			for(uint32_t x=0; x<grid.wx; ++x,++i){
-//				const uint32_t value = grid.voxels[i];
-//				if(value!=0){
-//					const Geometry::Vec3 pos(x,y,z);
-//					Rendering::MeshUtils::MeshBuilder::addBox(mb,Geometry::Box(Geometry::Box(pos,pos+unit)));
-//				}
-//			}
-//		}
-//	}
 	for(uint32_t z=0; z<grid.wz; ++z){
 		for(uint32_t y=0; y<grid.wy; ++y){
 			for(uint32_t x=0; x<grid.wx; ++x){
 				const uint32_t value = grid.get(x,y,z);
 				if(value!=0)
 					continue;
-//				plate(x,y,z,-1,0,0)
 				if(grid.get(x-1,y,z)!=0){
 					static const Geometry::Vec3f normal(1.0f,0,0);
 					const uint32_t idx = mb.getNextIndex();
