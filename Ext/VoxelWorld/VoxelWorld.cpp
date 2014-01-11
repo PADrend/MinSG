@@ -45,87 +45,101 @@ struct VoxelGrid{
 	}
 
 	// (internal)
-	void addLocalLight(int32_t x,int32_t y,int32_t z, Util::Color4f & localLight,uint8_t dist)const{
+	void addLocalLight(uint32_t value, int32_t x,int32_t y,int32_t z, Util::Color4f & localLight,uint8_t dist)const{
 		if( (x%7)==0 && (y%7)<3 &&  (z%7)==0 ){
-			localLight += Util::Color4f(0.0, std::max( 0.0f,1.0f/(dist*dist+1)),0,0);
+			if(value==0)
+				localLight += Util::Color4f(0.0, std::max( 0.0f,1.0f/(dist*dist+1)),0,0);
+			else
+				localLight += Util::Color4f(0.0, 0.0,std::max( 0.0f,1.0f/(dist*dist+1)),0);
+		}else{
+			if(isTransparent(value)){
+				float f = 0.02f/(dist*dist+1);
+//				localLight += Util::Color4f(f,f,f,0.0);
+				
+				localLight += Util::Color4f(f,f,f,0.0);
+			}
 		}
 	}
+	inline bool isTransparent(uint32_t value)const{
+		return value==0;
+	}
+	
 	// (internal)
 	void _collectLocalData(int32_t x,int32_t y,int32_t z,int32_t dx,int32_t dy,int32_t dz, uint32_t& freeVolume,Util::Color4f & localLight)const{
-		if(get(x,y,z)==0){
+		uint32_t value = get(x,y,z);
+		addLocalLight(value,x,y,z,localLight,0);
+		if(isTransparent(value)){
 			int32_t space = 1;
 			int32_t xt = x+dx;
 			for(int32_t i=1; i<4 ;++i,xt+=dx){ // x
-				if(get(xt,y,z)==0){
+				value = get(xt,y,z);
+				addLocalLight(value,xt,y,z,localLight,i);
+				if(isTransparent(value))
 					++space;
-				}else{ 
-					addLocalLight(xt,y,z,localLight,i);
+				else
 					break;
-				}
 			}
 			int32_t yt = y+dy;
 			for(int32_t i=1; i<4 ; ++i,yt+=dy){ // y
-				if(get(x,yt,z)==0){
+				value = get(x,yt,z);
+				addLocalLight(value,x,yt,z,localLight,i);
+				if(isTransparent(value))
 					++space;
-				}else{
-					addLocalLight(x,yt,z,localLight,i);
+				else
 					break;
-				}
 			}
 			int32_t zt = z+dz;
 			for(int32_t i=1; i<4 ;++i,zt+=dz){  // z
-				if(get(x,y,zt)==0){
+				value = get(x,y,zt);
+				addLocalLight(value,x,y,zt,localLight,i);
+				if(isTransparent(value))
 					++space;
-				}else{
-					addLocalLight(x,y,zt,localLight,i);
+				else
 					break;
-				}
 			}
 			
 			xt = x+dx, yt = y+dy;
 			for(int32_t i=1; i<4; ++i,xt+=dx,yt+=dy){ //xy
-				if(get(xt,yt,z)==0){
+				value = get(xt,yt,z);
+				addLocalLight(value,xt,yt,z,localLight,i*2);
+				if(isTransparent(value))
 					++space;
-				}else{
-					addLocalLight(xt,yt,z,localLight,i*2);
+				else
 					break;
-				}
 			} 
 			
 			xt = x+dx,  zt = z+dz;
 			for(int32_t i=1; i<4; ++i,xt+=dx,zt+=dz){ //xz
-				if(get(xt,y,zt)==0){
+				value = get(xt,y,zt);
+				addLocalLight(value,xt,y,zt,localLight,i*2);
+				if(isTransparent(value))
 					++space;
-				}else{
-					addLocalLight(xt,y,zt,localLight,i*2);
+				else
 					break;
-				}
 			} 
 			
 			yt = y+dy, zt = z+dz;
 			for(int32_t i=1; i<4; ++i,yt+=dy,zt+=dz){ //yz
-				if(get(x,yt,zt)==0){
+				value = get(x,yt,zt);
+				addLocalLight(value,x,yt,zt,localLight,i*2);
+				if(isTransparent(value))
 					++space;
-				}else{
-					addLocalLight(x,yt,zt,localLight,i*2);
+				else
 					break;
-				}
 			} 
 			
 			
 			
 			xt = x+dx, yt = y+dy, zt = z+dz;
 			for(int32_t i=1; i<4; ++i,xt+=dx,yt+=dy,zt+=dz){
-				if(get(xt,yt,zt)==0){
+				value = get(xt,yt,zt);
+				addLocalLight(value,xt,yt,zt,localLight,i*3);
+				if(isTransparent(value))
 					++space;
-				}else{
-					addLocalLight(xt,yt,zt,localLight,i*3);
+				else
 					break;
-				}
 			}
 			freeVolume += space;
-		}else{
-			addLocalLight(x,y,z,localLight,0);
 		}
 		
 	}
@@ -199,7 +213,7 @@ static void createVertex(Rendering::MeshUtils::MeshBuilder&mb, VoxelGrid& grid,i
 //	mb.color( grid.getOcclusionColor(x,y,z) );
 	const auto localData = grid.collectLocalData(x,y,z,normal);
 	
-	const float freeVolume = localData.first/128.0f;
+	const float freeVolume = 0.0; //localData.first/128.0f;
 	
 	const Geometry::Vec3 pos(x,y,z);
 	float l = -1;
@@ -210,7 +224,9 @@ static void createVertex(Rendering::MeshUtils::MeshBuilder&mb, VoxelGrid& grid,i
 		l = grid.cast(pos,light);
 
 //	mb.color( Util::Color4f( s+std::max(0.0f, 1.0f/l),s,s,1.0  ) );
-	mb.color( Util::Color4f( freeVolume+std::max(0.0f,2.0f/l),freeVolume,freeVolume,1.0  )+localData.second );
+	Util::Color4f vertexColor =  Util::Color4f( freeVolume+std::max(0.0f,2.0f/l),freeVolume,freeVolume,1.0  )+localData.second;
+//	vertexColor = Util::Color4f( std::max(0.0f,vertexColor.getR()),std::max(0.0f,vertexColor.getG()),std::max(0.0f,vertexColor.getB()),1.0 );
+	mb.color( vertexColor );
 	mb.position(Geometry::Vec3(x,y,z));
 	mb.addVertex();
 
