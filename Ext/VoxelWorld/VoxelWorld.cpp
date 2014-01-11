@@ -67,20 +67,24 @@ struct VoxelGrid{
 	}
 
 	// (internal)
-	void addLocalLight(uint32_t value, int32_t x,int32_t y,int32_t z, Util::Color4f & localLight,uint8_t dist)const{
-		if( (x%7)==0 && (y%7)<3 &&  (z%7)==0 ){
-//			if(value==0)
-//				localLight += Util::Color4f(0.0, std::max( 0.0f,1.0f/(dist*dist+1)),0,0);
-//			else
-//				localLight += Util::Color4f(0.0, 0.0,std::max( 0.0f,1.0f/(dist*dist+1)),0);
+	void addLocalLight(uint32_t value, int32_t x,int32_t y,int32_t z, Util::Color4f & localLight,uint8_t dist,uint8_t pass)const{
+		if( (x%7)==0 && (y%7)==0 &&  (z%7)==0 ){
+			if(pass==0){
+				if(value!=0)
+					localLight += Util::Color4f(0.0, std::max( 0.0f,1.0f/(dist*dist+1)),0,0);
+				else
+					localLight += Util::Color4f(0.0, 0.0,std::max( 0.0f,0.2f/(dist*dist+1)),0);
+			}
 		}else{
 			if(isTransparent(value)){
+				if(pass==1){
+					localLight += getAmbientLightValue( Geometry::_Vec3<int32_t>(x,y,z) )/(dist*dist+1)*0.4;
+														
+					// omni ambient
+					float f = 0.007f/(dist*dist+1);
+					localLight += Util::Color4f(f,f,f,0.0);
+				}
 					
-				localLight += getAmbientLightValue( Geometry::_Vec3<int32_t>(x,y,z) )/(dist*dist+1)*0.4;
-													
-				// omni ambient
-				float f = 0.01f/(dist*dist+1);
-				localLight += Util::Color4f(f,f,f,0.0);
 			}
 		}
 	}
@@ -89,66 +93,54 @@ struct VoxelGrid{
 	}
 	
 	// (internal)
-	void _collectLocalData(int32_t x,int32_t y,int32_t z,int32_t dx,int32_t dy,int32_t dz, uint32_t& freeVolume,Util::Color4f & localLight)const{
+	void _collectLocalData(int32_t x,int32_t y,int32_t z,int32_t dx,int32_t dy,int32_t dz, Util::Color4f & localLight,uint8_t pass)const{
 		uint32_t value = get(x,y,z);
-//		addLocalLight(value,x,y,z,localLight,0);
+		if(pass==0)
+			addLocalLight(value,x,y,z,localLight,0,pass);
 		if(isTransparent(value)){
-			int32_t space = 1;
 			int32_t xt = x+dx;
 			for(int32_t i=1; i<4 ;++i,xt+=dx){ // x
 				value = get(xt,y,z);
-				addLocalLight(value,xt,y,z,localLight,i);
-				if(isTransparent(value))
-					++space;
-				else
+				addLocalLight(value,xt,y,z,localLight,i,pass);
+				if(!isTransparent(value))
 					break;
 			}
 			int32_t yt = y+dy;
 			for(int32_t i=1; i<4 ; ++i,yt+=dy){ // y
 				value = get(x,yt,z);
-				addLocalLight(value,x,yt,z,localLight,i);
-				if(isTransparent(value))
-					++space;
-				else
+				addLocalLight(value,x,yt,z,localLight,i,pass);
+				if(!isTransparent(value))
 					break;
 			}
 			int32_t zt = z+dz;
 			for(int32_t i=1; i<4 ;++i,zt+=dz){  // z
 				value = get(x,y,zt);
-				addLocalLight(value,x,y,zt,localLight,i);
-				if(isTransparent(value))
-					++space;
-				else
+				addLocalLight(value,x,y,zt,localLight,i,pass);
+				if(!isTransparent(value))
 					break;
 			}
 			
 			xt = x+dx, yt = y+dy;
 			for(int32_t i=1; i<4; ++i,xt+=dx,yt+=dy){ //xy
 				value = get(xt,yt,z);
-				addLocalLight(value,xt,yt,z,localLight,i*2);
-				if(isTransparent(value))
-					++space;
-				else
+				addLocalLight(value,xt,yt,z,localLight,i*2,pass);
+				if(!isTransparent(value))
 					break;
 			} 
 			
 			xt = x+dx,  zt = z+dz;
 			for(int32_t i=1; i<4; ++i,xt+=dx,zt+=dz){ //xz
 				value = get(xt,y,zt);
-				addLocalLight(value,xt,y,zt,localLight,i*2);
-				if(isTransparent(value))
-					++space;
-				else
+				addLocalLight(value,xt,y,zt,localLight,i*2,pass);
+				if(!isTransparent(value))
 					break;
 			} 
 			
 			yt = y+dy, zt = z+dz;
 			for(int32_t i=1; i<4; ++i,yt+=dy,zt+=dz){ //yz
 				value = get(x,yt,zt);
-				addLocalLight(value,x,yt,zt,localLight,i*2);
-				if(isTransparent(value))
-					++space;
-				else
+				addLocalLight(value,x,yt,zt,localLight,i*2,pass);
+				if(!isTransparent(value))
 					break;
 			} 
 			
@@ -157,45 +149,41 @@ struct VoxelGrid{
 			xt = x+dx, yt = y+dy, zt = z+dz;
 			for(int32_t i=1; i<4; ++i,xt+=dx,yt+=dy,zt+=dz){
 				value = get(xt,yt,zt);
-				addLocalLight(value,xt,yt,zt,localLight,i*3);
-				if(isTransparent(value))
-					++space;
-				else
+				addLocalLight(value,xt,yt,zt,localLight,i*3,pass);
+				if(!isTransparent(value))
 					break;
 			}
-			freeVolume += space;
 		}
 		
 	}
 	//! \return [freeVolume,localLight]
-	std::pair<uint32_t,Util::Color4f> collectLocalData(int32_t x,int32_t y,int32_t z,const Geometry::Vec3& normal){
-		uint32_t freeVolume = 0;
+	std::pair<uint32_t,Util::Color4f> collectLocalData(int32_t x,int32_t y,int32_t z,const Geometry::Vec3& normal,uint8_t pass){
 		Util::Color4f localLight(0,0,0,1);
 		
 		if(normal.x()>0 || normal.y()>0 || normal.z()>0)
-			_collectLocalData(x,  y,  z,	 1, 1, 1, freeVolume,localLight);
+			_collectLocalData(x,  y,  z,	 1, 1, 1, localLight,pass);
 
 		if(normal.x()>0 || normal.y()>0 || normal.z()<0)
-			_collectLocalData(x,  y,  z-1,	 1, 1,-1, freeVolume,localLight);
+			_collectLocalData(x,  y,  z-1,	 1, 1,-1, localLight,pass);
 
 		if(normal.x()>0 || normal.y()<0 || normal.z()>0)
-			_collectLocalData(x,  y-1,z,	 1,-1, 1, freeVolume,localLight);
+			_collectLocalData(x,  y-1,z,	 1,-1, 1, localLight,pass);
 
 		if(normal.x()>0 || normal.y()<0 || normal.z()<0)
-			_collectLocalData(x,  y-1,z-1,	 1,-1,-1, freeVolume,localLight);
+			_collectLocalData(x,  y-1,z-1,	 1,-1,-1, localLight,pass);
 			
 		if(normal.x()<0 || normal.y()>0 || normal.z()>0)
-			_collectLocalData(x-1,y,  z,	-1, 1, 1, freeVolume,localLight);
+			_collectLocalData(x-1,y,  z,	-1, 1, 1, localLight,pass);
 			
 		if(normal.x()<0 || normal.y()>0 || normal.z()<0)
-			_collectLocalData(x-1,y,  z-1,	-1, 1,-1, freeVolume,localLight);
+			_collectLocalData(x-1,y,  z-1,	-1, 1,-1, localLight,pass);
 			
 		if(normal.x()<0 || normal.y()<0 || normal.z()>0)
-			_collectLocalData(x-1,y-1,z,	-1,-1, 1, freeVolume,localLight);
+			_collectLocalData(x-1,y-1,z,	-1,-1, 1, localLight,pass);
 			
 		if(normal.x()<0 || normal.y()<0 || normal.z()<0)
-			_collectLocalData(x-1,y-1,z-1,	-1,-1,-1, freeVolume,localLight);
-		return std::make_pair(freeVolume,localLight);
+			_collectLocalData(x-1,y-1,z-1,	-1,-1,-1, localLight,pass);
+		return std::make_pair(0,localLight);
 	}
 	
 	/*! Cast a ray from @p source to @p target.
@@ -235,7 +223,7 @@ struct VoxelGrid{
 
 static void createVertex(Rendering::MeshUtils::MeshBuilder&mb, VoxelGrid& grid,int32_t x,int32_t y,int32_t z, const Geometry::Vec3& normal){
 //	mb.color( grid.getOcclusionColor(x,y,z) );
-	const auto localData = grid.collectLocalData(x,y,z,normal);
+	const auto localData = grid.collectLocalData(x,y,z,normal,1);
 	
 	const float freeVolume = 0.0; //localData.first/128.0f;
 	
@@ -257,6 +245,9 @@ static void createVertex(Rendering::MeshUtils::MeshBuilder&mb, VoxelGrid& grid,i
 
 static void calculateAmbientLightingValue(VoxelGrid& grid,const Geometry::_Vec3<int32_t> &pos,const Geometry::Vec3& normal){
 	Util::Color4f c;
+	
+	const auto localData = grid.collectLocalData(pos.x(),pos.y(),pos.z(),normal,0);
+	c+=localData.second;
 	
 	const Geometry::Vec3 pos2(pos);
 		// collect long range lighting 
