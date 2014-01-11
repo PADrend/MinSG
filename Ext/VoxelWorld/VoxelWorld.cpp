@@ -14,12 +14,21 @@
 #include <Geometry/VoxelStorage.h>
 #include <Util/Graphics/Color.h>
 #include <iostream>
+#include <unordered_map>
+
+namespace std{
+template <> struct hash<Geometry::_Vec3<int32_t>> {
+	size_t operator()(const Geometry::_Vec3<int32_t> & v) const noexcept {	return static_cast<uint64_t>(v.x())*(129731+v.y())^v.z();	}
+};
+}
 
 namespace MinSG {
 
 struct VoxelGrid{
 	const uint32_t wx,wy,wz,wxy;
 	std::vector<uint32_t> voxels; // voxel, edgeflags, occlusion value
+	std::unordered_map<Geometry::_Vec3<int32_t>,Util::Color4f> ambientLightValues;
+	
 	VoxelGrid(uint32_t _wx, uint32_t _wy, uint32_t _wz) : 
 		wx(_wx), wy(_wy), wz(_wz), wxy(wx*wy), voxels(wx*wy*wz){
 	}
@@ -27,12 +36,25 @@ struct VoxelGrid{
 	void set(uint32_t x,uint32_t y,uint32_t z,uint32_t value){
 		voxels[ x+y*wx+z*wxy ] = value;
 	}
+	void setAmbientLightValue(const Geometry::_Vec3<int32_t>& pos, const Util::Color4f & c){
+		ambientLightValues[pos] = c;
+	}
+	void updateAmbientLightValue(const Geometry::_Vec3<int32_t>& pos, const Util::Color4f & c){
+		ambientLightValues[pos] += c;
+	}
+	
 	inline uint32_t get(int32_t x,int32_t y,int32_t z)const{
 		return (x<0||x>=static_cast<int32_t>(wx)||y<0||y>=static_cast<int32_t>(wy)||z<0||z>=static_cast<int32_t>(wz)) ? 0 : voxels[ x+y*wx+z*wxy ];
 	}
 	inline uint32_t get(const Geometry::_Vec3<int32_t>& v)const{
 		return get(v.x(),v.y(),v.z());
 	}
+	const Util::Color4f & getAmbientLightValue(const Geometry::_Vec3<int32_t>& pos)const{
+		static const  Util::Color4f black;
+		const auto it = ambientLightValues.find(pos);
+		return it==ambientLightValues.end() ? black : it->second;
+	}
+	
 	uint32_t index(const Geometry::_Vec3<int32_t>& v)const{
 		return v.x()+v.y()*wx+v.z()*wxy;
 	}
@@ -47,15 +69,17 @@ struct VoxelGrid{
 	// (internal)
 	void addLocalLight(uint32_t value, int32_t x,int32_t y,int32_t z, Util::Color4f & localLight,uint8_t dist)const{
 		if( (x%7)==0 && (y%7)<3 &&  (z%7)==0 ){
-			if(value==0)
-				localLight += Util::Color4f(0.0, std::max( 0.0f,1.0f/(dist*dist+1)),0,0);
-			else
-				localLight += Util::Color4f(0.0, 0.0,std::max( 0.0f,1.0f/(dist*dist+1)),0);
+//			if(value==0)
+//				localLight += Util::Color4f(0.0, std::max( 0.0f,1.0f/(dist*dist+1)),0,0);
+//			else
+//				localLight += Util::Color4f(0.0, 0.0,std::max( 0.0f,1.0f/(dist*dist+1)),0);
 		}else{
 			if(isTransparent(value)){
-				float f = 0.02f/(dist*dist+1);
-//				localLight += Util::Color4f(f,f,f,0.0);
-				
+					
+				localLight += getAmbientLightValue( Geometry::_Vec3<int32_t>(x,y,z) )/(dist*dist+1)*0.4;
+													
+				// omni ambient
+				float f = 0.01f/(dist*dist+1);
 				localLight += Util::Color4f(f,f,f,0.0);
 			}
 		}
@@ -67,7 +91,7 @@ struct VoxelGrid{
 	// (internal)
 	void _collectLocalData(int32_t x,int32_t y,int32_t z,int32_t dx,int32_t dy,int32_t dz, uint32_t& freeVolume,Util::Color4f & localLight)const{
 		uint32_t value = get(x,y,z);
-		addLocalLight(value,x,y,z,localLight,0);
+//		addLocalLight(value,x,y,z,localLight,0);
 		if(isTransparent(value)){
 			int32_t space = 1;
 			int32_t xt = x+dx;
@@ -229,7 +253,23 @@ static void createVertex(Rendering::MeshUtils::MeshBuilder&mb, VoxelGrid& grid,i
 	mb.color( vertexColor );
 	mb.position(Geometry::Vec3(x,y,z));
 	mb.addVertex();
+}
 
+static void calculateAmbientLightingValue(VoxelGrid& grid,const Geometry::_Vec3<int32_t> &pos,const Geometry::Vec3& normal){
+	Util::Color4f c;
+	
+	const Geometry::Vec3 pos2(pos);
+		// collect long range lighting 
+	static const Geometry::Vec3 light( 7.49,7.57,7.55);
+	float l = -1;
+	if( normal.dot( light-pos2 )>0)
+		l = grid.cast(pos2,light);
+	
+	c += Util::Color4f( std::max(0.0f,2.0f/l),0,0,0.0  );
+	
+	// collect local light
+	
+	grid.updateAmbientLightValue( pos, c);
 }
 
 Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStorage_t& voxelStorage, const Geometry::_Box<int32_t>& boundary){
@@ -271,6 +311,44 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 		}
 	}
 
+	// collect ambient light data
+	for(uint32_t z=0; z<grid.wz; ++z){
+		for(uint32_t y=0; y<grid.wy; ++y){
+			for(uint32_t x=0; x<grid.wx; ++x){
+				const Geometry::_Vec3<int32_t> pos(x,y,z);
+				const uint32_t value = grid.get(pos);
+				if(value!=0)
+					continue;
+				if(grid.get(x-1,y,z)!=0){
+					static const Geometry::Vec3f normal(1.0f,0,0);
+					calculateAmbientLightingValue(grid, pos,normal);
+				}
+				if(grid.get(x+1,y,z)!=0){
+					static const Geometry::Vec3f normal(-1.0f,0,0);
+					calculateAmbientLightingValue(grid, pos,normal);
+				}
+				if(grid.get(x,y+1,z)!=0){
+					static const Geometry::Vec3f normal(0,-1.0f,0);
+					calculateAmbientLightingValue(grid, pos,normal);
+				}
+				if(grid.get(x,y-1,z)!=0){
+					static const Geometry::Vec3f normal(0,1.0f,0);
+					calculateAmbientLightingValue(grid, pos,normal);
+				}
+				if(grid.get(x,y,z+1)!=0){
+					static const Geometry::Vec3f normal(0,0,-1.0f);
+					calculateAmbientLightingValue(grid, pos,normal);
+				}
+				if(grid.get(x,y,z-1)!=0){
+					static const Geometry::Vec3f normal(0,0,1.0f);
+					calculateAmbientLightingValue(grid, pos,normal);
+				}
+			}
+		}
+	}
+	
+	
+	
 
 	const Geometry::Vec3 unit(1,1,1);
 	
