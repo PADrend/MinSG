@@ -11,197 +11,129 @@
 
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/MeshUtils/MeshBuilder.h>
+#include <Geometry/PointOctree.h>
+#include <Geometry/Sphere.h>
 #include <Geometry/VoxelStorage.h>
 #include <Util/Graphics/Color.h>
 #include <iostream>
 #include <unordered_map>
 
+
+typedef Geometry::_Vec3<int32_t>	vec3i;
+typedef Geometry::Vec3 				vec3f;
+typedef uint32_t					value_t;
+
+
 namespace std{
-template <> struct hash<Geometry::_Vec3<int32_t>> {
-	size_t operator()(const Geometry::_Vec3<int32_t> & v) const noexcept {	return static_cast<uint64_t>(v.x())*(129731+v.y())^v.z();	}
+template <> struct hash<vec3i> {
+	size_t operator()(const vec3i & v) const noexcept {	return static_cast<uint64_t>(v.x())*(129731+v.y())^v.z();	}
+};
+template <> struct hash<std::pair<vec3i,vec3i>> {
+	size_t operator()(const std::pair<vec3i,vec3i> & p) const noexcept {	
+		return hash<vec3i>()(p.first) - hash<vec3i>()(p.second);	}
 };
 }
 
 namespace MinSG {
 
+
+struct LightProbePoint{
+	const vec3f position;
+	const size_t lightProbeIndex;
+	LightProbePoint(const vec3f & p,size_t idx) : position(p),lightProbeIndex(idx){}
+	const vec3f& getPosition()const{	return position;	}
+
+	
+};
+struct LightProbe{
+	Util::Color4f color, lastPassColor;
+	vec3f normal;
+	LightProbe(const Util::Color4f& c) : color(c){}
+	LightProbe(const Util::Color4f& c,const vec3f& n) : color(c),normal(n){}
+};
+
 struct VoxelGrid{
 	const uint32_t wx,wy,wz,wxy;
 	std::vector<uint32_t> voxels; // voxel, edgeflags, occlusion value
-	std::unordered_map<Geometry::_Vec3<int32_t>,Util::Color4f> ambientLightValues;
 	
+	
+	std::unordered_map<std::pair<vec3i,vec3i>,size_t> vertexLightProbeIndices; // pos,normal -> index
+	Geometry::PointOctree<LightProbePoint> lightProbeOctree; // pos ->index
+	std::vector<LightProbe> lightProbes;
+		
 	VoxelGrid(uint32_t _wx, uint32_t _wy, uint32_t _wz) : 
-		wx(_wx), wy(_wy), wz(_wz), wxy(wx*wy), voxels(wx*wy*wz){
+			wx(_wx), wy(_wy), wz(_wz), wxy(wx*wy), voxels(wx*wy*wz),
+			lightProbeOctree(Geometry::Box( vec3f(0,0,0),vec3f(wx,wy,wz)),4,8){
 	}
 	
-	void set(uint32_t x,uint32_t y,uint32_t z,uint32_t value){
+	void set(uint32_t x,uint32_t y,uint32_t z,value_t value){
 		voxels[ x+y*wx+z*wxy ] = value;
 	}
-	void setAmbientLightValue(const Geometry::_Vec3<int32_t>& pos, const Util::Color4f & c){
-		ambientLightValues[pos] = c;
+	Util::Color4f getVertexLightProbe(const vec3i& pos,const vec3i& normal)const{
+		static const  Util::Color4f black;
+		const auto& it = vertexLightProbeIndices.find(std::make_pair(pos,normal));
+		return it==vertexLightProbeIndices.end() ? black : lightProbes.at( it->second ).color;
 	}
-	void updateAmbientLightValue(const Geometry::_Vec3<int32_t>& pos, const Util::Color4f & c){
-		ambientLightValues[pos] += c;
+	// create a lightProbe for pos,normal and return it, or return nullptr if it exists
+	Util::Color4f* initVertexLightProbe(const vec3i& pos,const vec3i& normal){
+		size_t index = lightProbes.size();
+		auto result = vertexLightProbeIndices.emplace(std::make_pair(vec3i(pos),vec3i(normal)),index);
+		if(result.second){
+			lightProbes.emplace_back(Util::Color4f(),vec3f(normal));
+			lightProbeOctree.insert(LightProbePoint(vec3f(pos),index));
+			return &lightProbes[index].color;
+		}else{
+			return nullptr;
+		}
+		
 	}
 	
-	inline uint32_t get(int32_t x,int32_t y,int32_t z)const{
+	Util::Color4f& createFreeLightProbe(const vec3f& pos){
+		const size_t index = lightProbes.size();
+		lightProbes.emplace_back(Util::Color4f());
+		lightProbeOctree.insert(LightProbePoint(pos,index));
+		return lightProbes[index].color;
+	}
+	
+	inline value_t get(int32_t x,int32_t y,int32_t z)const{
 		return (x<0||x>=static_cast<int32_t>(wx)||y<0||y>=static_cast<int32_t>(wy)||z<0||z>=static_cast<int32_t>(wz)) ? 0 : voxels[ x+y*wx+z*wxy ];
 	}
-	inline uint32_t get(const Geometry::_Vec3<int32_t>& v)const{
+	inline value_t get(const vec3i& v)const{
 		return get(v.x(),v.y(),v.z());
 	}
-	const Util::Color4f & getAmbientLightValue(const Geometry::_Vec3<int32_t>& pos)const{
-		static const  Util::Color4f black;
-		const auto it = ambientLightValues.find(pos);
-		return it==ambientLightValues.end() ? black : it->second;
-	}
+
 	
-	uint32_t index(const Geometry::_Vec3<int32_t>& v)const{
+	uint32_t getIndex(const vec3i& v)const{
 		return v.x()+v.y()*wx+v.z()*wxy;
 	}
-	Geometry::_Vec3<int32_t> clamp(const Geometry::_Vec3<int32_t>& v)const{
-		return Geometry::_Vec3<int32_t>(
+	vec3i clamp(const vec3i& v)const{
+		return vec3i(
 				std::max( std::min(v.x(),static_cast<int32_t>(wx)),0 ),
 				std::max( std::min(v.y(),static_cast<int32_t>(wy)),0 ),
 				std::max( std::min(v.z(),static_cast<int32_t>(wz)),0 )
 		);
 	}
 
-	// (internal)
-	void addLocalLight(uint32_t value, int32_t x,int32_t y,int32_t z, Util::Color4f & localLight,uint8_t dist,uint8_t pass)const{
-		if( (x%7)==0 && (y%7)==0 &&  (z%7)==0 ){
-			if(pass==0){
-				if(value!=0)
-					localLight += Util::Color4f(0.0, std::max( 0.0f,1.0f/(dist*dist+1)),0,0);
-				else
-					localLight += Util::Color4f(0.0, 0.0,std::max( 0.0f,0.2f/(dist*dist+1)),0);
-			}
-		}else{
-			if(isTransparent(value)){
-				if(pass==1){
-					localLight += getAmbientLightValue( Geometry::_Vec3<int32_t>(x,y,z) )/(dist*dist+1)*0.4;
-														
-					// omni ambient
-					float f = 0.007f/(dist*dist+1);
-					localLight += Util::Color4f(f,f,f,0.0);
-				}
-					
-			}
-		}
-	}
-	inline bool isTransparent(uint32_t value)const{
+	inline bool isTransparent(value_t value)const{
 		return value==0;
 	}
-	
-	// (internal)
-	void _collectLocalData(int32_t x,int32_t y,int32_t z,int32_t dx,int32_t dy,int32_t dz, Util::Color4f & localLight,uint8_t pass)const{
-		uint32_t value = get(x,y,z);
-		if(pass==0)
-			addLocalLight(value,x,y,z,localLight,0,pass);
-		if(isTransparent(value)){
-			int32_t xt = x+dx;
-			for(int32_t i=1; i<4 ;++i,xt+=dx){ // x
-				value = get(xt,y,z);
-				addLocalLight(value,xt,y,z,localLight,i,pass);
-				if(!isTransparent(value))
-					break;
-			}
-			int32_t yt = y+dy;
-			for(int32_t i=1; i<4 ; ++i,yt+=dy){ // y
-				value = get(x,yt,z);
-				addLocalLight(value,x,yt,z,localLight,i,pass);
-				if(!isTransparent(value))
-					break;
-			}
-			int32_t zt = z+dz;
-			for(int32_t i=1; i<4 ;++i,zt+=dz){  // z
-				value = get(x,y,zt);
-				addLocalLight(value,x,y,zt,localLight,i,pass);
-				if(!isTransparent(value))
-					break;
-			}
-			
-			xt = x+dx, yt = y+dy;
-			for(int32_t i=1; i<4; ++i,xt+=dx,yt+=dy){ //xy
-				value = get(xt,yt,z);
-				addLocalLight(value,xt,yt,z,localLight,i*2,pass);
-				if(!isTransparent(value))
-					break;
-			} 
-			
-			xt = x+dx,  zt = z+dz;
-			for(int32_t i=1; i<4; ++i,xt+=dx,zt+=dz){ //xz
-				value = get(xt,y,zt);
-				addLocalLight(value,xt,y,zt,localLight,i*2,pass);
-				if(!isTransparent(value))
-					break;
-			} 
-			
-			yt = y+dy, zt = z+dz;
-			for(int32_t i=1; i<4; ++i,yt+=dy,zt+=dz){ //yz
-				value = get(x,yt,zt);
-				addLocalLight(value,x,yt,zt,localLight,i*2,pass);
-				if(!isTransparent(value))
-					break;
-			} 
-			
-			
-			
-			xt = x+dx, yt = y+dy, zt = z+dz;
-			for(int32_t i=1; i<4; ++i,xt+=dx,yt+=dy,zt+=dz){
-				value = get(xt,yt,zt);
-				addLocalLight(value,xt,yt,zt,localLight,i*3,pass);
-				if(!isTransparent(value))
-					break;
-			}
-		}
-		
-	}
-	//! \return [freeVolume,localLight]
-	std::pair<uint32_t,Util::Color4f> collectLocalData(int32_t x,int32_t y,int32_t z,const Geometry::Vec3& normal,uint8_t pass){
-		Util::Color4f localLight(0,0,0,1);
-		
-		if(normal.x()>0 || normal.y()>0 || normal.z()>0)
-			_collectLocalData(x,  y,  z,	 1, 1, 1, localLight,pass);
 
-		if(normal.x()>0 || normal.y()>0 || normal.z()<0)
-			_collectLocalData(x,  y,  z-1,	 1, 1,-1, localLight,pass);
-
-		if(normal.x()>0 || normal.y()<0 || normal.z()>0)
-			_collectLocalData(x,  y-1,z,	 1,-1, 1, localLight,pass);
-
-		if(normal.x()>0 || normal.y()<0 || normal.z()<0)
-			_collectLocalData(x,  y-1,z-1,	 1,-1,-1, localLight,pass);
-			
-		if(normal.x()<0 || normal.y()>0 || normal.z()>0)
-			_collectLocalData(x-1,y,  z,	-1, 1, 1, localLight,pass);
-			
-		if(normal.x()<0 || normal.y()>0 || normal.z()<0)
-			_collectLocalData(x-1,y,  z-1,	-1, 1,-1, localLight,pass);
-			
-		if(normal.x()<0 || normal.y()<0 || normal.z()>0)
-			_collectLocalData(x-1,y-1,z,	-1,-1, 1, localLight,pass);
-			
-		if(normal.x()<0 || normal.y()<0 || normal.z()<0)
-			_collectLocalData(x-1,y-1,z-1,	-1,-1,-1, localLight,pass);
-		return std::make_pair(0,localLight);
-	}
-	
 	/*! Cast a ray from @p source to @p target.
 		If no block was hit, the distance is returned;
 		Otherwise, the negative distance to the first intersection is returned.
 		\todo support casting beyond the grid's boundaries.	
 	*/
-	float cast(const Geometry::Vec3& source, const Geometry::Vec3& target)const{
-		Geometry::Vec3 dir = target-source;
+	float cast(const vec3f& source, const vec3f& target)const{
+		vec3f dir = target-source;
 		const float distance=dir.length();
 		if(distance==0)
 			return -1;
 		dir/=distance;
 		
 		const float stepSize = 0.13;
-		const Geometry::Vec3 step(dir*stepSize);
+		const vec3f step(dir*stepSize);
 		
-		Geometry::Vec3 v = source + dir*0.01f;
+		vec3f v = source + dir*0.01f;
 		int32_t x=source.x()-10/*arbitrary invalid value*/, y=0, z=0;
 		
 		for(float currentRayLength = 0.01f; currentRayLength<distance; currentRayLength+=stepSize){
@@ -221,52 +153,65 @@ struct VoxelGrid{
 };
 
 
-static void createVertex(Rendering::MeshUtils::MeshBuilder&mb, VoxelGrid& grid,int32_t x,int32_t y,int32_t z, const Geometry::Vec3& normal){
-//	mb.color( grid.getOcclusionColor(x,y,z) );
-	const auto localData = grid.collectLocalData(x,y,z,normal,1);
-	
-	const float freeVolume = 0.0; //localData.first/128.0f;
-	
-	const Geometry::Vec3 pos(x,y,z);
-	float l = -1;
+static void createVertex(Rendering::MeshUtils::MeshBuilder&mb, VoxelGrid& grid,int32_t x,int32_t y,int32_t z, value_t value,const vec3i& normal){
 
-	// collect long range lighting 
-	static const Geometry::Vec3 light( 7.49,7.57,7.55);
-	if( normal.dot( light-pos )>0)
-		l = grid.cast(pos,light);
-
-//	mb.color( Util::Color4f( s+std::max(0.0f, 1.0f/l),s,s,1.0  ) );
-	Util::Color4f vertexColor =  Util::Color4f( freeVolume+std::max(0.0f,2.0f/l),freeVolume,freeVolume,1.0  )+localData.second;
-//	vertexColor = Util::Color4f( std::max(0.0f,vertexColor.getR()),std::max(0.0f,vertexColor.getG()),std::max(0.0f,vertexColor.getB()),1.0 );
-	mb.color( vertexColor );
-	mb.position(Geometry::Vec3(x,y,z));
+	Util::Color4f vertexColor;
+	if(value>0){
+		vertexColor = Util::Color4f(value,value,value,1.0);
+	}
+	const Util::Color4f light = grid.getVertexLightProbe(vec3i(x,y,z),normal);
+	
+	mb.color( Util::Color4f( vertexColor.getR() * light.getR(),
+							vertexColor.getG() * light.getG(),
+							vertexColor.getB() * light.getB(), vertexColor.getA() ));
+	mb.position(vec3f(x,y,z));
 	mb.addVertex();
 }
 
-static void calculateAmbientLightingValue(VoxelGrid& grid,const Geometry::_Vec3<int32_t> &pos,const Geometry::Vec3& normal){
-	Util::Color4f c;
+
+/*! Init a vertex light probe if it does not already exist.
+	Applies global lighting to the probe.	*/
+static void initVertexLightProbe(VoxelGrid& grid,const vec3i& pos,const vec3i& normal){
+	auto probe = grid.initVertexLightProbe(pos,normal);
+	if(probe){
+		const vec3f pos2(pos);
+
+		{// collect long range lighting 
+			static const vec3f globalLight( 7.49,7.57,7.55);
+			if( vec3f(normal).dot( globalLight-pos2 )>0){
+				const float l = grid.cast( pos2,globalLight);
+				if(l>0)
+					*probe += Util::Color4f( 2.0f/l,0.01,0.01,0.0  );
+			}
+		}
+		
+		{// collect long range lighting 
+			static const vec3f globalLight( 7.49,30.57,7.55);
+			if( vec3f(normal).dot( globalLight-pos2 )>0){
+				const float l = grid.cast( pos2,globalLight);
+				if(l>0)
+					*probe += Util::Color4f( 0.5,0.45,0.46,1.0  );
+			}
+		}
+		
 	
-	const auto localData = grid.collectLocalData(pos.x(),pos.y(),pos.z(),normal,0);
-	c+=localData.second;
-	
-	const Geometry::Vec3 pos2(pos);
-		// collect long range lighting 
-	static const Geometry::Vec3 light( 7.49,7.57,7.55);
-	float l = -1;
-	if( normal.dot( light-pos2 )>0)
-		l = grid.cast(pos2,light);
-	
-	c += Util::Color4f( std::max(0.0f,2.0f/l),0,0,0.0  );
-	
-	// collect local light
-	
-	grid.updateAmbientLightValue( pos, c);
+		*probe += Util::Color4f( 0.01,0.01,0.01,0.0  );
+	}
 }
+
+static void initEmitterLightProbe(VoxelGrid& grid,const vec3f& pos,value_t value){
+	const int x = pos.x();
+	const int y = pos.y();
+	const int z = pos.z();
+	if( (x%7)==0 && (y%7)==0 &&  (z%7)==0  ){
+		grid.createFreeLightProbe( pos ) = Util::Color4f( 0,20.1,0); // light emitter
+	}
+}
+//initEmitterLightProbe
 
 Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStorage_t& voxelStorage, const Geometry::_Box<int32_t>& boundary){
 	const auto data=voxelStorage.serialize(boundary);
 
-	Rendering::MeshUtils::MeshBuilder mb;
 	
 	VoxelGrid grid(boundary.getExtentX(),boundary.getExtentY(),boundary.getExtentZ());
 	
@@ -274,7 +219,7 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 	for(const auto & area : data.first){
 		const auto sidelength = std::get<1>(area);
 		const auto min = grid.clamp( std::get<0>(area)-boundary.getMin() );
-		const auto max = grid.clamp( std::get<0>(area)-boundary.getMin()+Geometry::_Vec3<int32_t>(sidelength,sidelength,sidelength) );
+		const auto max = grid.clamp( std::get<0>(area)-boundary.getMin()+vec3i(sidelength,sidelength,sidelength) );
 		const auto value = std::get<2>(area);
 				
 		for(int32_t z=min.z(); z<max.z(); ++z){
@@ -288,10 +233,10 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 	// fill leaf node blocks
 	for(const auto & leafNode : data.second){
 		const auto block = std::get<1>(leafNode);
-		const uint32_t startIndex = grid.index( std::get<0>(leafNode)- boundary.getMin() );
+		const uint32_t startIndex = grid.getIndex( std::get<0>(leafNode)- boundary.getMin() );
 
 		for(uint32_t blockIndex=0; blockIndex<simpleVoxelStorage_t::blockSize; ++blockIndex){
-			const uint32_t value = block[blockIndex];
+			const value_t value = block[blockIndex];
 			if(value!=0){
 				const uint32_t voxelIndex = startIndex + blockIndex%simpleVoxelStorage_t::blockSideLength +
 											grid.wx * ((blockIndex/simpleVoxelStorage_t::blockSideLength)%simpleVoxelStorage_t::blockSideLength) +
@@ -302,47 +247,98 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 		}
 	}
 
-	// collect ambient light data
+	// init light probes with global light sources
 	for(uint32_t z=0; z<grid.wz; ++z){
 		for(uint32_t y=0; y<grid.wy; ++y){
 			for(uint32_t x=0; x<grid.wx; ++x){
-				const Geometry::_Vec3<int32_t> pos(x,y,z);
-				const uint32_t value = grid.get(pos);
+				const vec3i pos(x,y,z);
+				const value_t value = grid.get(pos);
 				if(value!=0)
 					continue;
-				if(grid.get(x-1,y,z)!=0){
-					static const Geometry::Vec3f normal(1.0f,0,0);
-					calculateAmbientLightingValue(grid, pos,normal);
+				value_t value2;
+				if( (value2=grid.get(x-1,y,z))!=0 ){
+					static const vec3i normal(1,0,0);
+					initVertexLightProbe(grid, vec3i(x  ,y  ,z)  ,normal);
+					initVertexLightProbe(grid, vec3i(x  ,y+1,z)  ,normal);
+					initVertexLightProbe(grid, vec3i(x  ,y+1,z+1),normal);
+					initVertexLightProbe(grid, vec3i(x  ,y  ,z+1),normal);
+					initEmitterLightProbe(grid,vec3f(x+0.1f,y+0.5f  ,z+0.5f),value2);
 				}
-				if(grid.get(x+1,y,z)!=0){
-					static const Geometry::Vec3f normal(-1.0f,0,0);
-					calculateAmbientLightingValue(grid, pos,normal);
+				if( (value2=grid.get(x+1,y,z))!=0 ){
+					static const vec3i normal(-1,0,0);
+					initVertexLightProbe(grid, vec3i(x+1,y  ,z  )  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y  ,z+1)  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y+1,z+1)  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y+1,z  )  ,normal);
+					initEmitterLightProbe(grid,vec3f(x+0.9f,y+0.5f  ,z+0.5f),value2);
 				}
-				if(grid.get(x,y+1,z)!=0){
-					static const Geometry::Vec3f normal(0,-1.0f,0);
-					calculateAmbientLightingValue(grid, pos,normal);
+				if( (value2=grid.get(x,y+1,z))!=0 ){
+					static const vec3i normal(0,-1,0);
+					initVertexLightProbe(grid, vec3i(x  ,y+1,z  )  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y+1,z  )  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y+1,z+1)  ,normal);
+					initVertexLightProbe(grid, vec3i(x  ,y+1,z+1)  ,normal);
+					initEmitterLightProbe(grid,vec3f(x+0.5f,y+0.9f,z+0.5f),value2);
 				}
-				if(grid.get(x,y-1,z)!=0){
-					static const Geometry::Vec3f normal(0,1.0f,0);
-					calculateAmbientLightingValue(grid, pos,normal);
+				if( (value2=grid.get(x,y-1,z))!=0 ){
+					static const vec3i normal(0,1,0);
+					initVertexLightProbe(grid, vec3i(x  ,y  ,z  )  ,normal);
+					initVertexLightProbe(grid, vec3i(x  ,y  ,z+1)  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y  ,z+1)  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y  ,z  )  ,normal);
+					initEmitterLightProbe(grid,vec3f(x+0.5f,y+0.1f,z+0.5f),value2);
 				}
-				if(grid.get(x,y,z+1)!=0){
-					static const Geometry::Vec3f normal(0,0,-1.0f);
-					calculateAmbientLightingValue(grid, pos,normal);
+				if( (value2=grid.get(x,y,z+1))!=0 ){
+					static const vec3i normal(0,0,-1);
+					initVertexLightProbe(grid, vec3i(x  ,y  ,z+1)  ,normal);
+					initVertexLightProbe(grid, vec3i(x  ,y+1,z+1)  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y+1,z+1)  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y  ,z+1)  ,normal);
+					initEmitterLightProbe(grid,vec3f(x+0.5f,y+0.5f,z+0.9f),value2);
 				}
-				if(grid.get(x,y,z-1)!=0){
-					static const Geometry::Vec3f normal(0,0,1.0f);
-					calculateAmbientLightingValue(grid, pos,normal);
+				if( (value2=grid.get(x,y,z-1))!=0 ){
+					static const vec3i normal(0,0,1);
+					initVertexLightProbe(grid, vec3i(x  ,y  ,z  )  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y  ,z  )  ,normal);
+					initVertexLightProbe(grid, vec3i(x+1,y+1,z  )  ,normal);
+					initVertexLightProbe(grid, vec3i(x  ,y+1,z  )  ,normal);
+					initEmitterLightProbe(grid,vec3f(x+0.5f,y+0.5f,z+0.1f),value);
 				}
 			}
 		}
 	}
 	
-	
-	
+	for(auto& p : grid.lightProbes){
+		p.lastPassColor = p.color;
+	}
+	// pos,normal -> index
+	for(const auto entry : grid.vertexLightProbeIndices){
+		const vec3f pos(entry.first.first);
+		const vec3f normal(entry.first.second);
+		const size_t index( entry.second );
+		auto& probe = grid.lightProbes[ index ].color;
+		std::deque<LightProbePoint> probes;
+		grid.lightProbeOctree.collectPointsWithinSphere(Geometry::Sphere_f(pos,4),probes);
 
-	const Geometry::Vec3 unit(1,1,1);
-	
+		for(const auto& probePoint : probes){
+			if(probePoint.lightProbeIndex == index) // point itself
+				continue;
+			const auto dir = probePoint.position-pos;
+			
+			if( dir.dot(normal)>0){
+				const auto& otherProbe = grid.lightProbes.at( probePoint.lightProbeIndex );
+				if(	otherProbe.normal.isZero() || otherProbe.normal.dot(dir)>0){
+					const float dist = grid.cast(pos, probePoint.position);
+					if(dist>0)
+						probe += otherProbe.lastPassColor * (0.2f/(1.0f+dist*dist) );
+				}
+			}
+		}
+	}
+
+	const vec3f unit(1,1,1);
+	Rendering::MeshUtils::MeshBuilder mb;
+
 	mb.color( Util::Color4f(0.5,0.5,0.5) );
 	for(uint32_t z=0; z<grid.wz; ++z){
 		for(uint32_t y=0; y<grid.wy; ++y){
@@ -350,64 +346,65 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 				const uint32_t value = grid.get(x,y,z);
 				if(value!=0)
 					continue;
-				if(grid.get(x-1,y,z)!=0){
-					static const Geometry::Vec3f normal(1.0f,0,0);
+				uint32_t value2;
+				if( (value2=grid.get(x-1,y,z))!=0 ){
+					static const vec3i normal(1,0,0);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( normal );
-					createVertex(mb, grid, x  ,y  ,z  ,normal);
-					createVertex(mb, grid, x  ,y+1,z  ,normal);
-					createVertex(mb, grid, x  ,y+1,z+1,normal);
-					createVertex(mb, grid, x  ,y  ,z+1,normal);
+					mb.normal( vec3f(normal) );
+					createVertex(mb, grid, x  ,y  ,z  ,value2, normal);
+					createVertex(mb, grid, x  ,y+1,z  ,value2, normal);
+					createVertex(mb, grid, x  ,y+1,z+1,value2, normal);
+					createVertex(mb, grid, x  ,y  ,z+1,value2, normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
-				if(grid.get(x+1,y,z)!=0){
-					static const Geometry::Vec3f normal(-1.0f,0,0);
+				if( (value2=grid.get(x+1,y,z))!=0 ){
+					static const vec3i normal(-1,0,0);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( normal );
-					createVertex(mb, grid, x+1,y  ,z  ,normal);
-					createVertex(mb, grid, x+1,y  ,z+1,normal);
-					createVertex(mb, grid, x+1,y+1,z+1,normal);
-					createVertex(mb, grid, x+1,y+1,z  ,normal);
+					mb.normal( vec3f(normal) );
+					createVertex(mb, grid, x+1,y  ,z  ,value2, normal);
+					createVertex(mb, grid, x+1,y  ,z+1,value2, normal);
+					createVertex(mb, grid, x+1,y+1,z+1,value2, normal);
+					createVertex(mb, grid, x+1,y+1,z  ,value2, normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
-				if(grid.get(x,y+1,z)!=0){
-					static const Geometry::Vec3f normal(0,-1.0f,0);
+				if( (value2=grid.get(x,y+1,z))!=0 ){
+					static const vec3i normal(0,-1,0);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( normal );
-					createVertex(mb, grid, x  ,y+1,z  ,normal);
-					createVertex(mb, grid, x+1,y+1,z  ,normal);
-					createVertex(mb, grid, x+1,y+1,z+1,normal);
-					createVertex(mb, grid, x  ,y+1,z+1,normal);
+					mb.normal( vec3f(normal) );
+					createVertex(mb, grid, x  ,y+1,z  ,value2, normal);
+					createVertex(mb, grid, x+1,y+1,z  ,value2, normal);
+					createVertex(mb, grid, x+1,y+1,z+1,value2, normal);
+					createVertex(mb, grid, x  ,y+1,z+1,value2, normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
-				if(grid.get(x,y-1,z)!=0){
-					static const Geometry::Vec3f normal(0,1.0f,0);
+				if( (value2=grid.get(x,y-1,z))!=0 ){
+					static const vec3i normal(0,1,0);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( normal );
-					createVertex(mb, grid, x  ,y  ,z  ,normal);
-					createVertex(mb, grid, x  ,y  ,z+1,normal);
-					createVertex(mb, grid, x+1,y  ,z+1,normal);
-					createVertex(mb, grid, x+1,y  ,z  ,normal);
+					mb.normal( vec3f(normal) );
+					createVertex(mb, grid, x  ,y  ,z  ,value2, normal);
+					createVertex(mb, grid, x  ,y  ,z+1,value2, normal);
+					createVertex(mb, grid, x+1,y  ,z+1,value2, normal);
+					createVertex(mb, grid, x+1,y  ,z  ,value2, normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
-				if(grid.get(x,y,z+1)!=0){
-					static const Geometry::Vec3f normal(0,0,-1.0f);
+				if( (value2=grid.get(x,y,z+1))!=0 ){
+					static const vec3i normal(0,0,-1);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( normal );
-					createVertex(mb, grid, x  ,y  ,z+1,normal);
-					createVertex(mb, grid, x  ,y+1,z+1,normal);
-					createVertex(mb, grid, x+1,y+1,z+1,normal);
-					createVertex(mb, grid, x+1,y  ,z+1,normal);
+					mb.normal( vec3f(normal) );
+					createVertex(mb, grid, x  ,y  ,z+1,value2, normal);
+					createVertex(mb, grid, x  ,y+1,z+1,value2, normal);
+					createVertex(mb, grid, x+1,y+1,z+1,value2, normal);
+					createVertex(mb, grid, x+1,y  ,z+1,value2, normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
-				if(grid.get(x,y,z-1)!=0){
-					static const Geometry::Vec3f normal(0,0,1.0f);
+				if( (value2=grid.get(x,y,z-1))!=0 ){
+					static const vec3i normal(0,0,1);
 					const uint32_t idx = mb.getNextIndex();
-					mb.normal( normal );
-					createVertex(mb, grid, x  ,y  ,z  ,normal);
-					createVertex(mb, grid, x+1,y  ,z  ,normal);
-					createVertex(mb, grid, x+1,y+1,z  ,normal);
-					createVertex(mb, grid, x  ,y+1,z  ,normal);
+					mb.normal( vec3f(normal) );
+					createVertex(mb, grid, x  ,y  ,z  ,value2, normal);
+					createVertex(mb, grid, x+1,y  ,z  ,value2, normal);
+					createVertex(mb, grid, x+1,y+1,z  ,value2, normal);
+					createVertex(mb, grid, x  ,y+1,z  ,value2, normal);
 					mb.addQuad(idx,idx+1,idx+2,idx+3);
 				}
 			}
