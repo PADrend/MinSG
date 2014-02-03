@@ -483,7 +483,7 @@ std::vector<State*> Node::getStates()const{
 // ---- Transformations
 
 void Node::lookAtAbs(const Geometry::Vec3 & pointInWorldCoordinates){
-	rotateToWorldDir(pointInWorldCoordinates-getWorldPosition());
+	rotateToWorldDir(pointInWorldCoordinates-getWorldOrigin());
 }
 
 void Node::rotateToWorldDir(const Geometry::Vec3 & directionInWorldCoordinates){
@@ -494,7 +494,7 @@ void Node::rotateToWorldDir(const Geometry::Vec3 & directionInWorldCoordinates){
 
 	const Geometry::Vec3 current(0,0,1);
 	{ // rotate around y
-		const Geometry::Vec3 target=getWorldMatrix().inverse().transformPosition(directionInWorldCoordinates+getWorldPosition());
+		const Geometry::Vec3 target=getWorldMatrix().inverse().transformPosition(directionInWorldCoordinates+getWorldOrigin());
 
 		Geometry::Vec3 a(target.x(),0,target.z());
 		Geometry::Vec3 b(current.x(),0,current.z());
@@ -505,7 +505,7 @@ void Node::rotateToWorldDir(const Geometry::Vec3 & directionInWorldCoordinates){
 		}
 	}
 	{ // rotate around x
-		const Geometry::Vec3 target=getWorldMatrix().inverse().transformPosition(directionInWorldCoordinates+getWorldPosition());
+		const Geometry::Vec3 target=getWorldMatrix().inverse().transformPosition(directionInWorldCoordinates+getWorldOrigin());
 
 		Geometry::Vec3 a(0,target.y(),target.z());
 		Geometry::Vec3 b(0,current.y(),current.z());
@@ -519,7 +519,7 @@ void Node::rotateToWorldDir(const Geometry::Vec3 & directionInWorldCoordinates){
 //	
 }
 
-void Node::setWorldPosition(const Geometry::Vec3 & v) {
+void Node::setWorldOrigin(const Geometry::Vec3 & v) {
 	const Geometry::Matrix4x4 * parentWorldMatrix = hasParent() ? getParent()->getWorldMatrixPtr() : nullptr;
 	setRelPosition( parentWorldMatrix==nullptr ? v : parentWorldMatrix->inverse().transformPosition(v) );
 }

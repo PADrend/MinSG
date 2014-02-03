@@ -59,7 +59,7 @@ Geometry::SRT getWorldSRT(const Node * node){
 	}else{
 		const auto worldDir = node->getWorldMatrix().transformDirection( Geometry::Vec3(0,0,1) );
 		const auto worldUp =  node->getWorldMatrix().transformDirection( Geometry::Vec3(0,1,0) );
-		return Geometry::SRT( node->getWorldPosition(),worldDir ,worldUp,worldDir.length() );
+		return Geometry::SRT( node->getWorldOrigin(),worldDir ,worldUp,worldDir.length() );
 	}
 }
 

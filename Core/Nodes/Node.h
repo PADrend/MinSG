@@ -320,11 +320,17 @@ class Node :
 		inline void setScale(float f);
 		inline void scale(float f);
 
-		Geometry::Vec3 getRelPosition() const			{	return accessSRT().getTranslation();	}
-		Geometry::Vec3 getWorldPosition() const			{	return getWorldMatrixPtr() == nullptr ? Geometry::Vec3(0,0,0) : (*getWorldMatrixPtr()).transformPosition(0,0,0);	}
+		Geometry::Vec3 getRelOrigin() const				{	return accessSRT().getTranslation();	}
+		Geometry::Vec3 getRelPosition() const			{	return getRelOrigin();	} //! \deprecated
+		Geometry::Vec3 getWorldOrigin() const			{	return getWorldMatrixPtr() == nullptr ? Geometry::Vec3(0,0,0) : (*getWorldMatrixPtr()).transformPosition(0,0,0);	}
+		Geometry::Vec3 getWorldPosition() const			{	return getWorldOrigin();	} //! \deprecated
 		inline void moveRel(const Geometry::Vec3 & v);
-		inline void setRelPosition(const Geometry::Vec3 & v);
-		void setWorldPosition(const Geometry::Vec3 & v);
+		
+		inline void setRelOrigin(const Geometry::Vec3 & v);
+		void setRelPosition(const Geometry::Vec3 & v)	{	setRelOrigin(v);	}
+		
+		void setWorldOrigin(const Geometry::Vec3 & v);
+		void setWorldPosition(const Geometry::Vec3 & v)	{	setWorldOrigin(v);	}
 		inline void moveLocal(const Geometry::Vec3 & v);
 
 		//!	Rotate around a local direction around the object's local origin (0,0,0).
@@ -466,7 +472,7 @@ inline void Node::rotateRel(const Geometry::Angle & angle, const Geometry::Vec3 
 	accessSRT().rotateRel_rad(angle.rad(),v);
 	transformationChanged();
 }
-inline void Node::setRelPosition(const Geometry::Vec3 & v) {
+inline void Node::setRelOrigin(const Geometry::Vec3 & v) {
 	accessSRT().setTranslation(v);
 	transformationChanged();
 }
