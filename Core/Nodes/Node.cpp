@@ -415,8 +415,8 @@ void Node::reset() {
 const Geometry::SRT& Node::getSRT() const {
 	if(hasSRT())
 		return relTransformation->srt;
-	if(hasMatrix())
-		WARN("getSRT: Node has no SRT but a Matrix.");
+	else if(hasMatrix())
+		return accessSRT(); 
 	static const Geometry::SRT nullTransform;
 	return nullTransform;
 }
