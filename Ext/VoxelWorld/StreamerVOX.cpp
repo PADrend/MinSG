@@ -8,7 +8,7 @@
 */
 #ifdef MINSG_EXT_VOXEL_WORLD
 
-#include "StreamerVox.h"
+#include "StreamerVOX.h"
 #include <Util/Macros.h>
 #include <Util/IO/FileUtils.h>
 #include <Util/StringUtils.h>
