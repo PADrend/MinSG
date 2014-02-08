@@ -84,8 +84,8 @@ private:
 	int32_t clientId;
 	bool connected;
 
-	Util::Network::IPAddress remoteTCP;
-	Util::Network::IPAddress remoteUDP;
+	Util::Network::IPv4Address remoteTCP;
+	Util::Network::IPv4Address remoteUDP;
 
 	uint8_t maxConnections;
 	uint32_t msgTimeout;

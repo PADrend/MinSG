@@ -53,8 +53,8 @@ const long kEVENT_CONNECTED = Tools::crc32("EVENT_CONNECTED");
 
 ClientUnit::ClientUnit(const std::string & remoteHost_, uint16_t remoteTCP_, uint16_t remoteUDP_, uint8_t maxConnections_, uint32_t msgTimeout_) :
 		clientId(0), connected(false), maxConnections(maxConnections_), msgTimeout(msgTimeout_), udpHandler(nullptr) {
-	remoteTCP = IPAddress::resolveHost(remoteHost_, remoteTCP_);
-	remoteUDP = IPAddress::resolveHost(remoteHost_, remoteUDP_);
+	remoteTCP = IPv4Address::resolveHost(remoteHost_, remoteTCP_);
+	remoteUDP = IPv4Address::resolveHost(remoteHost_, remoteUDP_);
 	sendMutex = Concurrency::createMutex();
 	sessionMutex = Concurrency::createMutex();
 	eventMutex = Concurrency::createMutex();
