@@ -22,7 +22,6 @@
 #include "Utils/LoaderCOLLADAConsts.h"
 
 #include <COLLADAFWIWriter.h>
-#include <COLLADAFWUniqueId.h>
 
 #include <functional>
 #include <map>

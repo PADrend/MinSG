@@ -14,8 +14,6 @@
 
 #include "../Utils/LoaderCOLLADAConsts.h"
 
-#include <COLLADAFWUniqueId.h>
-
 #include <map>
 
 namespace COLLADAFW {

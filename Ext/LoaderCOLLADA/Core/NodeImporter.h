@@ -17,13 +17,6 @@
 #include <map>
 
 #include <Util/Macros.h>
-COMPILER_WARN_PUSH
-COMPILER_WARN_OFF_GCC(-Wignored-qualifiers)
-COMPILER_WARN_OFF_GCC(-Wold-style-cast)
-COMPILER_WARN_OFF_GCC(-Wcast-qual)
-COMPILER_WARN_OFF_GCC(-Wshadow)
-#include <COLLADAFWUniqueId.h>
-COMPILER_WARN_POP
 
 namespace COLLADAFW {
 class Geometry;

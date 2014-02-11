@@ -17,7 +17,6 @@
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_GCC(-Wzero-as-null-pointer-constant)
 COMPILER_WARN_OFF(-Wignored-qualifiers)
-#include <COLLADAFWUniqueId.h>
 #include <COLLADAFWFileInfo.h>
 COMPILER_WARN_POP
 

@@ -14,9 +14,6 @@
 
 #include "../Utils/LoaderCOLLADAConsts.h"
 
-COMPILER_WARN_PUSH
-#include <COLLADAFWUniqueId.h>
-COMPILER_WARN_POP
 #include <map>
 #include <string>
 

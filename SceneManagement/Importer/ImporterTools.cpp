@@ -31,10 +31,6 @@
 #include "../../Ext/SceneManagement/Importer/ExtStateImporter.h"
 #include "../../Ext/SceneManagement/Importer/ExtBehaviourImporter.h"
 
-#ifdef MINSG_EXT_LOADERCOLLADA
-#include "../../Ext/LoaderCOLLADA/LoaderCOLLADA.h"
-#endif
-
 #include <Geometry/Matrix4x4.h>
 #include <Geometry/SRT.h>
 #include <Geometry/Vec3.h>
