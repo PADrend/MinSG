@@ -19,6 +19,8 @@ COMPILER_WARN_OFF_GCC(-Wswitch-default)
 COMPILER_WARN_OFF_GCC(-Wunused-parameter)
 COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
 COMPILER_WARN_OFF_GCC(-Wshadow)
+COMPILER_WARN_OFF_GCC(-Wold-style-cast)
+COMPILER_WARN_OFF_GCC(-Wcast-qual)
 #include <btBulletDynamicsCommon.h>
 COMPILER_WARN_POP
 

@@ -17,6 +17,7 @@ COMPILER_WARN_OFF_GCC(-Wswitch-default)
 COMPILER_WARN_OFF_GCC(-Wunused-parameter)
 COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
 COMPILER_WARN_OFF_GCC(-Wshadow)
+COMPILER_WARN_OFF_GCC(-Wold-style-cast)
 #include <btBulletDynamicsCommon.h>
 COMPILER_WARN_POP
 
@@ -43,12 +44,16 @@ class MyDebugDraw : public btIDebugDraw{
 			return debugMode;
 		}
 
-		void drawLine (const btVector3 &from, const btVector3 &to, const btVector3 &color)override{
+//		void drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color, const btVector3& toColor)override{
+		void drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color )override{
 			Rendering::drawVector(renderingContext, toVec3(from), toVec3(to), Util::Color4f(color.getX(),color.getY(),color.getZ(),1.0));
 		}
-		void drawContactPoint (const btVector3 &PointOnB, const btVector3 &normalOnB, btScalar distance, int lifeTime, const btVector3 &color)override{}
-		void reportErrorWarning (const char *warningString)override{}
-		void draw3dText (const btVector3 &location, const char *textString)override{}
+//		void drawContactPoint (const btVector3 &PointOnB, const btVector3 &normalOnB, btScalar distance, int lifeTime, const btVector3 &color)override{}
+		void drawContactPoint (const btVector3 &, const btVector3 &, btScalar , int , const btVector3 &)override{}
+//		void reportErrorWarning (const char *warningString)override{}
+		void reportErrorWarning (const char *)override{}
+//		void draw3dText (const btVector3 &location, const char *textString)override{}
+		void draw3dText (const btVector3 &, const char *)override{}
 
 };
 

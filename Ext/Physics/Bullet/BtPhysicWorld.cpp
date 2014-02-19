@@ -46,6 +46,11 @@ COMPILER_WARN_OFF_CLANG(-W#warnings)
 COMPILER_WARN_OFF_GCC(-Wswitch-default)
 COMPILER_WARN_OFF_GCC(-Wunused-parameter)
 COMPILER_WARN_OFF_GCC(-Wshadow)
+COMPILER_WARN_OFF_GCC(-Wold-style-cast)
+COMPILER_WARN_OFF_GCC(-Wcast-qual)
+COMPILER_WARN_OFF_GCC(-Wunused-variable)
+COMPILER_WARN_OFF_GCC(-Wunused-parameter)
+COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
 #include <LinearMath/btConvexHullComputer.h>
 COMPILER_WARN_POP
 

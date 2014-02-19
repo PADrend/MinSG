@@ -56,7 +56,7 @@ struct ASContext {
 	std::unique_ptr<LP> lp;
     std::unique_ptr<LP> lastLp;
 	
-    void init(Util::Reference<SampleContext> & sContext, FrameContext & fc){
+    void init(Util::Reference<SampleContext> & sContext, FrameContext & ){
 		if(!initialized){
 			initialized = true;
 			storage = sContext->getSampleStorage();
@@ -73,7 +73,7 @@ struct ASContext {
 	}
     void onEnableBegin(){
 	}
-    State::stateResult_t onEnableEnd(FrameContext & fc){
+    State::stateResult_t onEnableEnd(FrameContext & ){
         swap();
 
 		frameTimer.reset();

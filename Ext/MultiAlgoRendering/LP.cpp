@@ -47,7 +47,7 @@ LP::LP(uint32_t _nodeCount, uint32_t _algoCount, float * _errors, float * _times
 	set_minim(lp);
 	resize_lp(lp, nodeCount + 1, nodeCount * algoCount);
 
-	for(int_fast32_t i = 1; i <= algoCount * nodeCount; ++i)
+	for(int_fast32_t i = 1; i <= static_cast<int_fast32_t>(algoCount * nodeCount); ++i)
 		set_binary(lp, i, true);
 
 	set_obj_fn(lp, errors);
