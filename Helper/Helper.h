@@ -12,7 +12,6 @@
 #define MINSG_HELPER_H
 
 #include <map>
-#include <deque>
 #include <vector>
 #include <string>
 #include <cstdint>
@@ -73,9 +72,10 @@ node_type_t * getOriginalNode(node_type_t * node) {
 }
 
 /*!	Init the given shaderState with a new Shader loaded from the given filenames. The metadata of the State is set accordingly. */
-void initShaderState(ShaderState * shaderState,		const std::deque<std::string> & vsFiles,
-													const std::deque<std::string> & gsFiles,
-													const std::deque<std::string> & fsFiles,
+void initShaderState(ShaderState * shaderState,		const std::vector<std::string> & searchPaths,
+													const std::vector<std::string> & vsFiles,
+													const std::vector<std::string> & gsFiles,
+													const std::vector<std::string> & fsFiles,
 													uint32_t usageType);
 
 

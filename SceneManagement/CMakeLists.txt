@@ -11,7 +11,6 @@ minsg_add_sources(
 	ImportFunctions.cpp
 	SceneDescription.cpp
 	SceneManager.cpp
-	ShaderFactory.cpp
 )
 add_subdirectory(Exporter)
 add_subdirectory(Importer)

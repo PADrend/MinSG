@@ -35,6 +35,7 @@ class ImportContext : public Util::AttributeProvider {
 		GroupNode * rootNode;
 		uint32_t importOptions;
 		Util::FileName fileName;
+		std::vector<std::string> searchPaths_shader;
 
 		//! A function that allows the execution of arbitrary actions at the end of the import process.
 		typedef std::function<void (ImportContext &)> FinalizeAction;
@@ -42,11 +43,12 @@ class ImportContext : public Util::AttributeProvider {
 
 		/*! (ctor) */
 		ImportContext(SceneManager & _m,GroupNode * _rootNode,uint32_t _f,Util::FileName path) :
-			Util::AttributeProvider(), sceneManager(_m),rootNode(_rootNode),importOptions(_f),fileName(std::move(path)),finalizeActions(){}
-
-		void addFinalizingAction(const FinalizeAction & action) {
-			finalizeActions.push_back(action);
+				Util::AttributeProvider(), sceneManager(_m),rootNode(_rootNode),importOptions(_f),fileName(std::move(path)),finalizeActions(){
+			addShaderSearchPath("");
 		}
+
+		void addFinalizingAction(const FinalizeAction & action) {	finalizeActions.push_back(action);	}
+		void addShaderSearchPath(const std::string & p) 	{	searchPaths_shader.emplace_back( p );	}
 
 		void executeFinalizingActions();
 		uint32_t getImportOptions()const					{	return importOptions;	}

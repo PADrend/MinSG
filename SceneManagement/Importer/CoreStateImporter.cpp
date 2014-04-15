@@ -96,17 +96,17 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 	if(stateType != Consts::STATE_TYPE_SHADER || parent == nullptr)
 		return false;
 
-	auto ss = new ShaderState();
+	Util::Reference<ShaderState> ss = new ShaderState;
 
 	const NodeDescriptionList * children = dynamic_cast<const NodeDescriptionList *>(d.getValue(Consts::CHILDREN));
 
-	ImporterTools::addAttributes(ctxt, children, ss);
+	ImporterTools::addAttributes(ctxt, children, ss.get());
 
 	const auto data = ImporterTools::filterElements(Consts::TYPE_DATA, children);
 
-	std::deque<std::string> vsFiles;
-	std::deque<std::string> gsFiles;
-	std::deque<std::string> fsFiles;
+	std::vector<std::string> vsFiles;
+	std::vector<std::string> gsFiles;
+	std::vector<std::string> fsFiles;
 	Rendering::Shader::flag_t usage = (d.getString(Consts::ATTR_SHADER_USES_CLASSIC_GL)=="false" ? 0 : Rendering::Shader::USE_GL) |
 									  (d.getString(Consts::ATTR_SHADER_USES_SG_UNIFORMS)=="false" ? 0 : Rendering::Shader::USE_UNIFORMS);
 
@@ -114,11 +114,11 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 		const std::string dataType = nd->getString(Consts::ATTR_DATA_TYPE);
 
 		if(dataType == Consts::DATA_TYPE_GLSL_VS) {
-			vsFiles.push_back(nd->getString(Consts::ATTR_SHADER_OBJ_FILENAME));
+			vsFiles.emplace_back(nd->getString(Consts::ATTR_SHADER_OBJ_FILENAME));
 		} else if(dataType == Consts::DATA_TYPE_GLSL_GS) {
-			gsFiles.push_back(nd->getString(Consts::ATTR_SHADER_OBJ_FILENAME));
+			gsFiles.emplace_back(nd->getString(Consts::ATTR_SHADER_OBJ_FILENAME));
 		} else if(dataType == Consts::DATA_TYPE_GLSL_FS) {
-			fsFiles.push_back(nd->getString(Consts::ATTR_SHADER_OBJ_FILENAME));
+			fsFiles.emplace_back(nd->getString(Consts::ATTR_SHADER_OBJ_FILENAME));
 		} else if(dataType == Consts::DATA_TYPE_SHADER_UNIFORM) {
 			Rendering::Uniform u = importUniform(*nd);
 			if(!u.isNull())
@@ -128,10 +128,10 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 		}
 	}
 
-	initShaderState(ss,vsFiles,gsFiles,fsFiles, usage);
+	initShaderState(ss.get(),ctxt.searchPaths_shader , vsFiles,gsFiles,fsFiles, usage);
 
-	ImporterTools::finalizeState(ctxt,ss,d);
-	parent->addState(ss);
+	ImporterTools::finalizeState(ctxt,ss.get(),d);
+	parent->addState(ss.get());
 	return true;
 }
 

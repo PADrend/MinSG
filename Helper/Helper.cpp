@@ -325,11 +325,12 @@ void destroy(Node * rootNode) {
 	}
 }
 
-void initShaderState(ShaderState * shaderState, 
-					 const std::deque<std::string> & vsFiles,
-					 const std::deque<std::string> & gsFiles,
-					 const std::deque<std::string> & fsFiles,
-					 Rendering::Shader::flag_t usage) {
+void initShaderState(ShaderState * shaderState,
+					const std::vector<std::string> & searchPaths,
+					const std::vector<std::string> & vsFiles,
+					const std::vector<std::string> & gsFiles,
+					const std::vector<std::string> & fsFiles,
+					Rendering::Shader::flag_t usage) {
 	using namespace SceneManagement;
 	assert(shaderState != nullptr);
 	Rendering::Shader * shader = Rendering::Shader::createShader(usage);
@@ -340,22 +341,43 @@ void initShaderState(ShaderState * shaderState,
 	
 	shaderState->setAttribute(Consts::STATE_ATTR_SHADER_FILES, fileDescriptions);
 
+//	static bool FileUtils::findFile(const FileName & fileName, const std::list<std::string> & pathHints, FileName & newName);
+	std::list<std::string> searchPathList(searchPaths.begin(),searchPaths.end());
+
 	for(const auto & vsFile : vsFiles) {
-		shader->attachShaderObject(Rendering::ShaderObjectInfo::loadVertex(Util::FileName(vsFile)));
+		Util::FileName fullPath;
+		if( Util::FileUtils::findFile(Util::FileName(vsFile),searchPathList,fullPath ) ){
+			shader->attachShaderObject(Rendering::ShaderObjectInfo::loadVertex(fullPath));	
+		}else{
+			std::cout << fullPath.toString() <<"\n";
+			WARN("Shader file not found: "+vsFile);
+		}
 		auto nd = new NodeDescription;
 		nd->setString(Consts::ATTR_DATA_TYPE, Consts::DATA_TYPE_GLSL_VS);
 		nd->setString(Consts::ATTR_SHADER_OBJ_FILENAME, vsFile);
 		fileDescriptions->push_back(nd);
 	}
 	for(const auto & gsFile : gsFiles) {
-		shader->attachShaderObject(Rendering::ShaderObjectInfo::loadGeometry(Util::FileName(gsFile)));
+		Util::FileName fullPath;
+		if( Util::FileUtils::findFile(Util::FileName(gsFile),searchPathList,fullPath ) ){
+			shader->attachShaderObject(Rendering::ShaderObjectInfo::loadGeometry(fullPath));	
+		}else{
+			std::cout << fullPath.toString() <<"\n";
+			WARN("Shader file not found: "+gsFile);
+		}
 		auto nd = new NodeDescription;
 		nd->setString(Consts::ATTR_DATA_TYPE, Consts::DATA_TYPE_GLSL_GS);
 		nd->setString(Consts::ATTR_SHADER_OBJ_FILENAME, gsFile);
 		fileDescriptions->push_back(nd);
 	}
 	for(const auto & fsFile : fsFiles) {
-		shader->attachShaderObject(Rendering::ShaderObjectInfo::loadFragment(Util::FileName(fsFile)));
+		Util::FileName fullPath;
+		if( Util::FileUtils::findFile(Util::FileName(fsFile),searchPathList,fullPath ) ){
+			shader->attachShaderObject(Rendering::ShaderObjectInfo::loadFragment(fullPath));	
+		}else{
+			std::cout << fullPath.toString() <<"\n";
+			WARN("Shader file not found: "+fsFile);
+		}
 		auto nd = new NodeDescription;
 		nd->setString(Consts::ATTR_DATA_TYPE, Consts::DATA_TYPE_GLSL_FS);
 		nd->setString(Consts::ATTR_SHADER_OBJ_FILENAME, fsFile);

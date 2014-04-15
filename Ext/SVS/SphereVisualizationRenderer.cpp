@@ -99,7 +99,7 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 			static Util::Reference<ShaderState> sphereShader;
 			if(sphereShader.isNull()) {
 				sphereShader = new ShaderState;
-				std::deque<std::string> vsFiles;
+				std::vector<std::string> vsFiles;
 				vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/universal.vs");
 				vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/sgHelpers.sfn");
 				vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/shading_phong.sfn");
@@ -107,11 +107,11 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 				vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/shadow_disabled.sfn");
 				vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/effect_normalToAlpha.sfn");
 				vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/color_standard.sfn");
-				std::deque<std::string> gsFiles;
-				std::deque<std::string> fsFiles(vsFiles);
-				fsFiles.pop_front();
-				fsFiles.push_front(DataDirectory::getPath() + "/shader/universal2/universal.fs");
-				initShaderState(sphereShader.get(), vsFiles, gsFiles, fsFiles, Rendering::Shader::USE_UNIFORMS);
+				std::vector<std::string> searchPaths;
+				std::vector<std::string> gsFiles;
+				std::vector<std::string> fsFiles(vsFiles);
+				fsFiles[0] = DataDirectory::getPath() + "/shader/universal2/universal.fs";
+				initShaderState(sphereShader.get(),searchPaths, vsFiles, gsFiles, fsFiles, Rendering::Shader::USE_UNIFORMS);
 			}
 			if(sphereShader.isNotNull()) {
 				sphereNode->addState(sphereShader.get());
