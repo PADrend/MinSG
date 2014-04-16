@@ -151,27 +151,35 @@ static void describeShaderState(ExporterContext &,NodeDescription & desc,State *
 	desc.setString(Consts::ATTR_NODE_TYPE, Consts::STATE_TYPE_SHADER);
 	auto shaderState = dynamic_cast<ShaderState *>(state);
 
-	// add shader usage type
-	const bool usesGL = shaderState->getShader() ? shaderState->getShader()->usesClassicOpenGL() : true;
-	desc.setString(Consts::ATTR_SHADER_USES_CLASSIC_GL , usesGL ? "true" : "false");
-
-	const bool usesUniforms = shaderState->getShader() ? shaderState->getShader()->usesSGUniforms() : true;
-	desc.setString(Consts::ATTR_SHADER_USES_SG_UNIFORMS , usesUniforms ? "true" : "false");
-
 	for(const auto & uniformEntry : shaderState->getUniforms())
 		ExporterTools::addDataEntry(desc,std::move(createDescriptionForUniform(uniformEntry.second)));
 
-	// The shader's files are stored as attributes:  { Consts::STATE_ATTR_SHADER_FILES : [ fileDescriptor* ] } 
-	Util::GenericAttributeList * shaderFilesAttribute = dynamic_cast<Util::GenericAttributeList *>(state->getAttribute(Consts::STATE_ATTR_SHADER_FILES));
-	if(shaderFilesAttribute){
-		for(const auto & a : *shaderFilesAttribute){
-			const auto a2 = dynamic_cast<const NodeDescription*>(a.get());
-			if(a2){
-				std::unique_ptr<NodeDescription> fileDescription(a2->clone());
-				ExporterTools::addDataEntry(desc,std::move(*fileDescription));
+	// The shader is either described by a shader name OR by the list of files and properties
+	Util::GenericAttribute* shaderNameAttr = state->getAttribute(Consts::STATE_ATTR_SHADER_NAME);
+	if(shaderNameAttr&&!shaderNameAttr->toString().empty()){
+		desc.setString(Consts::ATTR_SHADER_NAME, shaderNameAttr->toString());
+	}else{
+		// add shader usage type
+		const bool usesGL = shaderState->getShader() ? shaderState->getShader()->usesClassicOpenGL() : true;
+		desc.setString(Consts::ATTR_SHADER_USES_CLASSIC_GL , usesGL ? "true" : "false");
+
+		const bool usesUniforms = shaderState->getShader() ? shaderState->getShader()->usesSGUniforms() : true;
+		desc.setString(Consts::ATTR_SHADER_USES_SG_UNIFORMS , usesUniforms ? "true" : "false");
+
+		// The shader's files are stored as attributes:  { Consts::STATE_ATTR_SHADER_FILES : [ fileDescriptor* ] } 
+		Util::GenericAttributeList * shaderFilesAttribute = dynamic_cast<Util::GenericAttributeList *>(state->getAttribute(Consts::STATE_ATTR_SHADER_FILES));
+		if(shaderFilesAttribute){
+			for(const auto & a : *shaderFilesAttribute){
+				const auto a2 = dynamic_cast<const NodeDescription*>(a.get());
+				if(a2){
+					std::unique_ptr<NodeDescription> fileDescription(a2->clone());
+					ExporterTools::addDataEntry(desc,std::move(*fileDescription));
+				}
 			}
 		}
+
 	}
+	
 
 }
 

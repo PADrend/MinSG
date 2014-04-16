@@ -37,6 +37,9 @@
 #include <Rendering/Serialization/Serialization.h>
 
 #include <Util/Encoding.h>
+#include <Util/IO/FileUtils.h>
+#include <Util/IO/FileName.h>
+#include <Util/JSON_Parser.h>
 
 #include <cassert>
 #include <cstdint>
@@ -102,13 +105,61 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 
 	ImporterTools::addAttributes(ctxt, children, ss.get());
 
-	const auto data = ImporterTools::filterElements(Consts::TYPE_DATA, children);
-
+	Rendering::Shader::flag_t usage = 0;
 	std::vector<std::string> vsFiles;
 	std::vector<std::string> gsFiles;
 	std::vector<std::string> fsFiles;
-	Rendering::Shader::flag_t usage = (d.getString(Consts::ATTR_SHADER_USES_CLASSIC_GL)=="false" ? 0 : Rendering::Shader::USE_GL) |
-									  (d.getString(Consts::ATTR_SHADER_USES_SG_UNIFORMS)=="false" ? 0 : Rendering::Shader::USE_UNIFORMS);
+	const std::string shaderName = d.getString(Consts::ATTR_SHADER_NAME);
+	
+	if(!shaderName.empty()){
+		ss->setAttribute(Consts::STATE_ATTR_SHADER_NAME, Util::GenericAttribute::createString(shaderName)); // store name at state
+			
+		Util::FileName shaderDescriptionFile;
+		if(Util::FileUtils::findFile(Util::FileName(shaderName+".shader"),std::list<std::string>(ctxt.searchPaths_shader.begin(),ctxt.searchPaths_shader.end()),shaderDescriptionFile)){
+			try{
+				std::unique_ptr<Util::GenericAttribute> sd( Util::JSON_Parser::parse( Util::FileUtils::getFileContents(shaderDescriptionFile) ) );
+				Util::GenericAttributeMap* shaderMap = dynamic_cast<Util::GenericAttributeMap*>(sd.get());
+				if(!shaderMap)
+					throw std::runtime_error("json map expected in "+shaderDescriptionFile.toString());
+				
+				static const Util::StringIdentifier VS( Consts::DATA_TYPE_GLSL_VS );
+				auto* vs = shaderMap->getValue<Util::GenericAttributeList>( VS );
+				if(vs)
+					for(auto& entry:*vs)
+						vsFiles.emplace_back( entry ? entry->toString() : "?" );
+					
+				static const Util::StringIdentifier GS( Consts::DATA_TYPE_GLSL_GS );
+				auto* gs = shaderMap->getValue<Util::GenericAttributeList>( GS );
+				if(gs)
+					for(auto& entry:*gs)
+						gsFiles.emplace_back( entry ? entry->toString() : "?" );
+					
+				static const Util::StringIdentifier FS( Consts::DATA_TYPE_GLSL_FS );
+				auto* fs = shaderMap->getValue<Util::GenericAttributeList>( FS );
+				if(fs)
+					for(auto& entry:*fs)
+						fsFiles.emplace_back( entry ? entry->toString() : "?" );
+				
+				usage = shaderMap->getBool(Consts::ATTR_SHADER_USES_CLASSIC_GL) ? Rendering::Shader::USE_GL : 0 |
+						shaderMap->getBool(Consts::ATTR_SHADER_USES_SG_UNIFORMS) ? Rendering::Shader::USE_UNIFORMS : 0;
+				
+			}catch(...){
+				WARN("Error loading shader description '"+shaderDescriptionFile.toString()+"'.");
+				throw;
+			}
+		}else{
+			WARN("Could not load shader description '"+shaderName+"'.");
+		}
+		
+		
+	}else{
+		usage = (d.getString(Consts::ATTR_SHADER_USES_CLASSIC_GL)=="false" ? 0 : Rendering::Shader::USE_GL) |
+				(d.getString(Consts::ATTR_SHADER_USES_SG_UNIFORMS)=="false" ? 0 : Rendering::Shader::USE_UNIFORMS);
+	}
+
+//const std::string dataType = 
+
+	const auto data = ImporterTools::filterElements(Consts::TYPE_DATA, children);
 
 	for(const auto & nd : data) {
 		const std::string dataType = nd->getString(Consts::ATTR_DATA_TYPE);

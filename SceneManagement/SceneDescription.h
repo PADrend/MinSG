@@ -142,6 +142,8 @@ extern const Util::StringIdentifier ATTR_TRANSPARENY_USE_PREMULTIPLIED_ALPHA;
 extern const Util::StringIdentifier ATTR_SHADER_OBJ_FILENAME;
 extern const Util::StringIdentifier ATTR_SHADER_USES_SG_UNIFORMS;
 extern const Util::StringIdentifier ATTR_SHADER_USES_CLASSIC_GL;
+extern const Util::StringIdentifier ATTR_SHADER_NAME;
+extern const Util::StringIdentifier STATE_ATTR_SHADER_NAME;
 extern cStr_t DATA_TYPE_GLSL_FS;
 extern cStr_t DATA_TYPE_GLSL_VS;
 extern cStr_t DATA_TYPE_GLSL_GS;

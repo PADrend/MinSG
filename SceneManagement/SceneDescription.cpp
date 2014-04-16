@@ -126,6 +126,8 @@ cStr_t DATA_TYPE_GLSL_VS="shader/glsl_vs";
 cStr_t DATA_TYPE_GLSL_GS="shader/glsl_gs";
 cStr_t DATA_TYPE_GLSL_USAGE="shader/glsl_usage";
 cStr_t DATA_TYPE_SHADER_UNIFORM="uniform";
+const Util::StringIdentifier STATE_ATTR_SHADER_NAME(NodeAttributeModifier::create("shaderName",NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+const Util::StringIdentifier ATTR_SHADER_NAME("shaderName");
 const Util::StringIdentifier ATTR_SHADER_UNIFORM_NAME("name");
 const Util::StringIdentifier ATTR_SHADER_UNIFORM_VALUES("values");
 const Util::StringIdentifier ATTR_SHADER_UNIFORM_TYPE("dataType");
