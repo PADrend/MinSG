@@ -30,6 +30,7 @@
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Draw.h>
+#include <Util/IO/FileLocator.h>
 #include <Util/GenericAttribute.h>
 #include <Util/Macros.h>
 #include <Util/References.h>
@@ -107,11 +108,10 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 				vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/shadow_disabled.sfn");
 				vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/effect_normalToAlpha.sfn");
 				vsFiles.push_back(DataDirectory::getPath() + "/shader/universal2/color_standard.sfn");
-				std::vector<std::string> searchPaths;
 				std::vector<std::string> gsFiles;
 				std::vector<std::string> fsFiles(vsFiles);
 				fsFiles[0] = DataDirectory::getPath() + "/shader/universal2/universal.fs";
-				initShaderState(sphereShader.get(),searchPaths, vsFiles, gsFiles, fsFiles, Rendering::Shader::USE_UNIFORMS);
+				initShaderState(sphereShader.get(),Util::FileLocator(), vsFiles, gsFiles, fsFiles, Rendering::Shader::USE_UNIFORMS);
 			}
 			if(sphereShader.isNotNull()) {
 				sphereNode->addState(sphereShader.get());

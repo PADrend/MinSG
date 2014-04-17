@@ -31,6 +31,7 @@ class Texture;
 namespace Util {
 class FileName;
 template<class t> class Reference;
+class FileLocator;
 }
 namespace MinSG {
 
@@ -72,7 +73,7 @@ node_type_t * getOriginalNode(node_type_t * node) {
 }
 
 /*!	Init the given shaderState with a new Shader loaded from the given filenames. The metadata of the State is set accordingly. */
-void initShaderState(ShaderState * shaderState,		const std::vector<std::string> & searchPaths,
+void initShaderState(ShaderState * shaderState,		const Util::FileLocator& locator,
 													const std::vector<std::string> & vsFiles,
 													const std::vector<std::string> & gsFiles,
 													const std::vector<std::string> & fsFiles,

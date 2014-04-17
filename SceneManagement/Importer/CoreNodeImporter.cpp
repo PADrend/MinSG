@@ -154,8 +154,8 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 
 	// A filename is given -> create the Mesh using the MeshImportHandler (or look for a duplicate depending on the import options)
 	if(!fileNameString.empty()) {
-		// find the file
-		const Util::FileName fileName(ImporterTools::checkRelativePaths(ctxt, Util::FileName(fileNameString)));
+		const auto location = ctxt.fileLocator.locateFile( Util::FileName(fileNameString) );
+		const Util::FileName fileName( location.first ? location.second : Util::FileName(fileNameString));
 
 		// if the mesh registry is used; look if the mesh is already available in the registry
 		const bool useMeshRegistry = (ctxt.importOptions & IMPORT_OPTION_USE_MESH_REGISTRY)>0 ;

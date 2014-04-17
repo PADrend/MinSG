@@ -363,23 +363,6 @@ std::deque<const NodeDescription *> filterElements(const std::string & type,
 }
 
 
-//! (static)
-Util::FileName checkRelativePaths(const ImportContext & ctxt,const Util::FileName & fileName) {
-	Util::FileName newName;
-	std::list<std::string> hints;
-	hints.push_back(ctxt.getFileName().getFSName() + "://" + ctxt.getFileName().getDir());
-	hints.push_back("");
-	if (Util::FileUtils::findFile(fileName, hints, newName)) {
-		return newName;
-	} else {
-		WARN(std::string("Cannot find file \"") + fileName.toString() + "\".");
-		return fileName;
-	}
-
-}
-
-
-
 
 
 //! The import handler for meshes is called whenever a mesh has to be created.

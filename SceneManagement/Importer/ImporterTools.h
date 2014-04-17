@@ -55,8 +55,6 @@ Geometry::SRT getSRT(const NodeDescription & d) ;
 
 void addAttributes(ImportContext & ctxt, const NodeDescriptionList * subDescriptions, Util::AttributeProvider * attrProvider) ;
 
-Util::FileName checkRelativePaths(const ImportContext & ctxt,const Util::FileName & fileName);
-
 typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description, GroupNode * parent)> NodeImport_Fn_t;
 typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description, Node * parent)> StateImport_Fn_t;
 typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description, Node * parent)> BehaviourImport_Fn_t;

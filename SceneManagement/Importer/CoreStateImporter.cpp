@@ -114,13 +114,13 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 	if(!shaderName.empty()){
 		ss->setAttribute(Consts::STATE_ATTR_SHADER_NAME, Util::GenericAttribute::createString(shaderName)); // store name at state
 			
-		Util::FileName shaderDescriptionFile;
-		if(Util::FileUtils::findFile(Util::FileName(shaderName+".shader"),std::list<std::string>(ctxt.searchPaths_shader.begin(),ctxt.searchPaths_shader.end()),shaderDescriptionFile)){
+		const auto location = ctxt.fileLocator.locateFile( Util::FileName(shaderName+".shader"));
+		if(location.first){
 			try{
-				std::unique_ptr<Util::GenericAttribute> sd( Util::JSON_Parser::parse( Util::FileUtils::getFileContents(shaderDescriptionFile) ) );
+				std::unique_ptr<Util::GenericAttribute> sd( Util::JSON_Parser::parse( Util::FileUtils::getFileContents(location.second) ) );
 				Util::GenericAttributeMap* shaderMap = dynamic_cast<Util::GenericAttributeMap*>(sd.get());
 				if(!shaderMap)
-					throw std::runtime_error("json map expected in "+shaderDescriptionFile.toString());
+					throw std::runtime_error("json map expected in "+location.second.toString());
 				
 				static const Util::StringIdentifier VS( Consts::DATA_TYPE_GLSL_VS );
 				auto* vs = shaderMap->getValue<Util::GenericAttributeList>( VS );
@@ -144,7 +144,7 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 						shaderMap->getBool(Consts::ATTR_SHADER_USES_SG_UNIFORMS) ? Rendering::Shader::USE_UNIFORMS : 0;
 				
 			}catch(...){
-				WARN("Error loading shader description '"+shaderDescriptionFile.toString()+"'.");
+				WARN("Error loading shader description '"+location.second.toString()+"'.");
 				throw;
 			}
 		}else{
@@ -179,7 +179,7 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 		}
 	}
 
-	initShaderState(ss.get(),ctxt.searchPaths_shader , vsFiles,gsFiles,fsFiles, usage);
+	initShaderState(ss.get(),ctxt.fileLocator , vsFiles,gsFiles,fsFiles, usage);
 
 	ImporterTools::finalizeState(ctxt,ss.get(),d);
 	parent->addState(ss.get());
@@ -275,8 +275,8 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 										dataDesc->getString(Consts::ATTR_DATA_FORMAT,"png"), std::string(rawData.begin(), rawData.end()),true,false);
 		ts = new TextureState(t);
 	} else {
-		fileName = ImporterTools::checkRelativePaths(ctxt, fileName);
-		ts = loadTexture(fileName,
+		const auto location = ctxt.fileLocator.locateFile( fileName );
+		ts = loadTexture(location.first ? location.second : fileName,
 						 true,
 						 false,
 						 textureUnit,
