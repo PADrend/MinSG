@@ -114,7 +114,7 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 	if(!shaderName.empty()){
 		ss->setAttribute(Consts::STATE_ATTR_SHADER_NAME, Util::GenericAttribute::createString(shaderName)); // store name at state
 			
-		const auto location = ctxt.fileLocator.locateFile( Util::FileName(shaderName+".shader"));
+		const auto location = ctxt.fileLocator.locateFile( Util::FileName(shaderName));
 		if(location.first){
 			try{
 				std::unique_ptr<Util::GenericAttribute> sd( Util::JSON_Parser::parse( Util::FileUtils::getFileContents(location.second) ) );
@@ -179,7 +179,7 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 		}
 	}
 
-	initShaderState(ss.get(),ctxt.fileLocator , vsFiles,gsFiles,fsFiles, usage);
+	initShaderState(ss.get(), vsFiles,gsFiles,fsFiles, usage,ctxt.fileLocator);
 
 	ImporterTools::finalizeState(ctxt,ss.get(),d);
 	parent->addState(ss.get());
@@ -263,7 +263,7 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 	const int textureUnit = Util::StringUtils::toNumber<int>(d.getString(Consts::ATTR_TEXTURE_UNIT, "0"));
 
 	TextureState * ts = nullptr;
-	Util::FileName fileName(dataDesc->getString(Consts::ATTR_TEXTURE_FILENAME));
+	const Util::FileName fileName(dataDesc->getString(Consts::ATTR_TEXTURE_FILENAME));
 	if(fileName.empty()) {
 		// Load image data from a Base64 encoded block.
 		if(dataDesc->getString(Consts::ATTR_DATA_ENCODING) != Consts::DATA_ENCODING_BASE64) {
@@ -276,13 +276,16 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 		ts = new TextureState(t);
 	} else {
 		const auto location = ctxt.fileLocator.locateFile( fileName );
-		ts = loadTexture(location.first ? location.second : fileName,
+		ts = createTextureState(location.first ? location.second : fileName,
 						 true,
 						 false,
 						 textureUnit,
 						 (ctxt.importOptions & IMPORT_OPTION_USE_TEXTURE_REGISTRY) > 0 ? &ctxt.getTextureRegistry() : nullptr);
+						 
+		// set original filename
+		if(ts&&ts->getTexture())
+			ts->getTexture()->setFileName(fileName);
 	}
-
 	ImporterTools::finalizeState(ctxt, ts, d);
 	parent->addState(ts);
 	return true;

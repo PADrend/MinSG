@@ -41,7 +41,7 @@ class ImportHandler : public SceneManagement::MeshImportHandler {
 		 * @param description Description of the Node to which the mesh belongs.
 		 * @return Arbitrary node or tree of nodes that represents the mesh inside the scene graph.
 		 */
-		Node * handleImport(const Util::FileName & url, const SceneManagement::NodeDescription * description) override;
+		 Node * handleImport(const Util::FileLocator& locator, const std::string & url, const SceneManagement::NodeDescription * description) override;
 };
 
 }

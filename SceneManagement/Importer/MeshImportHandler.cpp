@@ -10,13 +10,13 @@
 */
 #include "MeshImportHandler.h"
 #include "../../Helper/Helper.h"
+#include <Util/IO/FileLocator.h>
 
 namespace MinSG {
 namespace SceneManagement {
 
-
-Node * MeshImportHandler::handleImport(const Util::FileName & url, const NodeDescription * /*description*/) {
-	return loadModel(url, 0, nullptr);
+Node * MeshImportHandler::handleImport(const Util::FileLocator& locator, const std::string & url, const NodeDescription * /*description*/) {
+	return loadModel(Util::FileName(url), 0, nullptr,locator);
 }
 
 }

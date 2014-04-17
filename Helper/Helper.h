@@ -73,11 +73,11 @@ node_type_t * getOriginalNode(node_type_t * node) {
 }
 
 /*!	Init the given shaderState with a new Shader loaded from the given filenames. The metadata of the State is set accordingly. */
-void initShaderState(ShaderState * shaderState,		const Util::FileLocator& locator,
-													const std::vector<std::string> & vsFiles,
+void initShaderState(ShaderState * shaderState,		const std::vector<std::string> & vsFiles,
 													const std::vector<std::string> & gsFiles,
 													const std::vector<std::string> & fsFiles,
-													uint32_t usageType);
+													uint32_t usageType,
+													const Util::FileLocator& locator);
 
 
 static const unsigned MESH_AUTO_CENTER = 1 << 0;
@@ -92,6 +92,7 @@ static const unsigned MESH_AUTO_CENTER_BOTTOM = 1 << 2;
  *  @param metaData
  */
 Node * loadModel(const Util::FileName & filename, unsigned flags = 0, Geometry::Matrix4x4 * transMat = nullptr);
+Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matrix4x4 * transMat,const Util::FileLocator& locator);
 
 /*! Create a textureState from an image file.
 	@param filename			Filename of the image
@@ -101,7 +102,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags = 0, Geometry::
 	@param textureRegistry 	If set and the texture is found in the registry, this texture is used; otherwise the texture file is
 							loaded and stored in the registry with the filename as key.
 	@return A TextureState is always returned even if the image file could not be loaded.	*/
-TextureState * loadTexture(const Util::FileName & filename,
+TextureState * createTextureState(const Util::FileName & filename,
 						   bool useMipmaps = false,
 						   bool clampToEdge = false,
 						   int textureUnit = 0,

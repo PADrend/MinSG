@@ -154,13 +154,10 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 
 	// A filename is given -> create the Mesh using the MeshImportHandler (or look for a duplicate depending on the import options)
 	if(!fileNameString.empty()) {
-		const auto location = ctxt.fileLocator.locateFile( Util::FileName(fileNameString) );
-		const Util::FileName fileName( location.first ? location.second : Util::FileName(fileNameString));
-
 		// if the mesh registry is used; look if the mesh is already available in the registry
 		const bool useMeshRegistry = (ctxt.importOptions & IMPORT_OPTION_USE_MESH_REGISTRY)>0 ;
 		if(useMeshRegistry) {
-			Rendering::Mesh * mesh = ctxt.getRegisteredMesh(fileName.toString());
+			Rendering::Mesh * mesh = ctxt.getRegisteredMesh(fileNameString);
 			if(mesh!=nullptr) {
 				node = new GeometryNode(mesh);
 				//std::cout << "Mesh reused: "<<fileName.toString()<<"\n";
@@ -168,7 +165,7 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 		}
 
 		if(node==nullptr) {
-			node = ImporterTools::getMeshImportHandler()->handleImport(fileName, dataDesc);
+			node = ImporterTools::getMeshImportHandler()->handleImport(ctxt.fileLocator, fileNameString, dataDesc);
 
 			if(node == nullptr) {
 				WARN("Loading the mesh failed.");
@@ -179,7 +176,7 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 			if(useMeshRegistry) {
 				GeometryNode * gn = dynamic_cast<GeometryNode *>(node);
 				if(gn!=nullptr) {
-					ctxt.registerMesh(fileName.toString(),gn->getMesh());
+					ctxt.registerMesh(fileNameString,gn->getMesh());
 				}
 			}
 		}

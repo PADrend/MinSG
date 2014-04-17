@@ -78,7 +78,17 @@ static void finalize(Rendering::MeshVertexData & vData, unsigned flags) {
 }
 
 Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matrix4x4 * transMat) {
-	std::unique_ptr<Util::GenericAttributeList> genericList(Rendering::Serialization::loadGeneric(filename));
+	return loadModel(filename,flags,transMat,Util::FileLocator());
+}
+
+Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matrix4x4 * transMat,const Util::FileLocator& locator) {
+	const auto location = locator.locateFile(filename);
+	if(!location.first){
+		WARN("loadModel(...): File not found "+filename.toString());
+		return nullptr;
+	}
+	
+	std::unique_ptr<Util::GenericAttributeList> genericList(Rendering::Serialization::loadGeneric(location.second));
 	if(!genericList || genericList->empty()) {
 		WARN("No Mesh created.");
 		return nullptr;
@@ -126,7 +136,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 				const auto textureName = d->getString(Rendering::Serialization::DESCRIPTION_TEXTURE_FILE, "");
 				if (!textureName.empty()) {
 					std::cout << "TeX: " << textureName << std::endl;
-					node->addState(loadTexture(Util::FileName(textureName), true));
+					node->addState(createTextureState(Util::FileName(textureName), true));
 				}
 			}
 
@@ -188,9 +198,10 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 					// Add texture from material.
 					const auto materialTexture = materialDesc->getString(Rendering::Serialization::DESCRIPTION_TEXTURE_FILE, "");
 					if (!materialTexture.empty()) {
-						Util::FileName texturePath;
-						Util::FileUtils::findFile(Util::FileName(materialTexture), filename.getDir(), texturePath);
-						node->addState(loadTexture(texturePath, true));
+						Util::FileLocator relLocator;
+						relLocator.addSearchPath(  location.second.getDir() );
+						const auto textureLocation =  relLocator.locateFile( Util::FileName(materialTexture) );
+						node->addState(createTextureState(textureLocation.second, true));
 					}
 				}
 			}
@@ -200,7 +211,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 
 			using Rendering::StreamerMD2;
 
-			Util::FileName * md2FileName = new Util::FileName(d->getString(Rendering::Serialization::DESCRIPTION_FILE));
+			Util::FileName md2FileName = Util::FileName(d->getString(Rendering::Serialization::DESCRIPTION_FILE));
 
 			StreamerMD2::indexDataWrapper * indexDataWrapper = dynamic_cast<StreamerMD2::indexDataWrapper*> (d->getValue(StreamerMD2::DESCRIPTION_MESH_INDEX_DATA));
 			const Rendering::MeshIndexData & indexData = indexDataWrapper->ref();
@@ -266,14 +277,13 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 			StreamerMD2::textureFilesWrapper * textureFilesWrapper = dynamic_cast<StreamerMD2::textureFilesWrapper*> (d->getValue(StreamerMD2::DESCRIPTION_TEXTURE_FILES));
 			std::vector<std::string> textureFiles = textureFilesWrapper->get();
 			std::vector<TextureState *> textureStates;
+
+			Util::FileLocator relLocator;
+			relLocator.addSearchPath(  md2FileName.getDir() );
 			for(auto & textureFile : textureFiles) {
-				Util::FileName newName;
-				std::list<std::string> hints;
-				hints.push_back(md2FileName->getDir());
-				hints.push_back("");
-				auto fileName = new Util::FileName(textureFile);
-				if(Util::FileUtils::findFile(*fileName, hints, newName)) {
-					textureStates.push_back(loadTexture(newName));
+				const auto textureLocation =  relLocator.locateFile( Util::FileName(textureFile) );
+				if(textureLocation.first) {
+					textureStates.push_back(createTextureState(textureLocation.second));
 				}
 				else{
 					WARN(std::string("Cannot find file \"") + textureFile + "\".");
@@ -287,8 +297,12 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 			nodes.push_back(keyFrameAnimationNode);
 		} else if (type == Rendering::Serialization::DESCRIPTION_TYPE_MATERIAL) {
 			Util::FileName mtlFile;
-			Util::FileUtils::findFile(Util::FileName(d->getString(Rendering::Serialization::DESCRIPTION_FILE)), filename.getDir(), mtlFile);
-			std::unique_ptr<Util::GenericAttributeList> mtlList(Rendering::Serialization::loadGeneric(mtlFile));
+
+			Util::FileLocator relLocator;
+			relLocator.addSearchPath(  location.second.getDir() );
+			const auto mtlFileLocation =  relLocator.locateFile( Util::FileName(d->getString(Rendering::Serialization::DESCRIPTION_FILE)) );
+
+			std::unique_ptr<Util::GenericAttributeList> mtlList(Rendering::Serialization::loadGeneric(mtlFileLocation.second));
 			if (mtlList.get() == nullptr || mtlList->empty()) {
 				WARN("Error loading material library.");
 				continue;
@@ -327,11 +341,11 @@ void destroy(Node * rootNode) {
 }
 
 void initShaderState(ShaderState * shaderState,
-					const Util::FileLocator& locator,
 					const std::vector<std::string> & vsFiles,
 					const std::vector<std::string> & gsFiles,
 					const std::vector<std::string> & fsFiles,
-					Rendering::Shader::flag_t usage) {
+					Rendering::Shader::flag_t usage,
+					const Util::FileLocator& locator) {
 	using namespace SceneManagement;
 	assert(shaderState != nullptr);
 	Rendering::Shader * shader = Rendering::Shader::createShader(usage);
@@ -381,7 +395,7 @@ void initShaderState(ShaderState * shaderState,
 	}
 }
 
-TextureState * loadTexture(const Util::FileName & filename,
+TextureState * createTextureState(const Util::FileName & filename,
 						   bool useMipmaps,
 						   bool clampToEdge,
 						   int textureUnit,

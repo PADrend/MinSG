@@ -14,7 +14,8 @@
 namespace MinSG {
 
 /**
- * @brief MinSG's data directory
+ * @brief MinSG's data directory 
+ * @deprecated Use a Util::FileLocator instead!
  * 
  * MinSG's data directory contains data files required by some parts of MinSG
  * (e.g., shader files).

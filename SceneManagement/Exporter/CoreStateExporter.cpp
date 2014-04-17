@@ -183,7 +183,7 @@ static void describeShaderState(ExporterContext &,NodeDescription & desc,State *
 
 }
 
-static void describeTextureState(ExporterContext & ctxt,NodeDescription & desc,State * state) {
+static void describeTextureState(ExporterContext & /*ctxt*/,NodeDescription & desc,State * state) {
 	auto ts = dynamic_cast<TextureState *>(state);
 	
 	desc.setString(Consts::ATTR_STATE_TYPE,Consts::STATE_TYPE_TEXTURE);
@@ -210,12 +210,13 @@ static void describeTextureState(ExporterContext & ctxt,NodeDescription & desc,S
 				ExporterTools::addDataEntry(desc, std::move(dataDesc));
 			}
 		} else {
-			// make path to texture relative to scene (if mesh lies below the scene)
-			Util::FileUtils::makeRelativeIfPossible(ctxt.sceneFile, texFilename);
+//			// make path to texture relative to scene (if mesh lies below the scene)
+//			Util::FileUtils::makeRelativeIfPossible(ctxt.sceneFile, texFilename);
+			
 
 			NodeDescription dataDesc;
 			dataDesc.setString(Consts::ATTR_DATA_TYPE,"image");
-			dataDesc.setString(Consts::ATTR_TEXTURE_FILENAME, texFilename.toString());
+			dataDesc.setString(Consts::ATTR_TEXTURE_FILENAME, texFilename.toShortString());
 			ExporterTools::addDataEntry(desc, std::move(dataDesc));
 
 		}

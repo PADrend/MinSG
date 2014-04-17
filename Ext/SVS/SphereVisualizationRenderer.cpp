@@ -111,7 +111,7 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 				std::vector<std::string> gsFiles;
 				std::vector<std::string> fsFiles(vsFiles);
 				fsFiles[0] = DataDirectory::getPath() + "/shader/universal2/universal.fs";
-				initShaderState(sphereShader.get(),Util::FileLocator(), vsFiles, gsFiles, fsFiles, Rendering::Shader::USE_UNIFORMS);
+				initShaderState(sphereShader.get(), vsFiles, gsFiles, fsFiles, Rendering::Shader::USE_UNIFORMS,Util::FileLocator());
 			}
 			if(sphereShader.isNotNull()) {
 				sphereNode->addState(sphereShader.get());

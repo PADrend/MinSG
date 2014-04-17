@@ -38,7 +38,7 @@ namespace MinSG {
 namespace SceneManagement {
 
 
-static void describeGeometryNode(ExporterContext & ctxt,NodeDescription & desc, Node * node) {
+static void describeGeometryNode(ExporterContext & /*ctxt*/,NodeDescription & desc, Node * node) {
 	desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_GEOMETRY);
 
 	NodeDescription dataDesc;
@@ -67,11 +67,11 @@ static void describeGeometryNode(ExporterContext & ctxt,NodeDescription & desc, 
 		} else { // filename given?
 			Util::FileName meshFilename(m->getFileName());
 
-			// make path to mesh relative to scene (if mesh lies below the scene)
-			Util::FileUtils::makeRelativeIfPossible(ctxt.sceneFile, meshFilename);
+//			// make path to mesh relative to scene (if mesh lies below the scene)
+//			Util::FileUtils::makeRelativeIfPossible(ctxt.sceneFile, meshFilename);
 
 			dataDesc.setString(Consts::ATTR_DATA_TYPE,"mesh");
-			dataDesc.setString(Consts::ATTR_MESH_FILENAME,meshFilename.toString());
+			dataDesc.setString(Consts::ATTR_MESH_FILENAME,meshFilename.toShortString());
 		}
 		ExporterTools::addDataEntry(desc, std::move(dataDesc));
 	}

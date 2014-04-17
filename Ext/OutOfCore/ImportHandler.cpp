@@ -17,6 +17,7 @@
 #include <Geometry/Vec3.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Util/IO/FileName.h>
+#include <Util/IO/FileLocator.h>
 #include <Util/StringUtils.h>
 #include <Util/Macros.h>
 #include <vector>
@@ -29,23 +30,25 @@ namespace MinSG {
 class Node;
 namespace OutOfCore {
 
-Node * ImportHandler::handleImport(const Util::FileName & url, const SceneManagement::NodeDescription * description) {
+Node * ImportHandler::handleImport(const Util::FileLocator& locator,const std::string & filename, const SceneManagement::NodeDescription * description) {
 	const std::string meshBBString = description->getString(SceneManagement::Consts::ATTR_MESH_BB);
 	if (meshBBString.empty()) {
 		WARN("Found mesh that is not handled here (bounding box is not available).");
-		return SceneManagement::MeshImportHandler::handleImport(url, description);
+		return SceneManagement::MeshImportHandler::handleImport(locator, filename, description);
 	}
+	const auto location = locator.locateFile(Util::FileName(filename));
+	const Util::FileName url = location.second; // continue even if the existence of the file could not be verified (location.first==false)
+	
 	if ((url.getEnding() != "mmf" && url.getEnding() != "ply")) {
 		WARN("Found mesh that is not handled here (\"" + url.toString() + "\" does not end with \"mmf\" or \"ply\").");
-		return SceneManagement::MeshImportHandler::handleImport(url, description);
+		return SceneManagement::MeshImportHandler::handleImport(locator, filename, description);
 	}
 
 	const auto boxValues = Util::StringUtils::toFloats(meshBBString);
 	FAIL_IF(boxValues.size() != 6);
 	const Geometry::Box meshBB(Geometry::Vec3(boxValues[0], boxValues[1], boxValues[2]), boxValues[3], boxValues[4], boxValues[5]);
 
-	Rendering::Mesh * mesh = addMesh(url, meshBB);
-
+	Rendering::Mesh * mesh = addMesh(url, meshBB); // this can mess up the filename... solution is too complex.
 	return new GeometryNode(mesh);
 }
 
