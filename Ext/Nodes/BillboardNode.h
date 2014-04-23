@@ -3,9 +3,9 @@
 	Copyright (C) 2007-2012 Benjamin Eikel <benjamin@eikel.org>
 	Copyright (C) 2007-2012 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2007-2012 Ralf Petring <ralf@petring.net>
-	
+
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
-	You should have received a copy of the MPL along with this library; see the 
+	You should have received a copy of the MPL along with this library; see the
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
 #ifndef BILLBOARD_NODE_H
@@ -37,6 +37,7 @@ class BillboardNode : public GeometryNode {
 		virtual ~BillboardNode();
 
 		const Geometry::Rect & getRect()const 	{	return rect;	}
+		void setRect(Geometry::Rect _rect);
 		bool getRotateUpAxis()const 			{	return rotateUpAxis;	}
 		bool getRotateRightAxis()const 			{	return rotateRightAxis;	}
 
