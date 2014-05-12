@@ -519,7 +519,7 @@ void BtPhysicWorld::setGravity(const Geometry::Vec3&  gravity){
 }
 
 void BtPhysicWorld::updateMass(Node* node, float mass){
-	setNodeProperty_mass(node,mass);
+	//setNodeProperty_mass(node,mass);
 	BtPhysicObject *physObj = getPhysicObject(node);
 	if(physObj){
 		btRigidBody* body = physObj->getRigidBody();
@@ -536,7 +536,7 @@ void BtPhysicWorld::updateMass(Node* node, float mass){
 }
 
 void BtPhysicWorld::updateFriction(Node* node, float fric){
-	setNodeProperty_friction(node,fric);
+//	setNodeProperty_friction(node,fric);
 	BtPhysicObject *physObj = getPhysicObject(node);
 	if(physObj){
 		btRigidBody* body = physObj->getRigidBody();
@@ -546,7 +546,7 @@ void BtPhysicWorld::updateFriction(Node* node, float fric){
 }
 
 void BtPhysicWorld::updateRollingFriction(Node* node, float rollfric){
-	setNodeProperty_rollingFriction(node,rollfric);
+//	setNodeProperty_rollingFriction(node,rollfric);
 	BtPhysicObject *physObj = getPhysicObject(node);
 	if(physObj){
 		btRigidBody* body = physObj->getRigidBody();
@@ -560,7 +560,7 @@ void BtPhysicWorld::updateShape(Node* node,  Util::GenericAttributeMap * descrip
 		WARN("BtPhysicWorld::updateShape: no shape description!");
 		return;
 	}
-	setNodeProperty_shapeDescription(node,*description);
+//	setNodeProperty_shapeDescription(node,*description);
 
 	BtPhysicObject* physObj = getPhysicObject(node);
 	if(physObj){
@@ -577,7 +577,7 @@ void BtPhysicWorld::updateShape(Node* node,  Util::GenericAttributeMap * descrip
 }
 
 void BtPhysicWorld::updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localSurfaceVelocity){
-	setNodeProperty_localSurfaceVelocity(node,localSurfaceVelocity);
+//	setNodeProperty_localSurfaceVelocity(node,localSurfaceVelocity);
 	BtPhysicObject* physObj = getPhysicObject(node);
 	if(physObj)
 		initCollisionCallbacks(*physObj);
