@@ -253,7 +253,7 @@ State::stateResult_t SkeletalHardwareRendererState::doEnableState(FrameContext &
         SkeletalAnimationUtils::putMatrixInTexture(5, rootJoint->getWorldMatrix().inverse(), &pa);
         SkeletalAnimationUtils::putMatricesInTexture(9+inverseMatContainer.size()*4, jointMats, &pa);
         
-        texture.get()->uploadGLTexture(context.getRenderingContext());
+        texture.get()->_uploadGLTexture(context.getRenderingContext());
         if(!textureUnitSet) {
             context.getRenderingContext().setTexture(7, texture.get());
             textureUnitSet = true;

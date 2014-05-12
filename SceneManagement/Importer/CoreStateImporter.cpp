@@ -262,7 +262,7 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 	// textureUnit
 	const int textureUnit = Util::StringUtils::toNumber<int>(d.getString(Consts::ATTR_TEXTURE_UNIT, "0"));
 
-	TextureState * ts = nullptr;
+	Util::Reference<TextureState> ts;
 	const Util::FileName fileName(dataDesc->getString(Consts::ATTR_TEXTURE_FILENAME));
 	if(fileName.empty()) {
 		// Load image data from a Base64 encoded block.
@@ -274,6 +274,7 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 		Rendering::Texture * t = Rendering::Serialization::loadTexture(
 										dataDesc->getString(Consts::ATTR_DATA_FORMAT,"png"), std::string(rawData.begin(), rawData.end()),true,false);
 		ts = new TextureState(t);
+		ts->setTextureUnit(textureUnit);
 	} else {
 		const auto location = ctxt.fileLocator.locateFile( fileName );
 		ts = createTextureState(location.first ? location.second : fileName,
@@ -286,8 +287,8 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 		if(ts&&ts->getTexture())
 			ts->getTexture()->setFileName(fileName);
 	}
-	ImporterTools::finalizeState(ctxt, ts, d);
-	parent->addState(ts);
+	ImporterTools::finalizeState(ctxt, ts.get(), d);
+	parent->addState(ts.get());
 	return true;
 }
 
