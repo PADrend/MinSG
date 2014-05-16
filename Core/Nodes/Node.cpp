@@ -14,6 +14,7 @@
 #include "../NodeAttributeModifier.h"
 #include "../States/State.h"
 #include "../../Helper/StdNodeVisitors.h"
+#include "../RenderingLayer.h"
 #include <Geometry/BoxHelper.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/DrawCompound.h>
@@ -29,6 +30,7 @@ Node::Node() :
 		Util::AttributeProvider(), ReferenceCounter_t(),
 		parentNode(),
 		nodeFlags(N_FLAG_ACTIVE|N_FLAG_CLOSED_GROUP),
+		renderingLayers(RENDERING_LAYER_DEFAULT),
 		statusFlags(0),
 		states(){
 	//ctor
@@ -39,6 +41,7 @@ Node::Node(const Node & source) :
 		Util::AttributeProvider(), ReferenceCounter_t(),
 		parentNode(),
 		nodeFlags(source.nodeFlags),
+		renderingLayers(source.renderingLayers),
 		statusFlags(0),
 		states() {
 
@@ -158,7 +161,7 @@ void Node::worldBBChanged(){
 //------------------------------------------
 
 void Node::display(FrameContext & context, const RenderParam & rp) {
-	if (!isActive())
+	if(!isActive() || !testRenderingLayer(rp.getRenderingLayers()))
 		return;
 
 	bool skipRendering=false;
@@ -179,48 +182,67 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 		}
 	}
 
-	// - enable states
-	if(hasStates() && !(rp.getFlag(NO_STATES))) {
-		for(auto & stateEntry : *states) {
-			const State::stateResult_t result = stateEntry.first->enableState(context, this, rp);
-			if(result == State::STATE_OK) {
-				stateEntry.second = true;
-			} else if(result == State::STATE_SKIPPED) {
-				stateEntry.second = false;
-			} else if(result == State::STATE_SKIP_OTHER_STATES) {
-				stateEntry.second = true;
-				break;
-			} else if(result == State::STATE_SKIP_RENDERING) {
-				// if the state returned STATE_SKIP_RENDERING it should be active afterwards, so that disableState must not be called.
-				stateEntry.second = false;
-				skipRendering = true;
-				break;
+	try{
+		// - enable states
+		if(hasStates() && !(rp.getFlag(NO_STATES))) {
+			for(auto & stateEntry : *states) {
+				const State::stateResult_t result = stateEntry.first->enableState(context, this, rp);
+				if(result == State::STATE_OK) {
+					stateEntry.second = true;
+				} else if(result == State::STATE_SKIPPED) {
+					stateEntry.second = false;
+				} else if(result == State::STATE_SKIP_OTHER_STATES) {
+					stateEntry.second = true;
+					break;
+				} else if(result == State::STATE_SKIP_RENDERING) {
+					// if the state returned STATE_SKIP_RENDERING it should be active afterwards, so that disableState must not be called.
+					stateEntry.second = false;
+					skipRendering = true;
+					break;
+				}
 			}
 		}
-	}
 
-	// - perform rendering of the node itself
-	if(!skipRendering){
-		if (rp.getFlag(SHOW_COORD_SYSTEM)) {
-			Rendering::drawCoordSys(context.getRenderingContext(), hasParent()?1.0f:10000.0f);
+		// - perform rendering of the node itself
+		if(!skipRendering){
+			if(rp.getFlag(SHOW_COORD_SYSTEM)) {
+				Rendering::drawCoordSys(context.getRenderingContext(), hasParent()?1.0f:10000.0f);
+			}
+			doDisplay(context,rp);
 		}
-		doDisplay(context,rp);
-	}
 
-	// - disable states
-	if (hasStates()&& !(rp.getFlag(NO_STATES))) {
-		for (auto it=states->rbegin();it!=states->rend();++it) {
-			// Only disable the state if it was enabled successfully before.
-			if(it->second) {
-				it->first->disableState(context,this,rp);
-				it->second = false;
+		// - disable states
+		if(hasStates()&& !(rp.getFlag(NO_STATES))) {
+			for (auto it=states->rbegin();it!=states->rend();++it) {
+				// Only disable the state if it was enabled successfully before.
+				if(it->second) {
+					it->second = false;
+					it->first->disableState(context,this,rp);
+				}
 			}
 		}
-	}
 
-	// - revert transformations
-	if (matrixMustBePopped ){
-		context.getRenderingContext().popMatrix();
+		// - revert transformations
+		if (matrixMustBePopped ){
+			context.getRenderingContext().popMatrix();
+		}
+	}catch(...){ // if something went wrong, return to consistent state
+		// - disable states
+		if(hasStates()&& !(rp.getFlag(NO_STATES))) {
+			for (auto it=states->rbegin();it!=states->rend();++it) {
+				// Only disable the state if it was enabled successfully before.
+				if(it->second) {
+					it->second = false;
+					it->first->disableState(context,this,rp);
+				}
+			}
+		}
+		// - revert transformations
+		if (matrixMustBePopped ){
+			context.getRenderingContext().popMatrix();
+		}
+
+		throw;
 	}
 }
 
@@ -236,6 +258,7 @@ void Node::doDestroy() {
 	setStatus(STATUS_HAS_SRT,false);
 	worldLocation.reset();
 	removeAttributes();
+	setRenderingLayers(0); // prevents rendering
 }
 
 

@@ -23,6 +23,7 @@
 #include "../../Core/Behaviours/AbstractBehaviour.h"
 #include "../../Core/Behaviours/BehaviourManager.h"
 #include "../../Core/NodeAttributeModifier.h"
+#include "../../Core/RenderingLayer.h"
 #include "../../Helper/StdNodeVisitors.h"
 
 #include "../../Ext/SceneManagement/Exporter/ExtNodeExporter.h"
@@ -282,6 +283,9 @@ std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForNode(Exporte
 	addAttributesToDescription(ctxt,*description, node->getAttributes());
 	addBehavioursToDescription(ctxt,*description,node);
 
+	if(node->getRenderingLayers()!=RENDERING_LAYER_DEFAULT)
+		description->setValue(Consts::ATTR_RENDERING_LAYERS, Util::GenericAttribute::createNumber<renderingLayerMask_t>(node->getRenderingLayers()));
+	
 	// registered name(=id) of the node
 	const std::string nodeId = ctxt.sceneManager.getNameOfRegisteredNode(node);
 	if(!nodeId.empty()) { // set id (if set)
@@ -353,6 +357,9 @@ std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForState(Export
 
 	// finalize description
 	addAttributesToDescription(ctxt,*description.get(),state->getAttributes());
+
+	if(state->getRenderingLayers()!=RENDERING_LAYER_DEFAULT)
+		description->setValue(Consts::ATTR_RENDERING_LAYERS, Util::GenericAttribute::createNumber<renderingLayerMask_t>(state->getRenderingLayers()));
 
 	if(!stateId.empty()) { // set id (if set)
 		description->setString(Consts::ATTR_STATE_ID, stateId); // id=$stateId

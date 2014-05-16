@@ -193,6 +193,9 @@ void finalizeNode(ImportContext & ctxt, Node * node,const NodeDescription & d){
 		node->setFixedBB(Geometry::Box(Geometry::Vec3(boxValues[0], boxValues[1], boxValues[2]), boxValues[3], boxValues[4], boxValues[5]));
 	}
 
+	if(d.contains(Consts::ATTR_RENDERING_LAYERS))
+		node->setRenderingLayers( static_cast<renderingLayerMask_t>(Util::StringUtils::toNumber<uint32_t>( d.getString(Consts::ATTR_RENDERING_LAYERS) )));
+	
 	const NodeDescriptionList * subDescriptions = dynamic_cast<const NodeDescriptionList *> (d.getValue(Consts::CHILDREN));
 	if(subDescriptions==nullptr)
 		return;
@@ -234,6 +237,11 @@ void finalizeState(ImportContext & ctxt, State * state,const NodeDescription & d
 	registerNamedState(ctxt,d, state);
 	const NodeDescriptionList * subDescriptions = dynamic_cast<const NodeDescriptionList *> (d.getValue(Consts::CHILDREN));
 	addAttributes(ctxt, subDescriptions, state);
+	
+	if(d.contains(Consts::ATTR_RENDERING_LAYERS)){
+		state->setRenderingLayers( static_cast<renderingLayerMask_t>(Util::StringUtils::toNumber<uint32_t>( d.getString(Consts::ATTR_RENDERING_LAYERS))));
+	}
+
 }
 
 //! (static)

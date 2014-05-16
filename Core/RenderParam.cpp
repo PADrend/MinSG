@@ -10,19 +10,24 @@
 */
 #include "RenderParam.h"
 #include "FrameContext.h"
+#include "RenderingLayer.h"
 
 namespace MinSG {
 
 RenderParam::RenderParam() :
-	flags(0), channel(FrameContext::DEFAULT_CHANNEL) {
+	flags(0), renderingLayers(RENDERING_LAYER_DEFAULT), channel(FrameContext::DEFAULT_CHANNEL) {
 }
 
-RenderParam::RenderParam(uint32_t _flags) :
-	flags(_flags), channel(FrameContext::DEFAULT_CHANNEL) {
+RenderParam::RenderParam(renderFlag_t _flags) :
+	flags(_flags), renderingLayers(RENDERING_LAYER_DEFAULT), channel(FrameContext::DEFAULT_CHANNEL) {
 }
 
-RenderParam::RenderParam(uint32_t _flags, Util::StringIdentifier _channel) :
-	flags(_flags), channel(std::move(_channel)) {
+RenderParam::RenderParam(renderFlag_t _flags, Util::StringIdentifier _channel) :
+	flags(_flags), renderingLayers(RENDERING_LAYER_DEFAULT), channel(std::move(_channel)) {
+}
+
+RenderParam::RenderParam(renderFlag_t _flags, Util::StringIdentifier _channel, renderingLayerMask_t _layers) :
+	flags(_flags), renderingLayers(_layers), channel(std::move(_channel)) {
 }
 
 }

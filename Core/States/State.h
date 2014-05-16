@@ -11,6 +11,8 @@
 #ifndef MINSG_STATE_H
 #define MINSG_STATE_H
 
+#include "../RenderParam.h"
+
 #include <Util/AttributeProvider.h>
 #include <Util/ReferenceCounter.h>
 #include <Util/TypeNameMacro.h>
@@ -20,7 +22,6 @@
 namespace MinSG {
 class Node;
 class FrameContext;
-class RenderParam;
 
 /**
 * Representation of a state, that can be bound to a node.
@@ -31,7 +32,7 @@ class State :
 		PROVIDES_TYPE_NAME(State)
 	public:
 
-		State() : ReferenceCounter_t(), Util::AttributeProvider(), statusFlags(STATUS_ACTIVE) {}
+		State() : ReferenceCounter_t(), Util::AttributeProvider(), statusFlags(STATUS_ACTIVE), renderingLayers(1<<0 /*RENDERING_LAYER_DEFAULT*/) {}
 		State(const State &) = default;
 		State(State &&) = default;
 		State & operator=(const State &) = default;
@@ -73,10 +74,9 @@ class State :
 		 * @see stateResult_t for description of return type
 		 */
 		stateResult_t enableState(FrameContext & context, Node * node, const RenderParam & rp) {
-			if(!isActive()) {
-				return STATE_SKIPPED;
-			}
-			return doEnableState(context, node, rp);
+			return (isActive() && testRenderingLayer(rp.getRenderingLayers()))  ? 
+						doEnableState(context, node, rp) :
+						STATE_SKIPPED;
 		}
 
 		/**
@@ -129,6 +129,20 @@ class State :
 		 * @param rp Rendering options.
 		 */
 		virtual void doDisableState(FrameContext & /*context*/, Node * /*node*/, const RenderParam & /*rp*/) {}
+		
+	// -------
+	/**
+	 * @name Rendering layers
+	 */
+	//@{
+	private:
+		renderingLayerMask_t renderingLayers;
+
+	public:
+		renderingLayerMask_t getRenderingLayers()const					{	return renderingLayers;	}
+		void setRenderingLayers(renderingLayerMask_t l)					{	renderingLayers = l;	}
+		bool testRenderingLayer(renderingLayerMask_t l)const			{	return (renderingLayers&l)>0; }
+	//@}
 };
 }
 

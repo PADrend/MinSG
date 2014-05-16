@@ -98,6 +98,7 @@ const Util::StringIdentifier ATTR_DATA_ENCODING("encoding");
 cStr_t DATA_ENCODING_BASE64="base64";
 
 const Util::StringIdentifier ATTR_FLAG_CLOSED("closed");
+const Util::StringIdentifier ATTR_RENDERING_LAYERS("layers");
 
 const Util::StringIdentifier ATTR_NODE_TYPE("type");
 const Util::StringIdentifier ATTR_NODE_ID("id");

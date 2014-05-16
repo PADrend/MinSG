@@ -37,7 +37,8 @@ namespace MinSG {
 class FrameContext;
 class GroupNode;
 class RenderParam;
-typedef uint32_t renderFlag_t;
+typedef uint32_t renderFlag_t;			//! \see RenderParam.h
+typedef uint8_t renderingLayerMask_t;	//! \see RenderingLayer.h
 
 /**
  * Base class of all nodes of the scene-graph.
@@ -132,6 +133,21 @@ class Node :
 		void deactivate()								{	setFlag(N_FLAG_ACTIVE, false);	}
 		bool isTempNode()const							{	return getFlag(N_FLAG_TEMP_NODE);	}
 		void setTempNode(bool b)						{	setFlag(N_FLAG_TEMP_NODE,b);	}
+	//@}
+
+	// -----------------
+
+	/**
+	 * @name Rendering layers
+	 */
+	//@{
+	private:
+		renderingLayerMask_t renderingLayers;
+
+	public:
+		renderingLayerMask_t getRenderingLayers()const					{	return renderingLayers;	}
+		void setRenderingLayers(renderingLayerMask_t l)					{	renderingLayers = l;	}
+		bool testRenderingLayer(renderingLayerMask_t l)const			{	return (renderingLayers&l)>0; }
 	//@}
 
 	// -----------------

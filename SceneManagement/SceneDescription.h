@@ -66,6 +66,8 @@ extern const Util::StringIdentifier ATTR_NODE_TYPE;
 extern const Util::StringIdentifier ATTR_NODE_ID;
 extern const Util::StringIdentifier ATTR_FLAG_CLOSED;
 
+extern const Util::StringIdentifier ATTR_RENDERING_LAYERS;
+
 extern const Util::StringIdentifier ATTR_FIXED_BB;
 extern const Util::StringIdentifier ATTR_SRT_POS;
 extern const Util::StringIdentifier ATTR_SRT_DIR;

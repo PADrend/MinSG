@@ -16,6 +16,8 @@
 
 namespace MinSG {
 
+typedef uint8_t renderingLayerMask_t;	//! \see RenderingLayer.h
+
 /// RenderingFlags
 typedef uint32_t renderFlag_t;
 
@@ -36,41 +38,29 @@ enum RenderFlags {
 class RenderParam {
 	private:
 		renderFlag_t flags;
+		renderingLayerMask_t renderingLayers;
 		Util::StringIdentifier channel;
 	public:
 		RenderParam();
 		RenderParam(renderFlag_t _flags);
 		RenderParam(renderFlag_t _flags, Util::StringIdentifier _channel);
+		RenderParam(renderFlag_t _flags, Util::StringIdentifier _channel, renderingLayerMask_t layers);
 
-		renderFlag_t getFlags() const {
-			return flags;
-		}
-		bool getFlag(renderFlag_t flagMask) const {
-			return flags & flagMask;
-		}
-		void setFlag(renderFlag_t flagMask) {
-			flags |= flagMask;
-		}
-		void setFlags(renderFlag_t _flags) {
-			flags = _flags;
-		}
-		void unsetFlag(renderFlag_t flagMask) {
-			flags -= flags & flagMask;
-		}
+		renderFlag_t getFlags() const								{	return flags;	}
+		bool getFlag(renderFlag_t flagMask) const					{	return flags & flagMask;	}
+		void setFlag(renderFlag_t flagMask)							{	flags |= flagMask;	}
+		void setFlags(renderFlag_t _flags)							{	flags = _flags;	}
+		void unsetFlag(renderFlag_t flagMask)						{	flags -= flags & flagMask;	}
 
-		const RenderParam operator+(renderFlag_t flagMask) const {
-			return RenderParam(flags | flagMask, channel);
-		}
-		const RenderParam operator-(renderFlag_t flagMask) const {
-			return RenderParam(flags - (flags & flagMask), channel);
-		}
+		renderingLayerMask_t getRenderingLayers()const				{	return renderingLayers;	}
+		void setRenderingLayers(renderingLayerMask_t l)				{	renderingLayers = l;	}
 
-		const Util::StringIdentifier & getChannel() const {
-			return channel;
-		}
-		void setChannel(const Util::StringIdentifier & newChannel) {
-			channel = newChannel;
-		}
+		const Util::StringIdentifier & getChannel() const			{	return channel;	}
+		void setChannel(const Util::StringIdentifier & newChannel)	{	channel = newChannel;	}
+
+		const RenderParam operator+(renderFlag_t flagMask) const	{	return RenderParam(flags | flagMask, channel,renderingLayers);	}
+		const RenderParam operator-(renderFlag_t flagMask) const	{	return RenderParam(flags - (flags & flagMask), channel,renderingLayers);	}
+
 };
 
 }
