@@ -76,7 +76,7 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		PhysicWorld() = default;
 		virtual ~PhysicWorld(){};
 		virtual void stepSimulation(float time) = 0;
-		virtual void addNodeToPhyiscWorld(Node *node)= 0;
+		virtual void addNodeToPhyiscWorld(Node *node,  Util::GenericAttributeMap * description)= 0;
 		virtual void cleanupWorld() = 0;
 		virtual void initNodeObserver(Node * rootNode)=0;
 		virtual void createGroundPlane(const Geometry::Plane& plane ) = 0;
@@ -84,20 +84,20 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual void setGravity(const Geometry::Vec3& gravity)=0;
 		virtual const Geometry::Vec3 getGravity()=0;
 
-		float getMass(Node* node)const													{	return getNodeProperty_mass(node);	}
+//		float getMass(Node* node)const													{	return getNodeProperty_mass(node);	}
 		virtual void updateMass(Node* node, float mass) = 0;
-
-		const Util::GenericAttributeMap* getShapeDescription(Node* node)const			{	return getNodeProperty_shapeDescription(node);	}
+//
+//		const Util::GenericAttributeMap* getShapeDescription(Node* node)const			{	return getNodeProperty_shapeDescription(node);	}
 		virtual void updateShape(Node* node, Util::GenericAttributeMap * description)= 0;
-		float getFriction(Node* node)const												{	return getNodeProperty_friction(node);	}
+//		float getFriction(Node* node)const												{	return getNodeProperty_friction(node);	}
 		virtual void updateFriction(Node* node, float fric) = 0;
-		float getRollingFriction(Node* node)const										{	return getNodeProperty_rollingFriction(node);	}
+//		float getRollingFriction(Node* node)const										{	return getNodeProperty_rollingFriction(node);	}
 		virtual void updateRollingFriction(Node* node, float rollfric) = 0;
-
-		Geometry::Vec3 getLocalSurfaceVelocity(Node* node);
+//
+//		Geometry::Vec3 getLocalSurfaceVelocity(Node* node);
 		virtual void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) = 0;
 
-        std::string getConstraintPivot(Node* node);
+//        std::string getConstraintPivot(Node* node);
 		virtual void updateConstraintPivot(Node* node, const std::string &name) = 0;
 
 		//Debug!!!!!!!

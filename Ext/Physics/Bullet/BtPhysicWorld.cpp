@@ -2,7 +2,7 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2013 Claudius JÃ¤hn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2013 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -180,9 +180,12 @@ static ShapeContainer* createShape(Node* node, Util::GenericAttributeMap* descri
 btRigidBody * BtPhysicWorld::createRigidBody(BtPhysicObject& physObj, ShapeContainer* shape){
 	Node * node = physObj.getNode();
 
-	const float mass = PhysicWorld::getNodeProperty_mass(node);
-	const float friction = PhysicWorld::getNodeProperty_friction(node);
-	const float rollingFriction = PhysicWorld::getNodeProperty_rollingFriction(node);
+//	const float mass = PhysicWorld::getNodeProperty_mass(node);
+    const float mass = 1;
+//	const float friction = PhysicWorld::getNodeProperty_friction(node);
+	const float friction = 0;
+//	const float rollingFriction = PhysicWorld::getNodeProperty_rollingFriction(node);
+	const float rollingFriction = 0;
 
 	btVector3 localInertia(0,0,0);
 	shape->getShape()->calculateLocalInertia(mass,localInertia);
@@ -205,7 +208,8 @@ void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 	bool enableCallback = false;
 
 	// surface velocity
-	const auto& localSurfaceVelocity = PhysicWorld::getNodeProperty_localSurfaceVelocity(physObj.getNode());
+//	const auto& localSurfaceVelocity = PhysicWorld::getNodeProperty_localSurfaceVelocity(physObj.getNode());
+	const auto& localSurfaceVelocity = Geometry::Vec3();
 	if(!localSurfaceVelocity.isZero()){
 		BtPhysicObject * physObjPtr = &physObj;
 
@@ -394,34 +398,34 @@ void BtPhysicWorld::createGroundPlane(const Geometry::Plane& plane ){
 	}
 }
 
-void BtPhysicWorld::addNodeToPhyiscWorld(Node* node){
+void BtPhysicWorld::addNodeToPhyiscWorld(Node* node, Util::GenericAttributeMap * description){
 	BtPhysicObject *physObj = new BtPhysicObject(node);
 	physObj->setCenterOfMass((node->getBB()).getCenter());
 	attachPhysicsObject(node, physObj);
 
-	ShapeContainer * shape = findShapeAttribute(node);
-	if(shape){
-		std::cout << "Shape re-used!\n";
-		btRigidBody *body = createRigidBody(*physObj,shape);
-		physObj->setBodyAndShape(body,shape);
-		dynamicsWorld->addRigidBody(body);
-		initCollisionCallbacks(*physObj);
-	}else{
-		shape = createShape(node, PhysicWorld::getNodeProperty_shapeDescription(node), physObj->getCenterOfMass() );
+//	ShapeContainer * shape = findShapeAttribute(node);
+////	if(shape){
+////		std::cout << "Shape re-used!\n";
+////		btRigidBody *body = createRigidBody(*physObj,shape);
+////		physObj->setBodyAndShape(body,shape);
+////		dynamicsWorld->addRigidBody(body);
+////		initCollisionCallbacks(*physObj);
+////	}else{
+		ShapeContainer *shape = createShape(node, description, physObj->getCenterOfMass() );
 		btRigidBody * body = createRigidBody(*physObj, shape);
 		physObj->setBodyAndShape(body,shape);
 		dynamicsWorld->addRigidBody(body);
 		initCollisionCallbacks(*physObj);
 		// if the node has no local shape description, store the shape at the prototype (where it can be used for further instances)
-		if(node->isInstance() && !PhysicWorld::hasLocalShapeDescription(node) && PhysicWorld::hasLocalShapeDescription(node->getPrototype())){
-			attachShapeAttribute(node->getPrototype(),shape);
-		}else{ // otherwise, store shape at the node (where it can be used for clones)
-			attachShapeAttribute(node,shape);
-		}
+//		if(node->isInstance() && !PhysicWorld::hasLocalShapeDescription(node) && PhysicWorld::hasLocalShapeDescription(node->getPrototype())){
+//			attachShapeAttribute(node->getPrototype(),shape);
+//		}else{ // otherwise, store shape at the node (where it can be used for clones)
+//			attachShapeAttribute(node,shape);
+//		}
 
-	}
+//	}
 	// make sure the mass is set even if it has the default value. This is needed to detect physical nodes.
-	PhysicWorld::setNodeProperty_mass(node,PhysicWorld::getNodeProperty_mass(node));
+//	PhysicWorld::setNodeProperty_mass(node,PhysicWorld::getNodeProperty_mass(node));
 }
 void BtPhysicWorld::removeNode(Node* node){
 	BtPhysicObject *physObj = getPhysicObject(node);
@@ -487,11 +491,11 @@ void BtPhysicWorld::initNodeObserver(Node * rootNode){
 
 //! Add all objects with physical properties to the world
 void BtPhysicWorld::onNodeAdded(Node * root){
-	for(auto & node : PhysicWorld::collectNodesWithPhysicsProperties(root)){
-		auto physObj = getPhysicObject(node);
-		if(!physObj)
-			addNodeToPhyiscWorld(node);
-	}
+//	for(auto & node : PhysicWorld::collectNodesWithPhysicsProperties(root)){
+//		auto physObj = getPhysicObject(node);
+////		if(!physObj)
+////			addNodeToPhyiscWorld(node);
+//	}
 }
 
 
@@ -532,6 +536,7 @@ void BtPhysicWorld::updateMass(Node* node, float mass){
 
 		dynamicsWorld->addRigidBody(body);  // re-add the body
 		body->activate(true);
+		std::cout<<"Mass updated";
 	}
 }
 
@@ -571,7 +576,7 @@ void BtPhysicWorld::updateShape(Node* node,  Util::GenericAttributeMap * descrip
 		auto shape = createShape(node, description, physObj->getCenterOfMass() );
 		physObj->setBodyAndShape( createRigidBody(*physObj, shape), shape );
 		dynamicsWorld->addRigidBody(physObj->getRigidBody());
-		attachShapeAttribute(node, shape);
+//		attachShapeAttribute(node, shape);
 		initCollisionCallbacks(*physObj);
 	}
 }
@@ -640,7 +645,7 @@ void BtPhysicWorld::applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometr
 }
 
 void BtPhysicWorld::updateConstraintPivot(Node* node, const std::string &name){
-    setNodeProperty_constraintPivot(node,name);
+//    setNodeProperty_constraintPivot(node,name);
 
 }
 
