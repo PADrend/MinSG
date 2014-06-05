@@ -65,7 +65,7 @@ void AreaEvaluator::measure(FrameContext & context, Node & node, const Geometry:
 	unsigned int pixelCounter = width * height;
 	allPixel += pixelCounter;
 
-	Util::Reference<Rendering::Texture> framebuffer = Rendering::TextureUtils::createRedTexture(width, height, true, false);
+	Util::Reference<Rendering::Texture> framebuffer = Rendering::TextureUtils::createRedTexture(width, height,true);
 
 	uint8_t * data = framebuffer->openLocalData(context.getRenderingContext());
 	int currentWhitePixel = 0;

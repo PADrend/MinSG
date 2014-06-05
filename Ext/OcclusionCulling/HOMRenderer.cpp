@@ -115,7 +115,7 @@ void HOMRenderer::setupHOMPyramid(Rendering::RenderingContext & context) {
 
 	unsigned int length = sideLength;
 	for (unsigned int level = 0; level < numLevels; ++level) {
-		homPyramid.push_back(Rendering::TextureUtils::createRedTexture(length, length, true, false));
+		homPyramid.push_back(Rendering::TextureUtils::createRedTexture(length, length, true));
 		length /= 2;
 	}
 

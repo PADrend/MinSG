@@ -77,7 +77,7 @@ void ColorVisibilityEvaluator::measure(FrameContext & context, Node & node, cons
 		fbo->detachDepthTexture(context.getRenderingContext());
 		rCtxt.popFBO();
 
-		colorTexture = Rendering::TextureUtils::createStdTexture(width, height, true, false);
+		colorTexture = Rendering::TextureUtils::createStdTexture(width, height, true);
 		depthTexture = Rendering::TextureUtils::createDepthTexture(width, height);
 
 		// Bind textures to FBO.

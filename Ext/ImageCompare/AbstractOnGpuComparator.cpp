@@ -59,7 +59,7 @@ Util::Reference<Rendering::Texture> AbstractOnGpuComparator::createTexture(const
 	std::vector<Reference<Texture> > & vec = freeTextures[size];
 
 	if (vec.empty()) {
-		tex = Rendering::TextureUtils::createHDRTexture(size.getWidth(), size.getHeight(), false, false);
+		tex = Rendering::TextureUtils::createHDRTexture(size.getWidth(), size.getHeight(), false);
 		//std::cerr << "created HDR Texture: " << size << endl;
 	}
 	else {

@@ -34,6 +34,7 @@
 
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Shader/Uniform.h>
+#include <Rendering/Texture/TextureUtils.h>
 #include <Rendering/Serialization/Serialization.h>
 
 #include <Util/Encoding.h>
@@ -256,7 +257,7 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 	// type
 	const std::string dataType = dataDesc->getString(Consts::ATTR_DATA_TYPE);
 	if(!Util::StringUtils::beginsWith(dataType.c_str(),"image")) {
-		WARN(std::string("createTextureState: Unknown data type '")+dataType+"' (still trying to load the file though...)");
+		WARN(std::string("importTextureState: Unknown data type '")+dataType+"' (still trying to load the file though...)");
 	}
 
 	// textureUnit
@@ -272,20 +273,41 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 		}
 		const std::vector<uint8_t> rawData = Util::decodeBase64(dataDesc->getString(Consts::DATA_BLOCK));
 		Rendering::Texture * t = Rendering::Serialization::loadTexture(
-										dataDesc->getString(Consts::ATTR_DATA_FORMAT,"png"), std::string(rawData.begin(), rawData.end()),true,false);
+										dataDesc->getString(Consts::ATTR_DATA_FORMAT,"png"), std::string(rawData.begin(), rawData.end()));
 		ts = new TextureState(t);
 		ts->setTextureUnit(textureUnit);
 	} else {
 		const auto location = ctxt.fileLocator.locateFile( fileName );
-		ts = createTextureState(location.first ? location.second : fileName,
-						 true,
-						 false,
-						 textureUnit,
-						 (ctxt.importOptions & IMPORT_OPTION_USE_TEXTURE_REGISTRY) > 0 ? &ctxt.getTextureRegistry() : nullptr);
-						 
-		// set original filename
-		if(ts&&ts->getTexture())
-			ts->getTexture()->setFileName(fileName);
+	
+		const Util::FileName filename2 = location.first ? location.second : fileName;
+		
+		Rendering::Texture* texture = nullptr;
+		
+		if( (ctxt.importOptions & IMPORT_OPTION_USE_TEXTURE_REGISTRY) > 0) {
+			auto it = ctxt.getTextureRegistry().find(filename2.toString());
+			if(it != ctxt.getTextureRegistry().end()) {
+				// Reuse existing texture from texture registry
+				texture = it->second.get();
+			}
+		}
+
+		if( !texture ){
+			texture = Rendering::Serialization::loadTexture(filename2);
+			if( (ctxt.importOptions & IMPORT_OPTION_USE_TEXTURE_REGISTRY) > 0) 
+				 ctxt.getTextureRegistry()[filename2.toString()] = texture;
+		}
+		if( !texture ) {
+			WARN(std::string("Could not load texture: ") + filename2.toString());
+			texture = Rendering::TextureUtils::createChessTexture(64, 64);
+			texture->setFileName(filename2);
+		}else{
+			texture->setFileName(fileName);	// set original filename
+		}
+		ts = new TextureState(texture);
+		texture->planMipmapCreation();
+		ts->setTextureUnit(textureUnit);
+		
+		// markForMipmapCreation
 	}
 	ImporterTools::finalizeState(ctxt, ts.get(), d);
 	parent->addState(ts.get());

@@ -81,6 +81,16 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 	return loadModel(filename,flags,transMat,Util::FileLocator());
 }
 
+static TextureState * createTextureState(const Util::FileName& filename){
+	Rendering::Texture* texture = Rendering::Serialization::loadTexture(filename);
+	if( !texture ) {
+		WARN(std::string("Could not load texture: ") + filename.toString());
+		texture = Rendering::TextureUtils::createChessTexture(64, 64);
+	}
+	texture->setFileName(filename);	// set original filename
+	return new TextureState( texture );
+}
+
 Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matrix4x4 * transMat,const Util::FileLocator& locator) {
 	const auto location = locator.locateFile(filename);
 	if(!location.first){
@@ -136,7 +146,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 				const auto textureName = d->getString(Rendering::Serialization::DESCRIPTION_TEXTURE_FILE, "");
 				if (!textureName.empty()) {
 					std::cout << "TeX: " << textureName << std::endl;
-					node->addState(createTextureState(Util::FileName(textureName), true));
+					node->addState(createTextureState(Util::FileName(textureName)));
 				}
 			}
 
@@ -201,7 +211,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 						Util::FileLocator relLocator;
 						relLocator.addSearchPath(  location.second.getDir() );
 						const auto textureLocation =  relLocator.locateFile( Util::FileName(materialTexture) );
-						node->addState(createTextureState(textureLocation.second, true));
+						node->addState(createTextureState(textureLocation.second));
 					}
 				}
 			}
@@ -395,41 +405,6 @@ void initShaderState(ShaderState * shaderState,
 	}
 }
 
-TextureState * createTextureState(const Util::FileName & filename,
-						   bool useMipmaps,
-						   bool clampToEdge,
-						   int textureUnit,
-						   std::map<const std::string, Util::Reference<Rendering::Texture>> * textureRegistry) {
-	Rendering::Texture * img = nullptr;
-	if(textureRegistry != nullptr) {
-		auto it = textureRegistry->find(filename.toString());
-		if(it != textureRegistry->end()) {
-			// Reuse existing texture from texture registry
-			img = it->second.get();
-		}
-	}
-
-	// Do not load a texture if it was already found in the texture registry
-	if(img == nullptr) {
-		img = Rendering::Serialization::loadTexture(filename, useMipmaps, clampToEdge);
-		
-		// Register the newly loaded texture
-		if(img != nullptr && textureRegistry != nullptr) {
-			(*textureRegistry)[filename.toString()] = img;
-		}
-	}
-
-	if(img == nullptr) {
-		WARN(std::string("Could not load texture: ") + filename.toString());
-		img = Rendering::TextureUtils::createChessTexture(64, 64);
-		img->setFileName(filename);
-	}
-
-	auto textureState = new TextureState;
-	textureState->setTextureUnit(textureUnit);
-	textureState->setTexture(img);
-	return textureState;
-}
 
 
 void changeParentKeepTransformation(Util::Reference<Node> child, GroupNode * newParent){

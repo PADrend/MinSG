@@ -94,21 +94,6 @@ static const unsigned MESH_AUTO_CENTER_BOTTOM = 1 << 2;
 Node * loadModel(const Util::FileName & filename, unsigned flags = 0, Geometry::Matrix4x4 * transMat = nullptr);
 Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matrix4x4 * transMat,const Util::FileLocator& locator);
 
-/*! Create a textureState from an image file.
-	@param filename			Filename of the image
-	@param useMipmaps Generate mipmaps for the texture and use them during rendering.
-	@param clampToEdge Set the wrapping parameter such that texture accesses are clamped.
-	@param textureUnit 		OpenGL texture unit (normally 0)
-	@param textureRegistry 	If set and the texture is found in the registry, this texture is used; otherwise the texture file is
-							loaded and stored in the registry with the filename as key.
-	@return A TextureState is always returned even if the image file could not be loaded.	*/
-TextureState * createTextureState(const Util::FileName & filename,
-						   bool useMipmaps = false,
-						   bool clampToEdge = false,
-						   int textureUnit = 0,
-						   std::map<const std::string, Util::Reference<Rendering::Texture> > * textureRegistry = nullptr);
-
-
 }
 
 #endif // HELPER_H

@@ -89,7 +89,7 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 	frameContext.pushAndSetCamera(cameraOrtho.get());
 
 	// First pass: Render to normal texture
-	Util::Reference<Texture> normalTexture = TextureUtils::createStdTexture(width, height, true, false, false);
+	Util::Reference<Texture> normalTexture = TextureUtils::createStdTexture(width, height, true);
 	Util::Reference<Texture> depthTexture = TextureUtils::createDepthTexture(width, height);
 	fbo->attachColorTexture(renderingContext, normalTexture.get());
 	fbo->attachDepthTexture(renderingContext, depthTexture.get());
@@ -104,7 +104,7 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 	normalTexture->downloadGLTexture(renderingContext);
 
 	// First pass: Render to color texture
-	Util::Reference<Texture> colorTexture = TextureUtils::createStdTexture(width, height, true, false, false);
+	Util::Reference<Texture> colorTexture = TextureUtils::createStdTexture(width, height, true);
 	fbo->attachColorTexture(renderingContext, colorTexture.get());
 
 	// Render the node
@@ -186,7 +186,7 @@ GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node 
 	frameContext.pushAndSetCamera(cameraOrtho.get());
 
 	// First pass: Render to normal texture
-	Util::Reference<Texture> normalTexture = TextureUtils::createStdTexture(width, height, true, false, false);
+	Util::Reference<Texture> normalTexture = TextureUtils::createStdTexture(width, height, true);
 	fbo->attachColorTexture(renderingContext, normalTexture.get());
 	fbo->attachDepthStencilTexture(renderingContext, depthStencilTexture.get());
 
@@ -201,7 +201,7 @@ GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node 
 	normalTexture->downloadGLTexture(renderingContext);
 
 	// First pass: Render to color texture
-	Util::Reference<Texture> colorTexture = TextureUtils::createStdTexture(width, height, true, false, false);
+	Util::Reference<Texture> colorTexture = TextureUtils::createStdTexture(width, height, true);
 	fbo->attachColorTexture(renderingContext, colorTexture.get());
 	fbo->attachDepthStencilTexture(renderingContext, depthStencilTexture.get());
 
