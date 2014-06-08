@@ -64,8 +64,6 @@ int test_simple1(Util::UI::Window * window, Util::UI::EventContext & eventContex
 	box->setScale(10);
 	root->addChild(box);
 
-	box->addState( createTextureState(Util::FileName("Data/texture/brick.bmp") ));
-
 	std::default_random_engine engine;
 	std::uniform_real_distribution<float> coordinateDist(0.0f, 200.0f);
 
@@ -78,7 +76,6 @@ int test_simple1(Util::UI::Window * window, Util::UI::EventContext & eventContex
 
 	/// Camera
 	Node * schwein = loadModel(Util::FileName("Data/model/Schwein.low.t.ply"), MESH_AUTO_CENTER | MESH_AUTO_SCALE);
-	schwein->addState( createTextureState(Util::FileName("Data/texture/schwein.low.t.bmp")));
 
 	ListNode * camera = new ListNode();
 	CameraNode * camNode = new CameraNode();

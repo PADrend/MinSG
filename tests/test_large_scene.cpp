@@ -85,7 +85,6 @@ int test_large_scene(Util::UI::Window * window, Util::UI::EventContext & eventCo
 
 	/// Camera
 	Node * schwein = loadModel(Util::FileName("Data/model/Schwein.low.t.ply"), MESH_AUTO_CENTER | MESH_AUTO_SCALE);
-	schwein->addState( createTextureState(Util::FileName("Data/texture/schwein.low.t.bmp")));
 
 	ListNode * camera = new ListNode();
 	CameraNode * camNode = new CameraNode();
