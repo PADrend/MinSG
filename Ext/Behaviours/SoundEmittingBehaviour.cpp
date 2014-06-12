@@ -25,14 +25,14 @@ SoundEmittingBehaviour::SoundEmittingBehaviour(Node * node) :
 
 //! (dtor)
 SoundEmittingBehaviour::~SoundEmittingBehaviour() {
-	if(source.isNotNull() && source->isPlaying())
+	if(source && source->isPlaying())
 		source->pause();
 	//dtor
 }
 
 //!	---|> AbstractBehaviour
 AbstractBehaviour::behaviourResult_t SoundEmittingBehaviour::doExecute() {
-	if(source->isStopped() && removeWhenStopped) {
+	if(!source || (source->isStopped() && removeWhenStopped)) {
 //		std::cout << "SoundEmittingBehaviour removed.\n";
 		return FINISHED;
 	}
@@ -68,6 +68,13 @@ void SoundEmittingBehaviour::onInit(){
 //	std::cout << "play";
 }
 
+
+void SoundEmittingBehaviour::doFinalize(BehaviorStatus &){
+	if(source){
+		source->stop();
+		source = nullptr;
+	}
+}
 
 }
 

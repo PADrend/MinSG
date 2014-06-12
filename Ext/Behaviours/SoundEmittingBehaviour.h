@@ -38,6 +38,8 @@ class SoundEmittingBehaviour : public AbstractNodeBehaviour {
 		void setRemoveWhenStopped(bool b)	{	removeWhenStopped = b;	}
 
 	private:
+		void doFinalize(BehaviorStatus &)override;
+
 		Util::Reference<Sound::Source> source;
 		bool removeWhenStopped;
 		Geometry::Vec3 lastPosition;
