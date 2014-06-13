@@ -93,11 +93,18 @@ const Util::StringIdentifier ATTR_PARTICLE_GRAVITY("gravity");
 const Util::StringIdentifier ATTR_PARTICLE_OFFSET("offset");
 const Util::StringIdentifier ATTR_PARTICLE_EMIT_BOUNDS("emitBounds");
 
+const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_PLANE("plane");
+const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_REFLECTIVENESS("reflect");
+const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_ADHERENCE("adherence");
+
+
+
 cStr_t BEHAVIOUR_TYPE_PARTICLE_POINT_EMITTER = "ParticlePointEmitter";
 cStr_t BEHAVIOUR_TYPE_PARTICLE_BOX_EMITTER = "ParticleBoxEmitter";
 cStr_t BEHAVIOUR_TYPE_PARTICLE_GRAVITY_AFFECTOR = "ParticleGravityAffector";
 cStr_t BEHAVIOUR_TYPE_PARTICLE_FADE_OUT_AFFECTOR = "ParticleFadeOutAffector";
 cStr_t BEHAVIOUR_TYPE_PARTICLE_ANIMATOR = "ParticleAnimator";
+cStr_t BEHAVIOUR_TYPE_PARTICLE_REFLECTION_AFFECTOR = "ParticleReflector";
 
 // ---------------------------------------------------------------------------
 // Path node and waypoint

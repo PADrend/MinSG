@@ -112,6 +112,23 @@ static NodeDescription * exportParticleGravityAffector(ExporterContext & /*ctxt*
 
 	return behaviourProps;
 }
+static NodeDescription * exportParticleReflectionAffector(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
+	if(behaviour == nullptr || behaviour->getTypeId() != ParticleReflectionAffector::getClassId())
+		return nullptr;
+
+	auto behaviourProps = new NodeDescription;
+	ParticleReflectionAffector * af = static_cast<ParticleReflectionAffector *>(behaviour);
+	behaviourProps->setString(Consts::ATTR_BEHAVIOUR_TYPE, Consts::BEHAVIOUR_TYPE_PARTICLE_REFLECTION_AFFECTOR);
+
+	std::stringstream s;
+	s<<af->getPlane();
+	behaviourProps->setValue(Consts::ATTR_PARTICLE_REFLECTION_PLANE,Util::GenericAttribute::createString(s.str()));
+	
+	behaviourProps->setValue(Consts::ATTR_PARTICLE_REFLECTION_REFLECTIVENESS, Util::GenericAttribute::createNumber(af->getReflectiveness()));
+	behaviourProps->setValue(Consts::ATTR_PARTICLE_REFLECTION_ADHERENCE, Util::GenericAttribute::createNumber(af->getAdherence()));
+
+	return behaviourProps;
+}
 
 static NodeDescription * exportParticleFadeOutAffector(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
 	if(behaviour == nullptr || behaviour->getTypeId() != ParticleFadeOutAffector::getClassId())
@@ -273,6 +290,7 @@ void initExtBehaviourExporter() {
 	ExporterTools::registerBehaviourExporter(&exportParticleBoxEmitter);
 	ExporterTools::registerBehaviourExporter(&exportParticleFadeOutAffector);
 	ExporterTools::registerBehaviourExporter(&exportParticleGravityAffector);
+	ExporterTools::registerBehaviourExporter(&exportParticleReflectionAffector);
 	ExporterTools::registerBehaviourExporter(&exportParticlePointEmitter);
 #endif
 }

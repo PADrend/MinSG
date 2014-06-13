@@ -92,15 +92,17 @@ extern cStr_t NODE_TYPE_PARTICLESYSTEM;
 extern const Util::StringIdentifier ATTR_PARTICLE_RENDERER;
 extern const Util::StringIdentifier ATTR_PARTICLE_MAX_PARTICLE_COUNT;
 
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_POINT_EMITTER; // ext
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_BOX_EMITTER; // ext
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_GRAVITY_AFFECTOR; // ext
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_FADE_OUT_AFFECTOR; // ext
 extern cStr_t BEHAVIOUR_TYPE_PARTICLE_ANIMATOR; // ext
+extern cStr_t BEHAVIOUR_TYPE_PARTICLE_BOX_EMITTER; // ext
+extern cStr_t BEHAVIOUR_TYPE_PARTICLE_FADE_OUT_AFFECTOR; // ext
+extern cStr_t BEHAVIOUR_TYPE_PARTICLE_GRAVITY_AFFECTOR; // ext
+extern cStr_t BEHAVIOUR_TYPE_PARTICLE_POINT_EMITTER; // ext
+extern cStr_t BEHAVIOUR_TYPE_PARTICLE_REFLECTION_AFFECTOR; // ext
 
-extern const Util::StringIdentifier ATTR_PARTICLE_PER_SECOND;
 extern const Util::StringIdentifier ATTR_PARTICLE_DIRECTION;
 extern const Util::StringIdentifier ATTR_PARTICLE_DIR_VARIANCE;
+extern const Util::StringIdentifier ATTR_PARTICLE_EMIT_BOUNDS;
+extern const Util::StringIdentifier ATTR_PARTICLE_GRAVITY;
 extern const Util::StringIdentifier ATTR_PARTICLE_MIN_HEIGHT;
 extern const Util::StringIdentifier ATTR_PARTICLE_MAX_HEIGHT;	
 extern const Util::StringIdentifier ATTR_PARTICLE_MIN_WIDTH;
@@ -111,11 +113,13 @@ extern const Util::StringIdentifier ATTR_PARTICLE_MIN_LIFE;
 extern const Util::StringIdentifier ATTR_PARTICLE_MAX_LIFE;
 extern const Util::StringIdentifier ATTR_PARTICLE_MIN_COLOR;
 extern const Util::StringIdentifier ATTR_PARTICLE_MAX_COLOR;
+extern const Util::StringIdentifier ATTR_PARTICLE_OFFSET;
+extern const Util::StringIdentifier ATTR_PARTICLE_PER_SECOND;
+extern const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_ADHERENCE;
+extern const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_PLANE;
+extern const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_REFLECTIVENESS;
 extern const Util::StringIdentifier ATTR_PARTICLE_SPAWN_NODE;
 extern const Util::StringIdentifier ATTR_PARTICLE_TIME_OFFSET;
-extern const Util::StringIdentifier ATTR_PARTICLE_GRAVITY;
-extern const Util::StringIdentifier ATTR_PARTICLE_OFFSET;
-extern const Util::StringIdentifier ATTR_PARTICLE_EMIT_BOUNDS;
 //	@}
 // ------------------------------------------------------------
 //!	@name Path node and waypoint

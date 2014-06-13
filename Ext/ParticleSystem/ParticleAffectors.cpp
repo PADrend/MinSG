@@ -72,6 +72,30 @@ AbstractBehaviour::behaviourResult_t ParticleGravityAffector::doExecute() {
 	return AbstractBehaviour::CONTINUE;
 }
 
+// ----------------------------------------------------------------------------------------
+// ParticleReflectionAffector
+
+ParticleReflectionAffector::ParticleReflectionAffector(ParticleSystemNode* node) : ParticleAffector(node), plane( Geometry::Vec3(0,1,0),0), adherence(0.0), reflectiveness(1.0) {
+}
+
+ParticleReflectionAffector::~ParticleReflectionAffector() = default;
+
+AbstractBehaviour::behaviourResult_t ParticleReflectionAffector::doExecute() {
+	ParticleSystemNode* psn = dynamic_cast<ParticleSystemNode*>(this->getNode());
+	for(auto & particle : psn->getParticles()) {
+		if( plane.planeTest( particle.position ) < 0.0f ){
+			particle.position = plane.getProjection( particle.position );
+			
+			if( plane.getNormal().dot( particle.direction ) < 0.0f ){
+				const Geometry::Vec3 dir = particle.direction.reflect( plane.getNormal() ) * reflectiveness;
+				particle.direction = dir * (1.0-adherence) + (plane.getProjection(dir+particle.position)-particle.position) * adherence;
+			}
+		}
+	}
+
+	return AbstractBehaviour::CONTINUE;
+}
+
 
 // ----------------------------------------------------------------------------------------
 // ParticleGravityAffector

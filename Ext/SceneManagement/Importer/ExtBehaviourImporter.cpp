@@ -181,7 +181,28 @@ static bool importParticleGravityEffector(ImportContext & ctxt, const std::strin
 	ctxt.sceneManager.getBehaviourManager()->registerBehaviour(af);
 	return true;
 }
+static bool importParticleReflectionAffector(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parentNode) {
+    if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_REFLECTION_AFFECTOR)
+		return false;
+	ParticleSystemNode * psn = convertToTNode<ParticleSystemNode>(parentNode);
+	if(psn==nullptr)
+		return false;
 
+	auto af = new ParticleReflectionAffector(psn);
+
+	const std::string s = d.getString(Consts::ATTR_PARTICLE_REFLECTION_PLANE, "");
+	if(!s.empty()){
+		std::istringstream stream(s);
+		Geometry::Plane p;
+		stream>>p;
+		af->setPlane(p);
+	}
+	af->setReflectiveness(d.getFloat(Consts::ATTR_PARTICLE_REFLECTION_REFLECTIVENESS,1.0));
+	af->setAdherence(d.getFloat(Consts::ATTR_PARTICLE_REFLECTION_ADHERENCE,0.0));
+	
+	ctxt.sceneManager.getBehaviourManager()->registerBehaviour(af);
+	return true;
+}
 static bool importParticleFadeOutAffector(ImportContext & ctxt, const std::string & type, const NodeDescription & /*d*/, Node * parentNode) {
     if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_FADE_OUT_AFFECTOR)
 		return false;
@@ -357,6 +378,7 @@ void initExtBehaviourImporter() {
 	ImporterTools::registerBehaviourImporter(&importParticlePointEmitter);
 	ImporterTools::registerBehaviourImporter(&importParticleBoxEmitter);
 	ImporterTools::registerBehaviourImporter(&importParticleGravityEffector);
+	ImporterTools::registerBehaviourImporter(&importParticleReflectionAffector);
 	ImporterTools::registerBehaviourImporter(&importParticleFadeOutAffector);
 	ImporterTools::registerBehaviourImporter(&importParticleAnimator);
 #endif

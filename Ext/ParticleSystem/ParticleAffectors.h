@@ -16,6 +16,7 @@
 
 #include "../../Core/Behaviours/AbstractBehaviour.h"
 #include <Geometry/Vec3.h>
+#include <Geometry/Plane.h>
 
 
 namespace MinSG {
@@ -95,6 +96,31 @@ class ParticleGravityAffector: public ParticleAffector {
 		 * The force (in units per second) that should affector the particles
 		 */
 		Geometry::Vec3f gravity;
+};
+
+/**
+ * Reflects particles on a plane.
+ *
+ *	ParticleReflectionAffector ---|> ParticleAffector ---|> AbstractNodeBehaviour
+ */
+class ParticleReflectionAffector: public ParticleAffector {
+		PROVIDES_TYPE_NAME(ParticleReflectionAffector)
+	public:
+		ParticleReflectionAffector(ParticleSystemNode* node);
+		virtual ~ParticleReflectionAffector();
+
+		AbstractBehaviour::behaviourResult_t doExecute() override;
+
+		void setPlane(const Geometry::Plane& g) 			{ plane = g; }
+		const Geometry::Plane& getPlane()const				{ return plane; }
+		void setReflectiveness(float f) 					{ reflectiveness = f; }
+		float getReflectiveness()const						{ return reflectiveness; }
+		void setAdherence(float f) 							{ adherence = f; }
+		float getAdherence()const							{ return adherence; }
+
+	private:
+		Geometry::Plane plane;
+		float adherence,reflectiveness;
 };
 
 // ---------------------------------------------------------------------------------------
