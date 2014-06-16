@@ -128,8 +128,8 @@ void VisibilityEvaluator::measure(FrameContext & context,Node & node,const Geome
 		const auto nodes = collectVisibleNodes(&node, context);
 		if(doesCountPolygons()){
 			uint32_t numPolys=0;
-			for(const auto & ptrNodePair : nodes) {
-				numPolys += ptrNodePair.second->getTriangleCount();
+			for(const auto & node : nodes) {
+				numPolys += node->getTriangleCount();
 			}
 			values->push_back(new Util::_NumberAttribute<float>(numPolys));
 		}else{

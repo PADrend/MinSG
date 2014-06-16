@@ -70,15 +70,15 @@ void TrianglesEvaluator::measure(FrameContext & context, Node & node,
 
 	// Collect and render visible geometry nodes.
 	const auto geoNodes = collectVisibleNodes(&node, context);
-	for(const auto & ptrNodePair : geoNodes) {
-		numTrianglesRendered += ptrNodePair.second->getTriangleCount();
+	for(const auto & geoNode : geoNodes) {
+		numTrianglesRendered += geoNode->getTriangleCount();
 		// First rendering pass: Fill depth buffer.
-		context.displayNode(ptrNodePair.second, USE_WORLD_MATRIX);
+		context.displayNode(geoNode, USE_WORLD_MATRIX);
 	}
 
-	for(const auto & ptrNodePair : geoNodes) {
+	for(const auto & geoNode : geoNodes) {
 		// Second rendering pass: Determine visibility.
-		numTrianglesVisible += getNumTrianglesVisible(context, ptrNodePair.second);
+		numTrianglesVisible += getNumTrianglesVisible(context, geoNode);
 	}
 
 	context.getRenderingContext().popDepthBuffer();

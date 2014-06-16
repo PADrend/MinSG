@@ -249,8 +249,8 @@ std::deque<Node *> collectNextNodesReferencingAttribute(Node * root, Util::Strin
 
 }
 
-std::map<uintptr_t, GeometryNode *> collectVisibleNodes(Node * root, FrameContext & context, float maxDistance /*=-1*/,bool fillDepthBuffer/*=false*/) {
-	std::map<uintptr_t, GeometryNode *> visibleObjects;
+std::vector<GeometryNode *> collectVisibleNodes(Node * root, FrameContext & context, float maxDistance /*=-1*/,bool fillDepthBuffer/*=false*/,renderingLayerMask_t layers/*=1*/) {
+	std::vector<GeometryNode *> visibleObjects;
 	if(root == nullptr) {
 		return visibleObjects;
 	}
@@ -266,11 +266,14 @@ std::map<uintptr_t, GeometryNode *> collectVisibleNodes(Node * root, FrameContex
 		return visibleObjects;
 	}
 
+	RenderParam param(USE_WORLD_MATRIX);
+	param.setRenderingLayers(layers);
+	
 	if(fillDepthBuffer){
 		// first pass
 		context.getRenderingContext().clearScreen(Util::Color4f(0,0,0,0));
 		for(const auto & geoNode : objectsInVFList) {
-			context.displayNode(geoNode, USE_WORLD_MATRIX);
+			context.displayNode(geoNode, param);
 		}
 	}
 
@@ -282,7 +285,7 @@ std::map<uintptr_t, GeometryNode *> collectVisibleNodes(Node * root, FrameContex
 	Rendering::OcclusionQuery::enableTestMode(context.getRenderingContext());
 	for(const auto & geoNode : objectsInVFList) {
 		queries[i].begin();
-		context.displayNode(geoNode, USE_WORLD_MATRIX);
+		context.displayNode(geoNode, param);
 		queries[i].end();
 		++i;
 	}
@@ -290,7 +293,7 @@ std::map<uintptr_t, GeometryNode *> collectVisibleNodes(Node * root, FrameContex
 	i = 0;
 	for(const auto & geoNode : objectsInVFList) {
 		if(queries[i].getResult() > 0) {
-			visibleObjects[reinterpret_cast<uintptr_t>(geoNode)] = geoNode;
+			visibleObjects.push_back(geoNode);
 		}
 		++i;
 	}

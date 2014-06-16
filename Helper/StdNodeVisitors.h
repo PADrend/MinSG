@@ -263,6 +263,7 @@ std::deque<State_t *> collectStatesUpwards(Node * node) {
 	return states;
 }
 
+typedef uint8_t renderingLayerMask_t;	//! \see RenderingLayer.h
 /**
  * Warning: may be slow!
  * Collects visible Objects in Frustum (with occ-extension)
@@ -270,13 +271,13 @@ std::deque<State_t *> collectStatesUpwards(Node * node) {
  * @param context Frame context to use (contains the used camera)
  * @param maxDistance (optional) only collect nodes up to a certain distance (not exact, used for speeding up queries)
  * @param fillDepthBuffer (optional) iff true, the screen is cleared and the potential visible nodes are rendered to the depth buffer.
+ * @param layers (optional) Only test nodes with this rendering layers (default=1).
  * @return Container of visible objects
- * @note - Scene has to be rendered before execution.
+ * @note - Scene has to be rendered before execution (or fillDepthBuffer must be true)
  *       - Scene has to be rendered with flag Node::USE_WORLD_MATRIX
- *       - Node contains Map of visible Objects;
  *
  */
-std::map<uintptr_t, GeometryNode *> collectVisibleNodes(Node * root, FrameContext & context, float maxDistance = -1,bool fillDepthBuffer=false);
+std::vector<GeometryNode *> collectVisibleNodes(Node * root, FrameContext & context, float maxDistance = -1,bool fillDepthBuffer=false,renderingLayerMask_t layers=1);
 
 // -----------------------------------------------------------------------------------------------
 
