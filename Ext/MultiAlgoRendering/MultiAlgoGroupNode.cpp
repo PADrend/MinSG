@@ -181,23 +181,6 @@ void MultiAlgoGroupNode::initNode() {
 
 }
 
-static bool isToComplex(Node * r){
-//	static const Util::StringIdentifier comp("_mar:complexity_");
-	static const Util::StringIdentifier comp( NodeAttributeModifier::create("mar:complexity", NodeAttributeModifier::PRIVATE_ATTRIBUTE | NodeAttributeModifier::COPY_TO_CLONES) );
-	uint32_t toComp = 10000000;
-	if(!r->isAttributeSet(comp) || r->getAttribute(comp)->toUnsignedInt() == 0){
-		uint32_t c = 0;
-		auto geos = MinSG::collectNodes<MinSG::GeometryNode>(r);
-		for(const auto & g : geos){
-			if(g->getMesh()){
-				c = std::max(c, g->getMesh()->getPrimitiveCount());
-			}
-		}
-		r->setAttribute(comp, Util::GenericAttribute::createNumber<float>(c));
-	}
-	return r->getAttribute(comp)->toUnsignedInt() > toComp;
-}
-
 void MultiAlgoGroupNode::setAlgorithm(AlgoId newAlgoId) {
 	
 //  CODE FOR FAKING VIDEOS WITH LUCY

@@ -178,7 +178,6 @@ void ClientUnit::handleSession0Messages(Message * msg_) {
 	auto sessionLock = Concurrency::createLock(*sessionMutex);
 	const std::vector<uint8_t> & body = msg_->getBody();
 	int32_t sessionId = Tools::getInt(body, 0);
-	Session* session = nullptr;
 	std::cout << "Reveived session 0 message " << sessionId << " " << msg_->getType() << "...";
 	switch(msg_->getType()) {
 	case MSGTYPE_START_NEW_SESSION:

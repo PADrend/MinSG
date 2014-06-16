@@ -318,23 +318,6 @@ static void removePhysicsObject(Node* node){
 	node->unsetAttribute(ATTR_PHYSICS_OBJECT);
 }
 
-
-//------------------------------
-// shape attribute
-
-static const Util::StringIdentifier ATTR_PHYSICS_SHAPE(  NodeAttributeModifier::create( "ShapeContainer", NodeAttributeModifier::PRIVATE_ATTRIBUTE | NodeAttributeModifier::COPY_TO_CLONES));
-//| NodeAttributeModifier::COPY_TO_INSTANCES ));
-
-static ShapeContainer* findShapeAttribute(Node* node){
-	Util::ReferenceAttribute<ShapeContainer> * attr = node ? dynamic_cast<Util::ReferenceAttribute<ShapeContainer> *>(node->findAttribute(ATTR_PHYSICS_SHAPE)) : nullptr;
-	return attr ? attr->get() : nullptr;
-}
-
-static void attachShapeAttribute(Node* node, ShapeContainer * shape ){
-	node->setAttribute( ATTR_PHYSICS_SHAPE,  new Util::ReferenceAttribute<ShapeContainer>(shape));
-}
-
-
 // ---------------------------------------------------------------------------------------------------------------------
 
 BtPhysicWorld::BtPhysicWorld(){
