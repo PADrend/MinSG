@@ -54,29 +54,28 @@ Rendering::Uniform ShaderState::getUniform(const std::string & name) const {
 
 //! ---|> [State]
 State::stateResult_t ShaderState::doEnableState(FrameContext & context, Node *, const RenderParam & /*rp*/) {
-	if (shader.isNull())
+	if( !shader )
 		return State::STATE_SKIPPED;
+
+	auto & rCtxt = context.getRenderingContext();
 
 	// push current shader to stack
-	context.getRenderingContext().pushAndSetShader(shader.get());
-
-	if (context.getRenderingContext().isShaderEnabled(shader.get()))
-		for(auto & uniformEntry : uMap) {
-			shader->setUniform(context.getRenderingContext(), uniformEntry.second);
-		}
-	else{
+	rCtxt.pushAndSetShader(shader.get());
+	
+	if( !rCtxt.isShaderEnabled(shader.get()) ){
+		rCtxt.popShader();
 		deactivate();
-		WARN("Enabling shaderstate failed. State has been deactivated!");
+		WARN("Enabling ShaderState failed. State has been deactivated!");
 		return State::STATE_SKIPPED;
 	}
+	
+	for(const auto & uniformEntry : uMap) 
+		shader->setUniform(rCtxt, uniformEntry.second);
 	return State::STATE_OK;
 }
 
 //! ---|> [State]
 void ShaderState::doDisableState(FrameContext & context, Node *, const RenderParam & /*rp*/) {
-	if (shader.isNull()) {
-		return;
-	}
 	// restore old shader
 	context.getRenderingContext().popShader();
 }
