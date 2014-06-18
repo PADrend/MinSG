@@ -11,7 +11,6 @@
 #ifdef MINSG_EXT_IMAGECOMPARE
 
 #include "AverageComparator.h"
-#include "../../Helper/DataDirectory.h"
 
 #include <Geometry/Rect.h>
 #include <Geometry/Vec2.h>
@@ -23,6 +22,7 @@
 #include <Rendering/FBO.h>
 #include <Rendering/Draw.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
+#include <Util/IO/FileLocator.h>
 
 #include <memory>
 #include <cassert>
@@ -85,11 +85,12 @@ bool AverageComparator::doCompare(Rendering::RenderingContext & context, Renderi
 bool AverageComparator::init(RenderingContext & context) {
 
 	if (AbstractOnGpuComparator::init(context)) {
-
+			
+		const auto& locator = getShaderFileLocator();
 		shaderDist = Shader::loadShader(
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/ImageCompare.vs"),
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/Dist.fs"),
-				Shader::USE_UNIFORMS);
+				locator.locateFile(Util::FileName("shader/ImageCompare/ImageCompare.vs")).second, 
+				locator.locateFile(Util::FileName("shader/ImageCompare/Dist.fs")).second, Shader::USE_UNIFORMS);
+	
 		shaderDist->setUniform(context, Rendering::Uniform("A", 0));
 		shaderDist->setUniform(context, Rendering::Uniform("B", 1));
 

@@ -11,7 +11,6 @@
 #ifdef MINSG_EXT_IMAGECOMPARE
 
 #include "AbstractOnGpuComparator.h"
-#include "../../Helper/DataDirectory.h"
 
 #include <Geometry/Rect.h>
 #include <Geometry/Vec2.h>
@@ -25,6 +24,7 @@
 #include <Rendering/FBO.h>
 #include <Util/Graphics/Bitmap.h>
 #include <Util/IO/FileName.h>
+#include <Util/IO/FileLocator.h>
 #include <Util/Macros.h>
 
 #include <cassert>
@@ -44,8 +44,20 @@ using Geometry::Vec2i;
 std::set<Util::Reference<Rendering::Texture> > AbstractOnGpuComparator::usedTextures;
 std::map<Geometry::Vec2i, std::vector<Util::Reference<Rendering::Texture> >, AbstractOnGpuComparator::Vec2iComp> AbstractOnGpuComparator::freeTextures;
 
+
+static Util::FileLocator shaderFileLocator;
+//! (static) 
+void AbstractOnGpuComparator::initShaderFileLocator( const Util::FileLocator& locator){
+	shaderFileLocator = locator;
+}
+//! (static) 
+const Util::FileLocator& AbstractOnGpuComparator::getShaderFileLocator(){
+	return shaderFileLocator;
+}
+
+
 AbstractOnGpuComparator::AbstractOnGpuComparator(int32_t _filterSize) :
-		fbo(new FBO()), texDownSize(64), filterSize(_filterSize), filterType(GAUSS), filterValid(false), initialized(false) {
+		fbo(new FBO), texDownSize(64), filterSize(_filterSize), filterType(GAUSS), filterValid(false), initialized(false) {
 }
 
 AbstractOnGpuComparator::~AbstractOnGpuComparator() {
@@ -243,24 +255,25 @@ bool AbstractOnGpuComparator::init(RenderingContext & context) {
 
 	if (!initialized) {
 
-		shaderCopy = Shader::loadShader(Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/ImageCompare.vs"),
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/Copy.fs"), Shader::USE_UNIFORMS);
+		const auto& locator = getShaderFileLocator();
+		
+		auto vsLocation = locator.locateFile(Util::FileName("shader/ImageCompare/ImageCompare.vs"));
+		if(!vsLocation.first)
+			throw std::runtime_error("AbstractOnGpuComparator: Could not locate required shader file. Did you init the shaderFileLocator?!?");
+	
+		shaderCopy = Shader::loadShader( vsLocation.second, locator.locateFile(Util::FileName("shader/ImageCompare/Copy.fs")).second, Shader::USE_UNIFORMS);
 		shaderCopy->setUniform(context, Rendering::Uniform("A", 0));
 
-		shaderShrink = Shader::loadShader(Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/ImageCompare.vs"),
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/Shrink.fs"), Shader::USE_UNIFORMS);
+		shaderShrink = Shader::loadShader(vsLocation.second, locator.locateFile(Util::FileName("shader/ImageCompare/Shrink.fs")).second, Shader::USE_UNIFORMS);
 		shaderShrink->setUniform(context, Rendering::Uniform("A", 0));
 
-		shaderFilterH = Shader::loadShader(Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/ImageCompare.vs"),
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/FilterH.fs"), Shader::USE_UNIFORMS);
+		shaderFilterH = Shader::loadShader(vsLocation.second, locator.locateFile(Util::FileName("shader/ImageCompare/FilterH.fs")).second, Shader::USE_UNIFORMS);
 		shaderFilterH->setUniform(context, Rendering::Uniform("A", 0));
 
-		shaderFilterV = Shader::loadShader(Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/ImageCompare.vs"),
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/FilterV.fs"), Shader::USE_UNIFORMS);
+		shaderFilterV = Shader::loadShader(vsLocation.second, locator.locateFile(Util::FileName("shader/ImageCompare/FilterV.fs")).second, Shader::USE_UNIFORMS);
 		shaderFilterV->setUniform(context, Rendering::Uniform("A", 0));
 
 		initialized = true;
-
 		return true;
 	}
 	return false;

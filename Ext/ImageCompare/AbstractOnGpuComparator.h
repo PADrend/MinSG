@@ -27,6 +27,9 @@
 #include <map>
 #include <vector>
 
+namespace Util {
+class FileLocator;
+}
 namespace Rendering {
 class Shader;
 class FBO;
@@ -73,6 +76,8 @@ protected:
 	};
 
 public:
+	static void initShaderFileLocator( const Util::FileLocator& locator);
+	static const Util::FileLocator& getShaderFileLocator();
 
 	enum FilterType {
 		GAUSS, BOX
@@ -87,9 +92,7 @@ public:
 	virtual bool doCompare(Rendering::RenderingContext & context, Rendering::Texture * firstTex, Rendering::Texture * secondTex, double & value,
 			Rendering::Texture * resultTex) = 0;
 
-	int32_t getFilterSize() const {
-		return filterSize;
-	}
+	int32_t getFilterSize() const								{	return filterSize;	}
 
 	virtual void setFilterSize(int32_t _filterSize) {
 		filterSize = _filterSize;
@@ -101,22 +104,15 @@ public:
 		filterValid = false;
 	}
 
-	FilterType getFilterType(){
-		return filterType;
-	}
+	FilterType getFilterType()const								{	return filterType;	}
 
-	uint32_t getTextureDownloadSize() {
-		return texDownSize;
-	}
+	uint32_t getTextureDownloadSize()const						{	return texDownSize;	}
 
-	virtual void setTextureDownloadSize(uint32_t sideLength) {
-		texDownSize = sideLength;
-	}
+	virtual void setTextureDownloadSize(uint32_t sideLength)	{	texDownSize = sideLength;	}
 
 	virtual void setFBO(Util::Reference<Rendering::FBO> _fbo);
-
 	virtual bool init(Rendering::RenderingContext & context);
-
+	
 protected:
 
 	void prepare(Rendering::RenderingContext & context);

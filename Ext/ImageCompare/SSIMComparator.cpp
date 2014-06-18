@@ -11,7 +11,6 @@
 #ifdef MINSG_EXT_IMAGECOMPARE
 
 #include "SSIMComparator.h"
-#include "../../Helper/DataDirectory.h"
 
 #include <Geometry/Rect.h>
 #include <Geometry/Vec2.h>
@@ -23,6 +22,7 @@
 #include <Rendering/FBO.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Draw.h>
+#include <Util/IO/FileLocator.h>
 
 #include <memory>
 #include <cassert>
@@ -110,10 +110,11 @@ bool SSIMComparator::init(RenderingContext & context) {
 
 	if (AbstractOnGpuComparator::init(context)) {
 
+		const auto& locator = getShaderFileLocator();
 		shaderSSIM = Shader::loadShader(
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/ImageCompare.vs"),
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/SSIM.fs"),
-				Shader::USE_UNIFORMS);
+				locator.locateFile(Util::FileName("shader/ImageCompare/ImageCompare.vs")).second, 
+				locator.locateFile(Util::FileName("shader/ImageCompare/SSIM.fs")).second, Shader::USE_UNIFORMS);
+
 		shaderSSIM->setUniform(context, Rendering::Uniform("A", 0));
 		shaderSSIM->setUniform(context, Rendering::Uniform("B", 1));
 		shaderSSIM->setUniform(context, Rendering::Uniform("AA", 2));
@@ -121,9 +122,9 @@ bool SSIMComparator::init(RenderingContext & context) {
 		shaderSSIM->setUniform(context, Rendering::Uniform("AB", 4));
 
 		shaderSSIMPrep = Shader::loadShader(
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/ImageCompare.vs"),
-				Util::FileName(MinSG::DataDirectory::getPath() + "/shader/ImageCompare/SSIMPrep.fs"),
-				Shader::USE_UNIFORMS);
+				locator.locateFile(Util::FileName("shader/ImageCompare/ImageCompare.vs")).second, 
+				locator.locateFile(Util::FileName("shader/ImageCompare/SSIMPrep.fs")).second, Shader::USE_UNIFORMS);
+
 		shaderSSIMPrep->setUniform(context, Rendering::Uniform("A", 0));
 		shaderSSIMPrep->setUniform(context, Rendering::Uniform("B", 1));
 
