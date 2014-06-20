@@ -32,21 +32,12 @@ TextureState * TextureState::clone() const {
 
 //! ---|> [State]
 State::stateResult_t TextureState::doEnableState(FrameContext & context,Node *, const RenderParam & /*rp*/) {
-	if(texture.isNull())
-		return State::STATE_SKIPPED;
-
-	context.getRenderingContext().pushTexture(getTextureUnit());
-	context.getRenderingContext().setTexture(getTextureUnit(),getTexture());
-
+	context.getRenderingContext().pushAndSetTexture(getTextureUnit(),getTexture());
 	return State::STATE_OK;
 }
 
 //! ---|> [State]
 void TextureState::doDisableState(FrameContext & context,Node *, const RenderParam & /*rp*/) {
-	if(texture.isNull()) {
-		return;
-	}
-
 	context.getRenderingContext().popTexture(getTextureUnit());
 }
 
