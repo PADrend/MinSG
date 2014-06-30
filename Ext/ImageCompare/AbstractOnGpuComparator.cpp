@@ -232,7 +232,11 @@ void AbstractOnGpuComparator::checkTextureSize(Geometry::Vec2i size) {
 void AbstractOnGpuComparator::checkTextureSize(uint32_t width, uint32_t height) {
 	while (width * height > texDownSize * texDownSize) {
 		if (width % 2 != 0 || height % 2 != 0) {
-			WARN("try to use resolutions where width and height contain more prime factors of two to speed up image quality calculation");
+			static bool warningShown = false;
+			if(!warningShown){
+				warningShown = true;
+				WARN("(once) try to use resolutions where width and height contain more prime factors of two to speed up image quality calculation");
+			}
 			break;
 		}
 		width /= 2;
