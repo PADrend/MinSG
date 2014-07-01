@@ -15,6 +15,8 @@
 #include <Geometry/PointOctree.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/VertexDescription.h>
+#include <Rendering/Mesh/VertexAttributeAccessors.h>
+#include <Rendering/Mesh/VertexAttributeIds.h>
 #include <Rendering/MeshUtils/MeshBuilder.h>
 #include <Rendering/Texture/Texture.h>
 #include <Util/Graphics/PixelAccessor.h>
@@ -187,12 +189,41 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 		samples.clear();
 		++round;
 	}
+	
 	std::cout << " \t target number:" << maxAbsSurfels;
 	std::cout << " \t created:" << surfelCount;
 	std::cout << std::endl;
-	
+
 	auto mesh = mb->buildMesh();
 	mesh->setDrawMode(Rendering::Mesh::DRAW_POINTS);
+
+	// guess size
+	if(mesh->getVertexCount()>0){
+		Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::POSITION));
+		Util::Reference<Rendering::NormalAttributeAccessor> normalAccessor(Rendering::NormalAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::NORMAL));
+		Util::Reference<Rendering::ColorAttributeAccessor> colorAccessor(Rendering::ColorAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::COLOR));
+		std::deque<OctreeEntry> closestNeighbours;
+		const size_t endIndex = mesh->getVertexCount();
+		for(size_t vIndex = 0 ; vIndex<endIndex; ++vIndex){
+			const auto pos = positionAccessor->getPosition(vIndex);
+			const auto normal = normalAccessor->getNormal(vIndex);
+		
+			closestNeighbours.clear();
+			octree.getClosestPoints(pos, 10, closestNeighbours);
+			float f=0.0f;
+			for(const auto& neighbour : closestNeighbours){
+				f += surfels[ neighbour.index ].normal.dot(normal);
+//				if( surfels[ neighbour.index ].normal.dot(normal) > 0.9 )
+			}
+			Util::Color4f c = colorAccessor->getColor4f(vIndex);
+			c.a( f/10.0 );
+			colorAccessor->setColor( vIndex, c );
+//			colorAccessor->setColor( vIndex, Util::Color4f(f/10.0,f/10.0,f/10.0,1.0 ));			
+		}
+		
+		
+	}
+		
 	return mesh;
 }
 
