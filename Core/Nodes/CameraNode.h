@@ -1,7 +1,7 @@
 /*
 	This file is part of the MinSG library.
 	Copyright (C) 2007-2012 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2007-2012 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2007-2012,2014 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2007-2012 Ralf Petring <ralf@petring.net>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -49,7 +49,11 @@ class CameraNode : public AbstractCameraNode {
 			_fovBottomDeg = fovBottom.deg();
 			_fovTopDeg = fovTop.deg();
 		}
-
+		Geometry::Angle getLeftAngle()const			{	return fovLeft;	}
+		Geometry::Angle getRightAngle()const		{	return fovRight;	}
+		Geometry::Angle getBottomAngle()const		{	return fovBottom;	}
+		Geometry::Angle getTopAngle()const			{	return fovTop;	}
+		
 	private:
 		explicit CameraNode(const CameraNode & o);
 		/// ---|> [Node]
