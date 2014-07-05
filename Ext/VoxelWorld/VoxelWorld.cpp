@@ -8,6 +8,8 @@
 */
 #ifdef MINSG_EXT_VOXEL_WORLD
 #include "VoxelWorld.h"
+#include "MaterialLib.h"
+#include "Material.h"
 
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/MeshUtils/MeshBuilder.h>
@@ -38,13 +40,6 @@ template <> struct hash<std::pair<vec3i,vec3i>> {
 }
 
 namespace MinSG {
-class MaterialLib{
-public:
-	inline bool isSolid(value_t v)const{
-		return v>0;
-	}
-
-};
 
 struct LightProbeData{
 	struct LightProbeOctreePoint{
@@ -77,18 +72,17 @@ struct LightProbeData{
 		return it==vertexLightProbeIndices.end() ? black : lightProbes.at( it->second ).color;
 	}
 	// create a lightProbe for pos,normal and return it, or return nullptr if it exists
-	Util::Color4f* initVertexLightProbe(const vec3i& pos,const vec3i& normal){
+	void initVertexLightProbe(const vec3i& pos,const vec3i& normal,	const VoxelWorld::Material& surfaceMaterial){
 		size_t index = lightProbes.size();
 		auto result = vertexLightProbeIndices.emplace(std::make_pair(vec3i(pos),vec3i(normal)),index);
 		if(result.second){
-			lightProbes.emplace_back(Util::Color4f(),vec3f(pos),vec3f(normal));
+			lightProbes.emplace_back(Util::Color4f(surfaceMaterial.getLight()),vec3f(pos),vec3f(normal));
 			lightProbeOctree.insert(LightProbeOctreePoint(vec3f(pos),index));
 			orderedVertexLightProbeIndices.push_back(index);
-			return &lightProbes[index].color;
-		}else{
-			return nullptr;
+		}else{ //			update existing light probe reflectance and light color...
+			lightProbes[result.first->second].color += surfaceMaterial.getLight();
+
 		}
-		
 	}
 	Util::Color4f& createFreeLightProbe(const vec3f& pos){
 		const size_t index = lightProbes.size();
@@ -97,23 +91,25 @@ struct LightProbeData{
 		return lightProbes[index].color;
 	}
 };
-
+using namespace VoxelWorld;
 
 struct VoxelGrid{
 	const uint32_t wx,wy,wz,wxy;
-	std::vector<uint32_t> voxels; // voxel, edgeflags, occlusion value
+	std::vector<const Material*> voxels; // voxel, edgeflags, occlusion value
+	const Material emptyMaterial;
 	
 	VoxelGrid(uint32_t _wx, uint32_t _wy, uint32_t _wz) : 
 			wx(_wx), wy(_wy), wz(_wz), wxy(wx*wy), voxels(wx*wy*wz){
+		std::fill(voxels.begin(),voxels.end(),&emptyMaterial);
 	}
 	
-	void set(uint32_t x,uint32_t y,uint32_t z,value_t value)	{	voxels[ x+y*wx+z*wxy ] = value;	}
+	void set(uint32_t x,uint32_t y,uint32_t z,Material* value)	{	voxels[ x+y*wx+z*wxy ] = value;	}
 
 	
-	inline value_t get(int32_t x,int32_t y,int32_t z)const{
-		return (x<0||x>=static_cast<int32_t>(wx)||y<0||y>=static_cast<int32_t>(wy)||z<0||z>=static_cast<int32_t>(wz)) ? 0 : voxels[ x+y*wx+z*wxy ];
+	inline const Material& get(int32_t x,int32_t y,int32_t z)const{
+		return (x<0||x>=static_cast<int32_t>(wx)||y<0||y>=static_cast<int32_t>(wy)||z<0||z>=static_cast<int32_t>(wz)) ? emptyMaterial : *voxels[ x+y*wx+z*wxy ];
 	}
-	inline value_t get(const vec3i& v)const						{	return get(v.x(),v.y(),v.z());	}
+	inline const Material& get(const vec3i& v)const				{	return get(v.x(),v.y(),v.z());	}
 
 	
 	uint32_t getIndex(const vec3i& v)const						{	return v.x()+v.y()*wx+v.z()*wxy;	}
@@ -125,16 +121,13 @@ struct VoxelGrid{
 		);
 	}
 
-	inline bool isTransparent(value_t value)const{
-		return value==0;
-	}
 
 	/*! Cast a ray from @p source to @p target.
 		If no block was hit, the distance is returned;
 		Otherwise, the negative distance to the first intersection is returned.
 		\todo support casting beyond the grid's boundaries.	
 	*/
-	float cast(const MaterialLib& mat,const vec3f& source, const vec3f& target)const{
+	float cast(const vec3f& source, const vec3f& target)const{
 		vec3f dir = target-source;
 		const float distance=dir.length();
 		if(distance==0)
@@ -152,7 +145,7 @@ struct VoxelGrid{
 				x = static_cast<int32_t>(v.x());
 				y = static_cast<int32_t>(v.y());
 				z = static_cast<int32_t>(v.z());
-				if(mat.isSolid(get(x,y,z)) ){
+				if(get(x,y,z).isSolid() ){
 					return -currentRayLength;
 				}
 			}
@@ -194,7 +187,44 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 	std::map<std::string,float> timings;
 	Util::Timer t;
 	
-	MaterialLib mat;
+	MaterialLib matLib;
+	{
+		auto& m1 = matLib.access(1);
+		m1.setSolid(true);
+		m1.setColor( Util::Color4f(0.5,0.5,0.5,1.0));
+	}
+	{
+		auto& m1 = matLib.access(2);
+		m1.setSolid(true);
+		m1.setColor( Util::Color4f(1.0,1.0,1.0,1.0));
+	}
+	{
+		auto& m1 = matLib.access(3);
+		m1.setSolid(true);
+		m1.setColor( Util::Color4f(0.1,0.1,0.1,1.0));
+	}
+	{
+		auto& m1 = matLib.access(4);
+		m1.setSolid(true);
+		m1.setColor( Util::Color4f(0.2,0.1,0.1,1.0));
+		m1.setLight( Util::Color4f(1.2,0.1,0.1,1.0));
+	}
+	{
+		auto& m1 = matLib.access(10);
+		m1.setSolid(false);
+		m1.setLight( Util::Color4f(10.1,0.1,0.1,1.0));
+	}
+	{
+		auto& m1 = matLib.access(11);
+		m1.setSolid(false);
+		m1.setLight( Util::Color4f(0.1,10.1,0.1,1.0));
+	}
+	{
+		auto& m1 = matLib.access(12);
+		m1.setSolid(false);
+		m1.setLight( Util::Color4f(0.1,0.1,10.1,1.0));
+	}
+	
 	VoxelGrid grid(boundary.getExtentX(),boundary.getExtentY(),boundary.getExtentZ());
 	LightProbeData lighting(boundary.getExtentX(),boundary.getExtentY(),boundary.getExtentZ());
 
@@ -206,12 +236,12 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 			const auto sidelength = std::get<1>(area);
 			const auto min = grid.clamp( std::get<0>(area)-boundary.getMin() );
 			const auto max = grid.clamp( std::get<0>(area)-boundary.getMin()+vec3i(sidelength,sidelength,sidelength) );
-			const auto value = std::get<2>(area);
+			const auto mat = &matLib.access( std::get<2>(area) );
 					
 			for(int32_t z=min.z(); z<max.z(); ++z){
 				for(int32_t y=min.y(); y<max.y(); ++y){
 					for(int32_t x=min.x(); x<max.x(); ++x){
-						grid.set(x,y,z,value);
+						grid.set(x,y,z,mat);
 					}
 				}
 			}
@@ -227,8 +257,9 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 					const uint32_t voxelIndex = startIndex + blockIndex%simpleVoxelStorage_t::blockSideLength +
 												grid.wx * ((blockIndex/simpleVoxelStorage_t::blockSideLength)%simpleVoxelStorage_t::blockSideLength) +
 												grid.wxy * ((blockIndex/(simpleVoxelStorage_t::blockSideLength*simpleVoxelStorage_t::blockSideLength))%simpleVoxelStorage_t::blockSideLength);
-					if(voxelIndex<grid.voxels.size())
-						grid.voxels[voxelIndex] = value;
+					if(voxelIndex<grid.voxels.size()){
+						grid.voxels[voxelIndex] = &matLib.access( value );
+					}
 				}
 			}
 		}
@@ -242,41 +273,11 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 	std::vector<LightProbeData::LightProbe> midRangeLightEmitters;
 	
 	{
-		/*! Init a vertex light probe if it does not already exist.
-			Applies global lighting to the probe.	*/
-		const auto initVertexLightProbe = [&](const vec3i& pos,const vec3i& normal){
-			auto probe = lighting.initVertexLightProbe(pos,normal);
-			if(probe){
-				const vec3f pos2(pos);
-				{// collect long range lighting 
-					static const vec3f globalLight( 7.49,7.57,7.55);
-					if( vec3f(normal).dot( globalLight-pos2 )>0){
-						const float l = grid.cast( mat,pos2,globalLight);
-						if(l>0)
-							*probe += Util::Color4f( 2.0f/l,0.01,0.01,0.0  );
-					}
-				}
-				
-				{// collect long range lighting 
-					static const vec3f globalLight( 7.49,30.57,7.55);
-					if( vec3f(normal).dot( globalLight-pos2 )>0){
-						const float l = grid.cast( mat,pos2,globalLight);
-						if(l>0)
-//							*probe += Util::Color4f( 0.5,0.45,0.46,1.0  ) * 10.0;
-							*probe += Util::Color4f( 5.0, 5.1 , 5.0,1.0  );
-					}
-				}
-				
-			
-//				*probe += Util::Color4f( 0.02,0.02,0.02,0.0  );
-			}
-		};
-
-		const auto initQuadLightProbes = [&](const vec3i&pos, uint8_t xMod, uint8_t yMod, uint8_t zMod, const vec3i& normal){
-			initVertexLightProbe(vec3i(pos.x()+(xMod&1)		,pos.y()+(yMod&1)		,pos.z()+(zMod&1))		, normal);
-			initVertexLightProbe(vec3i(pos.x()+(xMod&2?1:0)	,pos.y()+(yMod&2?1:0)	,pos.z()+(zMod&2?1:0))	, normal);
-			initVertexLightProbe(vec3i(pos.x()+(xMod&4?1:0)	,pos.y()+(yMod&4?1:0)	,pos.z()+(zMod&4?1:0))	, normal);
-			initVertexLightProbe(vec3i(pos.x()+(xMod&8?1:0)	,pos.y()+(yMod&8?1:0)	,pos.z()+(zMod&8?1:0))	, normal);
+		const auto initQuadLightProbes = [&](const vec3i&pos, uint8_t xMod, uint8_t yMod, uint8_t zMod, const vec3i& normal, const Material& m){
+			lighting.initVertexLightProbe(vec3i(pos.x()+(xMod&1)		,pos.y()+(yMod&1)		,pos.z()+(zMod&1))		, normal,	m);
+			lighting.initVertexLightProbe(vec3i(pos.x()+(xMod&2?1:0)	,pos.y()+(yMod&2?1:0)	,pos.z()+(zMod&2?1:0))	, normal,	m);
+			lighting.initVertexLightProbe(vec3i(pos.x()+(xMod&4?1:0)	,pos.y()+(yMod&4?1:0)	,pos.z()+(zMod&4?1:0))	, normal,	m);
+			lighting.initVertexLightProbe(vec3i(pos.x()+(xMod&8?1:0)	,pos.y()+(yMod&8?1:0)	,pos.z()+(zMod&8?1:0))	, normal,	m);
 		};
 		// Traverse the grid in a zig-zag-manner to improve locality of orderedVertexLightProbeIndices
 		for(uint32_t z2=0; z2<grid.wz; z2+=3){
@@ -286,37 +287,48 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 		for(uint32_t y=y2; y<y2+3; ++y){
 		for(uint32_t x=x2; x<x2+3; ++x){
 			const vec3i pos(x,y,z);
-			const value_t value = grid.get(pos);
-			if( mat.isSolid(value) )
+			const auto& m = grid.get(pos);
+			if( m.isSolid() )
 				continue;
-				
-			// \todo allow emitting blocks!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			if( (x%7)==0 && (y%7)==1 &&  (z%7)==0  ){
-				if(grid.get(x-1,y,z) !=0 || grid.get(x+1,y,z) !=0 || grid.get(x,y-1,z) !=0  || grid.get(x,y+1,z) !=0 
-						 || grid.get(x,y,z-1) !=0  || grid.get(x,y,z+1) !=0  )
-					midRangeLightEmitters.emplace_back( Util::Color4f( 0,2.1,0),vec3f(x+0.5f,y+0.5f,z+0.5f),vec3f(0,0,0) ); // light emitter
+			if( m.getLight().a()>0.0 ){
+				midRangeLightEmitters.emplace_back( m.getLight(),vec3f(x+0.5f,y+0.5f,z+0.5f),vec3f(0,0,0) ); // light emitter
 			}
-			
-			if( mat.isSolid(grid.get(x-1,y,z)) )
-				initQuadLightProbes(pos, 0 ,2|4, 4|8,		vec3i(1,0,0));
-			if( mat.isSolid(grid.get(x+1,y,z)) )
-				initQuadLightProbes(pos, 1|2|4|8 ,4|8, 2|4,	vec3i(-1,0,0));
-			if( mat.isSolid(grid.get(x,y+1,z)) )
-				initQuadLightProbes(pos, 2|4, 1|2|4|8, 4|8,	vec3i(0,-1,0));
-			if( mat.isSolid(grid.get(x,y-1,z)) )
-				initQuadLightProbes(pos, 4|8 ,0, 2|4,		vec3i(0,1,0));
-			if( mat.isSolid(grid.get(x,y,z+1)) )
-				initQuadLightProbes(pos, 4|8 ,2|4, 1|2|4|8,	vec3i(0,0,-1));
-			if( mat.isSolid(grid.get(x,y,z-1)) )
-				initQuadLightProbes(pos, 2|4 ,4|8, 0,		vec3i(0,0,1));
+			const Material* material;
+			if( (material = &grid.get(x-1,y,z))->isSolid() )
+				initQuadLightProbes(pos, 0 ,2|4, 4|8,		vec3i(1,0,0),	*material);
+			if( (material = &grid.get(x+1,y,z))->isSolid() )
+				initQuadLightProbes(pos, 1|2|4|8 ,4|8, 2|4,	vec3i(-1,0,0),	*material);
+			if( (material = &grid.get(x,y+1,z))->isSolid() )
+				initQuadLightProbes(pos, 2|4, 1|2|4|8, 4|8,	vec3i(0,-1,0),	*material);
+			if( (material = &grid.get(x,y-1,z))->isSolid() )
+				initQuadLightProbes(pos, 4|8 ,0, 2|4,		vec3i(0,1,0),	*material);
+			if( (material = &grid.get(x,y,z+1))->isSolid() )
+				initQuadLightProbes(pos, 4|8 ,2|4, 1|2|4|8,	vec3i(0,0,-1),	*material);
+			if( (material = &grid.get(x,y,z-1))->isSolid() )
+				initQuadLightProbes(pos, 2|4 ,4|8, 0,		vec3i(0,0,1),	*material);
 		}}}}}}
 				
 		timings["20_init light probes"] = t.getMilliseconds();
 		t.reset();
 	}
 	// ---------------------------------------------------------------------------
+
 	
-	{ //	2. mid range lighting  (midRangeLightEmitters -> vertexProbes)
+	{ //	2. connect surface probes to light sources
+		
+		// long range emitter
+		static const vec3f globalLight( 7.49,30.57,7.55);
+
+		for(const auto index : lighting.orderedVertexLightProbeIndices){
+			auto& probe = lighting.lightProbes[ index ];
+			if( probe.normal.dot( globalLight-probe.position )>0){
+				const float l = grid.cast( probe.position ,globalLight);
+				if(l>0)
+					probe.color += Util::Color4f( 5.0, 5.1 , 5.0,1.0  );
+			}
+		}
+		
+		// mid range emitters
 		std::deque<LightProbeData::LightProbeOctreePoint> localProbes;
 		for(const auto & emitter : midRangeLightEmitters){
 			const auto& pos = emitter.position;
@@ -329,7 +341,7 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 
 					auto& vertexProbe = lighting.lightProbes.at( probePoint.lightProbeIndex );
 					if(	(vertexProbe.normal.isZero() || vertexProbe.normal.dot(dir)<0) ) { //&& vertexProbe.lastPassColor.getR()>0.01 
-						const float dist = grid.cast(mat,pos, probePoint.position);
+						const float dist = grid.cast(pos, probePoint.position);
 						if(dist>0)
 							vertexProbe.color += emitter.color * (1.0f/(1.0f+dist*dist) );
 	//						probe.connectedProbes.push_back(&vertexProbe);
@@ -381,7 +393,7 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 						connectionPower = 0.05;
 				}else if( //distanceSquared<16 && 
 							normal.dot(dir)>0.001f && otherProbe.normal.dot(pos-otherProbe.position)>0.001f ){
-					const float dist = grid.cast(mat,castSourcePos, probePoint.position);
+					const float dist = grid.cast(castSourcePos, probePoint.position);
 					++casts;
 					if(dist>0)
 						connectionPower  = 0.05f/(1.0f+dist*dist);
@@ -423,12 +435,9 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 	Rendering::MeshUtils::MeshBuilder mb;
 
 	{
-		const auto createVertex = [&](int32_t x,int32_t y,int32_t z, value_t value,const vec3i& normal) -> Util::Color4f {
-			Util::Color4f vertexColor;
+		const auto createVertex = [&](int32_t x,int32_t y,int32_t z, const Material& mat,const vec3i& normal) -> Util::Color4f {
+			Util::Color4f vertexColor = mat.getColor();
 			{ // calculate color
-				if(value>0){
-					vertexColor = Util::Color4f(value,value,value,1.0);
-				}
 				const Util::Color4f light = lighting.getVertexLightProbe(vec3i(x,y,z),normal);
 				
 				Util::Color4f rgb( vertexColor.getR() * light.getR(),
@@ -448,13 +457,13 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 			mb.addVertex();
 			return vertexColor;
 		};
-		const auto createQuad = [&](const vec3i&pos, uint8_t xMod, uint8_t yMod, uint8_t zMod, const vec3i& normal, value_t value){
+		const auto createQuad = [&](const vec3i&pos, uint8_t xMod, uint8_t yMod, uint8_t zMod, const vec3i& normal, const Material& mat){
 			const uint32_t idx = mb.getNextIndex();
 			mb.normal( vec3f(normal) );
-			const auto c0 = createVertex(pos.x()+(xMod&1)		,pos.y()+(yMod&1)		,pos.z()+(zMod&1)		,value, normal);
-			const auto c1 = createVertex(pos.x()+(xMod&2?1:0)	,pos.y()+(yMod&2?1:0)	,pos.z()+(zMod&2?1:0)	,value, normal);
-			const auto c2 = createVertex(pos.x()+(xMod&4?1:0)	,pos.y()+(yMod&4?1:0)	,pos.z()+(zMod&4?1:0)	,value, normal);
-			const auto c3 = createVertex(pos.x()+(xMod&8?1:0)	,pos.y()+(yMod&8?1:0)	,pos.z()+(zMod&8?1:0)	,value, normal);
+			const auto c0 = createVertex(pos.x()+(xMod&1)		,pos.y()+(yMod&1)		,pos.z()+(zMod&1)		,mat, normal);
+			const auto c1 = createVertex(pos.x()+(xMod&2?1:0)	,pos.y()+(yMod&2?1:0)	,pos.z()+(zMod&2?1:0)	,mat, normal);
+			const auto c2 = createVertex(pos.x()+(xMod&4?1:0)	,pos.y()+(yMod&4?1:0)	,pos.z()+(zMod&4?1:0)	,mat, normal);
+			const auto c3 = createVertex(pos.x()+(xMod&8?1:0)	,pos.y()+(yMod&8?1:0)	,pos.z()+(zMod&8?1:0)	,mat, normal);
 			const auto c02 = (c0-c2).abs();
 			const auto c13 = (c1-c3).abs();
 			if(c02.r()+c02.g()+c02.b() > c13.r()+c13.g()+c13.b()){
@@ -468,24 +477,23 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 		for(uint32_t z=0; z<grid.wz; ++z){
 			for(uint32_t y=0; y<grid.wy; ++y){
 				for(uint32_t x=0; x<grid.wx; ++x){
-					const value_t value = grid.get(x,y,z);
-					if(mat.isSolid(value))
+					if(grid.get(x,y,z).isSolid())
 						continue;
 					const vec3i pos(x,y,z);
 					
-					value_t value2;
-					if( mat.isSolid(value2=grid.get(x-1,y,z)) )
-						createQuad( pos, 0, 2|4 , 4|8,			vec3i(1,0,0),	value2 );
-					if( mat.isSolid(value2=grid.get(x+1,y,z)) )
-						createQuad( pos, 1|2|4|8, 4|8 , 2|4,	vec3i(-1,0,0),	value2 );
-					if( mat.isSolid(value2=grid.get(x,y+1,z)) )
-						createQuad( pos, 2|4, 1|2|4|8 , 4|8,	vec3i(0,-1,0),	value2 );
-					if( mat.isSolid(value2=grid.get(x,y-1,z)) )
-						createQuad( pos, 4|8, 0 , 2|4,			vec3i(0,1,0),	value2 );
-					if( mat.isSolid(value2=grid.get(x,y,z+1)) )
-						createQuad( pos, 4|8, 2|4, 1|2|4|8,		vec3i(0,0,-1),	value2 );
-					if( mat.isSolid(value2=grid.get(x,y,z-1)) )
-						createQuad( pos, 2|4, 4|8, 0,			vec3i(0,0,1),	value2 );
+					const Material* material;
+					if( material = &grid.get(x-1,y,z), material->isSolid() )
+						createQuad( pos, 0, 2|4 , 4|8,			vec3i(1,0,0),	*material );
+					if( material = &grid.get(x+1,y,z), material->isSolid() )
+						createQuad( pos, 1|2|4|8, 4|8 , 2|4,	vec3i(-1,0,0),	*material );
+					if( material = &grid.get(x,y+1,z), material->isSolid() )
+						createQuad( pos, 2|4, 1|2|4|8 , 4|8,	vec3i(0,-1,0),	*material );
+					if( material = &grid.get(x,y-1,z), material->isSolid() )
+						createQuad( pos, 4|8, 0 , 2|4,			vec3i(0,1,0),	*material );
+					if( material = &grid.get(x,y,z+1), material->isSolid() )
+						createQuad( pos, 4|8, 2|4, 1|2|4|8,		vec3i(0,0,-1),	*material );
+					if( material = &grid.get(x,y,z-1), material->isSolid() )
+						createQuad( pos, 2|4, 4|8, 0,			vec3i(0,0,1),	*material );
 				}
 			}
 		}
