@@ -210,6 +210,12 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 		m1.setLight( Util::Color4f(1.2,0.1,0.1,1.0));
 	}
 	{
+		auto& m1 = matLib.access(5);
+		m1.setSolid(true);
+		m1.setColor( Util::Color4f(1.0,1.0,1.0,1.0));
+		m1.setLight( Util::Color4f(5.1,5.1,5.1,1.0));
+	}
+	{
 		auto& m1 = matLib.access(10);
 		m1.setSolid(false);
 		m1.setLight( Util::Color4f(10.1,0.1,0.1,1.0));
@@ -223,6 +229,11 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 		auto& m1 = matLib.access(12);
 		m1.setSolid(false);
 		m1.setLight( Util::Color4f(0.1,0.1,10.1,1.0));
+	}
+	{
+		auto& m1 = matLib.access(13);
+		m1.setSolid(false);
+		m1.setLight( Util::Color4f(10.1,10.1,10.1,1.0));
 	}
 	
 	VoxelGrid grid(boundary.getExtentX(),boundary.getExtentY(),boundary.getExtentZ());
