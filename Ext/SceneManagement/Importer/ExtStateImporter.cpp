@@ -38,6 +38,10 @@
 #include "../../SkeletalAnimation/SkeletalNode.h"
 #endif
 
+#ifdef MINSG_EXT_BLUE_SURFELS
+#include "../../BlueSurfels/SurfelRenderer.h"
+#endif // MINSG_EXT_BLUE_SURFELS
+
 #ifdef MINSG_EXT_MULTIALGORENDERING
 #include "../../MultiAlgoRendering/AlgoSelector.h"
 #include "../../MultiAlgoRendering/SampleContext.h"
@@ -75,6 +79,23 @@ static T * convertToTNode(Node * node) {
 		WARN(std::string(node != nullptr ? node->getTypeName() : "nullptr") + " can not be casted to " + T::getClassName());
 	return t;
 }
+
+#ifdef MINSG_EXT_BLUE_SURFELS
+static bool importSurfelRenderer(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) {
+	if(type != Consts::STATE_TYPE_SURFEL_RENDERER) 
+		return false;
+	
+	Util::Reference<BlueSurfels::SurfelRenderer> renderer = new BlueSurfels::SurfelRenderer;
+	renderer->setCountFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, 2.0f));
+	renderer->setMaxSideLength(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_SIZE, 200.0f));
+	renderer->setMinSideLength(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MIN_SIZE, 100.0f));
+	renderer->setSizeFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, 2.0f));
+	
+	ImporterTools::finalizeState(ctxt, renderer.get(), d);
+	parent->addState(renderer.get());
+	return true;
+}
+#endif // MINSG_EXT_BLUE_SURFELS
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
 
@@ -334,6 +355,10 @@ void initExtStateImporter() {
 	ImporterTools::registerStateImporter(&importMirrorState);
 	ImporterTools::registerStateImporter(&importProjSizeFilterState);
 	ImporterTools::registerStateImporter(&importSkyboxState);
+
+#ifdef MINSG_EXT_BLUE_SURFELS
+	ImporterTools::registerStateImporter(&importSurfelRenderer);
+#endif
 
 #ifdef MINSG_EXT_COLORCUBES
 	ImporterTools::registerStateImporter(&importColorCubeRenderer);

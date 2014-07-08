@@ -8,6 +8,7 @@
 #
 minsg_add_sources(
 	SurfelGenerator.cpp
+	SurfelRenderer.cpp
 )
 
 minsg_add_extension(MINSG_EXT_BLUE_SURFELS "Defines if the MinSG extension BlueSurfels is built.")

@@ -23,6 +23,10 @@
 #include "../../States/ProjSizeFilterState.h"
 #include "../../States/LODRenderer.h"
 
+#ifdef MINSG_EXT_BLUE_SURFELS
+#include "../../BlueSurfels/SurfelRenderer.h"
+#endif // MINSG_EXT_BLUE_SURFELS
+
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
 #include "../../SkeletalAnimation/Renderer/SkeletalHardwareRendererState.h"
 #include "../../SkeletalAnimation/Renderer/SkeletalSoftwareRendererState.h"
@@ -87,6 +91,17 @@ static void describeProjSizeFilterState(ExporterContext &,NodeDescription & desc
 	desc.setValue(Consts::ATTR_PSFS_TARGET_CHANNEL, Util::GenericAttribute::createString(psfs->getTargetChannel().toString()));
 	desc.setValue(Consts::ATTR_PSFS_FORCE_CLOSED_NODES, Util::GenericAttribute::createBool(psfs->isForceClosed()));
 }
+
+#ifdef MINSG_EXT_BLUE_SURFELS
+static void describeSurfelRenderer(ExporterContext &,NodeDescription & desc,State * state) {
+	auto renderer = dynamic_cast<BlueSurfels::SurfelRenderer *>(state);
+	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SURFEL_RENDERER);
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, Util::GenericAttribute::createNumber(renderer->getCountFactor()));
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_SIZE, Util::GenericAttribute::createNumber(renderer->getMaxSideLength()));
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MIN_SIZE, Util::GenericAttribute::createNumber(renderer->getMinSideLength()));
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, Util::GenericAttribute::createNumber(renderer->getSizeFactor()));
+}
+#endif // MINSG_EXT_BLUE_SURFELS
 
 #ifdef MINSG_EXT_COLORCUBES
 static void describeColorCubeRenderer(ExporterContext &,NodeDescription & desc,State * state) {
@@ -164,6 +179,10 @@ void initExtStateExporter() {
 	ExporterTools::registerStateExporter(MirrorState::getClassId(),&describeMirrorState);
 	ExporterTools::registerStateExporter(ProjSizeFilterState::getClassId(),&describeProjSizeFilterState);
 	ExporterTools::registerStateExporter(MinSG::LODRenderer::getClassId(),&describeLODRenderer);
+
+#ifdef MINSG_EXT_BLUE_SURFELS
+	ExporterTools::registerStateExporter(BlueSurfels::SurfelRenderer::getClassId(),&describeSurfelRenderer);
+#endif // MINSG_EXT_BLUE_SURFELS
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
 	ExporterTools::registerStateExporter(MAR::AlgoSelector::getClassId(),&describeAlgoSelector);

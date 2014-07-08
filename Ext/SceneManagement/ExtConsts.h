@@ -71,6 +71,17 @@ extern cStr_t STATE_TYPE_MIRROR_STATE;
 extern const Util::StringIdentifier ATTR_MIRROR_TEXTURE_SIZE;
 //	@}
 // ------------------------------------------------------------
+//!	@name BlueSurfels
+// @{
+#ifdef MINSG_EXT_BLUE_SURFELS
+extern cStr_t STATE_TYPE_SURFEL_RENDERER;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_COUNT_FACTOR;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_SIZE_FACTOR;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_MIN_SIZE;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_SIZE;
+#endif
+// @}
+// ------------------------------------------------------------
 //!	@name MultiAlgoRendering
 // @{
 #ifdef MINSG_EXT_MULTIALGORENDERING
