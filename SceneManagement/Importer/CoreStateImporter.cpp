@@ -272,17 +272,17 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 			return nullptr;
 		}
 		const std::vector<uint8_t> rawData = Util::decodeBase64(dataDesc->getString(Consts::DATA_BLOCK));
-		Rendering::Texture * texture = Rendering::Serialization::loadTexture(
+		Util::Reference<Rendering::Texture> texture = Rendering::Serialization::loadTexture(
 										dataDesc->getString(Consts::ATTR_DATA_FORMAT,"png"), std::string(rawData.begin(), rawData.end()));
 		texture->planMipmapCreation();
-		ts = new TextureState(texture);
+		ts = new TextureState(texture.get());
 		ts->setTextureUnit(textureUnit);
 	} else {
 		const auto location = ctxt.fileLocator.locateFile( fileName );
 	
 		const Util::FileName filename2 = location.first ? location.second : fileName;
 		
-		Rendering::Texture* texture = nullptr;
+		Util::Reference<Rendering::Texture> texture;
 		
 		if( (ctxt.importOptions & IMPORT_OPTION_USE_TEXTURE_REGISTRY) > 0) {
 			auto it = ctxt.getTextureRegistry().find(filename2.toString());
@@ -304,7 +304,7 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 		}else{
 			texture->setFileName(fileName);	// set original filename
 		}
-		ts = new TextureState(texture);
+		ts = new TextureState(texture.get());
 		texture->planMipmapCreation();
 		ts->setTextureUnit(textureUnit);
 		

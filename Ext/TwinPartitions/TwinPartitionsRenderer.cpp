@@ -129,7 +129,7 @@ State::stateResult_t TwinPartitionsRenderer::doEnableState(FrameContext & contex
 					textures.reserve(6);
 					for(auto & elem : data->cells[cell].surroundingIds) {
 						const std::string & textureFile = data->textureFiles[elem];
-						Rendering::Texture * texture = Rendering::Serialization::loadTexture(Util::FileName(textureFile));
+						Util::Reference<Rendering::Texture> texture = Rendering::Serialization::loadTexture(Util::FileName(textureFile));
 						if(texture == nullptr) {
 							WARN("Failed to load texture for depth mesh.");
 						} else {

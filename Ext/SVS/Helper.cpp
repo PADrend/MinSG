@@ -185,7 +185,7 @@ Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const V
 			}
 		}
 	}
-	return Rendering::TextureUtils::createTextureFromBitmap(*bitmap.get(), true);
+	return Rendering::TextureUtils::createTextureFromBitmap(*bitmap.get(), Rendering::TextureType::TEXTURE_2D,1, true).detachAndDecrease();
 }
 
 static Geometry::Sphere_f computeLocalBoundingSphere(PreprocessingContext & preprocessingContext __attribute__((unused)),

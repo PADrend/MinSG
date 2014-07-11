@@ -82,13 +82,13 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 }
 
 static TextureState * createTextureState(const Util::FileName& filename){
-	Rendering::Texture* texture = Rendering::Serialization::loadTexture(filename);
+	Util::Reference<Rendering::Texture> texture = Rendering::Serialization::loadTexture(filename);
 	if( !texture ) {
 		WARN(std::string("Could not load texture: ") + filename.toString());
 		texture = Rendering::TextureUtils::createChessTexture(64, 64);
 	}
 	texture->setFileName(filename);	// set original filename
-	return new TextureState( texture );
+	return new TextureState( texture.detachAndDecrease() );
 }
 
 Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matrix4x4 * transMat,const Util::FileLocator& locator) {

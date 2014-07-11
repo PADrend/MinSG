@@ -33,18 +33,18 @@ SkyboxState * SkyboxState::createSkybox(const std::string & filename) {
 	auto sb = new SkyboxState;
 
 	s = Util::StringUtils::replaceAll(filename, "?", "TOP");
-	sb->setTexture(SIDE_Y_POS, Serialization::loadTexture(Util::FileName(s)));
+	sb->setTexture(SIDE_Y_POS, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	s = Util::StringUtils::replaceAll(filename, "?", "BOTTOM");
-	sb->setTexture(SIDE_Y_NEG, Serialization::loadTexture(Util::FileName(s)));
+	sb->setTexture(SIDE_Y_NEG, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	s = Util::StringUtils::replaceAll(filename, "?", "LEFT");
-	sb->setTexture(SIDE_X_NEG, Serialization::loadTexture(Util::FileName(s)));
+	sb->setTexture(SIDE_X_NEG, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	s = Util::StringUtils::replaceAll(filename, "?", "RIGHT");
-	sb->setTexture(SIDE_X_POS, Serialization::loadTexture(Util::FileName(s)));
+	sb->setTexture(SIDE_X_POS, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	// FIXME: Texture file names and Box side names are not the same.
 	s = Util::StringUtils::replaceAll(filename, "?", "BACK");
-	sb->setTexture(SIDE_Z_POS, Serialization::loadTexture(Util::FileName(s)));
+	sb->setTexture(SIDE_Z_POS, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	s = Util::StringUtils::replaceAll(filename, "?", "FRONT");
-	sb->setTexture(SIDE_Z_NEG, Serialization::loadTexture(Util::FileName(s)));
+	sb->setTexture(SIDE_Z_NEG, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 
 	return sb;
 }
