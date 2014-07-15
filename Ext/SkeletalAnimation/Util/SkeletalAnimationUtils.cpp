@@ -454,8 +454,7 @@ bool SkeletalAnimationUtils::putVec4InTexture(const uint32_t offset, const Geome
 {
     if(pa->get() == nullptr)
         return false;
-    
-    if(pa->get()->getBitmap()->getPixelFormat().getBytesPerComponent() != 4)
+    if(pa->get()->getBitmap()->getPixelFormat().getValueType() != Util::TypeConstant::FLOAT)
         return false;
     
     float *data = pa->get()->_ptr<float>(offset, 0);    
