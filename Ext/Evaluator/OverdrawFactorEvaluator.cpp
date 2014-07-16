@@ -75,7 +75,7 @@ void OverdrawFactorEvaluator::measure(FrameContext & frameContext, Node & node, 
 	depthStencilTexture->downloadGLTexture(renderingContext);
 	renderingContext.popFBO();
 
-	Util::Reference<Util::PixelAccessor> stencilAccessor = Rendering::TextureUtils::createStencilPixelAccessor(renderingContext, depthStencilTexture.get());
+	Util::Reference<Util::PixelAccessor> stencilAccessor = Rendering::TextureUtils::createStencilPixelAccessor(renderingContext, *depthStencilTexture.get());
 
 	std::vector<uint8_t> stencilValues;
 	stencilValues.reserve(rect.getWidth() * rect.getHeight());

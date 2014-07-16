@@ -42,7 +42,7 @@ namespace MinSG {
 MirrorState::MirrorState(uint16_t textureSize) :
 	State(),
 	texSize(textureSize),
-	mirrorTexture(new TextureState(Rendering::TextureUtils::createStdTexture(texSize, texSize, true))),
+	mirrorTexture(new TextureState(Rendering::TextureUtils::createStdTexture(texSize, texSize, true).get())),
 	depthTexture(Rendering::TextureUtils::createDepthTexture(texSize, texSize)),
 	fbo(),
 	rootNode(nullptr),

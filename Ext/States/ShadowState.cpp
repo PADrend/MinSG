@@ -41,7 +41,7 @@ namespace MinSG {
 
 ShadowState::ShadowState(uint16_t textureSize) :
 		texSize(textureSize),
-		shadowTexture(new TextureState(Rendering::TextureUtils::createDepthTexture(texSize, texSize))),
+		shadowTexture(new TextureState(Rendering::TextureUtils::createDepthTexture(texSize, texSize).get())),
 		fbo(new Rendering::FBO),
 		light(nullptr) {
 	shadowTexture->setTextureUnit(6);

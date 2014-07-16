@@ -191,11 +191,11 @@ static void describeTextureState(ExporterContext & /*ctxt*/,NodeDescription & de
 		desc.setString(Consts::ATTR_TEXTURE_UNIT, Util::StringUtils::toString(ts->getTextureUnit()));
 
 	Rendering::Texture * texture = ts->getTexture();
-	if(texture!=nullptr) {
+	if( texture ) {
 		Util::FileName texFilename(texture->getFileName());
 
 		if(texFilename.empty()) {
-			auto bitmap = Rendering::TextureUtils::createBitmapFromLocalTexture(texture);
+			auto bitmap = Rendering::TextureUtils::createBitmapFromLocalTexture(*texture);
 
 			std::ostringstream stream;
 			if(bitmap.isNotNull() && Util::Serialization::saveBitmap(*bitmap.get(), "png", stream)) {

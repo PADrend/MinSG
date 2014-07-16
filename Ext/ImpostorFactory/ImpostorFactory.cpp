@@ -227,9 +227,9 @@ GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node 
 	renderingContext.popStencil();
 	renderingContext.popFBO();
 
-	Util::Reference<Util::PixelAccessor> depthAccessor = TextureUtils::createDepthPixelAccessor(renderingContext, depthStencilTexture.get());
-	Util::Reference<Util::PixelAccessor> stencilAccessor = TextureUtils::createStencilPixelAccessor(renderingContext, depthStencilTexture.get());
-	Util::Reference<Util::PixelAccessor> normalAccessor = TextureUtils::createColorPixelAccessor(renderingContext, normalTexture.get());
+	Util::Reference<Util::PixelAccessor> depthAccessor = TextureUtils::createDepthPixelAccessor(renderingContext, *depthStencilTexture.get());
+	Util::Reference<Util::PixelAccessor> stencilAccessor = TextureUtils::createStencilPixelAccessor(renderingContext, *depthStencilTexture.get());
+	Util::Reference<Util::PixelAccessor> normalAccessor = TextureUtils::createColorPixelAccessor(renderingContext, *normalTexture.get());
 
 	Rendering::VertexDescription vertexDescription;
 	vertexDescription.appendPosition3D();

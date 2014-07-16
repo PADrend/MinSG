@@ -456,7 +456,7 @@ State::stateResult_t HOMRenderer::doEnableState(FrameContext & context,
 			Rendering::TextureUtils::drawTextureToScreen(
 				renderingContext,
 				Geometry::Rect_i(xPos, 0, length, length),
-				homPyramid[level].get(),
+				*homPyramid[level].get(),
 				Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f)
 			);
 			xPos += length;
