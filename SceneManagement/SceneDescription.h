@@ -202,6 +202,8 @@ extern cStr_t DATA_TYPE_SHADER_UNIFORM;
 extern const Util::StringIdentifier ATTR_TEXTURE_FILENAME;
 extern const Util::StringIdentifier ATTR_TEXTURE_ID;
 extern const Util::StringIdentifier ATTR_TEXTURE_UNIT;
+extern const Util::StringIdentifier ATTR_TEXTURE_NUM_LAYERS;
+extern const Util::StringIdentifier ATTR_TEXTURE_TYPE;
 
 // DATA_TYPE = "mesh"
 extern const Util::StringIdentifier ATTR_MESH_FILENAME;

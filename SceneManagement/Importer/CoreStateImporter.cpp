@@ -254,7 +254,7 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 	// filename
 	const NodeDescription * dataDesc = dataDescList.front();
 
-	// type
+	// dataType
 	const std::string dataType = dataDesc->getString(Consts::ATTR_DATA_TYPE);
 	if(!Util::StringUtils::beginsWith(dataType.c_str(),"image")) {
 		WARN(std::string("importTextureState: Unknown data type '")+dataType+"' (still trying to load the file though...)");
@@ -263,27 +263,30 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 	// textureUnit
 	const int textureUnit = Util::StringUtils::toNumber<int>(d.getString(Consts::ATTR_TEXTURE_UNIT, "0"));
 
-	Util::Reference<TextureState> ts;
+	const uint32_t numLayers = Util::StringUtils::toNumber<uint32_t>(dataDesc->getString(Consts::ATTR_TEXTURE_NUM_LAYERS, "1"));
+	const std::string textureTypeString = dataDesc->getString(Consts::ATTR_TEXTURE_TYPE);
+	const Rendering::TextureType textureType = textureTypeString.empty() ? 
+													Rendering::TextureType::TEXTURE_2D :
+													static_cast<Rendering::TextureType>(Util::StringUtils::toNumber<uint32_t>(textureTypeString));
+
+	Util::Reference<Rendering::Texture> texture;
 	const Util::FileName fileName(dataDesc->getString(Consts::ATTR_TEXTURE_FILENAME));
 	if(fileName.empty()) {
 		// Load image data from a Base64 encoded block.
-		if(dataDesc->getString(Consts::ATTR_DATA_ENCODING) != Consts::DATA_ENCODING_BASE64) {
+		if(dataDesc->getString(Consts::ATTR_DATA_ENCODING) == Consts::DATA_ENCODING_BASE64) {
+			const std::vector<uint8_t> rawData = Util::decodeBase64(dataDesc->getString(Consts::DATA_BLOCK));
+			texture = Rendering::Serialization::loadTexture(
+											dataDesc->getString(Consts::ATTR_DATA_FORMAT,"png"), std::string(rawData.begin(), rawData.end()),
+											textureType, numLayers);
+		}else{
 			WARN("Unknown data block encoding.");
-			return nullptr;
 		}
-		const std::vector<uint8_t> rawData = Util::decodeBase64(dataDesc->getString(Consts::DATA_BLOCK));
-		Util::Reference<Rendering::Texture> texture = Rendering::Serialization::loadTexture(
-										dataDesc->getString(Consts::ATTR_DATA_FORMAT,"png"), std::string(rawData.begin(), rawData.end()));
-		texture->planMipmapCreation();
-		ts = new TextureState(texture.get());
-		ts->setTextureUnit(textureUnit);
+		if(!texture)
+			texture = Rendering::TextureUtils::createChessTexture(64, 64);
 	} else {
 		const auto location = ctxt.fileLocator.locateFile( fileName );
-	
 		const Util::FileName filename2 = location.first ? location.second : fileName;
-		
-		Util::Reference<Rendering::Texture> texture;
-		
+			
 		if( (ctxt.importOptions & IMPORT_OPTION_USE_TEXTURE_REGISTRY) > 0) {
 			auto it = ctxt.getTextureRegistry().find(filename2.toString());
 			if(it != ctxt.getTextureRegistry().end()) {
@@ -291,9 +294,8 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 				texture = it->second.get();
 			}
 		}
-
 		if( !texture ){
-			texture = Rendering::Serialization::loadTexture(filename2);
+			texture = Rendering::Serialization::loadTexture(filename2, textureType, numLayers);
 			if( (ctxt.importOptions & IMPORT_OPTION_USE_TEXTURE_REGISTRY) > 0) 
 				 ctxt.getTextureRegistry()[filename2.toString()] = texture;
 		}
@@ -304,12 +306,12 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 		}else{
 			texture->setFileName(fileName);	// set original filename
 		}
-		ts = new TextureState(texture.get());
-		texture->planMipmapCreation();
-		ts->setTextureUnit(textureUnit);
-		
-		// markForMipmapCreation
 	}
+	texture->planMipmapCreation();
+	Util::Reference<TextureState> ts;
+	ts = new TextureState(texture.get());
+	ts->setTextureUnit(textureUnit);
+
 	ImporterTools::finalizeState(ctxt, ts.get(), d);
 	parent->addState(ts.get());
 	return true;

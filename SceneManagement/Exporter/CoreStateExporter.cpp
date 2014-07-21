@@ -192,34 +192,35 @@ static void describeTextureState(ExporterContext & /*ctxt*/,NodeDescription & de
 
 	Rendering::Texture * texture = ts->getTexture();
 	if( texture ) {
-		Util::FileName texFilename(texture->getFileName());
+		NodeDescription dataDesc;
+		dataDesc.setString(Consts::ATTR_DATA_TYPE,"image");
 
+		if( texture->getNumLayers()!=1 )
+			dataDesc.setString(Consts::ATTR_TEXTURE_NUM_LAYERS, Util::StringUtils::toString(texture->getNumLayers()));
+		if( texture->getTextureType()!=Rendering::TextureType::TEXTURE_2D )
+			dataDesc.setString(Consts::ATTR_TEXTURE_TYPE, Util::StringUtils::toString( static_cast<uint32_t>(texture->getTextureType())));
+
+		const Util::FileName texFilename(texture->getFileName());
 		if(texFilename.empty()) {
 			auto bitmap = Rendering::TextureUtils::createBitmapFromLocalTexture(*texture);
 
 			std::ostringstream stream;
-			if(bitmap.isNotNull() && Util::Serialization::saveBitmap(*bitmap.get(), "png", stream)) {
+			if(bitmap && Util::Serialization::saveBitmap(*bitmap.get(), "png", stream)) {
 				const std::string streamString = stream.str();
 				const std::string encodedData = Util::encodeBase64(std::vector<uint8_t>(streamString.begin(), streamString.end()));
 
-				NodeDescription dataDesc;
-				dataDesc.setString(Consts::ATTR_DATA_TYPE,"image");
 				dataDesc.setString(Consts::ATTR_DATA_ENCODING,"base64");
 				dataDesc.setString(Consts::ATTR_DATA_FORMAT,"png");
 				dataDesc.setString(Consts::DATA_BLOCK,encodedData);
-				ExporterTools::addDataEntry(desc, std::move(dataDesc));
+			}else{
+				WARN("Texture has no local data."); //... and downloading here is not possible as there is no renderingContext.
 			}
 		} else {
 //			// make path to texture relative to scene (if mesh lies below the scene)
 //			Util::FileUtils::makeRelativeIfPossible(ctxt.sceneFile, texFilename);
-			
-
-			NodeDescription dataDesc;
-			dataDesc.setString(Consts::ATTR_DATA_TYPE,"image");
 			dataDesc.setString(Consts::ATTR_TEXTURE_FILENAME, texFilename.toShortString());
-			ExporterTools::addDataEntry(desc, std::move(dataDesc));
-
 		}
+		ExporterTools::addDataEntry(desc, std::move(dataDesc));
 	}
 }
 
