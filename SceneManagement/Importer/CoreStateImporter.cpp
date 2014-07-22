@@ -231,6 +231,16 @@ static bool reuseState(ImportContext & ctxt, const std::string & /*stateType*/, 
 	return false;
 }
 
+static Util::Reference<Rendering::Texture> createFallbackTexture(Rendering::TextureType type,uint32_t numLayers){
+	if(type==Rendering::TextureType::TEXTURE_2D){
+		 return Rendering::TextureUtils::createChessTexture(64, 64);
+	}else{
+		auto texture = Rendering::TextureUtils::createDataTexture(type, 16, 16, numLayers, Util::TypeConstant::UINT8, 4);
+		if(!texture)
+			texture = Rendering::TextureUtils::createChessTexture(64, 64);
+		return texture;
+	}
+}
 static bool importTextureState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_TEXTURE || parent == nullptr)
 		return false;
@@ -279,10 +289,10 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 											dataDesc->getString(Consts::ATTR_DATA_FORMAT,"png"), std::string(rawData.begin(), rawData.end()),
 											textureType, numLayers);
 		}else{
-			WARN("Unknown data block encoding.");
+			WARN("importTextureState: Invalid or no Texture data.");
 		}
 		if(!texture)
-			texture = Rendering::TextureUtils::createChessTexture(64, 64);
+			texture = createFallbackTexture(textureType, numLayers);
 	} else {
 		const auto location = ctxt.fileLocator.locateFile( fileName );
 		const Util::FileName filename2 = location.first ? location.second : fileName;
@@ -301,7 +311,7 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 		}
 		if( !texture ) {
 			WARN(std::string("Could not load texture: ") + filename2.toString());
-			texture = Rendering::TextureUtils::createChessTexture(64, 64);
+			texture = createFallbackTexture(textureType, numLayers);
 			texture->setFileName(filename2);
 		}else{
 			texture->setFileName(fileName);	// set original filename
