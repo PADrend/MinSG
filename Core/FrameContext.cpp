@@ -260,7 +260,8 @@ void FrameContext::showAnnotation(Node * node, const std::string & text, const i
 
 	
 	if(showRectangle){
-		Rendering::enable2DMode(*renderingContext);
+		Rendering::enable2DMode(*renderingContext,cameraViewport);
+		
 		renderingContext->pushAndSetBlending(Rendering::BlendingParameters());
 		renderingContext->pushAndSetDepthBuffer(Rendering::DepthBufferParameters(false, false, Rendering::Comparison::LESS));
 		renderingContext->pushAndSetLighting(Rendering::LightingParameters());
