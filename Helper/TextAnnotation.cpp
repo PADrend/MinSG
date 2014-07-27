@@ -9,6 +9,7 @@
 
 #include "TextAnnotation.h"
 #include "../Core/FrameContext.h"
+#include "../Core/Nodes/AbstractCameraNode.h"
 #include <Geometry/Rect.h>
 #include <Geometry/Vec2.h>
 #include <Geometry/Vec3.h>
@@ -49,7 +50,10 @@ void displayText(FrameContext & frameContext,
 	const Geometry::Vec2i textPos(bgRect.getX() - textRect.getX() + borderWidth,
 								  bgRect.getY() - textRect.getY() + borderHeight);
 
-	Rendering::enable2DMode(renderingContext);
+	if(frameContext.hasCamera())
+		Rendering::enable2DMode(renderingContext,frameContext.getCamera()->getViewport());
+	else
+		Rendering::enable2DMode(renderingContext);
 	renderingContext.pushAndSetBlending(Rendering::BlendingParameters());
 	renderingContext.pushAndSetDepthBuffer(Rendering::DepthBufferParameters(false, false, Rendering::Comparison::LESS));
 	renderingContext.pushAndSetLighting(Rendering::LightingParameters());
@@ -63,9 +67,11 @@ void displayText(FrameContext & frameContext,
 	renderingContext.popLighting();
 	renderingContext.popDepthBuffer();
 	renderingContext.popBlending();
-	Rendering::disable2DMode(renderingContext);
 
 	textRenderer.draw(renderingContext, wideText, textPos, textColor);
+
+	Rendering::disable2DMode(renderingContext);
+
 }
 
 }
