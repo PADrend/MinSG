@@ -16,6 +16,7 @@
 #include <Rendering/MeshUtils/MeshUtils.h>
 #include <MinSG/Core/Nodes/Node.h>
 #include <MinSG/Core/Nodes/GeometryNode.h>
+#include <MinSG/Core/Nodes/LightNode.h>
 #include <random>
 //#include <GL/glew.h>
 
@@ -30,6 +31,8 @@ namespace ThesisPeter {
 const Util::StringIdentifier NodeCreaterVisitor::staticNodeIdent = Util::StringIdentifier(NodeAttributeModifier::create("staticNode", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 const Util::StringIdentifier LightNodeManager::lightNodeIDIdent = Util::StringIdentifier(NodeAttributeModifier::create("lightNodeID", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 unsigned int NodeCreaterVisitor::nodeIndex = 0;
+
+const float LightNodeManager::MAX_EDGE_LENGTH = 10.0f;
 
 NodeCreaterVisitor::NodeCreaterVisitor(){
 	nodeIndex = 0;
@@ -55,6 +58,8 @@ NodeCreaterVisitor::status NodeCreaterVisitor::leave(MinSG::Node* node){
 
 		//map the light nodes to the objects
 		LightNodeManager::mapLightNodesToObject(lightNodeMap->geometryNode, &lightNodeMap->lightNodes);
+	} else if(typeid(node) == typeid(MinSG::LightNode)){
+		//TODO: implement light nodes
 	}
 
 	return CONTINUE_TRAVERSAL;
@@ -62,6 +67,10 @@ NodeCreaterVisitor::status NodeCreaterVisitor::leave(MinSG::Node* node){
 
 LightNodeManager::LightNodeManager(){
 
+}
+
+void LightNodeManager::setSceneRootNode(MinSG::Node *sceneRootNode){
+	this->sceneRootNode = sceneRootNode;
 }
 
 void LightNodeManager::createLightNodes(MinSG::Node *rootNode){
@@ -80,11 +89,29 @@ void LightNodeManager::mapLightNodesToObject(MinSG::GeometryNode* node, std::vec
 	mapLightNodesToObjectClosest(node, lightNodes);
 }
 
-void LightNodeManager::addAttribute(Rendering::Mesh *mesh){
-//		Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::POSITION));
-//		Util::Reference<Rendering::NormalAttributeAccessor> normalAccessor(Rendering::NormalAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::NORMAL));
-//		Util::Reference<Rendering::ColorAttributeAccessor> colorAccessor(Rendering::ColorAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::COLOR));
-
+void LightNodeManager::createLightEdges(){
+	//TODO: fasten up (e.g. with octree)
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		//create (possible) internal edges
+		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
+            for(unsigned int k = j + 1; k < lightNodeMaps[i]->lightNodes.size(); k++){
+            	//take maximum edge length into account
+            	LightNode* source = lightNodeMaps[i]->lightNodes[j];
+            	LightNode* target = lightNodeMaps[i]->lightNodes[k];
+				float distance = source->position.distance(target->position);
+				if(distance <= MAX_EDGE_LENGTH){
+					if(isVisible(source, target)){
+						LightEdge* lightEdge = new LightEdge();
+						lightEdge->source = source;
+						lightEdge->target = target;
+						lightEdge->weight = 1.0f / (distance * distance);	//quadratic decrease of light
+						lightNodeMaps[i]->internalLightEdges.push_back(lightEdge);
+					}
+				}
+            }
+            filterIncorrectEdges(lightNodeMaps[i]->internalLightEdges);
+		}
+	}
 }
 
 void LightNodeManager::setLightRootNode(MinSG::Node *rootNode){
@@ -124,13 +151,15 @@ void LightNodeManager::createLightNodesPerVertexRandom(MinSG::GeometryNode* node
 void LightNodeManager::mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
 	Rendering::Mesh* mesh = node->getMesh();
 
-	//add new vertex attribute
+	//add new vertex attribute (if not existent)
 	Rendering::VertexDescription description = mesh->getVertexDescription();
-//	description.appendAttribute(lightNodeIDIdent, 1, GL_UNSIGNED_INT);
-	description.appendUnsignedIntAttribute(lightNodeIDIdent, 1);
-	Rendering::MeshVertexData& oldData = mesh->openVertexData();
-	std::unique_ptr<Rendering::MeshVertexData> newData(Rendering::MeshUtils::convertVertices(oldData, description));
-	oldData.swap(*newData);
+	if(!description.hasAttribute(lightNodeIDIdent)){
+//		description.appendAttribute(lightNodeIDIdent, 1, GL_UNSIGNED_INT);
+		description.appendUnsignedIntAttribute(lightNodeIDIdent, 1);
+		Rendering::MeshVertexData& oldData = mesh->openVertexData();
+		std::unique_ptr<Rendering::MeshVertexData> newData(Rendering::MeshUtils::convertVertices(oldData, description));
+		oldData.swap(*newData);
+	}
 
 	Util::Reference<Rendering::PositionAttributeAccessor> posAcc = Rendering::PositionAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::POSITION);
 	Util::Reference<Rendering::LightNodeIndexAttributeAccessor> lniAcc = Rendering::LightNodeIndexAttributeAccessor::create(mesh->openVertexData(), lightNodeIDIdent);
@@ -148,6 +177,21 @@ void LightNodeManager::mapLightNodesToObjectClosest(MinSG::GeometryNode* node, s
 		//set lightNodeIndex to vertex
 		lniAcc->setLightNodeIndex(i, bestIndex);
 	}
+}
+
+bool LightNodeManager::isVisible(LightNode* source, LightNode* target){
+	Geometry::Vec3 direction = target->position - source->position;
+	//quick test, if the angles could fit
+	if(target->position.dot(direction) < 0 || source->position.dot(direction) > 0){
+		return false;
+	} else {
+		//TODO: do a correct ray cast or filter later all edges
+		return true;
+	}
+}
+
+void LightNodeManager::filterIncorrectEdges(std::vector<LightEdge*> edges){
+
 }
 
 }

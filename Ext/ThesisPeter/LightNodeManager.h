@@ -80,8 +80,15 @@ struct LightNode {
 	Util::Color4f color;
 };
 
+struct LightEdge {
+	LightNode* source;
+	LightNode* target;
+	float weight;
+};
+
 struct LightNodeMap {
 	std::vector<LightNode*> lightNodes;
+	std::vector<LightEdge*> internalLightEdges;
 	MinSG::GeometryNode* geometryNode;
 };
 
@@ -114,19 +121,25 @@ class LightNodeManager {
 	PROVIDES_TYPE_NAME(LightNodeManager)
 public:
 	LightNodeManager();
+	void setSceneRootNode(MinSG::Node *sceneRootNode);
 	void createLightNodes(MinSG::Node *rootNode);
 	static void createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static void mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
-	static void addAttribute(Rendering::Mesh *mesh);
-//	static void createLightEdges(lightNodes);
+	void createLightEdges();
+
+	static const float MAX_EDGE_LENGTH;
 
 private:
 	void setLightRootNode(MinSG::Node *rootNode);
 	static void createLightNodesPerVertexRandom(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float randomVal);
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
+	static bool isVisible(LightNode* source, LightNode* target);
+	static void filterIncorrectEdges(std::vector<LightEdge*> edges);
 
 	MinSG::Node* lightRootNode;
+	MinSG::Node* sceneRootNode;
 	std::vector<LightNodeMap*> lightNodeMaps;
+	std::vector<LightEdge*> lightEdges;
 
 	static const Util::StringIdentifier lightNodeIDIdent;
 };
