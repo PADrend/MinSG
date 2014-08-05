@@ -54,11 +54,11 @@
 namespace MinSG {
 namespace SceneManagement {
 
-static void describeOccRenderer(ExporterContext &,NodeDescription & desc,State *) {
+static void describeOccRenderer(ExporterContext &,DescriptionMap & desc,State *) {
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_OCC_RENDERER);
 }
 
-static void describeCHCppRenderer(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeCHCppRenderer(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto chcpp = dynamic_cast<CHCppRenderer *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_CHCPP_RENDERER);
 	desc.setValue(Consts::ATTR_CHCPP_VISIBILITYTHRESHOLD, Util::GenericAttribute::createNumber<uint16_t>(chcpp->getVisibilityThreshold()));
@@ -68,7 +68,7 @@ static void describeCHCppRenderer(ExporterContext &,NodeDescription & desc,State
 	desc.setValue(Consts::ATTR_CHCPP_MAXAREADERIVATIONFORTIGHTBOUNDINGVOLUMES, Util::GenericAttribute::createNumber<float>(chcpp->getMaxAreaDerivationForTightBoundingVolumes()));
 }
 
-static void describeBudgetAnnotationState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeBudgetAnnotationState(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto bas = dynamic_cast<BudgetAnnotationState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_BUDGET_ANNOTATION_STATE);
 	desc.setValue(Consts::ATTR_BAS_ANNOTATION_ATTRIBUTE, Util::GenericAttribute::create(bas->getAnnotationAttribute().toString()));
@@ -76,13 +76,13 @@ static void describeBudgetAnnotationState(ExporterContext &,NodeDescription & de
 	desc.setValue(Consts::ATTR_BAS_DISTRIBUTION_TYPE, Util::GenericAttribute::create(BudgetAnnotationState::distributionTypeToString(bas->getDistributionType())));
 }
 
-static void describeMirrorState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeMirrorState(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto ms = dynamic_cast<MirrorState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_MIRROR_STATE);
 	desc.setValue(Consts::ATTR_MIRROR_TEXTURE_SIZE, Util::GenericAttribute::createNumber<uint16_t>(ms->getTextureSize()));
 }
 
-static void describeProjSizeFilterState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeProjSizeFilterState(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto psfs = dynamic_cast<ProjSizeFilterState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_PROJ_SIZE_FILTER_STATE);
 	desc.setValue(Consts::ATTR_PSFS_MAXIMUM_PROJECTED_SIZE, Util::GenericAttribute::createNumber(psfs->getMaximumProjSize()));
@@ -93,7 +93,7 @@ static void describeProjSizeFilterState(ExporterContext &,NodeDescription & desc
 }
 
 #ifdef MINSG_EXT_BLUE_SURFELS
-static void describeSurfelRenderer(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeSurfelRenderer(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto renderer = dynamic_cast<BlueSurfels::SurfelRenderer *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SURFEL_RENDERER);
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, Util::GenericAttribute::createNumber(renderer->getCountFactor()));
@@ -104,7 +104,7 @@ static void describeSurfelRenderer(ExporterContext &,NodeDescription & desc,Stat
 #endif // MINSG_EXT_BLUE_SURFELS
 
 #ifdef MINSG_EXT_COLORCUBES
-static void describeColorCubeRenderer(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeColorCubeRenderer(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto cr = dynamic_cast<ColorCubeRenderer*>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_COLOR_CUBE_RENDERER);
 	desc.setString(Consts::ATTR_COLOR_CUBE_RENDERER_HIGHLIGHT, Util::StringUtils::toString(cr->isHighlightEnabled()));
@@ -112,7 +112,7 @@ static void describeColorCubeRenderer(ExporterContext &,NodeDescription & desc,S
 #endif
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-static void describeSkeletalRendererState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeSkeletalRendererState(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto srs = dynamic_cast<SkeletalAbstractRendererState *>(state);
 	std::stringstream ss;
 	ss << srs->getBindMatrix();
@@ -122,7 +122,7 @@ static void describeSkeletalRendererState(ExporterContext &,NodeDescription & de
 #endif
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
-static void describeAlgoSelector(ExporterContext & ctxt,NodeDescription & desc,State * state) {
+static void describeAlgoSelector(ExporterContext & ctxt,DescriptionMap & desc,State * state) {
 	auto as = dynamic_cast<MAR::AlgoSelector*>(state);
 	assert(as);
 	
@@ -134,7 +134,7 @@ static void describeAlgoSelector(ExporterContext & ctxt,NodeDescription & desc,S
 	auto out = Util::FileUtils::openForWriting(file);
 	as->write(*(out.get()));
 }
-static void describeMARSurfelRenderer(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeMARSurfelRenderer(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto sr = dynamic_cast<MAR::SurfelRenderer*>(state);
 	assert(sr);
 	
@@ -148,7 +148,7 @@ static void describeMARSurfelRenderer(ExporterContext &,NodeDescription & desc,S
 #endif
 
 #ifdef MINSG_EXT_SVS
-static void describeSVSRenderer(ExporterContext &, NodeDescription & desc, State * state) {
+static void describeSVSRenderer(ExporterContext &, DescriptionMap & desc, State * state) {
 	auto renderer = dynamic_cast<SVS::Renderer *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SVS_RENDERER);
 	desc.setString(Consts::ATTR_SVS_INTERPOLATION_METHOD, SVS::interpolationToString(renderer->getInterpolationMethod()));
@@ -156,14 +156,14 @@ static void describeSVSRenderer(ExporterContext &, NodeDescription & desc, State
 	desc.setValue(Consts::ATTR_SVS_RENDERER_GEOMETRY_OCCLUSION_TEST, Util::GenericAttribute::createBool(renderer->isGeometryOcclusionTestEnabled()));
 }
 
-static void describeSVSBudgetRenderer(ExporterContext &, NodeDescription & desc, State * state) {
+static void describeSVSBudgetRenderer(ExporterContext &, DescriptionMap & desc, State * state) {
 	auto renderer = dynamic_cast<SVS::BudgetRenderer *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SVS_BUDGETRENDERER);
 	desc.setValue(Consts::ATTR_SVS_BUDGETRENDERER_BUDGET, Util::GenericAttribute::createNumber<uint32_t>(renderer->getBudget()));
 }
 #endif
 
-static void describeLODRenderer(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeLODRenderer(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto renderer = dynamic_cast<LODRenderer *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_LOD_RENDERER);
 	desc.setValue(Consts::ATTR_LOD_RENDERER_MAX_COMPLEXITY, Util::GenericAttribute::createNumber(renderer->getMaxComplexity()));

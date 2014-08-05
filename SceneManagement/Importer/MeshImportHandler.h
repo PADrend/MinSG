@@ -20,7 +20,7 @@ class FileLocator;
 namespace MinSG {
 class Node;
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 
 /**
  * Class that registers itself at the SceneManager and then is responsible to load meshes.
@@ -42,7 +42,7 @@ class MeshImportHandler {
 		 * @param description Description of the Node to which the mesh belongs.
 		 * @return Arbitrary node or tree of nodes that represents the mesh inside the scene graph.
 		 */
-		virtual Node * handleImport(const Util::FileLocator& locator, const std::string & url, const NodeDescription * description);
+		virtual Node * handleImport(const Util::FileLocator& locator, const std::string & url, const DescriptionMap * description);
 };
 
 }

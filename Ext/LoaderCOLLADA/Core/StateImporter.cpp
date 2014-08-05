@@ -35,7 +35,7 @@ namespace MinSG {
 namespace LoaderCOLLADA {
 
 bool materialCoreImporter(const COLLADAFW::Material * material, referenceRegistry_t & referenceRegistry) {
-	auto materialDesc = new SceneManagement::NodeDescription;
+	auto materialDesc = new SceneManagement::DescriptionMap;
 
 	materialDesc->setValue(Consts::DAE_REFERENCE, new daeReferenceData(material->getInstantiatedEffect()));
 
@@ -44,12 +44,12 @@ bool materialCoreImporter(const COLLADAFW::Material * material, referenceRegistr
 }
 
 bool imageCoreImporter(const COLLADAFW::Image * image, referenceRegistry_t & referenceRegistry) {
-	auto textureDesc = new SceneManagement::NodeDescription;
+	auto textureDesc = new SceneManagement::DescriptionMap;
 
 	textureDesc->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_STATE);
 	textureDesc->setString(SceneManagement::Consts::ATTR_STATE_TYPE, SceneManagement::Consts::STATE_TYPE_TEXTURE);
 
-	auto dataDesc = new SceneManagement::NodeDescription;
+	auto dataDesc = new SceneManagement::DescriptionMap;
 	dataDesc->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_DATA);
 	dataDesc->setString(SceneManagement::Consts::ATTR_DATA_TYPE, "image");
 	dataDesc->setString(SceneManagement::Consts::ATTR_TEXTURE_FILENAME, image->getImageURI().originalStr());
@@ -61,7 +61,7 @@ bool imageCoreImporter(const COLLADAFW::Image * image, referenceRegistry_t & ref
 }
 
 bool effectCoreImporter(const COLLADAFW::Effect * effect, referenceRegistry_t & referenceRegistry, bool invertTransparency) {
-	auto desc = new SceneManagement::NodeDescription;
+	auto desc = new SceneManagement::DescriptionMap;
 
 	desc->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_STATE);
 	desc->setString(SceneManagement::Consts::ATTR_STATE_TYPE, SceneManagement::Consts::STATE_TYPE_MATERIAL);
@@ -103,7 +103,7 @@ bool effectCoreImporter(const COLLADAFW::Effect * effect, referenceRegistry_t & 
 			desc->setString(SceneManagement::Consts::ATTR_MATERIAL_SHININESS, valueStream.str());
 		}
 		if(commonEffect->getOpacity().getColor().getAlpha() < 1.0) {
-			auto transDesc = new SceneManagement::NodeDescription;
+			auto transDesc = new SceneManagement::DescriptionMap;
 			transDesc->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_STATE);
 			transDesc->setString(SceneManagement::Consts::ATTR_STATE_TYPE, SceneManagement::Consts::STATE_TYPE_BLENDING);
 			float alpha = commonEffect->getOpacity().getColor().getAlpha();
@@ -118,7 +118,7 @@ bool effectCoreImporter(const COLLADAFW::Effect * effect, referenceRegistry_t & 
 
 		const auto & samplers = commonEffect->getSamplerPointerArray();
 		for(size_t j = 0; j < samplers.getCount(); ++j) {
-			auto imageDesc = new SceneManagement::NodeDescription;
+			auto imageDesc = new SceneManagement::DescriptionMap;
 			imageDesc->setString(SceneManagement::Consts::ATTR_STATE_TYPE, SceneManagement::Consts::STATE_TYPE_TEXTURE);
 			imageDesc->setValue(Consts::DAE_REFERENCE, new daeReferenceData(samplers[j]->getSourceImage()));
 			imageDesc->setString(SceneManagement::Consts::ATTR_TEXTURE_UNIT, Util::StringUtils::toString(j));

@@ -30,16 +30,16 @@ namespace MinSG {
 class Node;
 namespace OutOfCore {
 
-Node * ImportHandler::handleImport(const Util::FileLocator& locator,const std::string & filename, const SceneManagement::NodeDescription * description) {
+Node * ImportHandler::handleImport(const Util::FileLocator& locator,const std::string & filename, const SceneManagement::DescriptionMap * description) {
 	const std::string meshBBString = description->getString(SceneManagement::Consts::ATTR_MESH_BB);
-	if (meshBBString.empty()) {
+	if(meshBBString.empty()) {
 		WARN("Found mesh that is not handled here (bounding box is not available).");
 		return SceneManagement::MeshImportHandler::handleImport(locator, filename, description);
 	}
 	const auto location = locator.locateFile(Util::FileName(filename));
 	const Util::FileName url = location.second; // continue even if the existence of the file could not be verified (location.first==false)
 	
-	if ((url.getEnding() != "mmf" && url.getEnding() != "ply")) {
+	if((url.getEnding() != "mmf" && url.getEnding() != "ply")) {
 		WARN("Found mesh that is not handled here (\"" + url.toString() + "\" does not end with \"mmf\" or \"ply\").");
 		return SceneManagement::MeshImportHandler::handleImport(locator, filename, description);
 	}

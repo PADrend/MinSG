@@ -31,7 +31,7 @@ namespace SceneManagement {
 
 #ifdef MINSG_EXT_VISIBILITY_SUBDIVISION
 using namespace VisibilitySubdivision;
-static bool importAdditionalVisibilityVectorData(ImportContext & ctxt, const std::string & type, const NodeDescription & d) {
+static bool importAdditionalVisibilityVectorData(ImportContext & ctxt, const std::string & type, const DescriptionMap & d) {
 	// Special case to load a VisibilityVector.
 	if(type == "visibility_vector") {
 		const std::string valueStr = d.getString(Consts::ATTR_ATTRIBUTE_VALUE);

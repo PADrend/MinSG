@@ -23,11 +23,11 @@ class GenericAttributeMap;
 }
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 }
 namespace LoaderCOLLADA {
 
-SceneManagement::NodeDescription * fileInformationImporter(const COLLADAFW::FileInfo * asset, referenceRegistry_t & referenceRegistry);
+SceneManagement::DescriptionMap * fileInformationImporter(const COLLADAFW::FileInfo * asset, referenceRegistry_t & referenceRegistry);
 
 }
 }

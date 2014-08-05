@@ -40,7 +40,7 @@
 namespace MinSG {
 namespace SceneManagement {
 
-static bool importLightNode(ImportContext & ctxt, const std::string & nodeType, const NodeDescription & d, GroupNode * parent) {
+static bool importLightNode(ImportContext & ctxt, const std::string & nodeType, const DescriptionMap & d, GroupNode * parent) {
 	if(nodeType != Consts::NODE_TYPE_LIGHT || parent == nullptr)
 		return false;
 
@@ -64,7 +64,7 @@ static bool importLightNode(ImportContext & ctxt, const std::string & nodeType, 
 
 	// \note if a Light node is created and a scene root node is given, it is enlighted with this light
 	// (Important for the import of lights in collada files. When a MinSG file is read, the sceneRoot is just a dummy node and the state is lost afterwards)
-	if(ctxt.getRootNode() != nullptr) {
+	if(ctxt.getRootNode()) {
 		// Add state referencing the generated light node.
 		auto lightState = new LightingState;
 		lightState->setLight(dynamic_cast<LightNode *>(node));
@@ -76,7 +76,7 @@ static bool importLightNode(ImportContext & ctxt, const std::string & nodeType, 
 	return true;
 }
 
-static bool importClone(ImportContext & ctxt, const std::string & nodeType, const NodeDescription & d, GroupNode * parent) {
+static bool importClone(ImportContext & ctxt, const std::string & nodeType, const DescriptionMap & d, GroupNode * parent) {
 	if(nodeType != Consts::NODE_TYPE_CLONE || parent == nullptr)
 		return false;
 
@@ -91,7 +91,7 @@ static bool importClone(ImportContext & ctxt, const std::string & nodeType, cons
 	return true;
 }
 
-static bool importListNode(ImportContext & ctxt, const std::string & nodeType, const NodeDescription & d, GroupNode * parent) {
+static bool importListNode(ImportContext & ctxt, const std::string & nodeType, const DescriptionMap & d, GroupNode * parent) {
 	if(nodeType != Consts::NODE_TYPE_LIST || parent == nullptr)
 		return false;
 
@@ -102,7 +102,7 @@ static bool importListNode(ImportContext & ctxt, const std::string & nodeType, c
 	return true;
 }
 
-static bool importCameraNode(ImportContext & ctxt, const std::string & nodeType, const NodeDescription & d, GroupNode * parent) {
+static bool importCameraNode(ImportContext & ctxt, const std::string & nodeType, const DescriptionMap & d, GroupNode * parent) {
 	if(nodeType != Consts::NODE_TYPE_CAMERA || parent == nullptr)
 		return false;
 
@@ -124,12 +124,12 @@ static bool importCameraNode(ImportContext & ctxt, const std::string & nodeType,
 	return true;
 }
 
-static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeType, const NodeDescription & d, GroupNode * parent) {
+static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeType, const DescriptionMap & d, GroupNode * parent) {
 	if(nodeType != Consts::NODE_TYPE_GEOMETRY || parent == nullptr)
 		return false;
 
 	const auto dataDescList = ImporterTools::filterElements(Consts::TYPE_DATA,
-															dynamic_cast<const NodeDescriptionList *>(d.getValue(Consts::CHILDREN)));
+															dynamic_cast<const DescriptionArray *>(d.getValue(Consts::CHILDREN)));
 	if(dataDescList.empty()) {// No data block given -> GeometryNode intentionally without mesh
 		auto gn = new GeometryNode;
 		ImporterTools::finalizeNode(ctxt, gn, d);
@@ -138,7 +138,7 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 	}
 	if(dataDescList.size() != 1)
 		WARN(std::string("GeometryNode needs one data description. Got ") + Util::StringUtils::toString(dataDescList.size()));
-	const NodeDescription * dataDesc = dataDescList.front();
+	const DescriptionMap * dataDesc = dataDescList.front();
 
 	/// GeometryNode
 	std::string dataType = dataDesc->getString(Consts::ATTR_DATA_TYPE);
@@ -182,7 +182,7 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 		}
 
 	} // Load MMF data from a Base64 encoded block.
-	else if(dataDesc->getValue(Consts::DATA_BLOCK) != nullptr) {
+	else if(dataDesc->getValue(Consts::DATA_BLOCK)) {
 		const std::string dataBlock = dataDesc->getString(Consts::DATA_BLOCK);
 		if(dataDesc->getString(Consts::ATTR_DATA_ENCODING) != Consts::DATA_ENCODING_BASE64) {
 			WARN("Unknown data block encoding.");
@@ -234,7 +234,7 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 }
 
 //! template for new importers
-// static bool importXY(ImportContext & ctxt, const std::string & nodeType, const NodeDescription & d, GroupNode * parent) {
+// static bool importXY(ImportContext & ctxt, const std::string & nodeType, const DescriptionMap & d, GroupNode * parent) {
 //  if(nodeType != Consts::NODE_TYPE_XY) // check parent != nullptr is done by SceneManager
 //      return false;
 //

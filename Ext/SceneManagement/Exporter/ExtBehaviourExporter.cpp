@@ -39,12 +39,12 @@ namespace MinSG {
 namespace SceneManagement {
 
 #ifdef MINSG_EXT_WAYPOINTS
-static NodeDescription * exportFollowPathBehaviour(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
+static DescriptionMap * exportFollowPathBehaviour(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
 	FollowPathBehaviour * fpb=dynamic_cast<FollowPathBehaviour *>(behaviour);
 	if(!fpb)
 		return nullptr;
 
-	auto desc = new NodeDescription;
+	auto desc = new DescriptionMap;
 	desc->setString(Consts::ATTR_BEHAVIOUR_TYPE, Consts::BEHAVIOUR_TYPE_FOLLOW_PATH);
 
 	PathNode * path = fpb->getPath();
@@ -63,7 +63,7 @@ static NodeDescription * exportFollowPathBehaviour(ExporterContext & ctxt,Abstra
 
 
 #ifdef MINSG_EXT_PARTICLE
-static void exportEmitter(ParticleEmitter * em, NodeDescription * attr, ExporterContext & ctxt) {
+static void exportEmitter(ParticleEmitter * em, DescriptionMap * attr, ExporterContext & ctxt) {
 	attr->setValue(Consts::ATTR_PARTICLE_PER_SECOND, Util::GenericAttribute::createNumber(em->getParticlesPerSecond()));
 
 	std::stringstream pos;
@@ -98,11 +98,11 @@ static void exportEmitter(ParticleEmitter * em, NodeDescription * attr, Exporter
 	attr->setValue(Consts::ATTR_PARTICLE_TIME_OFFSET, Util::GenericAttribute::createNumber(em->getTimeOffset()));
 }
 
-static NodeDescription * exportParticleGravityAffector(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
+static DescriptionMap * exportParticleGravityAffector(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
 	if(behaviour == nullptr || behaviour->getTypeId() != ParticleGravityAffector::getClassId())
 		return nullptr;
 
-	auto behaviourProps = new NodeDescription();
+	auto behaviourProps = new DescriptionMap();
 	ParticleGravityAffector * af = static_cast<ParticleGravityAffector *>(behaviour);
 	behaviourProps->setString(Consts::ATTR_BEHAVIOUR_TYPE, Consts::BEHAVIOUR_TYPE_PARTICLE_GRAVITY_AFFECTOR);
 
@@ -112,11 +112,11 @@ static NodeDescription * exportParticleGravityAffector(ExporterContext & /*ctxt*
 
 	return behaviourProps;
 }
-static NodeDescription * exportParticleReflectionAffector(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
+static DescriptionMap * exportParticleReflectionAffector(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
 	if(behaviour == nullptr || behaviour->getTypeId() != ParticleReflectionAffector::getClassId())
 		return nullptr;
 
-	auto behaviourProps = new NodeDescription;
+	auto behaviourProps = new DescriptionMap;
 	ParticleReflectionAffector * af = static_cast<ParticleReflectionAffector *>(behaviour);
 	behaviourProps->setString(Consts::ATTR_BEHAVIOUR_TYPE, Consts::BEHAVIOUR_TYPE_PARTICLE_REFLECTION_AFFECTOR);
 
@@ -130,31 +130,31 @@ static NodeDescription * exportParticleReflectionAffector(ExporterContext & /*ct
 	return behaviourProps;
 }
 
-static NodeDescription * exportParticleFadeOutAffector(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
+static DescriptionMap * exportParticleFadeOutAffector(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
 	if(behaviour == nullptr || behaviour->getTypeId() != ParticleFadeOutAffector::getClassId())
 		return nullptr;
 
-	auto behaviourProps = new NodeDescription();
+	auto behaviourProps = new DescriptionMap();
 	behaviourProps->setString(Consts::ATTR_BEHAVIOUR_TYPE, Consts::BEHAVIOUR_TYPE_PARTICLE_FADE_OUT_AFFECTOR);
 
 	return behaviourProps;
 }
 
-static NodeDescription * exportParticleAnimator(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
+static DescriptionMap * exportParticleAnimator(ExporterContext & /*ctxt*/,AbstractBehaviour * behaviour) {
 	if(behaviour == nullptr || behaviour->getTypeId() != ParticleAnimator::getClassId())
 		return nullptr;
 
-	auto behaviourProps = new NodeDescription();
+	auto behaviourProps = new DescriptionMap();
 	behaviourProps->setString(Consts::ATTR_BEHAVIOUR_TYPE, Consts::BEHAVIOUR_TYPE_PARTICLE_ANIMATOR);
 
 	return behaviourProps;
 }
 
-static NodeDescription * exportParticlePointEmitter(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
+static DescriptionMap * exportParticlePointEmitter(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
 	if(behaviour == nullptr || behaviour->getTypeId() != ParticlePointEmitter::getClassId())
 		return nullptr;
 
-	auto behaviourProps = new NodeDescription();
+	auto behaviourProps = new DescriptionMap();
 	behaviourProps->setString(Consts::ATTR_BEHAVIOUR_TYPE, Consts::BEHAVIOUR_TYPE_PARTICLE_POINT_EMITTER);
 	ParticlePointEmitter * em = dynamic_cast<ParticlePointEmitter *>(behaviour);
 	exportEmitter(em, behaviourProps, ctxt);
@@ -165,11 +165,11 @@ static NodeDescription * exportParticlePointEmitter(ExporterContext & ctxt,Abstr
 	return behaviourProps;
 }
 
-static NodeDescription * exportParticleBoxEmitter(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
+static DescriptionMap * exportParticleBoxEmitter(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
 	if(behaviour == nullptr || behaviour->getTypeId() != ParticleBoxEmitter::getClassId())
 		return nullptr;
 
-	auto behaviourProps = new NodeDescription();
+	auto behaviourProps = new DescriptionMap();
 	behaviourProps->setString(Consts::ATTR_BEHAVIOUR_TYPE, Consts::BEHAVIOUR_TYPE_PARTICLE_BOX_EMITTER);
 	ParticleBoxEmitter * em = dynamic_cast<ParticleBoxEmitter *>(behaviour);
 	exportEmitter(em, behaviourProps, ctxt);
@@ -184,28 +184,28 @@ static NodeDescription * exportParticleBoxEmitter(ExporterContext & ctxt,Abstrac
 #endif
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-	static NodeDescription * exportSkeletalAnimationBehaviour(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
+	static DescriptionMap * exportSkeletalAnimationBehaviour(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
 		if(behaviour == nullptr || behaviour->getTypeId() != AnimationBehaviour::getClassId())
 			return nullptr;
-        
+		
 		AnimationBehaviour *ani = dynamic_cast<AnimationBehaviour *>(behaviour);
-        if(ani->getStatus() == AnimationBehaviour::DESTROYED)
-            return nullptr;
+		if(ani->getStatus() == AnimationBehaviour::DESTROYED)
+			return nullptr;
 
-		auto desc = new NodeDescription();
+		auto desc = new DescriptionMap();
 		desc->setString(Consts::ATTR_BEHAVIOUR_TYPE, Consts::BEHAVIOUR_TYPE_SKEL_ANIMATIONDATA);
 		desc->setString(Consts::ATTR_SKEL_SKELETALANIMATIONNAME, ani->getName());
-		auto poseDesc = new NodeDescriptionList();
+		auto poseDesc = new DescriptionArray();
 		std::vector<AbstractPose *> poses;
-        for(auto pose : ani->getPoses())
-            if(dynamic_cast<AbstractPose *> (pose) != nullptr)
-                poses.emplace_back(dynamic_cast<AbstractPose *>(pose));
-        
-        std::stringstream ss;
+		for(auto pose : ani->getPoses())
+			if(dynamic_cast<AbstractPose *>(pose))
+				poses.emplace_back(dynamic_cast<AbstractPose *>(pose));
+		
+		std::stringstream ss;
 		for(const auto & pose : poses)
 		{
-            ss.str("");
-			auto child = new NodeDescription();
+			ss.str("");
+			auto child = new DescriptionMap();
 			{
 				ss.str("");
 				auto it = pose->getKeyframes().begin();
@@ -239,7 +239,7 @@ static NodeDescription * exportParticleBoxEmitter(ExporterContext & ctxt,Abstrac
 				}
 				child->setString(Consts::ATTR_SKEL_SKELETALINTERPOLATIONTYPE, ss.str());
 			}
-            
+			
 			ss.str("");
 			ss << pose->getStartTime();
 			child->setString(Consts::ATTR_SKEL_SKELETALANIMATIONSTARTTIME, ss.str());
@@ -249,26 +249,26 @@ static NodeDescription * exportParticleBoxEmitter(ExporterContext & ctxt,Abstrac
 			poseDesc->push_back(child);
 		}
 		desc->setString(Consts::DATA_BLOCK, poseDesc->toJSON());
-        
-        ss.str("");
-        for(auto fromAni=ani->getFromAnimations().begin(); fromAni!=ani->getFromAnimations().end(); ++fromAni)
-        {
-            ss << (*fromAni)->getName();
-            if(fromAni != ani->getFromAnimations().end())
-                ss << ";";
-        }
-        desc->setString(Consts::ATTR_SKEL_SKELETALFROMANIMATIONS, ss.str());
-        
-        ss.str("");
-        for(auto toAni=ani->getToAnimations().begin(); toAni!=ani->getToAnimations().end(); ++toAni)
-        {
-            ss << (*toAni)->getName();
-            if(toAni != ani->getToAnimations().end())
-                ss << ";";
-        }
-        desc->setString(Consts::ATTR_SKEL_SKELETALTOANIMATIONS, ss.str());
-        if(ani->isStartAnimation())
-            desc->setString(Consts::ATTR_SKEL_SKELETALSTARTANIMATION, "true");
+		
+		ss.str("");
+		for(auto fromAni=ani->getFromAnimations().begin(); fromAni!=ani->getFromAnimations().end(); ++fromAni)
+		{
+			ss << (*fromAni)->getName();
+			if(fromAni != ani->getFromAnimations().end())
+				ss << ";";
+		}
+		desc->setString(Consts::ATTR_SKEL_SKELETALFROMANIMATIONS, ss.str());
+		
+		ss.str("");
+		for(auto toAni=ani->getToAnimations().begin(); toAni!=ani->getToAnimations().end(); ++toAni)
+		{
+			ss << (*toAni)->getName();
+			if(toAni != ani->getToAnimations().end())
+				ss << ";";
+		}
+		desc->setString(Consts::ATTR_SKEL_SKELETALTOANIMATIONS, ss.str());
+		if(ani->isStartAnimation())
+			desc->setString(Consts::ATTR_SKEL_SKELETALSTARTANIMATION, "true");
 
 		ExporterTools::finalizeBehaviourDescription(ctxt,*desc,behaviour);
 		return desc;

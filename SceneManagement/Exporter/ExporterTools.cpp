@@ -73,12 +73,12 @@ static bool handlerInitialized(){
 }
 
 //! (static)
-void ExporterTools::finalizeBehaviourDescription(ExporterContext & /*ctxt*/,NodeDescription & description, AbstractBehaviour * behaviour){
+void ExporterTools::finalizeBehaviourDescription(ExporterContext & /*ctxt*/,DescriptionMap & description, AbstractBehaviour * behaviour){
 	if(behaviour)
 		description.setString(Consts::TYPE,Consts::TYPE_BEHAVIOUR);
 }
 
-static void addMatrixToDescription(NodeDescription & description, const Geometry::Matrix4x4f & matrix) {
+static void addMatrixToDescription(DescriptionMap & description, const Geometry::Matrix4x4f & matrix) {
 	if(!matrix.isIdentity()) {
 		std::ostringstream matrixStream;
 		matrixStream << matrix;
@@ -87,16 +87,16 @@ static void addMatrixToDescription(NodeDescription & description, const Geometry
 }
 
 //! (static)
-void ExporterTools::addSRTToDescription(NodeDescription & description, const Geometry::SRT & srt) {
+void ExporterTools::addSRTToDescription(DescriptionMap & description, const Geometry::SRT & srt) {
 	const Vec3 posV = srt.getTranslation();
-	if (posV!=Vec3(0,0,0)) {
+	if(posV!=Vec3(0,0,0)) {
 		std::stringstream pos;
 		pos<<posV.getX()<<" "<<posV.getY()<<" "<<posV.getZ();
 		description.setValue(Consts::ATTR_SRT_POS,GenericAttribute::createString(pos.str()));
 	}
 	const Vec3 dirV=srt.getDirVector();
 	const Vec3 upV=srt.getUpVector();
-	if (dirV!=Vec3(0,0,1) || upV!=Vec3(0,1,0)) {
+	if(dirV!=Vec3(0,0,1) || upV!=Vec3(0,1,0)) {
 		std::stringstream dir;
 		dir<<dirV.getX()<<" "<<dirV.getY()<<" "<<dirV.getZ();
 		description.setValue(Consts::ATTR_SRT_DIR,GenericAttribute::createString(dir.str()));
@@ -105,14 +105,14 @@ void ExporterTools::addSRTToDescription(NodeDescription & description, const Geo
 		up<<upV.getX()<<" "<<upV.getY()<<" "<<upV.getZ();
 		description.setValue(Consts::ATTR_SRT_UP,GenericAttribute::createString(up.str()));
 	}
-	if (srt.getScale() != 1.0) {
+	if(srt.getScale() != 1.0) {
 		std::stringstream s;
 		s<<srt.getScale();
 		description.setValue(Consts::ATTR_SRT_SCALE,GenericAttribute::createString(s.str()));
 	}
 }
 
-void ExporterTools::addTransformationToDescription(NodeDescription & description, Node * node) {
+void ExporterTools::addTransformationToDescription(DescriptionMap & description, Node * node) {
 	if(node->hasSRT()) {
 		addSRTToDescription(description, node->getSRT());
 	} else if(node->hasMatrix()) {
@@ -125,7 +125,7 @@ void ExporterTools::addTransformationToDescription(NodeDescription & description
 }
 
 //! (static)
-void ExporterTools::addAttributesToDescription(ExporterContext & ctxt, NodeDescription & description, const Util::GenericAttribute::Map * attribs) {
+void ExporterTools::addAttributesToDescription(ExporterContext & ctxt, DescriptionMap & description, const Util::GenericAttribute::Map * attribs) {
 	if( attribs ) {
 		for(auto & attrib : *attribs) {
 			const std::string attributeName = attrib.first.toString();
@@ -135,23 +135,23 @@ void ExporterTools::addAttributesToDescription(ExporterContext & ctxt, NodeDescr
 
 			const Util::GenericAttribute * attribute = attrib.second.get();
 
-			std::unique_ptr<NodeDescription> attributeDescription(new NodeDescription);
+			std::unique_ptr<DescriptionMap> attributeDescription(new DescriptionMap);
 			attributeDescription->setString(Consts::TYPE, Consts::TYPE_ATTRIBUTE);
 			attributeDescription->setString(Consts::ATTR_ATTRIBUTE_NAME, attributeName);
 
-			if(dynamic_cast<const Util::GenericNumberAttribute *>(attribute) != nullptr) {
-				if(dynamic_cast<const Util::_NumberAttribute<float> *>(attribute) != nullptr) {
+			if(dynamic_cast<const Util::GenericNumberAttribute *>(attribute)) {
+				if(dynamic_cast<const Util::_NumberAttribute<float> *>(attribute)) {
 					attributeDescription->setString(Consts::ATTR_ATTRIBUTE_TYPE, Consts::ATTRIBUTE_TYPE_FLOAT);
-				} else if(dynamic_cast<const Util::_NumberAttribute<int> *>(attribute) != nullptr) {
+				} else if(dynamic_cast<const Util::_NumberAttribute<int> *>(attribute)) {
 					attributeDescription->setString(Consts::ATTR_ATTRIBUTE_TYPE, Consts::ATTRIBUTE_TYPE_INT);
 				} else { // unspecific number
 					attributeDescription->setString(Consts::ATTR_ATTRIBUTE_TYPE, Consts::ATTRIBUTE_TYPE_NUMBER);
 				}
 				attributeDescription->setString(Consts::ATTR_ATTRIBUTE_VALUE, attribute->toString());
-			} else if(dynamic_cast<const Util::BoolAttribute *>(attribute) != nullptr) {
+			} else if(dynamic_cast<const Util::BoolAttribute *>(attribute)) {
 				attributeDescription->setString(Consts::ATTR_ATTRIBUTE_TYPE, Consts::ATTRIBUTE_TYPE_BOOL);
 				attributeDescription->setString(Consts::ATTR_ATTRIBUTE_VALUE, attribute->toString());
-			} else if(dynamic_cast<const Util::StringAttribute *>(attribute) != nullptr) {
+			} else if(dynamic_cast<const Util::StringAttribute *>(attribute)) {
 				attributeDescription->setString(Consts::ATTR_ATTRIBUTE_TYPE, Consts::ATTRIBUTE_TYPE_STRING);
 				attributeDescription->setString(Consts::ATTR_ATTRIBUTE_VALUE, attribute->toString());
 			} else {
@@ -168,36 +168,36 @@ void ExporterTools::addAttributesToDescription(ExporterContext & ctxt, NodeDescr
 }
 
 //! (static)
-void ExporterTools::addChildEntry(	NodeDescription & description, std::unique_ptr<NodeDescription> childDescription) {
-	NodeDescriptionList * children = dynamic_cast<NodeDescriptionList *> (description.getValue(Consts::CHILDREN));
+void ExporterTools::addChildEntry(	DescriptionMap & description, std::unique_ptr<DescriptionMap> childDescription) {
+	DescriptionArray * children = dynamic_cast<DescriptionArray *>(description.getValue(Consts::CHILDREN));
 	if( !children ) {
-		children = new NodeDescriptionList;
+		children = new DescriptionArray;
 		description.setValue(Consts::CHILDREN, children);
 	}
 	children->push_back(childDescription.release());
 }
 
 //! (static)
-void ExporterTools::addDataEntry(NodeDescription & description,std::unique_ptr<NodeDescription> dataDescription) {
+void ExporterTools::addDataEntry(DescriptionMap & description,std::unique_ptr<DescriptionMap> dataDescription) {
 	dataDescription->setString(Consts::TYPE, Consts::TYPE_DATA);
 	addChildEntry(description, std::move(dataDescription));
 }
 
 //! (static)
-void ExporterTools::addChildNodesToDescription(ExporterContext & ctxt,NodeDescription & description, Node * node){
+void ExporterTools::addChildNodesToDescription(ExporterContext & ctxt,DescriptionMap & description, Node * node){
 	for(const auto & child : getChildNodes(node)){
-		std::unique_ptr<NodeDescription> childDescription(createDescriptionForNode(ctxt, child));
+		std::unique_ptr<DescriptionMap> childDescription(createDescriptionForNode(ctxt, child));
 		if(childDescription)
 			addChildEntry(description,std::move(childDescription));
 	}
 }
 
 //! (static)
-void ExporterTools::addStatesToDescription(ExporterContext & ctxt,NodeDescription & description,Node * node){
+void ExporterTools::addStatesToDescription(ExporterContext & ctxt,DescriptionMap & description,Node * node){
 	if( node->hasStates() ){
 		for(const auto & state : node->getStates()){
 			if(!state->isTempState()){
-				std::unique_ptr<NodeDescription> stateDescription(createDescriptionForState(ctxt, state));
+				std::unique_ptr<DescriptionMap> stateDescription(createDescriptionForState(ctxt, state));
 				if(stateDescription)
 					ExporterTools::addChildEntry(description,std::move(stateDescription));
 			}
@@ -206,11 +206,11 @@ void ExporterTools::addStatesToDescription(ExporterContext & ctxt,NodeDescriptio
 }
 
 //! (static)
-void ExporterTools::addBehavioursToDescription(ExporterContext & ctxt,NodeDescription & description, Node * node){
+void ExporterTools::addBehavioursToDescription(ExporterContext & ctxt,DescriptionMap & description, Node * node){
 	BehaviourManager::nodeBehaviourList_t behaviours = ctxt.sceneManager.getBehaviourManager()->getBehavioursByNode(node);
-	auto * children = dynamic_cast<NodeDescriptionList *>(description.getValue(Consts::CHILDREN));
-	if (!children) {
-		children = new NodeDescriptionList;
+	auto * children = dynamic_cast<DescriptionArray *>(description.getValue(Consts::CHILDREN));
+	if(!children) {
+		children = new DescriptionArray;
 		description.setValue(Consts::CHILDREN,children);
 	}
 	for(BehaviourManager::nodeBehaviourList_t::const_iterator it=behaviours.begin();it!=behaviours.end();++it){
@@ -226,11 +226,11 @@ static void removeTempNodeId(ExporterContext & ctxt, const std::string & nodeId)
 	ctxt.sceneManager.unregisterNode(nodeId);
 }
 
-std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForNode(ExporterContext & ctxt,Node * node){
+std::unique_ptr<DescriptionMap> ExporterTools::createDescriptionForNode(ExporterContext & ctxt,Node * node){
 	if(!node || node->isTempNode() || !handlerInitialized())
 		return nullptr;
 
-	std::unique_ptr<NodeDescription> description(new NodeDescription);
+	std::unique_ptr<DescriptionMap> description(new DescriptionMap);
 	
 	if(node->isInstance()){
 		Node * prototype = node->getPrototype();
@@ -251,7 +251,7 @@ std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForNode(Exporte
 		if(!ctxt.isPrototypeUsed(prototypeId)) {   // add used prototype to usedPrototype-list
 			const bool b = ctxt.creatingDefinitions;
 			ctxt.creatingDefinitions = true;
-			std::unique_ptr<NodeDescription> newPrototypeDescription( createDescriptionForNode(ctxt,prototype) );
+			std::unique_ptr<DescriptionMap> newPrototypeDescription( createDescriptionForNode(ctxt,prototype) );
 			if(newPrototypeDescription){
 				ctxt.addUsedPrototype(prototypeId,std::move(newPrototypeDescription));
 			}
@@ -295,13 +295,13 @@ std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForNode(Exporte
 	return description;
 }
 
-std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForScene(ExporterContext & ctxt, const std::deque<Node *> &nodes) {
-	std::unique_ptr<NodeDescription> sceneDescription( new NodeDescription );
+std::unique_ptr<DescriptionMap> ExporterTools::createDescriptionForScene(ExporterContext & ctxt, const std::deque<Node *> &nodes) {
+	std::unique_ptr<DescriptionMap> sceneDescription( new DescriptionMap );
 	sceneDescription->setValue(Consts::TYPE, Util::GenericAttribute::createString(Consts::TYPE_SCENE));
 	sceneDescription->setValue(Consts::ATTR_SCENE_VERSION, Util::GenericAttribute::createString("2.9"));
 
 	// Create the descriptions for the nodes (and collect all prototypes that are used)
-	std::deque<std::unique_ptr<NodeDescription>> nodeDescriptions;
+	std::deque<std::unique_ptr<DescriptionMap>> nodeDescriptions;
 	for(const auto & node : nodes) {
 		auto nodeDescription( createDescriptionForNode(ctxt, node) );
 		if(nodeDescription == nullptr) {
@@ -313,7 +313,7 @@ std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForScene(Export
 
 		// create description for defs-section (prototypes)
 	if(!ctxt.usedPrototypes.empty()) {
-		std::unique_ptr<NodeDescription> prototypesDescription(new NodeDescription);
+		std::unique_ptr<DescriptionMap> prototypesDescription(new DescriptionMap);
 		prototypesDescription->setValue(Consts::TYPE, Util::GenericAttribute::createString("defs"));
 
 		for(auto & desc : ctxt.usedPrototypes){
@@ -334,11 +334,11 @@ std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForScene(Export
 	return sceneDescription;
 }
 
-std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForState(ExporterContext & ctxt,State * state) {
+std::unique_ptr<DescriptionMap> ExporterTools::createDescriptionForState(ExporterContext & ctxt,State * state) {
 	if( !state || !handlerInitialized())
 		return nullptr;
 	
-	std::unique_ptr<NodeDescription> description(new NodeDescription);
+	std::unique_ptr<DescriptionMap> description(new DescriptionMap);
 	description->setString(Consts::TYPE, Consts::TYPE_STATE);
 	
 	// registered name(=id) of the state
@@ -351,7 +351,7 @@ std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForState(Export
 				
 			if( ctxt.creatingDefinitions && !it->second.second ){ // if this state part of a prototype, but it has already been stored at a regular node ->
 				// swap the original description with this referencing description. This prevents that a reference may be placed before the declaration.
-				NodeDescription tmp( std::move( *it->second.first ));
+				DescriptionMap tmp( std::move( *it->second.first ));
 				*it->second.first = std::move(*description);
 				*description = std::move(tmp);
 
@@ -383,21 +383,21 @@ std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForState(Export
 	return description;
 }
 
-std::unique_ptr<NodeDescription> ExporterTools::createDescriptionForBehaviour(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
+std::unique_ptr<DescriptionMap> ExporterTools::createDescriptionForBehaviour(ExporterContext & ctxt,AbstractBehaviour * behaviour) {
 	if( !behaviour || !handlerInitialized())
 		return nullptr;
 
-	NodeDescription * desc = nullptr;
+	DescriptionMap * desc = nullptr;
 	for(const auto & exporter : behaviourExporter) {
 		desc = exporter(ctxt,behaviour);
-		if(desc != nullptr)
+		if(desc)
 			break;
 	}
 	if(desc == nullptr) {
 		WARN(std::string("Unsupported Behaviour type ") + behaviour->getTypeName());
 		return nullptr;
 	}
-	return std::unique_ptr<NodeDescription>(desc);
+	return std::unique_ptr<DescriptionMap>(desc);
 }
 
 void ExporterTools::registerNodeExporter(const Util::StringIdentifier & classId,NodeExport_Fn_t fn) {

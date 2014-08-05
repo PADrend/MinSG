@@ -31,15 +31,15 @@ class Node;
 class State;
 class AbstractBehaviour;
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 class SceneManager;
 
 /*! Helper structure that keeps data for one export process. */
 struct ExporterContext {
 	SceneManager & sceneManager;
-	std::deque<std::unique_ptr<NodeDescription>> usedPrototypes;
+	std::deque<std::unique_ptr<DescriptionMap>> usedPrototypes;
 	std::set<std::string> usedPrototypeIds;
-	std::unordered_map<Util::StringIdentifier,std::pair<NodeDescription*,bool> > usedStateIds; // stateId -> description, is located in definition
+	std::unordered_map<Util::StringIdentifier,std::pair<DescriptionMap*,bool> > usedStateIds; // stateId -> description, is located in definition
 	
 	int tmpNodeCounter;
 	bool creatingDefinitions; // set to true when starting to create the definition(prototype) part
@@ -55,7 +55,7 @@ struct ExporterContext {
 	void addFinalizingAction(const FinalizeAction & action) {
 		finalizeActions.push_back(action);
 	}
-	void addUsedPrototype(const std::string & nodeId,std::unique_ptr<NodeDescription> d){
+	void addUsedPrototype(const std::string & nodeId,std::unique_ptr<DescriptionMap> d){
 		usedPrototypeIds.insert(nodeId);
 		usedPrototypes.emplace_back(std::move(d));
 	}

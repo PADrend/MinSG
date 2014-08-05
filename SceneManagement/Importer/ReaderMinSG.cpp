@@ -21,16 +21,16 @@ namespace SceneManagement {
 namespace ReaderMinSG {
 
 struct VisitorContext {
-	std::stack<NodeDescription *> elements;
-	std::unique_ptr<NodeDescription> scene;
+	std::stack<DescriptionMap *> elements;
+	std::unique_ptr<DescriptionMap> scene;
 };
 
 static bool visitorEnter(VisitorContext & ctxt,
 						 const std::string & tagName,
 						 const Util::MicroXML::attributes_t & attributes) {
-	NodeDescription * parent = ctxt.elements.empty() ? nullptr : ctxt.elements.top();
+	DescriptionMap * parent = ctxt.elements.empty() ? nullptr : ctxt.elements.top();
 
-	auto desc = new NodeDescription;
+	auto desc = new DescriptionMap;
 	desc->setString(Consts::TYPE, tagName);
 	ctxt.elements.push(desc);
 
@@ -52,9 +52,9 @@ static bool visitorEnter(VisitorContext & ctxt,
 		parent->setValue(Consts::DEFINITIONS, desc);
 		return true;
 	}
-	auto * children = dynamic_cast<NodeDescriptionList *>(parent->getValue(Consts::CHILDREN));
+	auto * children = dynamic_cast<DescriptionArray *>(parent->getValue(Consts::CHILDREN));
 	if(!children) {
-		children = new NodeDescriptionList;
+		children = new DescriptionArray;
 		parent->setValue(Consts::CHILDREN, children);
 	}
 	children->push_back(desc);
@@ -62,7 +62,7 @@ static bool visitorEnter(VisitorContext & ctxt,
 }
 
 static bool visitorLeave(VisitorContext & ctxt, const std::string & /*tagName*/) {
-	NodeDescription * currentElement = ctxt.elements.top();
+	DescriptionMap * currentElement = ctxt.elements.top();
 	if(!currentElement) {
 		FAIL();
 	}
@@ -77,7 +77,7 @@ static bool visitorData(VisitorContext & ctxt, const std::string & /*tag*/, cons
 	return true;
 }
 
-const NodeDescription * loadScene(std::istream & in) {
+const DescriptionMap * loadScene(std::istream & in) {
 	VisitorContext context;
 	using namespace std::placeholders;
 	Util::MicroXML::Reader::traverse(in,

@@ -38,10 +38,10 @@ namespace MinSG {
 namespace SceneManagement {
 
 
-static void describeGeometryNode(ExporterContext & /*ctxt*/,NodeDescription & desc, Node * node) {
+static void describeGeometryNode(ExporterContext & /*ctxt*/,DescriptionMap & desc, Node * node) {
 	desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_GEOMETRY);
 
-	std::unique_ptr<NodeDescription> dataDesc(new NodeDescription);
+	std::unique_ptr<DescriptionMap> dataDesc(new DescriptionMap);
 
 	GeometryNode * gn = dynamic_cast<GeometryNode*>(node);
 
@@ -78,12 +78,12 @@ static void describeGeometryNode(ExporterContext & /*ctxt*/,NodeDescription & de
 
 }
 
-static void describeListNode(ExporterContext & ctxt,NodeDescription & desc, Node * node) {
+static void describeListNode(ExporterContext & ctxt,DescriptionMap & desc, Node * node) {
 	desc.setValue(Consts::ATTR_NODE_TYPE,Util::GenericAttribute::createString(Consts::NODE_TYPE_LIST));
 	ExporterTools::addChildNodesToDescription(ctxt,desc,node);
 }
 
-static void describeLightNode(ExporterContext &,NodeDescription & desc, Node * node) {
+static void describeLightNode(ExporterContext &,DescriptionMap & desc, Node * node) {
 	LightNode * ln = dynamic_cast<LightNode*>(node);
 	switch(ln->getType()) {
 		case Rendering::LightParameters::DIRECTIONAL:

@@ -24,8 +24,8 @@ class State;
 
 namespace SceneManagement {
 
-typedef Util::GenericAttributeMap NodeDescription;
-typedef Util::GenericAttributeList NodeDescriptionList;
+typedef Util::GenericAttributeMap DescriptionMap;
+typedef Util::GenericAttributeList DescriptionArray;
 typedef Util::WrapperAttribute<std::vector<float> > floatVecWrapper_t;
 typedef Util::WrapperAttribute<std::vector<uint32_t> > uint32VecWrapper_t;
 
@@ -35,7 +35,7 @@ typedef const char * const cStr_t; // string constant
 // ------------------------------------------------------
 // structural description attributes
 
-extern const Util::StringIdentifier CHILDREN; 		//!< data field of a NodeDescription containing a NodeDescriptionList of subentries
+extern const Util::StringIdentifier CHILDREN; 		//!< data field of a DescriptionMap containing a DescriptionArray of subentries
 extern const Util::StringIdentifier DATA_BLOCK;
 extern const Util::StringIdentifier DEFINITIONS;
 extern const Util::StringIdentifier TYPE;

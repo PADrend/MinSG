@@ -18,13 +18,13 @@ class GenericAttributeMap;
 }
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 
 /**
  *  WriterMinSG
  */
 struct WriterMinSG{
-static bool save(std::ostream & out, const NodeDescription & sceneDescription);
+static bool save(std::ostream & out, const DescriptionMap & sceneDescription);
 };
 
 }

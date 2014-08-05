@@ -18,7 +18,7 @@ class GenericAttributeMap;
 }
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 namespace ReaderDAE {
 
 /**
@@ -33,7 +33,7 @@ namespace ReaderDAE {
  * @date 2009-08-03
  * @see http://www.khronos.org/collada/
  */
-const NodeDescription * loadScene(std::istream & in, bool invertTransparency);
+const DescriptionMap * loadScene(std::istream & in, bool invertTransparency);
 
 }
 }

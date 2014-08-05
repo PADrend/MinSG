@@ -56,21 +56,21 @@ namespace MinSG {
  * @author Claudius Jaehn
  */
 static void finalize(Rendering::MeshVertexData & vData, unsigned flags) {
-	if (flags & MESH_AUTO_CENTER) {
+	if(flags & MESH_AUTO_CENTER) {
 		Geometry::Matrix4x4f transMat;
 		Geometry::Box bb = vData.getBoundingBox();
 		transMat.translate(-bb.getCenter());
 		Rendering::MeshUtils::transform(vData, transMat);
 	}
-	if (flags & MESH_AUTO_CENTER_BOTTOM) {
+	if(flags & MESH_AUTO_CENTER_BOTTOM) {
 		Geometry::Matrix4x4f transMat;
 		Geometry::Vec3f v = -vData.getBoundingBox().getCenter() + Geometry::Vec3f(0, vData.getBoundingBox().getExtentY() / 2.0, 0);
 		transMat.translate(v);
 		Rendering::MeshUtils::transform(vData, transMat);
 	}
-	if (flags & MESH_AUTO_SCALE) {
+	if(flags & MESH_AUTO_SCALE) {
 		Geometry::Matrix4x4f transMat;
-		if (vData.getBoundingBox().getExtentMax() > 0) {
+		if(vData.getBoundingBox().getExtentMax() > 0) {
 			transMat.scale(1.0 / vData.getBoundingBox().getExtentMax());
 		}
 		Rendering::MeshUtils::transform(vData, transMat);
@@ -108,7 +108,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 	std::unordered_map<std::string, Util::GenericAttributeMap *> materials;
 
 	std::deque<Node *> nodes;
-	for (auto & elem : *genericList) {
+	for(auto & elem : *genericList) {
 		Util::GenericAttributeMap *d = dynamic_cast<Util::GenericAttributeMap *>(elem.get());
 		if(d==nullptr){
 			WARN("loadModel: Loader must return Descriptions.");
@@ -119,15 +119,15 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 
 		const auto type = d->getString(Rendering::Serialization::DESCRIPTION_TYPE);
 		if(type==Rendering::Serialization::DESCRIPTION_TYPE_MESH){ // \todo move this to separate function!
-			Rendering::Serialization::MeshWrapper_t *meshWrapper = dynamic_cast<Rendering::Serialization::MeshWrapper_t*> (d->getValue(Rendering::Serialization::DESCRIPTION_DATA));
+			Rendering::Serialization::MeshWrapper_t *meshWrapper = dynamic_cast<Rendering::Serialization::MeshWrapper_t*>(d->getValue(Rendering::Serialization::DESCRIPTION_DATA));
 
 			Rendering::Mesh * mesh = meshWrapper ? meshWrapper->get() : nullptr;
-			if (mesh != nullptr) {
+			if(mesh) {
 				// \todo (CL) Shouldn't this be rearranged? Would allow: scale to 1.0 and then scale to fixed size.
-				if (transMat)
+				if(transMat)
 					Rendering::MeshUtils::transform(mesh->openVertexData(), *transMat);
 
-				if (flags) {
+				if(flags) {
 					finalize(mesh->openVertexData(), flags);
 				}
 			} else {
@@ -136,15 +136,15 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 
 			Node * node = new GeometryNode();
 
-			if (mesh != nullptr) {
-				dynamic_cast<GeometryNode *> (node)->setMesh(mesh);
+			if(mesh) {
+				dynamic_cast<GeometryNode *>(node)->setMesh(mesh);
 				mesh->setFileName(filename);
 			}
 
 			// add texture
 			{
 				const auto textureName = d->getString(Rendering::Serialization::DESCRIPTION_TEXTURE_FILE, "");
-				if (!textureName.empty()) {
+				if(!textureName.empty()) {
 					std::cout << "TeX: " << textureName << std::endl;
 					node->addState(createTextureState(Util::FileName(textureName)));
 				}
@@ -153,52 +153,52 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 			// add material
 			const auto materialName = d->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_NAME, "");
 
-			if (!materialName.empty()) {
+			if(!materialName.empty()) {
 				const auto materialIt = materials.find(materialName);
-				if (materialIt != materials.end()) {
+				if(materialIt != materials.end()) {
 					Util::GenericAttributeMap * materialDesc = materialIt->second;
 					const auto materialAmbient = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_AMBIENT, "");
 					const auto materialDiffuse = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_DIFFUSE, "");
 					const auto materialSpecular = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_SPECULAR, "");
 					const auto materialShininess = materialDesc->getString(Rendering::Serialization::DESCRIPTION_MATERIAL_SHININESS, "");
 
-					if (!materialAmbient.empty() || !materialDiffuse.empty() || !materialSpecular.empty() || !materialShininess.empty()) {
+					if(!materialAmbient.empty() || !materialDiffuse.empty() || !materialSpecular.empty() || !materialShininess.empty()) {
 						Rendering::MaterialParameters materialParams;
 
-						if (!materialAmbient.empty()) {
+						if(!materialAmbient.empty()) {
 							const auto values = Util::StringUtils::toFloats(materialAmbient);
-							if (values.size() == 4) {
+							if(values.size() == 4) {
 								materialParams.setAmbient(Util::Color4f(values[0], values[1], values[2], values[3]));
-							} else if (values.size() == 3) {
+							} else if(values.size() == 3) {
 								materialParams.setAmbient(Util::Color4f(values[0], values[1], values[2], 1.0f));
 							} else {
 								WARN("Invalid number of values in ambient material string \"" + materialAmbient + "\".");
 							}
 						}
 
-						if (!materialDiffuse.empty()) {
+						if(!materialDiffuse.empty()) {
 							const auto values = Util::StringUtils::toFloats(materialDiffuse);
-							if (values.size() == 4) {
+							if(values.size() == 4) {
 								materialParams.setDiffuse(Util::Color4f(values[0], values[1], values[2], values[3]));
-							} else if (values.size() == 3) {
+							} else if(values.size() == 3) {
 								materialParams.setDiffuse(Util::Color4f(values[0], values[1], values[2], 1.0f));
 							} else {
 								WARN("Invalid number of values in diffuse material string \"" + materialDiffuse + "\".");
 							}
 						}
 
-						if (!materialSpecular.empty()) {
+						if(!materialSpecular.empty()) {
 							const auto values = Util::StringUtils::toFloats(materialSpecular);
-							if (values.size() == 4) {
+							if(values.size() == 4) {
 								materialParams.setSpecular(Util::Color4f(values[0], values[1], values[2], values[3]));
-							} else if (values.size() == 3) {
+							} else if(values.size() == 3) {
 								materialParams.setSpecular(Util::Color4f(values[0], values[1], values[2], 1.0f));
 							} else {
 								WARN("Invalid number of values in ambient material string \"" + materialSpecular + "\".");
 							}
 						}
 
-						if (!materialShininess.empty()) {
+						if(!materialShininess.empty()) {
 							materialParams.setShininess(Util::StringUtils::toNumber<float>(materialShininess));
 						}
 
@@ -207,7 +207,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 
 					// Add texture from material.
 					const auto materialTexture = materialDesc->getString(Rendering::Serialization::DESCRIPTION_TEXTURE_FILE, "");
-					if (!materialTexture.empty()) {
+					if(!materialTexture.empty()) {
 						Util::FileLocator relLocator;
 						relLocator.addSearchPath(  location.second.getDir() );
 						const auto textureLocation =  relLocator.locateFile( Util::FileName(materialTexture) );
@@ -223,10 +223,10 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 
 			Util::FileName md2FileName = Util::FileName(d->getString(Rendering::Serialization::DESCRIPTION_FILE));
 
-			StreamerMD2::indexDataWrapper * indexDataWrapper = dynamic_cast<StreamerMD2::indexDataWrapper*> (d->getValue(StreamerMD2::DESCRIPTION_MESH_INDEX_DATA));
+			StreamerMD2::indexDataWrapper * indexDataWrapper = dynamic_cast<StreamerMD2::indexDataWrapper*>(d->getValue(StreamerMD2::DESCRIPTION_MESH_INDEX_DATA));
 			const Rendering::MeshIndexData & indexData = indexDataWrapper->ref();
 
-			StreamerMD2::framesDataWrapper * framesDataWrapper = dynamic_cast<StreamerMD2::framesDataWrapper*> (d->getValue(StreamerMD2::DESCRIPTION_KEYFRAMES_DATA));
+			StreamerMD2::framesDataWrapper * framesDataWrapper = dynamic_cast<StreamerMD2::framesDataWrapper*>(d->getValue(StreamerMD2::DESCRIPTION_KEYFRAMES_DATA));
 			std::vector<Rendering::MeshVertexData> & framesData = framesDataWrapper->ref();
 
 
@@ -241,50 +241,50 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 
 				//apply flags if given
 				if(flags){
-					if (flags & MESH_AUTO_CENTER) {
+					if(flags & MESH_AUTO_CENTER) {
 						Geometry::Box bb = framesData[0].getBoundingBox();
-						for (unsigned short i = 1; i < framesData.size(); i++) {
+						for(unsigned short i = 1; i < framesData.size(); i++) {
 							bb.include(framesData[i].getBoundingBox());
 						}
 						Geometry::Matrix4x4f translateMat;
 						translateMat.translate(-bb.getCenter());
-						for (auto & framesData_i : framesData) {
+						for(auto & framesData_i : framesData) {
 							Rendering::MeshUtils::transform(framesData_i, translateMat);
 						}
 					}
-					if (flags & MESH_AUTO_CENTER_BOTTOM) {
+					if(flags & MESH_AUTO_CENTER_BOTTOM) {
 						Geometry::Box bb = framesData[0].getBoundingBox();
-						for (unsigned short i = 1; i < framesData.size(); i++) {
+						for(unsigned short i = 1; i < framesData.size(); i++) {
 							bb.include(framesData[i].getBoundingBox());
 						}
 						Geometry::Vec3f v = -bb.getCenter() + Geometry::Vec3f(0, bb.getExtentY() / 2.0, 0);
 						Geometry::Matrix4x4f translateMat;
 						translateMat.translate(v);
-						for (auto & framesData_i : framesData) {
+						for(auto & framesData_i : framesData) {
 							Rendering::MeshUtils::transform(framesData_i, translateMat);
 						}
 					}
-					if (flags & MESH_AUTO_SCALE) {
+					if(flags & MESH_AUTO_SCALE) {
 						Geometry::Matrix4x4f translateMat;
 						Geometry::Box bb = framesData[0].getBoundingBox();
-						for (unsigned short i = 1; i < framesData.size(); i++) {
+						for(unsigned short i = 1; i < framesData.size(); i++) {
 							bb.include(framesData[i].getBoundingBox());
 						}
-						if (bb.getExtentMax() > 0)
+						if(bb.getExtentMax() > 0)
 							translateMat.scale(1.0 / bb.getExtentMax());
-						for (auto & framesData_i : framesData) {
+						for(auto & framesData_i : framesData) {
 							Rendering::MeshUtils::transform(framesData_i, translateMat);
 						}
 					}
 				}
 			}
 
-			StreamerMD2::animationDataWrapper * animationDataWrapper = dynamic_cast<StreamerMD2::animationDataWrapper*> (d->getValue(StreamerMD2::DESCRIPTION_ANIMATIONS));
+			StreamerMD2::animationDataWrapper * animationDataWrapper = dynamic_cast<StreamerMD2::animationDataWrapper*>(d->getValue(StreamerMD2::DESCRIPTION_ANIMATIONS));
 			std::map<std::string, std::vector<int> > animationData = animationDataWrapper->get();
 
 			KeyFrameAnimationNode * keyFrameAnimationNode = new KeyFrameAnimationNode(indexData, framesData, animationData);
 
-			StreamerMD2::textureFilesWrapper * textureFilesWrapper = dynamic_cast<StreamerMD2::textureFilesWrapper*> (d->getValue(StreamerMD2::DESCRIPTION_TEXTURE_FILES));
+			StreamerMD2::textureFilesWrapper * textureFilesWrapper = dynamic_cast<StreamerMD2::textureFilesWrapper*>(d->getValue(StreamerMD2::DESCRIPTION_TEXTURE_FILES));
 			std::vector<std::string> textureFiles = textureFilesWrapper->get();
 			std::vector<TextureState *> textureStates;
 
@@ -305,7 +305,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 			}
 
 			nodes.push_back(keyFrameAnimationNode);
-		} else if (type == Rendering::Serialization::DESCRIPTION_TYPE_MATERIAL) {
+		} else if(type == Rendering::Serialization::DESCRIPTION_TYPE_MATERIAL) {
 			Util::FileName mtlFile;
 
 			Util::FileLocator relLocator;
@@ -313,13 +313,13 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 			const auto mtlFileLocation =  relLocator.locateFile( Util::FileName(d->getString(Rendering::Serialization::DESCRIPTION_FILE)) );
 
 			std::unique_ptr<Util::GenericAttributeList> mtlList(Rendering::Serialization::loadGeneric(mtlFileLocation.second));
-			if (mtlList.get() == nullptr || mtlList->empty()) {
+			if(mtlList.get() == nullptr || mtlList->empty()) {
 				WARN("Error loading material library.");
 				continue;
 			}
 			for(const auto & mtlIt : *mtlList) {
 				Util::GenericAttributeMap * mtlDesc = dynamic_cast<Util::GenericAttributeMap *>(mtlIt.get());
-				if (mtlDesc == nullptr || mtlDesc->getString(Rendering::Serialization::DESCRIPTION_TYPE) != Rendering::Serialization::DESCRIPTION_TYPE_MATERIAL) {
+				if(mtlDesc == nullptr || mtlDesc->getString(Rendering::Serialization::DESCRIPTION_TYPE) != Rendering::Serialization::DESCRIPTION_TYPE_MATERIAL) {
 					WARN("Error accessing material description");
 					continue;
 				}
@@ -331,13 +331,13 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 
 	}
 
-	if (nodes.empty()) {
+	if(nodes.empty()) {
 		return nullptr;
-	} else if (nodes.size() == 1) {
+	} else if(nodes.size() == 1) {
 		return nodes.front();
 	} else {
 		auto ln = new ListNode();
-		for (auto & node : nodes)
+		for(auto & node : nodes)
 			ln->addChild(node);
 		return ln;
 	}
@@ -357,12 +357,12 @@ void initShaderState(ShaderState * shaderState,
 					Rendering::Shader::flag_t usage,
 					const Util::FileLocator& locator) {
 	using namespace SceneManagement;
-	assert(shaderState != nullptr);
+	assert(shaderState);
 	Rendering::Shader * shader = Rendering::Shader::createShader(usage);
 	shaderState->setShader(shader);
 
 	// store fileDescriptions as attribute: { Consts::STATE_ATTR_SHADER_FILES : [ fileDescription* ] } 
-	auto fileDescriptions = new NodeDescriptionList;
+	auto fileDescriptions = new DescriptionArray;
 	
 	shaderState->setAttribute(Consts::STATE_ATTR_SHADER_FILES, fileDescriptions);
 
@@ -374,7 +374,7 @@ void initShaderState(ShaderState * shaderState,
 		}else{
 			WARN("Shader file not found: "+vsFile);
 		}
-		auto nd = new NodeDescription;
+		auto nd = new DescriptionMap;
 		nd->setString(Consts::ATTR_DATA_TYPE, Consts::DATA_TYPE_GLSL_VS);
 		nd->setString(Consts::ATTR_SHADER_OBJ_FILENAME, vsFile);
 		fileDescriptions->push_back(nd);
@@ -386,7 +386,7 @@ void initShaderState(ShaderState * shaderState,
 		}else{
 			WARN("Shader file not found: "+gsFile);
 		}
-		auto nd = new NodeDescription;
+		auto nd = new DescriptionMap;
 		nd->setString(Consts::ATTR_DATA_TYPE, Consts::DATA_TYPE_GLSL_GS);
 		nd->setString(Consts::ATTR_SHADER_OBJ_FILENAME, gsFile);
 		fileDescriptions->push_back(nd);
@@ -398,7 +398,7 @@ void initShaderState(ShaderState * shaderState,
 		}else{
 			WARN("Shader file not found: "+fsFile);
 		}
-		auto nd = new NodeDescription;
+		auto nd = new DescriptionMap;
 		nd->setString(Consts::ATTR_DATA_TYPE, Consts::DATA_TYPE_GLSL_FS);
 		nd->setString(Consts::ATTR_SHADER_OBJ_FILENAME, fsFile);
 		fileDescriptions->push_back(nd);

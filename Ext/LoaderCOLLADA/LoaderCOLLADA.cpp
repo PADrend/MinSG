@@ -89,7 +89,7 @@ static std::string getVersionString(const COLLADASaxFWL::COLLADAVersion & versio
 	return "Unknown";
 }
 
-const SceneManagement::NodeDescription * loadScene(const Util::FileName & fileName, bool invertTransparency) {
+const SceneManagement::DescriptionMap * loadScene(const Util::FileName & fileName, bool invertTransparency) {
 
 	Util::Timer timer;
 	timer.reset();

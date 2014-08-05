@@ -15,7 +15,7 @@
 namespace MinSG {
 namespace SceneManagement {
 
-Node * MeshImportHandler::handleImport(const Util::FileLocator& locator, const std::string & url, const NodeDescription * /*description*/) {
+Node * MeshImportHandler::handleImport(const Util::FileLocator& locator, const std::string & url, const DescriptionMap * /*description*/) {
 	return loadModel(Util::FileName(url), 0, nullptr,locator);
 }
 

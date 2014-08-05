@@ -45,7 +45,7 @@ namespace MinSG {
 namespace LoaderCOLLADA {
 
 bool lightCoreImporter(const COLLADAFW::Light * light, referenceRegistry_t & referenceRegistry) {
-	auto lightDesc = new SceneManagement::NodeDescription;
+	auto lightDesc = new SceneManagement::DescriptionMap;
 
 	lightDesc->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_NODE);
 	switch(light->getLightType()) {
@@ -270,7 +270,7 @@ bool nodeCoreImporter(const COLLADAFW::Geometry * geometry, referenceRegistry_t 
 		}
 	}
 
-	auto geometries = new SceneManagement::NodeDescription;
+	auto geometries = new SceneManagement::DescriptionMap;
 	geometries->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_NODE);
 	geometries->setString(SceneManagement::Consts::ATTR_NODE_TYPE, SceneManagement::Consts::NODE_TYPE_LIST);
 	const auto & meshPrimitives = sourceMesh->getMeshPrimitives();
@@ -283,17 +283,17 @@ bool nodeCoreImporter(const COLLADAFW::Geometry * geometry, referenceRegistry_t 
 		std::vector<uint32_t> vertexIds;
 		Rendering::Mesh * targetMesh = createSingleMesh(queue, indices, triangleCount, maxOffset, vertexIds);
 
-		auto desc = new SceneManagement::NodeDescription;
+		auto desc = new SceneManagement::DescriptionMap;
 		desc->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_DATA);
 		desc->setString(SceneManagement::Consts::ATTR_DATA_TYPE, "mesh");
 
 		desc->setValue(SceneManagement::Consts::ATTR_MESH_DATA, new Rendering::Serialization::MeshWrapper_t(targetMesh));
 		desc->setValue(LoaderCOLLADA::Consts::DAE_MESH_VERTEXORDER, new SceneManagement::uint32VecWrapper_t(vertexIds));
 
-		auto geoDataList = new SceneManagement::NodeDescriptionList;
+		auto geoDataList = new SceneManagement::DescriptionArray;
 		geoDataList->push_back(desc);
 
-		auto geoNode = new SceneManagement::NodeDescription();
+		auto geoNode = new SceneManagement::DescriptionMap();
 		geoNode->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_NODE);
 		geoNode->setString(SceneManagement::Consts::ATTR_NODE_TYPE, SceneManagement::Consts::NODE_TYPE_GEOMETRY);
 
