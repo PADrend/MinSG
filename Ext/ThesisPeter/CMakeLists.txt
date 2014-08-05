@@ -10,6 +10,7 @@
 minsg_add_sources(
 	LightNodeManager.cpp
 	DebugObjects.cpp
+	TextureProcessor.cpp
 )
 
 minsg_add_extension(MINSG_EXT_THESISPETER "Defines if the MinSG extension for Peters' Master's Thesis is built.")
