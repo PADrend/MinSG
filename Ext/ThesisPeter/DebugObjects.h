@@ -30,14 +30,15 @@ struct DebugLine {
 
 class DebugObjects {
 public:
-	DebugObjects(MinSG::Node* sceneRootNode);
+	DebugObjects();
 	~DebugObjects();
 
-	void addDebugLine(Geometry::Vec3 start, Geometry::Vec3 end, Util::Color4f colStart, Util::Color4f colEnd);
+	void setSceneRootNode(MinSG::Node* sceneRootNode);
+	void addDebugLine(Geometry::Vec3 start, Geometry::Vec3 end, Util::Color4f colStart = Util::Color4f(1.0, 1.0, 1.0, 1.0), Util::Color4f colEnd = Util::Color4f(0.0, 0.0, 1.0, 1.0));
 	void clearDebug();
 	void buildDebugLineNode();
 private:
-	Util::Reference<MinSG::GeometryNode> lineNode;
+	Util::Reference<MinSG::Node> lineNode;
 	std::vector<DebugLine*> linesData;
 	bool nodeAdded;
 	MinSG::GroupNode *sceneRootNode;

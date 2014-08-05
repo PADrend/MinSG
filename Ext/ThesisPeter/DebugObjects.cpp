@@ -14,19 +14,26 @@
 #include <Rendering/MeshUtils/MeshBuilder.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <MinSG/SceneManagement/Importer/ImportContext.h>
+#include <Util/Macros.h>
 
 namespace MinSG {
 namespace ThesisPeter {
 
-DebugObjects::DebugObjects(MinSG::Node* sceneRootNode){
-	this->sceneRootNode = (MinSG::GroupNode*)sceneRootNode;
+DebugObjects::DebugObjects(){
+	sceneRootNode = 0;
 	nodeAdded = false;
+	lineNode = new MinSG::GeometryNode();
 }
 
-DebugObjects::~DebugObjects(){
+DebugObjects::~DebugObjects(){;
 	if(nodeAdded){
-		sceneRootNode->removeChild(lineNode.get());
+//		sceneRootNode->removeChild(lineNode.get());
+		lineNode.get()->removeFromParent();
 	}
+}
+
+void DebugObjects::setSceneRootNode(MinSG::Node* sceneRootNode){
+	this->sceneRootNode = (MinSG::GroupNode*)sceneRootNode;
 }
 
 void DebugObjects::addDebugLine(Geometry::Vec3 start, Geometry::Vec3 end, Util::Color4f colStart, Util::Color4f colEnd){
@@ -39,6 +46,9 @@ void DebugObjects::addDebugLine(Geometry::Vec3 start, Geometry::Vec3 end, Util::
 }
 
 void DebugObjects::clearDebug(){
+	for(unsigned int i = 0; i < linesData.size(); i++){
+		delete linesData[i];
+	}
 	linesData.clear();
 }
 
@@ -59,12 +69,12 @@ void DebugObjects::buildDebugLineNode(){
 	mesh->setUseIndexData(false);
 	mesh->setDrawMode(Rendering::Mesh::DRAW_LINES);
 
-	lineNode.get()->setMesh(mesh);
+	((MinSG::GeometryNode*)lineNode.get())->setMesh(mesh);
 
 	if(!nodeAdded){
 		nodeAdded = true;
 		lineNode.get()->setTempNode(true);
-		sceneRootNode->addChild(lineNode.get());
+		sceneRootNode->addChild(lineNode);
 	}
 }
 
