@@ -37,11 +37,12 @@ class SceneManager;
 /*! Helper structure that keeps data for one export process. */
 struct ExporterContext {
 	SceneManager & sceneManager;
-	std::deque<NodeDescription> usedPrototypes;
+	std::deque<std::unique_ptr<NodeDescription>> usedPrototypes;
 	std::set<std::string> usedPrototypeIds;
-	std::set<std::string> usedStateIds;
+	std::unordered_map<Util::StringIdentifier,std::pair<NodeDescription*,bool> > usedStateIds; // stateId -> description, is located in definition
 	
 	int tmpNodeCounter;
+	bool creatingDefinitions; // set to true when starting to create the definition(prototype) part
 	
 	//! A function that allows the execution of arbitrary actions at the end of the export process.
 	typedef std::function<void (ExporterContext &)> FinalizeAction;
@@ -49,12 +50,12 @@ struct ExporterContext {
 		
 	Util::FileName sceneFile;
 
-	ExporterContext(SceneManager & _m) : sceneManager(_m),tmpNodeCounter(0){}
+	ExporterContext(SceneManager & _m) : sceneManager(_m),tmpNodeCounter(0),creatingDefinitions(false){}
 
 	void addFinalizingAction(const FinalizeAction & action) {
 		finalizeActions.push_back(action);
 	}
-	void addUsedPrototype(const std::string & nodeId,NodeDescription&& d){
+	void addUsedPrototype(const std::string & nodeId,std::unique_ptr<NodeDescription> d){
 		usedPrototypeIds.insert(nodeId);
 		usedPrototypes.emplace_back(std::move(d));
 	}
@@ -65,7 +66,7 @@ struct ExporterContext {
 		finalizeActions.clear();
 	}
 		
-	bool isPrototypeUsed(const std::string & nodeId)	{
+	bool isPrototypeUsed(const std::string & nodeId)const	{
 		return usedPrototypeIds.count(nodeId) != 0;
 	}
 

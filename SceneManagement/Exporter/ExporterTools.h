@@ -49,8 +49,8 @@ void finalizeBehaviourDescription(ExporterContext & ctxt,NodeDescription & descr
 void addAttributesToDescription(ExporterContext & ctxt, NodeDescription & description, const Util::GenericAttribute::Map * attribs);
 void addSRTToDescription(NodeDescription & description, const Geometry::SRT & srt);
 void addTransformationToDescription(NodeDescription & description, Node * node);
-void addChildEntry(NodeDescription & description, NodeDescription && childDescription);
-void addDataEntry(NodeDescription & description, NodeDescription && dataDescription);
+void addChildEntry(NodeDescription & description, std::unique_ptr<NodeDescription> childDescription);
+void addDataEntry(NodeDescription & description, std::unique_ptr<NodeDescription> dataDescription);
 
 void addChildNodesToDescription(ExporterContext & ctxt,NodeDescription & description, Node * node);
 void addStatesToDescription(ExporterContext & ctxt,NodeDescription & description, Node * node);

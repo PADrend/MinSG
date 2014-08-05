@@ -117,13 +117,13 @@ static void describePathNode(ExporterContext & ctxt,NodeDescription & desc,Node 
 	}
 
 	for(auto & elem : *pathNode) {
-		NodeDescription waypointDesc;
-		waypointDesc.setString(Consts::ATTR_DATA_TYPE, Consts::NODE_TYPE_WAYPOINT);
+		std::unique_ptr<NodeDescription> waypointDesc(new NodeDescription);
+		waypointDesc->setString(Consts::ATTR_DATA_TYPE, Consts::NODE_TYPE_WAYPOINT);
 
 		const Waypoint * wp = elem.second.get();
-		ExporterTools::addAttributesToDescription(ctxt, waypointDesc, wp->getAttributes());
-		waypointDesc.setString(Consts::ATTR_WAYPOINT_TIME, Util::StringUtils::toString(wp->getTime()));
-		ExporterTools::addSRTToDescription(waypointDesc, wp->getSRT());
+		ExporterTools::addAttributesToDescription(ctxt, *waypointDesc, wp->getAttributes());
+		waypointDesc->setString(Consts::ATTR_WAYPOINT_TIME, Util::StringUtils::toString(wp->getTime()));
+		ExporterTools::addSRTToDescription(*waypointDesc, wp->getSRT());
 		ExporterTools::addDataEntry(desc,std::move(waypointDesc));
 	}
 	
@@ -224,8 +224,8 @@ static void describeValuatedRegionNode(ExporterContext & ctxt,NodeDescription & 
 
 					// VV not already inserted?
 					if(!ctxt.isPrototypeUsed(id.str())) {
-						NodeDescription nd;
-						nd.setString(Consts::TYPE, Consts::TYPE_ADDITIONAL_DATA);
+						std::unique_ptr<NodeDescription> nd(new NodeDescription);
+						nd->setString(Consts::TYPE, Consts::TYPE_ADDITIONAL_DATA);
 
 						bool firstElement = true;
 						std::ostringstream vvValue;
@@ -247,9 +247,9 @@ static void describeValuatedRegionNode(ExporterContext & ctxt,NodeDescription & 
 							}
 						}
 						vvValue << ')';
-						nd.setString(Consts::ATTR_NODE_TYPE, "visibility_vector");
-						nd.setString(Consts::ATTR_ATTRIBUTE_VALUE, vvValue.str());
-						nd.setString(Consts::ATTR_NODE_ID, id.str());
+						nd->setString(Consts::ATTR_NODE_TYPE, "visibility_vector");
+						nd->setString(Consts::ATTR_ATTRIBUTE_VALUE, vvValue.str());
+						nd->setString(Consts::ATTR_NODE_ID, id.str());
 
 						ctxt.addUsedPrototype(id.str(), std::move(nd));
 					}

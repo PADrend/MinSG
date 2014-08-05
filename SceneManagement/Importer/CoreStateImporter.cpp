@@ -331,8 +331,12 @@ static bool importReference(ImportContext & ctxt, const std::string & stateType,
 	if(stateType != Consts::STATE_TYPE_REFERENCE || parent == nullptr)
 		return false;
 
-	std::string refId = d.getString(Consts::ATTR_REFERENCED_STATE_ID);
+	const std::string refId = d.getString(Consts::ATTR_REFERENCED_STATE_ID);
 	State * state = ctxt.sceneManager.getRegisteredState(refId);
+	if(!state){
+		WARN("StateId unknown '"+refId+"'. Error in MinSG file.");
+		return true;
+	}
 
 	ImporterTools::finalizeState(ctxt, state, d);
 	parent->addState(state);
