@@ -153,14 +153,16 @@ class LightNodeManager {
 public:
 	LightNodeManager();
 	virtual ~LightNodeManager();
-	void setSceneRootNode(MinSG::Node *sceneRootNode);
+	void test(MinSG::FrameContext& frameContext, Util::Reference<MinSG::Node> sceneRootNode);
+	void setSceneRootNode(Util::Reference<MinSG::Node> sceneRootNode);
 	void setRenderingContext(Rendering::RenderingContext& renderingContext);
 	void setFrameContext(MinSG::FrameContext& frameContext);
-	void activateLighting(MinSG::Node *sceneRootNode, MinSG::Node* lightRootNode, Rendering::RenderingContext& renderingContext, MinSG::FrameContext& frameContext);
+	void activateLighting(Util::Reference<MinSG::Node> sceneRootNode, Util::Reference<MinSG::Node> lightRootNode, Rendering::RenderingContext& renderingContext, MinSG::FrameContext& frameContext);
 	void createLightNodes();
 	static void createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static void mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	void createLightEdges();
+	void cleanUpDebug();
 	void cleanUp();
 
 	static const float MAX_EDGE_LENGTH;
@@ -171,7 +173,7 @@ public:
 private:
 	static unsigned int nextPowOf2(unsigned int number);
 	static void getTexCoords(unsigned int index, unsigned int texWidth, Geometry::Vec2i* texCoords);
-	void setLightRootNode(MinSG::Node *rootNode);
+	void setLightRootNode(Util::Reference<MinSG::Node> rootNode);
 	static void createLightNodesPerVertexRandom(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float randomVal);
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static bool isVisible(LightNode* source, LightNode* target);
@@ -184,16 +186,18 @@ private:
 	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
 	void renderAllNodes(MinSG::Node* node);
 
-	MinSG::Node* lightRootNode;
-	MinSG::Node* sceneRootNode;
+	Util::Reference<MinSG::Node> lightRootNode;
+	Util::Reference<MinSG::Node> sceneRootNode;
 	Rendering::RenderingContext* renderingContext;
 	MinSG::FrameContext* frameContext;
 	std::vector<LightNodeMap*> lightNodeMaps;
 	std::vector<LightEdge*> lightEdges;
-	MinSG::CameraNodeOrtho* sceneEnclosingCameras[3];
+	Util::Reference<MinSG::CameraNodeOrtho> sceneEnclosingCameras[3];
 	Geometry::Vec3 lightRootCenter;
-	Rendering::Texture* voxelOctreeTextureStatic;
-	Rendering::Shader* voxelOctreeShaderCreate;
+	Util::Reference<Rendering::Texture> voxelOctreeTextureStatic;
+	Util::Reference<Rendering::Texture> atomicCounter;
+	Util::Reference<Rendering::Shader> voxelOctreeShaderCreate;
+	Util::Reference<Rendering::Shader> voxelOctreeShaderRead;
 
 	static const Util::StringIdentifier lightNodeIDIdent;
 	DebugObjects* debug;

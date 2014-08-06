@@ -38,7 +38,7 @@ private:
 	Rendering::Shader* shader;
 	Rendering::Texture* inputTexture;
 	Rendering::Texture* outputTexture;
-	Rendering::FBO fbo;
+	Util::Reference<Rendering::FBO> fbo;
 	Rendering::RenderingContext* renderingContext;
 
 	unsigned int width, height;

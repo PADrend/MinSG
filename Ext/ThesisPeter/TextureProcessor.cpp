@@ -24,6 +24,8 @@ TextureProcessor::TextureProcessor(){
 
 	width = 0;
 	height = 0;
+
+	fbo = new Rendering::FBO();
 }
 
 TextureProcessor::~TextureProcessor(){
@@ -44,38 +46,40 @@ void TextureProcessor::setInputTexture(Rendering::Texture* texture){
 
 void TextureProcessor::setOutputTexture(Rendering::Texture* texture){
 	this->outputTexture = texture;
+	width = outputTexture->getWidth();
+	height = outputTexture->getHeight();
 }
 
 void TextureProcessor::begin(){
 	if(outputTexture == 0){
-		DEBUG("No output texture defined!");
+		std::cout << "No output texture defined!" << std::endl;
 		return;
 	}
 	if(renderingContext == 0){
-		DEBUG("No rendering context defined!");
+		std::cout << "No rendering context defined!" << std::endl;
 		return;
 	}
 
-	renderingContext->pushAndSetFBO(&fbo);
-	fbo.attachColorTexture(*renderingContext, outputTexture, 0);
-
-	fbo.setDrawBuffers(1);
-// 	out(fbo.getStatusMessage(renderingContext),"\n");
+	renderingContext->pushAndSetFBO(fbo.get());
+	fbo.get()->attachColorTexture(*renderingContext, outputTexture, 0);
+	fbo.get()->setDrawBuffers(1);
 
 	renderingContext->pushAndSetShader(shader);
 
-	width = outputTexture->getWidth();
-	height = outputTexture->getHeight();
 	renderingContext->pushAndSetScissor(Rendering::ScissorParameters(Geometry::Rect_i(0, 0, width, height)));
 	renderingContext->pushViewport();
 	renderingContext->setViewport(Geometry::Rect_i(0, 0, width, height));
 }
 
 void TextureProcessor::end(){
-	renderingContext->popScissor();
+	if(renderingContext == 0){
+		std::cout << "No rendering context defined!" << std::endl;
+		return;
+	}
 	renderingContext->popViewport();
+	renderingContext->popScissor();
 
-	fbo.detachColorTexture(*renderingContext, 0);
+	fbo.get()->detachColorTexture(*renderingContext, 0);
 
 	renderingContext->popShader();
 
