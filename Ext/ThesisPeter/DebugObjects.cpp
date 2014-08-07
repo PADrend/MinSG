@@ -53,7 +53,10 @@ void DebugObjects::clearDebug(){
 }
 
 void DebugObjects::buildDebugLineNode(){
-	Rendering::MeshUtils::MeshBuilder mb;
+	Rendering::VertexDescription vertexDesc;
+	vertexDesc.appendPosition3D();
+	vertexDesc.appendColorRGBAByte();
+	Rendering::MeshUtils::MeshBuilder mb(vertexDesc);
 
 	for(unsigned int i = 0; i < linesData.size(); i++){
         mb.color(linesData[i]->colorStart);
