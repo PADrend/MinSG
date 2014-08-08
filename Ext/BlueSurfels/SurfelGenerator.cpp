@@ -24,6 +24,7 @@
 #include <Util/Graphics/PixelAccessor.h>
 #include <Util/Timer.h>
 #include <random>
+#include <set>
 
 namespace MinSG {
 namespace BlueSurfels {
@@ -59,38 +60,18 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 	bb.invalidate();
 	
 	// calculate bounding box and initialize sourceSurfels-mapping
-	std::deque<size_t> sourceSurfelIds(surfels.size());
+//	std::deque<size_t> sourceSurfelIds(surfels.size());
+	std::set<size_t> freeSurfelIds;
 	{	
 		size_t i=0;
 		for(const auto & surfel : surfels){
 			bb.include(surfel.pos);
-			sourceSurfelIds[i] = i;
+			freeSurfelIds.insert(i);
 			++i;
 		}
 	}
-		
+
 	
-	// sort surfels by size (and shuffle)
-	{
-		struct S {
-			const std::vector<Surfel> & surfels;
-			S(const std::vector<Surfel> & v) : surfels(v){}
-			bool operator()(size_t aId, size_t bId)const{
-				const auto & a = surfels[aId];
-				const auto & b = surfels[bId];
-				return a.size!=b.size ? a.size>b.size : 
-						(static_cast<uint32_t>(a.pos.x()*10000.0) ^ 
-						static_cast<uint32_t>(a.pos.y()*10000.0) ^ 
-						static_cast<uint32_t>(a.pos.z()*10000.0)) % 1273 >
-						(static_cast<uint32_t>(b.pos.x()*10000.0) ^ 
-						static_cast<uint32_t>(b.pos.y()*10000.0) ^ 
-						static_cast<uint32_t>(b.pos.z()*10000.0)) % 1273;
-			}
-		} sorter(surfels);
-		std::sort(sourceSurfelIds.begin(),sourceSurfelIds.end(),sorter);
-	}
-
-
 	
 	// generate the mesh
 	Rendering::VertexDescription vd;
@@ -100,17 +81,36 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 	Util::Reference<Rendering::MeshUtils::MeshBuilder> mb = new Rendering::MeshUtils::MeshBuilder(vd);
 	
 	struct OctreeEntry : public Geometry::Point<Geometry::Vec3f> {
-		size_t index;
-		OctreeEntry(size_t i,const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), index(i) {}
+		size_t surfelId;
+		OctreeEntry(size_t i,const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), surfelId(i) {}
 	};
 //	const Geometry::Box & boundingBox, float minimumBoxSize, uint32_t maximumPoints
 	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01,8);
 	size_t surfelCount = 0;
-
+   
+	static std::default_random_engine engine;
+       
+	struct _{
+		static std::vector<size_t> getRandomSurfelIds(const std::set<size_t> & idSet,uint32_t num ){
+			std::vector<size_t> result;
+			result.reserve(num);
+			if(!idSet.empty()){
+				std::uniform_int_distribution<size_t> rand(0, *idSet.rbegin());
+				 
+				while(num-->0)
+					result.emplace_back( *idSet.lower_bound(rand(engine)) );
+			}
+			return result;
+		}
+	};
+	
+	
+	
 	// add initial point
 	{
-		size_t surfelId = sourceSurfelIds.front();
-		sourceSurfelIds.pop_front();
+		auto initialPoints = _::getRandomSurfelIds(freeSurfelIds,1);
+		size_t surfelId = initialPoints.front();
+		freeSurfelIds.erase(surfelId);
 		auto & surfel = surfels[surfelId];
 		mb->position(surfel.pos);
 		mb->normal(surfel.normal);
@@ -126,8 +126,8 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 		}
 	} qualitySorter;
 
-	std::vector<std::pair<size_t,float>> samples; // surfelId , distance to nearest other sample
-	std::vector<size_t> newSurfelIds;
+	std::vector<std::pair<size_t,float>> sortedSubset; // surfelId , distance to nearest other sample
+//	std::vector<size_t> newSurfelIds;
 
 	std::cout << "Overall number:" << surfels.size();
 // Util::Timer t;
@@ -135,66 +135,177 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 	unsigned int acceptSamples=1;
 	unsigned int samplesPerRound=160;
 	unsigned int round = 1;
-	while(surfelCount<maxAbsSurfels && sourceSurfelIds.size()>samplesPerRound){
-		for(size_t i=0;i<samplesPerRound;++i){
-			const size_t vId = sourceSurfelIds.front();
-			sourceSurfelIds.pop_front();
+	while(surfelCount<maxAbsSurfels && freeSurfelIds.size()>samplesPerRound){
+		const auto randomSubset = _::getRandomSurfelIds(freeSurfelIds,samplesPerRound);
+		for(const auto& vId : randomSubset){
 			std::deque<OctreeEntry> closest;
 			const Geometry::Vec3 & vPos = surfels[vId].pos;
 			octree.getClosestPoints(vPos, 1, closest);
-			samples.emplace_back(vId,vPos.distanceSquared(closest.front().getPosition()));
+			sortedSubset.emplace_back(vId,vPos.distanceSquared(closest.front().getPosition()));
 		}
 		// highest quality at the back
-		std::sort(samples.begin(),samples.end(),qualitySorter);
+		std::sort(sortedSubset.begin(),sortedSubset.end(),qualitySorter);
 		
-		newSurfelIds.clear();
-		for(unsigned int j = 0;j<acceptSamples && !samples.empty(); ++j ){
-			auto & sample = samples.back();
-			samples.pop_back();
-			const Surfel & v = surfels[sample.first];
-			bool ok = true;
-//			for(const auto & recentSurfelId : newSurfelIds){
-//				if(v.pos.distanceSquared( surfels[recentSurfelId].pos )<sample.second*2.0 ){
-//					sourceSurfelIds.push_back(sample.first); // keep sample for next round
-//					ok = false;
-//					break;
-//				}
-//			}
-			if(ok){
-				newSurfelIds.push_back(sample.first);
-				mb->position(v.pos);
-				mb->normal(v.normal);
-				mb->color(v.color);
-				mb->addVertex();
-				octree.insert(OctreeEntry(sample.first,v.pos));
-				++surfelCount;
-			}
-		}
+		// accept best samples
+		for(unsigned int j = 0;j<acceptSamples && !sortedSubset.empty(); ++j ){
+			auto & sample = sortedSubset.back();
+			sortedSubset.pop_back();
+			const size_t vId = sample.first;
+			freeSurfelIds.erase(vId);
+			const Surfel & v = surfels[vId];
 
-		if( (round%10000) == 100){
-			std::default_random_engine rEngine;
-			std::shuffle(sourceSurfelIds.begin(),sourceSurfelIds.end(),rEngine );
-			//std::cout << "Shuffle\n";
+			mb->position(v.pos);
+			mb->normal(v.normal);
+			mb->color(v.color);
+			mb->addVertex();
+			octree.insert(OctreeEntry(vId,v.pos));
+			++surfelCount;
 		}
+		// remove worst samples
+		for(size_t i=static_cast<size_t>(sortedSubset.size()*(1.0f-reusalRate));i>0;--i){
+			freeSurfelIds.erase(sortedSubset[i].first);
+		}
+		sortedSubset.clear();
+
 		if( (round%500) == 0){
 			//std::cout << "Round:"<<round<<" #Samples:"<< surfelCount<<" : "<<t.getMilliseconds()<<" ms; samplesPerRound "<<samplesPerRound<<" accept:"<<acceptSamples<<"\n";
 			samplesPerRound = std::max(samplesPerRound*0.5f,20.0f);
 			acceptSamples = std::min( static_cast<unsigned int>(samplesPerRound*0.3), acceptSamples+1);
 // 			t.reset();
 		}
-
-		for(size_t i=static_cast<size_t>(samples.size()*reusalRate);i>0;--i){
-			const size_t vId = samples.back().first;
-			samples.pop_back();
-			sourceSurfelIds.push_back(vId);
-		}
-		samples.clear();
 		++round;
 	}
 	
 	std::cout << " \t target number:" << maxAbsSurfels;
 	std::cout << " \t created:" << surfelCount;
 	std::cout << std::endl;
+
+	
+//	// sort surfels by size (and shuffle)
+//	{
+//		struct S {
+//			const std::vector<Surfel> & surfels;
+//			S(const std::vector<Surfel> & v) : surfels(v){}
+//			bool operator()(size_t aId, size_t bId)const{
+//				const auto & a = surfels[aId];
+//				const auto & b = surfels[bId];
+//				return a.size!=b.size ? a.size>b.size : 
+//						(static_cast<uint32_t>(a.pos.x()*10000.0) ^ 
+//						static_cast<uint32_t>(a.pos.y()*10000.0) ^ 
+//						static_cast<uint32_t>(a.pos.z()*10000.0)) % 1273 >
+//						(static_cast<uint32_t>(b.pos.x()*10000.0) ^ 
+//						static_cast<uint32_t>(b.pos.y()*10000.0) ^ 
+//						static_cast<uint32_t>(b.pos.z()*10000.0)) % 1273;
+//			}
+//		} sorter(surfels);
+//		std::sort(sourceSurfelIds.begin(),sourceSurfelIds.end(),sorter);
+//	}
+//
+//
+//	
+//	// generate the mesh
+//	Rendering::VertexDescription vd;
+//	vd.appendPosition3D();
+//	vd.appendNormalByte();
+//	vd.appendColorRGBAByte();
+//	Util::Reference<Rendering::MeshUtils::MeshBuilder> mb = new Rendering::MeshUtils::MeshBuilder(vd);
+//	
+//	struct OctreeEntry : public Geometry::Point<Geometry::Vec3f> {
+//		size_t index;
+//		OctreeEntry(size_t i,const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), index(i) {}
+//	};
+////	const Geometry::Box & boundingBox, float minimumBoxSize, uint32_t maximumPoints
+//	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01,8);
+//	size_t surfelCount = 0;
+//
+//	// add initial point
+//	{
+//		size_t surfelId = sourceSurfelIds.front();
+//		sourceSurfelIds.pop_front();
+//		auto & surfel = surfels[surfelId];
+//		mb->position(surfel.pos);
+//		mb->normal(surfel.normal);
+//		mb->color(surfel.color);
+//		mb->addVertex();
+//		++surfelCount;
+//		octree.insert(OctreeEntry(surfelId,surfel.pos));
+//	}
+//	
+//	struct QS {
+//		bool operator()(const std::pair<size_t,float>&a,const std::pair<size_t,float> &b)const{
+//			return a.second<b.second;
+//		}
+//	} qualitySorter;
+//
+//	std::vector<std::pair<size_t,float>> samples; // surfelId , distance to nearest other sample
+//	std::vector<size_t> newSurfelIds;
+//
+//	std::cout << "Overall number:" << surfels.size();
+//// Util::Timer t;
+//// t.reset();
+//	unsigned int acceptSamples=1;
+//	unsigned int samplesPerRound=160;
+//	unsigned int round = 1;
+//	while(surfelCount<maxAbsSurfels && sourceSurfelIds.size()>samplesPerRound){
+//		for(size_t i=0;i<samplesPerRound;++i){
+//			const size_t vId = sourceSurfelIds.front();
+//			sourceSurfelIds.pop_front();
+//			std::deque<OctreeEntry> closest;
+//			const Geometry::Vec3 & vPos = surfels[vId].pos;
+//			octree.getClosestPoints(vPos, 1, closest);
+//			samples.emplace_back(vId,vPos.distanceSquared(closest.front().getPosition()));
+//		}
+//		// highest quality at the back
+//		std::sort(samples.begin(),samples.end(),qualitySorter);
+//		
+//		newSurfelIds.clear();
+//		for(unsigned int j = 0;j<acceptSamples && !samples.empty(); ++j ){
+//			auto & sample = samples.back();
+//			samples.pop_back();
+//			const Surfel & v = surfels[sample.first];
+//			bool ok = true;
+////			for(const auto & recentSurfelId : newSurfelIds){
+////				if(v.pos.distanceSquared( surfels[recentSurfelId].pos )<sample.second*2.0 ){
+////					sourceSurfelIds.push_back(sample.first); // keep sample for next round
+////					ok = false;
+////					break;
+////				}
+////			}
+//			if(ok){
+//				newSurfelIds.push_back(sample.first);
+//				mb->position(v.pos);
+//				mb->normal(v.normal);
+//				mb->color(v.color);
+//				mb->addVertex();
+//				octree.insert(OctreeEntry(sample.first,v.pos));
+//				++surfelCount;
+//			}
+//		}
+//
+//		if( (round%10000) == 100){
+//			std::default_random_engine rEngine;
+//			std::shuffle(sourceSurfelIds.begin(),sourceSurfelIds.end(),rEngine );
+//			//std::cout << "Shuffle\n";
+//		}
+//		if( (round%500) == 0){
+//			//std::cout << "Round:"<<round<<" #Samples:"<< surfelCount<<" : "<<t.getMilliseconds()<<" ms; samplesPerRound "<<samplesPerRound<<" accept:"<<acceptSamples<<"\n";
+//			samplesPerRound = std::max(samplesPerRound*0.5f,20.0f);
+//			acceptSamples = std::min( static_cast<unsigned int>(samplesPerRound*0.3), acceptSamples+1);
+//// 			t.reset();
+//		}
+//
+//		for(size_t i=static_cast<size_t>(samples.size()*reusalRate);i>0;--i){
+//			const size_t vId = samples.back().first;
+//			samples.pop_back();
+//			sourceSurfelIds.push_back(vId);
+//		}
+//		samples.clear();
+//		++round;
+//	}
+//	
+//	std::cout << " \t target number:" << maxAbsSurfels;
+//	std::cout << " \t created:" << surfelCount;
+//	std::cout << std::endl;
 
 	auto mesh = mb->buildMesh();
 	mesh->setDrawMode(Rendering::Mesh::DRAW_POINTS);
@@ -214,7 +325,7 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 			octree.getClosestPoints(pos, 10, closestNeighbours);
 			float f=0.0f;
 			for(const auto& neighbour : closestNeighbours){
-				f += surfels[ neighbour.index ].normal.dot(normal);
+				f += surfels[ neighbour.surfelId ].normal.dot(normal);
 //				if( surfels[ neighbour.index ].normal.dot(normal) > 0.9 )
 			}
 			Util::Color4f c = colorAccessor->getColor4f(vIndex);

@@ -126,7 +126,7 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 		frameContext.popCamera();
 		return nullptr;
 	}
-	Matrix4x4 transMat = (renderingContext.getProjectionMatrix() * renderingContext.getCameraMatrix()).inverse();
+	const Matrix4x4 transMat = (renderingContext.getProjectionMatrix() * renderingContext.getMatrix_worldToCamera()).inverse();
 	MeshVertexData & vd = mesh->openVertexData();
 	Rendering::MeshUtils::transformCoordinates(vd, VertexAttributeIds::POSITION, transMat, 0, mesh->getVertexCount());
 	vd.updateBoundingBox();
@@ -263,7 +263,7 @@ GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node 
 		return nullptr;
 	}
 
-	Geometry::Matrix4x4f transMat = (renderingContext.getProjectionMatrix() * renderingContext.getCameraMatrix()).inverse();
+	const Geometry::Matrix4x4f transMat = (renderingContext.getProjectionMatrix() * renderingContext.getMatrix_worldToCamera()).inverse();
 	MeshVertexData & vertexData = mesh->openVertexData();
 	Rendering::MeshUtils::transformCoordinates(vertexData, VertexAttributeIds::POSITION, transMat, 0, mesh->getVertexCount());
 	vertexData.updateBoundingBox();

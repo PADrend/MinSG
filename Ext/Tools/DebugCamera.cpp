@@ -39,7 +39,7 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 		
 		rc.setFBO(fbo.get());
 		rc.setProjectionMatrix(debug->getFrustum().getProjectionMatrix());
-		rc.setInverseCameraMatrix(debug->getWorldMatrix());
+		rc.setMatrix_cameraToWorld(debug->getWorldMatrix());
 		rc.setMatrix(conversionMatrix * mod);
 		rc.setViewport(debug->getViewport());
 		if(debug->isScissorEnabled()) {
@@ -51,7 +51,7 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 		// Display for the "debug" camera.
 		mesh->_display(rc, 0, mesh->isUsingIndexData() ? mesh->getIndexCount() : mesh->getVertexCount());
 
-		rc.setInverseCameraMatrix(original->getWorldMatrix());
+		rc.setMatrix_cameraToWorld(original->getWorldMatrix());
 		
 		rc.popFBO();
 		rc.popProjectionMatrix();
