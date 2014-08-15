@@ -178,12 +178,13 @@ private:
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static bool isVisible(LightNode* source, LightNode* target);
 	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges);
-	void filterIncorrectEdges(std::vector<LightEdge*> *edges);
-	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges);
+	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture);
+	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture);
 	void fillTexture(Rendering::Texture *texture, Util::Color4f color);
 	void fillTexture(Rendering::Texture *texture, uint8_t value);
+	void fillTextureFloat(Rendering::Texture *texture, float value);
 	void createWorldBBCameras();
-	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
+	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks);
 	void renderAllNodes(MinSG::Node* node);
 
 	Util::Reference<MinSG::Node> lightRootNode;
@@ -195,6 +196,7 @@ private:
 	Util::Reference<MinSG::CameraNodeOrtho> sceneEnclosingCameras[3];
 	Geometry::Vec3 lightRootCenter;
 	Util::Reference<Rendering::Texture> voxelOctreeTextureStatic;
+	Util::Reference<Rendering::Texture> voxelOctreeLocksStatic;
 	Util::Reference<Rendering::Texture> atomicCounter;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderCreate;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderRead;
