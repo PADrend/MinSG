@@ -165,7 +165,7 @@ static const Geometry::Box & getBounds2(const SampleRegion::ref_t & region) {
 	return region->getBounds();
 }
 static const Util::Color4f getColor2(const SampleRegion::ref_t & region, const SampleContext * sc, float intensity) {
-	return Util::Color4f(Util::ColorLibrary::GREEN, Util::ColorLibrary::RED, region->getSampleQuality(sc).get()*intensity);
+	return Util::Color4f(Util::Color4f(Util::ColorLibrary::GREEN), Util::Color4f(Util::ColorLibrary::RED), region->getSampleQuality(sc).get()*intensity);
 }
 
 void SampleContext::displayRegions(FrameContext & frameContext, float alpha, float redGreenThreshold) const {

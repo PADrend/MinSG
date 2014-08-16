@@ -108,16 +108,16 @@ static void initEmitter(const DescriptionMap & d, ParticleEmitter * em) {
 
 	v = Util::StringUtils::toFloats(d.getString(Consts::ATTR_PARTICLE_MIN_COLOR, ""));
 	if(v.size() == 4) {
-		em->setMinColor(Util::Color4f(v[0], v[1], v[2], v[3]));
+		em->setMinColor(Util::Color4ub(Util::Color4f(v[0], v[1], v[2], v[3])));
 	} else if(v.size() == 3) {
-		em->setMinColor(Util::Color4f(v[0], v[1], v[2]));
+		em->setMinColor(Util::Color4ub(Util::Color4f(v[0], v[1], v[2])));
 	}
 
 	v = Util::StringUtils::toFloats(d.getString(Consts::ATTR_PARTICLE_MAX_COLOR, ""));
 	if(v.size() == 4) {
-		em->setMaxColor(Util::Color4f(v[0], v[1], v[2], v[3]));
+		em->setMaxColor(Util::Color4ub(Util::Color4f(v[0], v[1], v[2], v[3])));
 	} else if(v.size() == 3) {
-		em->setMaxColor(Util::Color4f(v[0], v[1], v[2]));
+		em->setMaxColor(Util::Color4ub(Util::Color4f(v[0], v[1], v[2])));
 	}
 
 	if(d.contains(Consts::ATTR_PARTICLE_TIME_OFFSET)) {
