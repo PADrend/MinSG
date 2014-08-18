@@ -20,7 +20,6 @@
 #include <MinSG/Core/Nodes/Node.h>
 #include <MinSG/Core/Nodes/GeometryNode.h>
 #include <MinSG/Core/Nodes/LightNode.h>
-#include <Util/Graphics/PixelAccessor.h>
 #include <MinSG/Core/FrameContext.h>
 #include <random>
 #include <Rendering/Serialization/Serialization.h>
@@ -163,8 +162,52 @@ void LightNodeManager::setFrameContext(MinSG::FrameContext& frameContext){
 	this->frameContext = &frameContext;
 }
 
+void LightNodeManager::addTreeToDebug(Geometry::Vec3 parentPos, float parentSize, unsigned int depth, unsigned int curID, Util::PixelAccessor* pixelAccessor){
+	//draw box (as lines)
+	float mov = parentSize * 0.5f;
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov));
+	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov));
+
+	if(depth < VOXEL_OCTREE_DEPTH){
+		for(unsigned int i = 0; i < 8; i++){
+			unsigned int x = (curID * VOXEL_OCTREE_SIZE_PER_NODE + i) % voxelOctreeTextureStatic.get()->getWidth();
+			unsigned int y = (curID * VOXEL_OCTREE_SIZE_PER_NODE + i) / voxelOctreeTextureStatic.get()->getWidth();
+			unsigned int childID = pixelAccessor->readColor4f(x, y).r();
+
+			if(childID != 0){
+				Geometry::Vec3 childPos = parentPos;
+				switch(i){
+				case 0:	childPos += Geometry::Vec3(-parentSize * 0.25f, -parentSize * 0.25f, parentSize * 0.25f); break;
+				case 1:	childPos += Geometry::Vec3(-parentSize * 0.25f, -parentSize * 0.25f, -parentSize * 0.25f); break;
+				case 2:	childPos += Geometry::Vec3(-parentSize * 0.25f, parentSize * 0.25f, parentSize * 0.25f); break;
+				case 3:	childPos += Geometry::Vec3(-parentSize * 0.25f, parentSize * 0.25f, -parentSize * 0.25f); break;
+				case 4:	childPos += Geometry::Vec3(parentSize * 0.25f, -parentSize * 0.25f, parentSize * 0.25f); break;
+				case 5:	childPos += Geometry::Vec3(parentSize * 0.25f, -parentSize * 0.25f, -parentSize * 0.25f); break;
+				case 6:	childPos += Geometry::Vec3(parentSize * 0.25f, parentSize * 0.25f, parentSize * 0.25f); break;
+				case 7:	childPos += Geometry::Vec3(parentSize * 0.25f, parentSize * 0.25f, -parentSize * 0.25f); break;
+				}
+				//draw line
+				debug->addDebugLine(parentPos, childPos, Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 0.5f, 1, 1));
+
+				addTreeToDebug(childPos, parentSize * 0.5f, ++depth, childID, pixelAccessor);
+			}
+		}
+	}
+}
+
 //here begins the fun
 void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNode, Util::Reference<MinSG::Node> lightRootNode, Rendering::RenderingContext& renderingContext, MinSG::FrameContext& frameContext){
+	Rendering::enableGLErrorChecking();
 	//reset some values
 	cleanUp();
 	fillTexture(voxelOctreeTextureStatic.get(), 0);
@@ -188,42 +231,61 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	Rendering::checkGLError(__FILE__, __LINE__);
 	Util::Reference<Util::PixelAccessor> counterAcc = Rendering::TextureUtils::createColorPixelAccessor(renderingContext, *atomicCounter.get());
 	Rendering::checkGLError(__FILE__, __LINE__);
-	Util::Color4f value = counterAcc.get()->readColor4f(0, 0);
-	if(VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE < value.r()){
-		std::cout << "ERROR: Texture is too small: " << (value.r() * VOXEL_OCTREE_SIZE_PER_NODE) << " > " << (VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE) << std::endl;
+	Util::Color4f numNodes = counterAcc.get()->readColor4f(0, 0);
+	if(VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE < numNodes.r()){
+		std::cout << "ERROR: Texture is too small: " << (numNodes.r() * VOXEL_OCTREE_SIZE_PER_NODE) << " > " << (VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE) << std::endl;
 	} else {
-		std::cout << "Texture is big enough: " << (value.r() * VOXEL_OCTREE_SIZE_PER_NODE) << " <= " << (VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE) << std::endl;
+		std::cout << "Texture is big enough: " << (numNodes.r() * VOXEL_OCTREE_SIZE_PER_NODE) << " <= " << (VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE) << std::endl;
 	}
+	Rendering::checkGLError(__FILE__, __LINE__);
+
+	voxelOctreeTextureStatic.get()->downloadGLTexture(renderingContext);
+	Rendering::checkGLError(__FILE__, __LINE__);
+	Util::Reference<Util::PixelAccessor> voxelOctreeAcc = Rendering::TextureUtils::createColorPixelAccessor(renderingContext, *voxelOctreeTextureStatic.get());
+	Rendering::checkGLError(__FILE__, __LINE__);
+	for(unsigned int i = 0; i < numNodes.r() * VOXEL_OCTREE_SIZE_PER_NODE || i < 16; i++){
+		unsigned int x = i % voxelOctreeTextureStatic.get()->getWidth();
+		unsigned int y = i / voxelOctreeTextureStatic.get()->getWidth();
+		if(i < 20 * VOXEL_OCTREE_SIZE_PER_NODE /*i % (1 * VOXEL_OCTREE_SIZE_PER_NODE) == 0*/) std::cout << "VoxelOctree value " << i << ": " << voxelOctreeAcc.get()->readColor4f(x, y).r() << std::endl;
+	}
+
+	//draw tree debug
+	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
+	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getBB().getExtentMax() * 0.5f);
+	addTreeToDebug(rootNodeMidpoint, lightRootNode->getBB().getExtentMax(), 0, 0, voxelOctreeAcc.get());
+
+	Rendering::checkGLError(__FILE__, __LINE__);
 	//DEBUG END
 
-	createLightNodes();
-
-	//DEBUG to show the nodes
-	debug->addDebugLine(Geometry::Vec3(0, 0, 0), Geometry::Vec3(0, 3, 0), Util::Color4f(1, 1, 1, 1), Util::Color4f(1, 0, 0, 1));
+//	createLightNodes();
+//
+//	//DEBUG to show the nodes
+//	debug->addDebugLine(Geometry::Vec3(0, 0, 0), Geometry::Vec3(0, 3, 0), Util::Color4f(1, 1, 1, 1), Util::Color4f(1, 0, 0, 1));
+////	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+////		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
+////			Geometry::Vec3 pos = lightNodeMaps[i]->lightNodes[j]->position;
+////			debug->addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() + 0.1, pos.z()));
+////		}
+////	}
+//	//DEBUG END
+//
+//	createLightEdges();
+//
+//	//DEBUG to show the edges
 //	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
-//		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
-//			Geometry::Vec3 pos = lightNodeMaps[i]->lightNodes[j]->position;
-//			debug->addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() + 0.1, pos.z()));
+//		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
+//			debug->addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
+//		}
+//		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+//			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+//				debug->addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
+//			}
 //		}
 //	}
 	//DEBUG END
 
-	createLightEdges();
-
-	//DEBUG to show the edges
-	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
-		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
-			debug->addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
-		}
-		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
-			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-				debug->addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
-			}
-		}
-	}
-	//DEBUG END
-
 	debug->buildDebugLineNode();
+	Rendering::checkGLError(__FILE__, __LINE__);
 }
 
 void LightNodeManager::createLightNodes(){
@@ -511,6 +573,7 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 
 	std::cout << "Output texture: " << outputTextureSize << " which gives " << outputTextureSize * outputTextureSize << " possible edges!" << std::endl;
 
+	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", lightRootNode.get()->getWorldOrigin()));
 	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("sizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
 	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
 	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("inputTextureSize", (int32_t)textureSize));
@@ -673,19 +736,21 @@ void LightNodeManager::createWorldBBCameras(){
 		ct = maxExtendHalf;
 		cb = -maxExtendHalf;
 
-		Geometry::Vec3 debPos = sceneEnclosingCameras[i].get()->getWorldPosition();
-		debug->addDebugLine(debPos + offset + right * cl + up * cb, debPos + offset + right * cr + up * cb);
-		debug->addDebugLine(debPos + offset + right * cl + up * cb, debPos + offset + right * cl + up * ct);
-		debug->addDebugLine(debPos + offset + right * cr + up * cb, debPos + offset + right * cr + up * ct);
-		debug->addDebugLine(debPos + offset + right * cl + up * ct, debPos + offset + right * cr + up * ct);
-		debug->addDebugLine(debPos + offsetFar + right * cl + up * cb, debPos + offsetFar + right * cr + up * cb);
-		debug->addDebugLine(debPos + offsetFar + right * cl + up * cb, debPos + offsetFar + right * cl + up * ct);
-		debug->addDebugLine(debPos + offsetFar + right * cr + up * cb, debPos + offsetFar + right * cr + up * ct);
-		debug->addDebugLine(debPos + offsetFar + right * cl + up * ct, debPos + offsetFar + right * cr + up * ct);
-//		outln("left: "+cl+" right: "+cr+" top: "+ct+" bottom: "+cb);
-
-		debug->addDebugLine(sceneEnclosingCameras[i].get()->getWorldPosition(), sceneEnclosingCameras[i].get()->getWorldPosition() + offset, Util::Color4f(0.0,0.0,1.0,1.0), Util::Color4f(1.0,0.0,0.0,1.0));
-		debug->addDebugLine(sceneEnclosingCameras[i].get()->getWorldPosition() + offset, sceneEnclosingCameras[i].get()->getWorldPosition() + offsetFar, Util::Color4f(0.0,1.0,0.0,1.0), Util::Color4f(1.0,0.0,0.0,1.0));
+		//DEBUG
+//		Geometry::Vec3 debPos = sceneEnclosingCameras[i].get()->getWorldPosition();
+//		debug->addDebugLine(debPos + offset + right * cl + up * cb, debPos + offset + right * cr + up * cb);
+//		debug->addDebugLine(debPos + offset + right * cl + up * cb, debPos + offset + right * cl + up * ct);
+//		debug->addDebugLine(debPos + offset + right * cr + up * cb, debPos + offset + right * cr + up * ct);
+//		debug->addDebugLine(debPos + offset + right * cl + up * ct, debPos + offset + right * cr + up * ct);
+//		debug->addDebugLine(debPos + offsetFar + right * cl + up * cb, debPos + offsetFar + right * cr + up * cb);
+//		debug->addDebugLine(debPos + offsetFar + right * cl + up * cb, debPos + offsetFar + right * cl + up * ct);
+//		debug->addDebugLine(debPos + offsetFar + right * cr + up * cb, debPos + offsetFar + right * cr + up * ct);
+//		debug->addDebugLine(debPos + offsetFar + right * cl + up * ct, debPos + offsetFar + right * cr + up * ct);
+////		outln("left: "+cl+" right: "+cr+" top: "+ct+" bottom: "+cb);
+//
+//		debug->addDebugLine(sceneEnclosingCameras[i].get()->getWorldPosition(), sceneEnclosingCameras[i].get()->getWorldPosition() + offset, Util::Color4f(0.0,0.0,1.0,1.0), Util::Color4f(1.0,0.0,0.0,1.0));
+//		debug->addDebugLine(sceneEnclosingCameras[i].get()->getWorldPosition() + offset, sceneEnclosingCameras[i].get()->getWorldPosition() + offsetFar, Util::Color4f(0.0,1.0,0.0,1.0), Util::Color4f(1.0,0.0,0.0,1.0));
+		//DEBUG END
 	}
 //	debug->addDebugLineCol2(cameras[0].getWorldPosition(), cameras[0].getWorldPosition() + worldDirections[0], new Util.Color4f(0.0,0.0,1.0,1.0), new Util.Color4f(1.0,0.0,0.0,1.0));
 //	debug->addDebugLineCol2(cameras[0].getWorldPosition() + worldDirections[0], cameras[0].getWorldPosition() + worldDirections[0] * (maxExtend + 1), new Util.Color4f(0.0,1.0,0.0,1.0), new Util.Color4f(1.0,0.0,0.0,1.0));
@@ -710,6 +775,7 @@ void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rende
 	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(atomicCounter));
 #endif // USE_ATOMIC_COUNTER
 
+	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", lightRootNode.get()->getWorldOrigin()));
 	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("sizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
 	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("textureWidth", (int32_t)octreeTexture->getWidth()));
 	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("lockTextureWidth", (int32_t)octreeLocks->getWidth()));
