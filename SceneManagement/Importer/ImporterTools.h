@@ -27,14 +27,14 @@ namespace MinSG {
 class Node;
 class State;
 namespace SceneManagement {
-typedef Util::GenericAttributeList NodeDescriptionList;
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeList DescriptionArray;
+typedef Util::GenericAttributeMap DescriptionMap;
 class MeshImportHandler;
 
 namespace ImporterTools {
 
-std::deque<const NodeDescription *> filterElements(const std::string & type, 
-												   const NodeDescriptionList * subDescriptions);
+std::deque<const DescriptionMap *> filterElements(const std::string & type, 
+												   const DescriptionArray * subDescriptions);
 
 /*! Helper function that adds standard data to a node.
 	- register named nodes
@@ -43,22 +43,22 @@ std::deque<const NodeDescription *> filterElements(const std::string & type,
 	- add states
 	- add behaviours
 	- add children (if node is a group node)	*/
-void finalizeNode(ImportContext & ctxt, Node * node,const NodeDescription & d);
+void finalizeNode(ImportContext & ctxt, Node * node,const DescriptionMap & d);
 
 /*! Helper function that adds standard data to state.
 	- register named state
 	- add attributes
 	more to come...	*/
-void finalizeState(ImportContext & ctxt, State * state,const NodeDescription & d);
+void finalizeState(ImportContext & ctxt, State * state,const DescriptionMap & d);
 
-Geometry::SRT getSRT(const NodeDescription & d) ;
+Geometry::SRT getSRT(const DescriptionMap & d) ;
 
-void addAttributes(ImportContext & ctxt, const NodeDescriptionList * subDescriptions, Util::AttributeProvider * attrProvider) ;
+void addAttributes(ImportContext & ctxt, const DescriptionArray * subDescriptions, Util::AttributeProvider * attrProvider) ;
 
-typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description, GroupNode * parent)> NodeImport_Fn_t;
-typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description, Node * parent)> StateImport_Fn_t;
-typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description, Node * parent)> BehaviourImport_Fn_t;
-typedef std::function<bool (ImportContext & ctxt,const std::string & type, const NodeDescription & description)> AdditionalDataImport_Fn_t;
+typedef std::function<bool (ImportContext & ctxt,const std::string & type, const DescriptionMap & description, GroupNode * parent)> NodeImport_Fn_t;
+typedef std::function<bool (ImportContext & ctxt,const std::string & type, const DescriptionMap & description, Node * parent)> StateImport_Fn_t;
+typedef std::function<bool (ImportContext & ctxt,const std::string & type, const DescriptionMap & description, Node * parent)> BehaviourImport_Fn_t;
+typedef std::function<bool (ImportContext & ctxt,const std::string & type, const DescriptionMap & description)> AdditionalDataImport_Fn_t;
 
 void registerNodeImporter(NodeImport_Fn_t);
 void registerStateImporter(StateImport_Fn_t);
@@ -68,7 +68,7 @@ void registerAdditionalDataImporter(AdditionalDataImport_Fn_t);
 MeshImportHandler * getMeshImportHandler();
 void setMeshImportHandler(std::unique_ptr<MeshImportHandler> handler);
 
-void buildSceneFromDescription(ImportContext & importContext,const NodeDescription * d);
+void buildSceneFromDescription(ImportContext & importContext,const DescriptionMap * d);
 
 }
 }

@@ -81,7 +81,7 @@ btCollisionShape* createConvexHullShape(Node* node,const Geometry::Vec3 & center
 	btAlignedObjectArray<btVector3> vertices2;
 	Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::POSITION));
 
-	for (uint32_t i = 0; i < vertexCount; i ++) {
+	for(uint32_t i = 0; i < vertexCount; i ++) {
 		const Geometry::Vec3 a( (positionAccessor->getPosition(i)-centerOfMass)*s );
 		vertices2.push_back(btVector3(a.x(),a.y(),a.z()));
 	}
@@ -133,7 +133,7 @@ btCollisionShape* creatStaticTriangleMeshShape(Node* node){
 	Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::POSITION));
 	std::vector<btScalar> vertexPos;
 	vertexPos.reserve(vertexCount*3);
-	for (uint32_t i = 0; i < vertexCount; i ++) {
+	for(uint32_t i = 0; i < vertexCount; i ++) {
 		const Geometry::Vec3 a( positionAccessor->getPosition(i)*s );
 		vertexPos.push_back(a.getX());
 		vertexPos.push_back(a.getY());
@@ -425,7 +425,7 @@ void BtPhysicWorld::removeNode(Node* node){
 
 void BtPhysicWorld::cleanupWorld(){
 	//cleanup in the reverse order of creation/initialization
-	for (int i=dynamicsWorld->getNumCollisionObjects()-1; i>=0; i--) //remove the rigidbodies from the dynamics world and delete them
+	for(int i=dynamicsWorld->getNumCollisionObjects()-1; i>=0; i--) //remove the rigidbodies from the dynamics world and delete them
 	{
 		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
 		btRigidBody* body = btRigidBody::upcast(obj);
@@ -436,7 +436,7 @@ void BtPhysicWorld::cleanupWorld(){
 		delete obj;
 	}
 
-	for (int j=0; j<collisionShapes.size(); j++) //delete collision shapes
+	for(int j=0; j<collisionShapes.size(); j++) //delete collision shapes
 	{
 		delete collisionShapes[j];
 	}

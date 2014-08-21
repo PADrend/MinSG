@@ -61,7 +61,7 @@ std::vector<Util::Reference<Node>> loadMinSGStream(ImportContext & importContext
 	}
 
 	// parse xml and create description
-	std::unique_ptr<const NodeDescription> sceneDescription(ReaderMinSG::loadScene(in));
+	std::unique_ptr<const DescriptionMap> sceneDescription(ReaderMinSG::loadScene(in));
 
 	// create MinSG scene tree from description with dummy root node
 	Util::Reference<ListNode> dummyContainerNode=new ListNode;
@@ -95,7 +95,7 @@ GroupNode * loadCOLLADA(ImportContext & importContext, const Util::FileName & fi
     
 	const bool invertTransparency = (importContext.getImportOptions() & IMPORT_OPTION_DAE_INVERT_TRANSPARENCY) > 0;
 #ifdef MINSG_EXT_LOADERCOLLADA
-    const NodeDescription * sceneDescription = LoaderCOLLADA::loadScene(fileName, invertTransparency);
+    const DescriptionMap * sceneDescription = LoaderCOLLADA::loadScene(fileName, invertTransparency);
 #else  
     auto in = Util::FileUtils::openForReading(fileName);
 	if(!in) {
@@ -103,11 +103,11 @@ GroupNode * loadCOLLADA(ImportContext & importContext, const Util::FileName & fi
 		return nullptr;
 	}
 
-    std::unique_ptr<const NodeDescription> sceneDescriptionPtr(ReaderDAE::loadScene(*(in.get()), invertTransparency));
+    std::unique_ptr<const DescriptionMap> sceneDescriptionPtr(ReaderDAE::loadScene(*(in.get()), invertTransparency));
 	auto sceneDescription = sceneDescriptionPtr.get();
 #endif
     
-    Util::info << timer.getSeconds() << "s";
+	Util::info << timer.getSeconds() << "s";
 	timer.reset();
 
 	Util::info << "\nBuilding scene graph...";

@@ -23,8 +23,8 @@ COMPILER_WARN_POP
 namespace MinSG {
 namespace LoaderCOLLADA {
 
-SceneManagement::NodeDescription * fileInformationImporter(const COLLADAFW::FileInfo * asset, referenceRegistry_t & /*referenceRegistry*/) {
-	auto sceneDesc = new SceneManagement::NodeDescription;
+SceneManagement::DescriptionMap * fileInformationImporter(const COLLADAFW::FileInfo * asset, referenceRegistry_t & /*referenceRegistry*/) {
+	auto sceneDesc = new SceneManagement::DescriptionMap;
 
 	if(asset->getUpAxisType() == COLLADAFW::FileInfo::X_UP) {
 		sceneDesc->setString(SceneManagement::Consts::ATTR_SRT_UP, "-1.0 0.0 0.0");

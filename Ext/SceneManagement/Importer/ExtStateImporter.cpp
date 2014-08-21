@@ -81,7 +81,7 @@ static T * convertToTNode(Node * node) {
 }
 
 #ifdef MINSG_EXT_BLUE_SURFELS
-static bool importSurfelRenderer(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) {
+static bool importSurfelRenderer(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parent) {
 	if(type != Consts::STATE_TYPE_SURFEL_RENDERER) 
 		return false;
 	
@@ -103,7 +103,7 @@ static void finalizeAlgoSelector(ImportContext & ctxt, MAR::AlgoSelector * as){
 	as->getSampleContext()->getSampleStorage()->initNodeIndices(ctxt.getRootNode());
 }
 
-static bool importAlgoSelector(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) {
+static bool importAlgoSelector(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parent) {
 	if(type != Consts::STATE_TYPE_ALGOSELECTOR) // check parent != nullptr is done by SceneManager
 		return false;
 
@@ -125,7 +125,7 @@ static bool importAlgoSelector(ImportContext & ctxt, const std::string & type, c
 	return true;
 }
 
-static bool importMARSurfelRenderer(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) {
+static bool importMARSurfelRenderer(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parent) {
 	if(type != Consts::STATE_TYPE_MAR_SURFEL_RENDERER) // check parent != nullptr is done by SceneManager
 		return false;
 	
@@ -142,7 +142,7 @@ static bool importMARSurfelRenderer(ImportContext & ctxt, const std::string & ty
 #endif
 
 #ifdef MINSG_EXT_COLORCUBES
-static bool importColorCubeRenderer(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+static bool importColorCubeRenderer(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_COLOR_CUBE_RENDERER) // check parent != nullptr is done by SceneManager
 		return false;
 
@@ -155,7 +155,7 @@ static bool importColorCubeRenderer(ImportContext & ctxt, const std::string & st
 }
 #endif
 
-static bool importOccRenderer(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+static bool importOccRenderer(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_OCC_RENDERER) // check parent != nullptr is done by SceneManager
 		return false;
 
@@ -166,7 +166,7 @@ static bool importOccRenderer(ImportContext & ctxt, const std::string & stateTyp
 	return true;
 }
 
-static bool importCHCppRenderer(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+static bool importCHCppRenderer(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_CHCPP_RENDERER) // check parent != nullptr is done by SceneManager
 		return false;
 
@@ -183,7 +183,7 @@ static bool importCHCppRenderer(ImportContext & ctxt, const std::string & stateT
 	return true;
 }
 
-static bool importBudgetAnnotationState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & desc, Node * parent) {
+static bool importBudgetAnnotationState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & desc, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_BUDGET_ANNOTATION_STATE) { // check parent != nullptr is done by SceneManager
 		return false;
 	}
@@ -204,7 +204,7 @@ static bool importBudgetAnnotationState(ImportContext & ctxt, const std::string 
 	return true;
 }
 
-static bool importMirrorState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+static bool importMirrorState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_MIRROR_STATE) // check parent != nullptr is done by SceneManager
 		return false;
 
@@ -215,7 +215,7 @@ static bool importMirrorState(ImportContext & ctxt, const std::string & stateTyp
 	return true;
 }
 
-static bool importProjSizeFilterState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+static bool importProjSizeFilterState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_PROJ_SIZE_FILTER_STATE) // check parent != nullptr is done by SceneManager
 		return false;
 
@@ -242,7 +242,7 @@ static bool importProjSizeFilterState(ImportContext & ctxt, const std::string & 
 	return true;
 }
 
-static bool importSkyboxState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+static bool importSkyboxState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_SKYBOX) // check parent != nullptr is done by SceneManager
 		return false;
 
@@ -255,7 +255,7 @@ static bool importSkyboxState(ImportContext & ctxt, const std::string & stateTyp
 }
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-static bool importSkeletalHardwareRendererState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+static bool importSkeletalHardwareRendererState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_SKEL_SKELETALHARDWARERENDERERSTATE &&
        stateType != Consts::STATE_TYPE_SKEL_SKELETALRENDERERSTATE) // check parent != nullptr is done by SceneManager
 		return false;
@@ -270,7 +270,7 @@ static bool importSkeletalHardwareRendererState(ImportContext & ctxt, const std:
 #endif
 
 #ifdef MINSG_EXT_SVS
-static bool importSVSRenderer(ImportContext & ctxt, const std::string & stateType, const NodeDescription & desc, Node * parent) {
+static bool importSVSRenderer(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & desc, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_SVS_RENDERER) { // check parent != nullptr is done by SceneManager
 		return false;
 	}
@@ -299,7 +299,7 @@ static bool importSVSRenderer(ImportContext & ctxt, const std::string & stateTyp
 	return true;
 }
 
-static bool importSVSBudgetRenderer(ImportContext & ctxt, const std::string & stateType, const NodeDescription & desc, Node * parent) {
+static bool importSVSBudgetRenderer(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & desc, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_SVS_BUDGETRENDERER) { // check parent != nullptr is done by SceneManager
 		return false;
 	}
@@ -315,7 +315,7 @@ static bool importSVSBudgetRenderer(ImportContext & ctxt, const std::string & st
 }
 #endif
 
-static bool importLODRenderer(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+static bool importLODRenderer(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_LOD_RENDERER) // check parent != nullptr is done by SceneManager
 		return false;
 
@@ -332,7 +332,7 @@ static bool importLODRenderer(ImportContext & ctxt, const std::string & stateTyp
 }
 
 //! template for new importers
-// static bool importXY(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+// static bool importXY(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 //  if(stateType != Consts::STATE_TYPE_XY) // check parent != nullptr is done by SceneManager
 //      return false;
 //

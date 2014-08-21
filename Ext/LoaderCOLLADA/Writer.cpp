@@ -48,11 +48,11 @@ Writer & Writer::instance() {
 
 void Writer::beginLoadingProcess() {
 	// TODO: Idea: put the required data in a context object valid for one loading process (RAII)
-	sceneDescription = new SceneManagement::NodeDescription;
+	sceneDescription = new SceneManagement::DescriptionMap;
 
 	sceneDescription->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_SCENE);
 
-	scene = new SceneManagement::NodeDescription;
+	scene = new SceneManagement::DescriptionMap;
 	scene->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_NODE);
 	scene->setString(SceneManagement::Consts::ATTR_NODE_TYPE, SceneManagement::Consts::NODE_TYPE_LIST);
 	addToMinSGChildren(sceneDescription, scene);

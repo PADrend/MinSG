@@ -45,60 +45,60 @@
 namespace MinSG {
 namespace SceneManagement {
 
-static NodeDescription createDescriptionForUniform(const Rendering::Uniform & u) {
+static std::unique_ptr<DescriptionMap> createDescriptionForUniform(const Rendering::Uniform & u) {
 
-	NodeDescription nd;
-	nd.setString(Consts::TYPE, Consts::TYPE_DATA);
-	nd.setString(Consts::ATTR_DATA_TYPE, Consts::DATA_TYPE_SHADER_UNIFORM);
-	nd.setString(Consts::ATTR_SHADER_UNIFORM_NAME, u.getName());
+	std::unique_ptr<DescriptionMap> nd(new DescriptionMap);
+	nd->setString(Consts::TYPE, Consts::TYPE_DATA);
+	nd->setString(Consts::ATTR_DATA_TYPE, Consts::DATA_TYPE_SHADER_UNIFORM);
+	nd->setString(Consts::ATTR_SHADER_UNIFORM_NAME, u.getName());
 
 	using Rendering::Uniform;
 	const Uniform::dataType_t type = u.getType();
 	switch(type) {
 		case Uniform::UNIFORM_BOOL:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_BOOL);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_BOOL);
 			break;
 		case Uniform::UNIFORM_VEC2B:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC2B);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC2B);
 			break;
 		case Uniform::UNIFORM_VEC3B:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC3B);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC3B);
 			break;
 		case Uniform::UNIFORM_VEC4B:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC4B);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC4B);
 			break;
 		case Uniform::UNIFORM_INT:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_INT);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_INT);
 			break;
 		case Uniform::UNIFORM_VEC2I:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC2I);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC2I);
 			break;
 		case Uniform::UNIFORM_VEC3I:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC3I);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC3I);
 			break;
 		case Uniform::UNIFORM_VEC4I:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC4I);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC4I);
 			break;
 		case Uniform::UNIFORM_FLOAT:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_FLOAT);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_FLOAT);
 			break;
 		case Uniform::UNIFORM_VEC2F:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC2F);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC2F);
 			break;
 		case Uniform::UNIFORM_VEC3F:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC3F);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC3F);
 			break;
 		case Uniform::UNIFORM_VEC4F:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC4F);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_VEC4F);
 			break;
 		case Uniform::UNIFORM_MATRIX_2X2F:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_MATRIX_2X2F);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_MATRIX_2X2F);
 			break;
 		case Uniform::UNIFORM_MATRIX_3X3F:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_MATRIX_3X3F);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_MATRIX_3X3F);
 			break;
 		case Uniform::UNIFORM_MATRIX_4X4F:
-			nd.setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_MATRIX_4X4F);
+			nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, Consts::SHADER_UNIFORM_TYPE_MATRIX_4X4F);
 			break;
 		default:
 			WARN("unexpected case in switch statement");
@@ -143,11 +143,11 @@ static NodeDescription createDescriptionForUniform(const Rendering::Uniform & u)
 		default:
 			WARN("unexpected case in switch statement");
 	}
-	nd.setString(Consts::ATTR_SHADER_UNIFORM_VALUES, s.str());
-	return nd;
+	nd->setString(Consts::ATTR_SHADER_UNIFORM_VALUES, s.str());
+	return std::move(nd);
 }
 
-static void describeShaderState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeShaderState(ExporterContext &,DescriptionMap & desc,State * state) {
 	desc.setString(Consts::ATTR_NODE_TYPE, Consts::STATE_TYPE_SHADER);
 	auto shaderState = dynamic_cast<ShaderState *>(state);
 
@@ -170,10 +170,10 @@ static void describeShaderState(ExporterContext &,NodeDescription & desc,State *
 		Util::GenericAttributeList * shaderFilesAttribute = dynamic_cast<Util::GenericAttributeList *>(state->getAttribute(Consts::STATE_ATTR_SHADER_FILES));
 		if(shaderFilesAttribute){
 			for(const auto & a : *shaderFilesAttribute){
-				const auto a2 = dynamic_cast<const NodeDescription*>(a.get());
+				const auto a2 = dynamic_cast<const DescriptionMap*>(a.get());
 				if(a2){
-					std::unique_ptr<NodeDescription> fileDescription(a2->clone());
-					ExporterTools::addDataEntry(desc,std::move(*fileDescription));
+					std::unique_ptr<DescriptionMap> fileDescription(a2->clone());
+					ExporterTools::addDataEntry(desc,std::move(fileDescription));
 				}
 			}
 		}
@@ -183,7 +183,7 @@ static void describeShaderState(ExporterContext &,NodeDescription & desc,State *
 
 }
 
-static void describeTextureState(ExporterContext & /*ctxt*/,NodeDescription & desc,State * state) {
+static void describeTextureState(ExporterContext & /*ctxt*/,DescriptionMap & desc,State * state) {
 	auto ts = dynamic_cast<TextureState *>(state);
 	
 	desc.setString(Consts::ATTR_STATE_TYPE,Consts::STATE_TYPE_TEXTURE);
@@ -192,13 +192,13 @@ static void describeTextureState(ExporterContext & /*ctxt*/,NodeDescription & de
 
 	Rendering::Texture * texture = ts->getTexture();
 	if( texture ) {
-		NodeDescription dataDesc;
-		dataDesc.setString(Consts::ATTR_DATA_TYPE,"image");
+		std::unique_ptr<DescriptionMap> dataDesc(new DescriptionMap);
+		dataDesc->setString(Consts::ATTR_DATA_TYPE,"image");
 
 		if( texture->getNumLayers()!=1 )
-			dataDesc.setString(Consts::ATTR_TEXTURE_NUM_LAYERS, Util::StringUtils::toString(texture->getNumLayers()));
+			dataDesc->setString(Consts::ATTR_TEXTURE_NUM_LAYERS, Util::StringUtils::toString(texture->getNumLayers()));
 		if( texture->getTextureType()!=Rendering::TextureType::TEXTURE_2D )
-			dataDesc.setString(Consts::ATTR_TEXTURE_TYPE, Util::StringUtils::toString( static_cast<uint32_t>(texture->getTextureType())));
+			dataDesc->setString(Consts::ATTR_TEXTURE_TYPE, Util::StringUtils::toString( static_cast<uint32_t>(texture->getTextureType())));
 
 		const Util::FileName texFilename(texture->getFileName());
 		if(texFilename.empty()) {
@@ -209,22 +209,22 @@ static void describeTextureState(ExporterContext & /*ctxt*/,NodeDescription & de
 				const std::string streamString = stream.str();
 				const std::string encodedData = Util::encodeBase64(std::vector<uint8_t>(streamString.begin(), streamString.end()));
 
-				dataDesc.setString(Consts::ATTR_DATA_ENCODING,"base64");
-				dataDesc.setString(Consts::ATTR_DATA_FORMAT,"png");
-				dataDesc.setString(Consts::DATA_BLOCK,encodedData);
+				dataDesc->setString(Consts::ATTR_DATA_ENCODING,"base64");
+				dataDesc->setString(Consts::ATTR_DATA_FORMAT,"png");
+				dataDesc->setString(Consts::DATA_BLOCK,encodedData);
 			}else{
 				WARN("Texture has no local data."); //... and downloading here is not possible as there is no renderingContext.
 			}
 		} else {
 //			// make path to texture relative to scene (if mesh lies below the scene)
 //			Util::FileUtils::makeRelativeIfPossible(ctxt.sceneFile, texFilename);
-			dataDesc.setString(Consts::ATTR_TEXTURE_FILENAME, texFilename.toShortString());
+			dataDesc->setString(Consts::ATTR_TEXTURE_FILENAME, texFilename.toShortString());
 		}
 		ExporterTools::addDataEntry(desc, std::move(dataDesc));
 	}
 }
 
-static void describeBlendingState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeBlendingState(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto n=dynamic_cast<BlendingState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_BLENDING);
 	desc.setString(Consts::ATTR_BLEND_EQUATION, Rendering::BlendingParameters::equationToString(n->getParameters().getBlendEquationRGB()));
@@ -234,7 +234,7 @@ static void describeBlendingState(ExporterContext &,NodeDescription & desc,State
 	desc.setString(Consts::ATTR_BLEND_DEPTH_MASK, Util::StringUtils::toString(n->getBlendDepthMask()));
 }
 
-static void describeCullFaceState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeCullFaceState(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto s = dynamic_cast<CullFaceState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_CULL_FACE);
 	std::string mode("INVALID");
@@ -258,30 +258,30 @@ static void describeCullFaceState(ExporterContext &,NodeDescription & desc,State
 	desc.setString(Consts::ATTR_CULL_FACE, mode);
 }
 
-static void describeAlphaTestState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeAlphaTestState(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto n = dynamic_cast<AlphaTestState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_ALPHA_TEST);
 	desc.setString(Consts::ATTR_ALPHA_TEST_MODE, Util::StringUtils::toString(static_cast<signed>(n->getParameters().getMode())));
 	desc.setString(Consts::ATTR_ALPHA_REF_VALUE, Util::StringUtils::toString(n->getParameters().getReferenceValue()));
 }
 
-static void describeGroupState(ExporterContext & ctxt,NodeDescription & desc,State * state) {
+static void describeGroupState(ExporterContext & ctxt,DescriptionMap & desc,State * state) {
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_GROUP);
 
 	for(const auto & childState : dynamic_cast<GroupState *>(state)->getStates()) {
-		std::unique_ptr<NodeDescription> stateDescription( ExporterTools::createDescriptionForState(ctxt, childState.get()) );
+		std::unique_ptr<DescriptionMap> stateDescription( ExporterTools::createDescriptionForState(ctxt, childState.get()) );
 		if(stateDescription)
-			ExporterTools::addChildEntry(desc,std::move(*stateDescription));
+			ExporterTools::addChildEntry(desc,std::move(stateDescription));
 	}
 }
 
-static void describePolygonModeState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describePolygonModeState(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto n = dynamic_cast<PolygonModeState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_POLYGON_MODE);
 	desc.setString(Consts::ATTR_POLYGON_MODE, Util::StringUtils::toString(static_cast<signed>(n->getParameters().getMode())));
 }
 
-static void describeLightingState(ExporterContext & ctxt,NodeDescription & desc,State * state) {
+static void describeLightingState(ExporterContext & ctxt,DescriptionMap & desc,State * state) {
 	auto ls = dynamic_cast<LightingState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_LIGHTING_STATE);
 	LightNode * light = ls->getLight();
@@ -295,7 +295,7 @@ static void describeLightingState(ExporterContext & ctxt,NodeDescription & desc,
 	}
 }
 
-static void describeMaterialState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeMaterialState(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto n = dynamic_cast<MaterialState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_MATERIAL);
 	desc.setString(Consts::ATTR_MATERIAL_AMBIENT, Util::StringUtils::implode(n->getParameters().getAmbient().data(), n->getParameters().getAmbient().data() + 4, " "));
@@ -305,13 +305,13 @@ static void describeMaterialState(ExporterContext &,NodeDescription & desc,State
 
 }
 
-static void describeShaderUniformState(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeShaderUniformState(ExporterContext &,DescriptionMap & desc,State * state) {
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SHADER_UNIFORM);
 	for(const auto & uniformEntry : dynamic_cast<ShaderUniformState *>(state)->getUniforms()) 
 		ExporterTools::addDataEntry(desc,std::move(createDescriptionForUniform(uniformEntry.second)));
 }
 
-static void describeTransparencyRenderer(ExporterContext &,NodeDescription & desc,State * state) {
+static void describeTransparencyRenderer(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto n = dynamic_cast<TransparencyRenderer *>(state);
 	desc.setString(Consts::TYPE, Consts::TYPE_STATE);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_TRANSPARENCY_RENDERER);

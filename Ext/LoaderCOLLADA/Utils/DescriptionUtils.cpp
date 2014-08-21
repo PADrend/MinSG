@@ -24,8 +24,8 @@ COMPILER_WARN_POP
 namespace MinSG {
 namespace LoaderCOLLADA {
 
-std::vector<SceneManagement::NodeDescription *> findDescriptions(const referenceRegistry_t & referenceRegistry, const Util::StringIdentifier & key, const std::string & name) {
-	std::vector<SceneManagement::NodeDescription *> result;
+std::vector<SceneManagement::DescriptionMap *> findDescriptions(const referenceRegistry_t & referenceRegistry, const Util::StringIdentifier & key, const std::string & name) {
+	std::vector<SceneManagement::DescriptionMap *> result;
 	for(const auto & item : referenceRegistry) {
 		if(item.second->contains(key)) {
 			if(item.second->getString(key) == name) {
@@ -36,7 +36,7 @@ std::vector<SceneManagement::NodeDescription *> findDescriptions(const reference
 	return result;
 }
 
-void addToParentAsChildren(SceneManagement::NodeDescription * parent, SceneManagement::NodeDescription * child, const Util::StringIdentifier & childrenName) {
+void addToParentAsChildren(SceneManagement::DescriptionMap * parent, SceneManagement::DescriptionMap * child, const Util::StringIdentifier & childrenName) {
 	Util::GenericAttribute::List * children = dynamic_cast<Util::GenericAttribute::List *>(parent->getValue(childrenName));
 	if(children == nullptr) {
 		children = new Util::GenericAttribute::List;
@@ -46,11 +46,11 @@ void addToParentAsChildren(SceneManagement::NodeDescription * parent, SceneManag
 	children->push_back(child);
 }
 
-void addToMinSGChildren(SceneManagement::NodeDescription * parent, SceneManagement::NodeDescription * child) {
+void addToMinSGChildren(SceneManagement::DescriptionMap * parent, SceneManagement::DescriptionMap * child) {
 	addToParentAsChildren(parent, child, SceneManagement::Consts::CHILDREN);
 }
 
-void copyAttributesToNodeDescription(SceneManagement::NodeDescription * parent, SceneManagement::NodeDescription * description, bool force) {
+void copyAttributesToNodeDescription(SceneManagement::DescriptionMap * parent, SceneManagement::DescriptionMap * description, bool force) {
 	if(parent == nullptr) {
 		return;
 	}
@@ -62,7 +62,7 @@ void copyAttributesToNodeDescription(SceneManagement::NodeDescription * parent, 
 	}
 }
 
-void finalizeNodeDescription(const COLLADAFW::Node * object, SceneManagement::NodeDescription * description) {
+void finalizeNodeDescription(const COLLADAFW::Node * object, SceneManagement::DescriptionMap * description) {
 	if(!object->getName().empty()) {
 		description->setString(SceneManagement::Consts::ATTR_NODE_ID, object->getName());
 	} else if(!object->getOriginalId().empty()) {
@@ -72,7 +72,7 @@ void finalizeNodeDescription(const COLLADAFW::Node * object, SceneManagement::No
 
 
 
-void addTransformationDataIntoNodeDescription(SceneManagement::NodeDescription & sourceDescription, const COLLADABU::Math::Matrix4 & colladaMatrix) {
+void addTransformationDataIntoNodeDescription(SceneManagement::DescriptionMap & sourceDescription, const COLLADABU::Math::Matrix4 & colladaMatrix) {
 	std::ostringstream matrixStream;
 	for(uint32_t j = 0; j < 16; ++j) {
 		matrixStream << colladaMatrix.getElement(j) << " ";
@@ -84,14 +84,14 @@ void addTransformationDataIntoNodeDescription(SceneManagement::NodeDescription &
 
 void addDAEFlag(referenceRegistry_t & referenceRegistry, const Util::StringIdentifier & identifier, Util::GenericAttribute * attr) {
 	COLLADAFW::UniqueId uId(Consts::DAE_FLAGS);
-	SceneManagement::NodeDescription * flagDesc;
+	SceneManagement::DescriptionMap * flagDesc;
 	referenceRegistry_t::const_iterator descIt = referenceRegistry.find(uId);
 	if(descIt == referenceRegistry.end()) {
-		flagDesc = new SceneManagement::NodeDescription();
+		flagDesc = new SceneManagement::DescriptionMap();
 		flagDesc->setString(SceneManagement::Consts::TYPE, Consts::DAE_FLAGS);
 		referenceRegistry[uId] = flagDesc;
 	} else {
-		flagDesc = dynamic_cast<SceneManagement::NodeDescription *>(descIt->second);
+		flagDesc = dynamic_cast<SceneManagement::DescriptionMap *>(descIt->second);
 	}
 
 	flagDesc->setValue(identifier, attr);

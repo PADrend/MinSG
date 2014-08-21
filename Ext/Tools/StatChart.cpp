@@ -68,7 +68,7 @@ void StatChart::update(const Statistics & fStats) {
 	if(pixels == nullptr)
 		return;
 
-	pixels->fill(0, 0, bitmap->getWidth(), bitmap->getHeight(), Util::Color4ub(0, 0, 0, 0));
+	pixels->fill(0, 0, bitmap->getWidth(), bitmap->getHeight(), Util::Color4f(0, 0, 0, 0));
 
 	// show grids
 	static const Util::Color4ub gridColor(0xa0, 0xa0, 0xa0, 0xa0);

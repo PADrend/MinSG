@@ -23,7 +23,7 @@ namespace SceneManagement{
 using namespace Util;
 
 //! (internal)
-static void convertDescriptionToXML(std::ostream & out,const NodeDescription & d,uint32_t indention/*=0*/){
+static void convertDescriptionToXML(std::ostream & out,const DescriptionMap & d,uint32_t indention/*=0*/){
 	const std::string type = d.getString(Consts::TYPE);
 
 	for(uint32_t i=0;i<indention;++i)
@@ -34,7 +34,7 @@ static void convertDescriptionToXML(std::ostream & out,const NodeDescription & d
 	std::vector<std::pair<std::string,std::string>> attributes; // used for sorting by the attributes' key
 	for(const auto & mapEntry : d) {
 		const std::string key=mapEntry.first.toString();
-		if (key.empty() || (key.at(0)=='_' && key.at(key.size()-1)=='_')) // skip description meta keys like  _DATA_, _CHILDREN_, ...
+		if(key.empty() || (key.at(0)=='_' && key.at(key.size()-1)=='_')) // skip description meta keys like  _DATA_, _CHILDREN_, ...
 				continue;
 		attributes.emplace_back(key,mapEntry.second->toString());
 	}
@@ -43,14 +43,14 @@ static void convertDescriptionToXML(std::ostream & out,const NodeDescription & d
 		out << " "<<a.first<<"=\""<<StringUtils::replaceAll(a.second,  "\"","&quot;")<<"\"";
 	
 	
-	const NodeDescriptionList * children = dynamic_cast<NodeDescriptionList *>(d.getValue(Consts::CHILDREN));
+	const DescriptionArray * children = dynamic_cast<DescriptionArray *>(d.getValue(Consts::CHILDREN));
 	const GenericAttribute * dataBlock = d.getValue(Consts::DATA_BLOCK);
 	if( dataBlock || (children && !children->empty()) ) {
 		out<<">\n";
-		if (children) {
+		if(children) {
 			for(const auto & child : *children) {
-				NodeDescription * m=dynamic_cast<NodeDescription *>(child.get());
-				if (m)
+				DescriptionMap * m=dynamic_cast<DescriptionMap *>(child.get());
+				if(m)
 					convertDescriptionToXML(out,*m,indention+1);
 			}
 		}
@@ -68,7 +68,7 @@ static void convertDescriptionToXML(std::ostream & out,const NodeDescription & d
 }
 
 //! (static)
-bool WriterMinSG::save(std::ostream & out, const NodeDescription & sceneDescription) {
+bool WriterMinSG::save(std::ostream & out, const DescriptionMap & sceneDescription) {
 	if(!out.good()) {
 		WARN("Invalid stream.");
 		return false;

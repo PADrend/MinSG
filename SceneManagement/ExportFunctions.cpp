@@ -102,7 +102,7 @@ void SceneManagement::saveMinSGFile(SceneManager & sm, const Util::FileName & fi
 
 	ExporterContext ctxt(sm);
 	ctxt.sceneFile = fileName;
-	std::unique_ptr<NodeDescription> description(ExporterTools::createDescriptionForScene(ctxt, nodes));
+	std::unique_ptr<DescriptionMap> description(ExporterTools::createDescriptionForScene(ctxt, nodes));
 	if(!WriterMinSG::save(*(out.get()), *(description.get())))
 		throw std::runtime_error("Could not export scene to file " + fileName.toString());
 }
@@ -112,7 +112,7 @@ void SceneManagement::saveMinSGStream(SceneManager & sm, std::ostream & out, con
 		throw std::runtime_error("Cannot save MinSG nodes to the given stream.");
 
 	ExporterContext ctxt(sm);
-	std::unique_ptr<NodeDescription> description(ExporterTools::createDescriptionForScene(ctxt, nodes));
+	std::unique_ptr<DescriptionMap> description(ExporterTools::createDescriptionForScene(ctxt, nodes));
 	if(!WriterMinSG::save(out, *(description.get())))
 		throw std::runtime_error("Could not serialize MinSG nodes.");
 }

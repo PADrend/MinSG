@@ -35,19 +35,19 @@ class GenericAttribute;
 }
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
-typedef Util::GenericAttributeList NodeDescriptionList;
+typedef Util::GenericAttributeMap DescriptionMap;
+typedef Util::GenericAttributeList DescriptionArray;
 }
 
 namespace LoaderCOLLADA {
 
-void addToMinSGChildren(SceneManagement::NodeDescription * parent, SceneManagement::NodeDescription * child);
-void addToParentAsChildren(SceneManagement::NodeDescription * parent, SceneManagement::NodeDescription * child, const Util::StringIdentifier & childrenName);
-void copyAttributesToNodeDescription(SceneManagement::NodeDescription * parent, SceneManagement::NodeDescription * description, bool force = false);
-void finalizeNodeDescription(const COLLADAFW::Node * object, SceneManagement::NodeDescription * description);
-void addTransformationDataIntoNodeDescription(SceneManagement::NodeDescription & sourceDescription, const COLLADABU::Math::Matrix4 & colladaMatrix);
+void addToMinSGChildren(SceneManagement::DescriptionMap * parent, SceneManagement::DescriptionMap * child);
+void addToParentAsChildren(SceneManagement::DescriptionMap * parent, SceneManagement::DescriptionMap * child, const Util::StringIdentifier & childrenName);
+void copyAttributesToNodeDescription(SceneManagement::DescriptionMap * parent, SceneManagement::DescriptionMap * description, bool force = false);
+void finalizeNodeDescription(const COLLADAFW::Node * object, SceneManagement::DescriptionMap * description);
+void addTransformationDataIntoNodeDescription(SceneManagement::DescriptionMap & sourceDescription, const COLLADABU::Math::Matrix4 & colladaMatrix);
 void addDAEFlag(referenceRegistry_t & referenceRegistry, const Util::StringIdentifier & identifier, Util::GenericAttribute * attr);
-std::vector<SceneManagement::NodeDescription *> findDescriptions(const referenceRegistry_t & referenceRegistry, const Util::StringIdentifier & key, const std::string & name);
+std::vector<SceneManagement::DescriptionMap *> findDescriptions(const referenceRegistry_t & referenceRegistry, const Util::StringIdentifier & key, const std::string & name);
 
 }
 }

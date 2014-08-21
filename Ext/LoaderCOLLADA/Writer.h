@@ -54,7 +54,7 @@ class GenericAttributeMap;
 }
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 }
 namespace LoaderCOLLADA {
 
@@ -64,8 +64,8 @@ class Writer : public COLLADAFW::IWriter {
 	private:
 		referenceRegistry_t referenceRegistry;
 
-		SceneManagement::NodeDescription * sceneDescription; // Metadata for scene description, root of all
-		SceneManagement::NodeDescription * scene;           // scene information, geometries, states ...   added for faster lookup (child of sceneDescription)
+		SceneManagement::DescriptionMap * sceneDescription; // Metadata for scene description, root of all
+		SceneManagement::DescriptionMap * scene;           // scene information, geometries, states ...   added for faster lookup (child of sceneDescription)
 		//@}
 
 		//! @name Singleton definitions
@@ -87,8 +87,8 @@ class Writer : public COLLADAFW::IWriter {
 		typedef std::function<bool (const COLLADAFW::Light *, referenceRegistry_t &)> lightFunc_t;
 		typedef std::function<bool (const COLLADAFW::Image *, referenceRegistry_t &)> imageFunc_t;
 
-		typedef std::function<SceneManagement::NodeDescription *(const COLLADAFW::FileInfo *, referenceRegistry_t &)> fileInformationFunc_t;
-		typedef std::function<bool (const COLLADAFW::VisualScene *, referenceRegistry_t &, SceneManagement::NodeDescription *, const sceneNodeFunc_t &)> visualSceneFunc_t;
+		typedef std::function<SceneManagement::DescriptionMap *(const COLLADAFW::FileInfo *, referenceRegistry_t &)> fileInformationFunc_t;
+		typedef std::function<bool (const COLLADAFW::VisualScene *, referenceRegistry_t &, SceneManagement::DescriptionMap *, const sceneNodeFunc_t &)> visualSceneFunc_t;
 
 		void setGeometryFunction(const geometryFunc_t & func) {
 			geometryFunc = func;
@@ -173,7 +173,7 @@ class Writer : public COLLADAFW::IWriter {
 		void beginLoadingProcess();
 
 		//! Retrieve the scene description and take ownership of the pointer.
-		SceneManagement::NodeDescription * releaseSceneDescription() {
+		SceneManagement::DescriptionMap * releaseSceneDescription() {
 			return sceneDescription;
 		}
 

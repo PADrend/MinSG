@@ -23,7 +23,7 @@ class GenericAttributeMap;
 }
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 }
 namespace LoaderCOLLADA {
 

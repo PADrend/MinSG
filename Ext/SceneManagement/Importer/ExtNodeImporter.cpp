@@ -70,7 +70,7 @@ static T * convertToTNode(Node * node) {
 	return t;
 }
 
-static bool importBillboardNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
+static bool importBillboardNode(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, GroupNode * parent) {
 	if(type != "billboard")
 		return false;
 	
@@ -88,7 +88,7 @@ static bool importBillboardNode(ImportContext & ctxt, const std::string & type, 
 }
 
 
-static bool importGenericMetaNode(ImportContext & ctxt, const std::string & nodeType, const NodeDescription & d, GroupNode * parent) {
+static bool importGenericMetaNode(ImportContext & ctxt, const std::string & nodeType, const DescriptionMap & d, GroupNode * parent) {
 	if(nodeType != Consts::NODE_TYPE_GENERIC_META_NODE)
 		return false;
 
@@ -104,7 +104,7 @@ static bool importGenericMetaNode(ImportContext & ctxt, const std::string & node
 }
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
-static bool importMultiAlgoGroupNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
+static bool importMultiAlgoGroupNode(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, GroupNode * parent) {
 	if(type != Consts::NODE_TYPE_MULTIALGOGROUPNODE)
 		return false;
 
@@ -119,7 +119,7 @@ static bool importMultiAlgoGroupNode(ImportContext & ctxt, const std::string & t
 
 
 #ifdef MINSG_EXT_PARTICLE
-static bool importParticleSystemNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
+static bool importParticleSystemNode(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, GroupNode * parent) {
 	if(type != Consts::NODE_TYPE_PARTICLESYSTEM)
 		return false;
 
@@ -152,26 +152,17 @@ static bool importParticleSystemNode(ImportContext & ctxt, const std::string & t
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
 
-static bool importSkeletalAnimationSkeletalNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
-
-	Node * node = nullptr;
-
-	if(type == Consts::NODE_TYPE_SKEL_SKELETALOBJECT)
-		node = new SkeletalNode();
-    else
-        return false;
-
-	if(node == nullptr)
+static bool importSkeletalAnimationSkeletalNode(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, GroupNode * parent) {
+	if(type != Consts::NODE_TYPE_SKEL_SKELETALOBJECT)
 		return false;
+	Node * node = new SkeletalNode;
 
 	ImporterTools::finalizeNode(ctxt,node,d);
 	parent->addChild(node);
 	return true;
 }
     
-static bool importSkeletalAnimationRigidJoint(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode *parent) {
-    Node *node = nullptr;
-    
+static bool importSkeletalAnimationRigidJoint(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, GroupNode *parent) {
 	if(type != Consts::NODE_TYPE_SKEL_RIGIDJOINT)
 		return false;
     
@@ -200,7 +191,7 @@ static bool importSkeletalAnimationRigidJoint(ImportContext & ctxt, const std::s
     if(d.contains(Consts::ATTR_SKEL_RIGIDSTACKING))
         stacking = true;
     
-	node = new RigidJoint(Util::StringUtils::toInts(d.getString(Consts::ATTR_SKEL_JOINTID)).front(), d.getString(Consts::ATTR_NODE_ID), Geometry::Matrix4x4(offsetArray), stacking);
+	Node *node = new RigidJoint(Util::StringUtils::toInts(d.getString(Consts::ATTR_SKEL_JOINTID)).front(), d.getString(Consts::ATTR_NODE_ID), Geometry::Matrix4x4(offsetArray), stacking);
     
 	if(d.contains(Consts::ATTR_MATRIX)) {
 		vector<float> mat = Util::StringUtils::toFloats(d.getString(Consts::ATTR_MATRIX));
@@ -211,26 +202,19 @@ static bool importSkeletalAnimationRigidJoint(ImportContext & ctxt, const std::s
 		vector<float> val = Util::StringUtils::toFloats(d.getString(Consts::ATTR_SKEL_INVERSEBINDMATRIX));
 		convertToTNode<JointNode>(node)->setInverseBindMatrix(Geometry::Matrix4x4(val.data()));
 	}
-    
-	if(node == nullptr)
-		return false;
-    
 	ImporterTools::finalizeNode(ctxt,node,d);
 	parent->addChild(node);
 	return true;
 }
 
-static bool importSkeletalAnimationJointNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
-
-	Node * node = nullptr;
-
+static bool importSkeletalAnimationJointNode(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, GroupNode * parent) {
 	if(type != Consts::NODE_TYPE_SKEL_JOINT)
 		return false;
 
 	if(!d.contains(Consts::ATTR_SKEL_JOINTID) || !d.contains(Consts::ATTR_NODE_ID))
 		return false;
 
-	node = new JointNode(Util::StringUtils::toInts(d.getString(Consts::ATTR_SKEL_JOINTID)).front(), d.getString(Consts::ATTR_NODE_ID));
+	Node * node = new JointNode(Util::StringUtils::toInts(d.getString(Consts::ATTR_SKEL_JOINTID)).front(), d.getString(Consts::ATTR_NODE_ID));
 
 	if(d.contains(Consts::ATTR_MATRIX)) {
 		vector<float> mat = Util::StringUtils::toFloats(d.getString(Consts::ATTR_MATRIX));
@@ -241,26 +225,16 @@ static bool importSkeletalAnimationJointNode(ImportContext & ctxt, const std::st
 		vector<float> val = Util::StringUtils::toFloats(d.getString(Consts::ATTR_SKEL_INVERSEBINDMATRIX));
 		convertToTNode<JointNode>(node)->setInverseBindMatrix(Geometry::Matrix4x4(val.data()));
 	}
-
-	if(node == nullptr)
-		return false;
-
 	ImporterTools::finalizeNode(ctxt,node,d);
 	parent->addChild(node);
 	return true;
 }
 
-static bool importSkeletalAnimationArmatureNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
-
-	Node * node = nullptr;
-
+static bool importSkeletalAnimationArmatureNode(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, GroupNode * parent) {
 	if(type != Consts::NODE_TYPE_SKEL_ARMATURE)
         return false;
     
-	node = new ArmatureNode();
-
-	if(node == nullptr)
-		return false;
+	Node * node = new ArmatureNode;
 
 	ImporterTools::finalizeNode(ctxt,node,d);
 	parent->addChild(node);
@@ -268,7 +242,7 @@ static bool importSkeletalAnimationArmatureNode(ImportContext & ctxt, const std:
 }
 #endif /* MINSG_EXT_SKELETAL_ANIMATION */
 
-static bool importValuatedRegionNode(ImportContext & ctxt,const std::string & type,const NodeDescription & d, GroupNode * parent) {
+static bool importValuatedRegionNode(ImportContext & ctxt,const std::string & type,const DescriptionMap & d, GroupNode * parent) {
 	if((type != "region" && /*depreciated*/ type != "classification") || parent == nullptr)
 		return false;
 
@@ -332,16 +306,15 @@ static bool importValuatedRegionNode(ImportContext & ctxt,const std::string & ty
 }
 
 #ifdef MINSG_EXT_WAYPOINTS
-static bool importPathNode(ImportContext & ctxt, const std::string & type, const NodeDescription & d, GroupNode * parent) {
-	if(type != Consts::NODE_TYPE_PATH || parent == nullptr) {
+static bool importPathNode(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, GroupNode * parent) {
+	if(type != Consts::NODE_TYPE_PATH || !parent) {
 		return false;
 	}
 
-	
 	auto path = new PathNode;
 	path->setLooping(Util::StringUtils::toBool(d.getString(Consts::ATTR_PATHNODE_LOOPING, "false")));
 
-	const NodeDescriptionList * subDescriptions = dynamic_cast<const NodeDescriptionList *>(d.getValue(Consts::CHILDREN));
+	const DescriptionArray * subDescriptions = dynamic_cast<const DescriptionArray *>(d.getValue(Consts::CHILDREN));
 	const auto data = ImporterTools::filterElements(Consts::TYPE_DATA, subDescriptions);
 
 	for(const auto & waypointDesc : data) {
@@ -354,7 +327,7 @@ static bool importPathNode(ImportContext & ctxt, const std::string & type, const
 		Geometry::SRT srt = ImporterTools::getSRT(*waypointDesc);
 		Waypoint * wp = path->createWaypoint(srt, time);
 
-		const NodeDescriptionList * waypointSubDescriptions = dynamic_cast<const NodeDescriptionList *>(waypointDesc->getValue(Consts::CHILDREN));
+		const DescriptionArray * waypointSubDescriptions = dynamic_cast<const DescriptionArray *>(waypointDesc->getValue(Consts::CHILDREN));
 		ImporterTools::addAttributes(ctxt, waypointSubDescriptions, wp);
 	}
 
@@ -365,7 +338,7 @@ static bool importPathNode(ImportContext & ctxt, const std::string & type, const
 #endif
 
 //! template for new importers
-// static bool importXY(ImportContext & ctxt, const std::string & nodeType, const NodeDescription & d, GroupNode * parent) {
+// static bool importXY(ImportContext & ctxt, const std::string & nodeType, const DescriptionMap & d, GroupNode * parent) {
 //  if(nodeType != Consts::NODE_TYPE_XY) // check parent != nullptr is done by SceneManager
 //      return false;
 //

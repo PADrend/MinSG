@@ -37,7 +37,7 @@ class Node;
 
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 }
 
 namespace LoaderCOLLADA {
@@ -45,8 +45,8 @@ typedef Util::WrapperAttribute<COLLADAFW::UniqueId> daeReferenceData;
 typedef Util::WrapperAttribute<std::vector<COLLADAFW::UniqueId> > daeReferenceList;
 typedef Util::WrapperAttribute<COLLADAFW::MaterialId> MaterialReference;
 
-typedef std::unordered_map<size_t, SceneManagement::NodeDescription *> referenceRegistry_t;
-typedef std::function<SceneManagement::NodeDescription *(const COLLADAFW::Node *, referenceRegistry_t &)> sceneNodeFunc_t;
+typedef std::unordered_map<size_t, SceneManagement::DescriptionMap *> referenceRegistry_t;
+typedef std::function<SceneManagement::DescriptionMap *(const COLLADAFW::Node *, referenceRegistry_t &)> sceneNodeFunc_t;
 
 namespace Consts {
 extern const Util::StringIdentifier DAE_REFERENCE;

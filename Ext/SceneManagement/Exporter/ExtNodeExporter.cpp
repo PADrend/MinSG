@@ -58,7 +58,7 @@ namespace MinSG {
 namespace SceneManagement{
 
 
-static void describeBillboardNode(ExporterContext &,NodeDescription & desc,Node * node) {
+static void describeBillboardNode(ExporterContext &,DescriptionMap & desc,Node * node) {
 	BillboardNode * bb=dynamic_cast<BillboardNode *>(node);
 	assert(bb);
 	desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_BILLBOARD);
@@ -71,7 +71,7 @@ static void describeBillboardNode(ExporterContext &,NodeDescription & desc,Node 
 	desc.setString(Consts::ATTR_BILLBOARD_ROTATE_UP,	 bb->getRotateUpAxis() ? "true" : "false");
 	desc.setString(Consts::ATTR_BILLBOARD_ROTATE_RIGHT,	 bb->getRotateRightAxis() ? "true" : "false");
 }
-static void describeGenericMetaNode(ExporterContext &,NodeDescription & desc,Node * _node) {
+static void describeGenericMetaNode(ExporterContext &,DescriptionMap & desc,Node * _node) {
 	GenericMetaNode * node = dynamic_cast<GenericMetaNode *>(_node);
 	assert(node);
 	desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_GENERIC_META_NODE);
@@ -80,7 +80,7 @@ static void describeGenericMetaNode(ExporterContext &,NodeDescription & desc,Nod
 
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
-static void describeMultiAlgoGroupNode(ExporterContext & ctxt,NodeDescription & desc,Node * node) {
+static void describeMultiAlgoGroupNode(ExporterContext & ctxt,DescriptionMap & desc,Node * node) {
 	MAR::MultiAlgoGroupNode * magn = dynamic_cast<MAR::MultiAlgoGroupNode *>(node);
 	assert(magn);
 
@@ -99,7 +99,7 @@ static void describeMultiAlgoGroupNode(ExporterContext & ctxt,NodeDescription & 
 #endif
 
 #ifdef MINSG_EXT_PARTICLE
-static void describeParticleSystemNode(ExporterContext &,NodeDescription & desc,Node * node) {
+static void describeParticleSystemNode(ExporterContext &,DescriptionMap & desc,Node * node) {
 	ParticleSystemNode * psn=dynamic_cast<ParticleSystemNode *>(node);
     desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_PARTICLESYSTEM);
 	desc.setValue(Consts::ATTR_PARTICLE_RENDERER, Util::GenericAttribute::createNumber<unsigned int>(psn->getRendererType()));
@@ -108,7 +108,7 @@ static void describeParticleSystemNode(ExporterContext &,NodeDescription & desc,
 #endif
 
 #ifdef MINSG_EXT_WAYPOINTS
-static void describePathNode(ExporterContext & ctxt,NodeDescription & desc,Node * node) {
+static void describePathNode(ExporterContext & ctxt,DescriptionMap & desc,Node * node) {
 	PathNode * pathNode = dynamic_cast<PathNode *>(node);
 
 	desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_PATH);
@@ -117,31 +117,31 @@ static void describePathNode(ExporterContext & ctxt,NodeDescription & desc,Node 
 	}
 
 	for(auto & elem : *pathNode) {
-		NodeDescription waypointDesc;
-		waypointDesc.setString(Consts::ATTR_DATA_TYPE, Consts::NODE_TYPE_WAYPOINT);
+		std::unique_ptr<DescriptionMap> waypointDesc(new DescriptionMap);
+		waypointDesc->setString(Consts::ATTR_DATA_TYPE, Consts::NODE_TYPE_WAYPOINT);
 
 		const Waypoint * wp = elem.second.get();
-		ExporterTools::addAttributesToDescription(ctxt, waypointDesc, wp->getAttributes());
-		waypointDesc.setString(Consts::ATTR_WAYPOINT_TIME, Util::StringUtils::toString(wp->getTime()));
-		ExporterTools::addSRTToDescription(waypointDesc, wp->getSRT());
+		ExporterTools::addAttributesToDescription(ctxt, *waypointDesc, wp->getAttributes());
+		waypointDesc->setString(Consts::ATTR_WAYPOINT_TIME, Util::StringUtils::toString(wp->getTime()));
+		ExporterTools::addSRTToDescription(*waypointDesc, wp->getSRT());
 		ExporterTools::addDataEntry(desc,std::move(waypointDesc));
 	}
 	
 }
 #endif
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-static void describeSkeletalAnimationNode(ExporterContext & ctxt,NodeDescription & desc,Node * node) {
+static void describeSkeletalAnimationNode(ExporterContext & ctxt,DescriptionMap & desc,Node * node) {
     desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_SKEL_SKELETALOBJECT);
 	
 	ExporterTools::addChildNodesToDescription(ctxt,desc,node);
 }
     
-static void describeSkeletalAnimationArmatureNode(ExporterContext & ctxt,NodeDescription & desc,Node * node) {
+static void describeSkeletalAnimationArmatureNode(ExporterContext & ctxt,DescriptionMap & desc,Node * node) {
     desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_SKEL_ARMATURE);
     ExporterTools::addChildNodesToDescription(ctxt,desc,node);
 }
     
-static void describeSkeletalAnimationRigidJoint(ExporterContext & ctxt,NodeDescription & desc,Node * node) {
+static void describeSkeletalAnimationRigidJoint(ExporterContext & ctxt,DescriptionMap & desc,Node * node) {
     RigidJoint *rNode = dynamic_cast<RigidJoint *>(node);
     desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_SKEL_RIGIDJOINT);
     desc.setValue(Consts::ATTR_SKEL_JOINTID, Util::GenericAttribute::createNumber(rNode->getId()));
@@ -164,7 +164,7 @@ static void describeSkeletalAnimationRigidJoint(ExporterContext & ctxt,NodeDescr
     desc.setString(Consts::ATTR_SKEL_RIGIDOFFSETMATRIX, ss.str());
 }
     
-static void describeSkeletalAnimationJointNode(ExporterContext & ctxt,NodeDescription & desc,Node * node) {
+static void describeSkeletalAnimationJointNode(ExporterContext & ctxt,DescriptionMap & desc,Node * node) {
     JointNode *jNode = dynamic_cast<JointNode *>(node);
     
     desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_SKEL_JOINT);
@@ -182,7 +182,7 @@ static void describeSkeletalAnimationJointNode(ExporterContext & ctxt,NodeDescri
 }
 #endif
 
-static void describeValuatedRegionNode(ExporterContext & ctxt,NodeDescription & desc,Node * node) {
+static void describeValuatedRegionNode(ExporterContext & ctxt,DescriptionMap & desc,Node * node) {
 	ValuatedRegionNode * cn = dynamic_cast<ValuatedRegionNode *>(node);
 	assert(cn);
 	desc.setString(Consts::ATTR_NODE_TYPE,Consts::NODE_TYPE_VALUATED_REGION);
@@ -206,7 +206,7 @@ static void describeValuatedRegionNode(ExporterContext & ctxt,NodeDescription & 
 
 		std::ostringstream valueString;
 		Util::GenericAttribute::List * valueList = dynamic_cast<Util::GenericAttribute::List *>(v);
-		if(valueList != nullptr) {
+		if(valueList) {
 			for(Util::GenericAttribute::List::const_iterator it = valueList->begin();
 					it != valueList->end();
 					++it) {
@@ -217,15 +217,15 @@ static void describeValuatedRegionNode(ExporterContext & ctxt,NodeDescription & 
 #ifdef MINSG_EXT_VISIBILITY_SUBDIVISION
 				// Special case to store a VisibilityVector.
 				const auto * vva = dynamic_cast<const VisibilitySubdivision::VisibilityVectorAttribute *>(it->get());
-				if(vva != nullptr) {
+				if(vva) {
 					std::ostringstream id;
 					const auto & vv = vva->ref();
 					id << "VV" << reinterpret_cast<uintptr_t>(&vv);
 
 					// VV not already inserted?
 					if(!ctxt.isPrototypeUsed(id.str())) {
-						NodeDescription nd;
-						nd.setString(Consts::TYPE, Consts::TYPE_ADDITIONAL_DATA);
+						std::unique_ptr<DescriptionMap> nd(new DescriptionMap);
+						nd->setString(Consts::TYPE, Consts::TYPE_ADDITIONAL_DATA);
 
 						bool firstElement = true;
 						std::ostringstream vvValue;
@@ -247,9 +247,9 @@ static void describeValuatedRegionNode(ExporterContext & ctxt,NodeDescription & 
 							}
 						}
 						vvValue << ')';
-						nd.setString(Consts::ATTR_NODE_TYPE, "visibility_vector");
-						nd.setString(Consts::ATTR_ATTRIBUTE_VALUE, vvValue.str());
-						nd.setString(Consts::ATTR_NODE_ID, id.str());
+						nd->setString(Consts::ATTR_NODE_TYPE, "visibility_vector");
+						nd->setString(Consts::ATTR_ATTRIBUTE_VALUE, vvValue.str());
+						nd->setString(Consts::ATTR_NODE_ID, id.str());
 
 						ctxt.addUsedPrototype(id.str(), std::move(nd));
 					}
@@ -265,7 +265,7 @@ static void describeValuatedRegionNode(ExporterContext & ctxt,NodeDescription & 
 #endif
 			}
 		} else
-			if(v != nullptr) {
+			if(v) {
 				desc.setString(Consts::ATTR_VALREGION_VALUE_TYPE, "Default");
 				valueString << v->toString();
 			}
@@ -273,7 +273,7 @@ static void describeValuatedRegionNode(ExporterContext & ctxt,NodeDescription & 
 			desc.setString(Consts::ATTR_VALREGION_VALUE, valueString.str());
 		}
 
-		if(cn->getAdditionalData() != nullptr) {
+		if(cn->getAdditionalData()) {
 			std::ostringstream s;
 			for(auto it =
 						cn->getAdditionalData()->colors.begin(); it

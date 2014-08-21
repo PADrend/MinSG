@@ -20,7 +20,7 @@ class GenericAttributeMap;
 }
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 }
 namespace LoaderCOLLADA {
 class Writer;
@@ -31,7 +31,7 @@ class Writer;
  * @return Valid scene description if successful,
  * @c nullptr if an error occurred.
  */
-const SceneManagement::NodeDescription * loadScene(const Util::FileName & fileName, bool invertTransparency);
+const SceneManagement::DescriptionMap * loadScene(const Util::FileName & fileName, bool invertTransparency);
 
 }
 }

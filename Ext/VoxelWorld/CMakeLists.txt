@@ -7,6 +7,8 @@
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
 minsg_add_sources(
+	Material.cpp
+	MaterialLib.cpp
 	StreamerVOX.cpp
 	VoxelWorld.cpp
 )

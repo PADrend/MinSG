@@ -28,19 +28,19 @@ class GenericAttributeMap;
 
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 }
 
 
 namespace LoaderCOLLADA {
 //! @see Writer::visualFunc_t
-bool visualSceneCoreImporter(const COLLADAFW::VisualScene * visualScene, referenceRegistry_t & referenceRegistry, SceneManagement::NodeDescription * sceneDesc, const sceneNodeFunc_t & sceneNodeFunc);
+bool visualSceneCoreImporter(const COLLADAFW::VisualScene * visualScene, referenceRegistry_t & referenceRegistry, SceneManagement::DescriptionMap * sceneDesc, const sceneNodeFunc_t & sceneNodeFunc);
 
 // helper for extracting DAE child nodes inside visual description tree.
-SceneManagement::NodeDescription * sceneNodeImporter(const COLLADAFW::Node * childNode, referenceRegistry_t & referenceRegistry);
-void extractInstancesFromNodes(SceneManagement::NodeDescription * parent, referenceRegistry_t & referenceRegistry, const COLLADAFW::Node * node, const sceneNodeFunc_t & sceneNodeFunc);
+SceneManagement::DescriptionMap * sceneNodeImporter(const COLLADAFW::Node * childNode, referenceRegistry_t & referenceRegistry);
+void extractInstancesFromNodes(SceneManagement::DescriptionMap * parent, referenceRegistry_t & referenceRegistry, const COLLADAFW::Node * node, const sceneNodeFunc_t & sceneNodeFunc);
 
-void resolveReference(SceneManagement::NodeDescription * child, const referenceRegistry_t & referenceRegistry);
+void resolveReference(SceneManagement::DescriptionMap * child, const referenceRegistry_t & referenceRegistry);
 }
 }
 

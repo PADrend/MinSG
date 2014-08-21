@@ -60,8 +60,8 @@ void displayText(FrameContext & frameContext,
 	renderingContext.pushAndSetLine(Rendering::LineParameters(pinWidth));
 	renderingContext.applyChanges(true);
 
-	Rendering::drawRect(renderingContext, bgRect, Util::Color4ub(backgroundColor));
-	Rendering::drawVector(renderingContext, screenPos, Geometry::Vec3f(pinEnd.getX(), pinEnd.getY(), 0.0f), Util::Color4ub(backgroundColor));
+	Rendering::drawRect(renderingContext, bgRect, backgroundColor);
+	Rendering::drawVector(renderingContext, screenPos, Geometry::Vec3f(pinEnd.getX(), pinEnd.getY(), 0.0f), backgroundColor);
 
 	renderingContext.popLine();
 	renderingContext.popLighting();

@@ -18,7 +18,7 @@ class GenericAttributeMap;
 }
 namespace MinSG {
 namespace SceneManagement {
-typedef Util::GenericAttributeMap NodeDescription;
+typedef Util::GenericAttributeMap DescriptionMap;
 namespace ReaderMinSG {
 
 /**
@@ -28,7 +28,7 @@ namespace ReaderMinSG {
  * @param in Input stream containing the scene data
  * @return Description of the loaded scene
  */
-const NodeDescription * loadScene(std::istream & in);
+const DescriptionMap * loadScene(std::istream & in);
 
 }
 }

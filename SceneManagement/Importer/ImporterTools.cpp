@@ -88,8 +88,8 @@ void registerBehaviourImporter(BehaviourImport_Fn_t fn)				{	behaviourImporter.p
 void registerAdditionalDataImporter(AdditionalDataImport_Fn_t fn)	{	additionalDataImporter.push_back(fn);	}
 
 
-static bool processDescription(ImportContext & ctxt, const NodeDescription & d, Node * parent) {
-	if(parent == nullptr){
+static bool processDescription(ImportContext & ctxt, const DescriptionMap & d, Node * parent) {
+	if( !parent){
 		WARN("parent may not be null");
 		return false;
 	}
@@ -140,10 +140,10 @@ static void removeTempNodeId(ImportContext & ctxt, const std::string & nodeId){
 }
 
 //!	If the given @a description contains a node identifier, the given @a node is registered with that identifier in the local SceneManager.
-static void registerNamedNode(ImportContext & ctxt,const NodeDescription & description, Node * node)  {
+static void registerNamedNode(ImportContext & ctxt,const DescriptionMap & description, Node * node)  {
 	static const std::string tmpPrefix("_tmp_");
 	const std::string id = description.getString(Consts::ATTR_NODE_ID);
-	if (!id.empty()) {
+	if(!id.empty()) {
 		ctxt.sceneManager.registerNode(id, node);
 		if(id.compare(0,tmpPrefix.size(),tmpPrefix)==0){
 			ctxt.addFinalizingAction(std::bind(removeTempNodeId, std::placeholders::_1, id));
@@ -152,31 +152,31 @@ static void registerNamedNode(ImportContext & ctxt,const NodeDescription & descr
 }
 
 //! If the given @a description contains a state identifier, the given @a state is registered with that identifier in the local SceneManager.
-static void registerNamedState(ImportContext & ctxt,const NodeDescription & description, State * state)  {
+static void registerNamedState(ImportContext & ctxt,const DescriptionMap & description, State * state)  {
 	const std::string id = description.getString(Consts::ATTR_STATE_ID);
-	if (!id.empty()) {
+	if(!id.empty()) {
 		ctxt.sceneManager.registerState(id, state);
 	}
 }
 
 //! (static)
-void finalizeNode(ImportContext & ctxt, Node * node,const NodeDescription & d){
+void finalizeNode(ImportContext & ctxt, Node * node,const DescriptionMap & d){
 	if(node==nullptr)
 		return;
 	registerNamedNode(ctxt,d, node);
 	{ // applyTransformation(d, node);
 		Util::GenericAttribute * matrixAttribute = d.getValue(Consts::ATTR_MATRIX);
 		node->reset();
-		if (matrixAttribute != nullptr) {
+		if(matrixAttribute) {
 			std::istringstream matrixStream(matrixAttribute->toString());
 			Geometry::Matrix4x4f matrix;
 			matrixStream >> matrix;
-			if (!matrix.isIdentity()) {
+			if(!matrix.isIdentity()) {
 				node->setMatrix(matrix);
 			}
 		} else {
 			Geometry::SRT srt = getSRT(d);
-			if (srt.getScale() != 1.0f || !srt.getRotation().isIdentity() || !srt.getTranslation().isZero()) {
+			if(srt.getScale() != 1.0f || !srt.getRotation().isIdentity() || !srt.getTranslation().isZero()) {
 				node->setSRT(srt);
 			}
 		}
@@ -196,30 +196,29 @@ void finalizeNode(ImportContext & ctxt, Node * node,const NodeDescription & d){
 	if(d.contains(Consts::ATTR_RENDERING_LAYERS))
 		node->setRenderingLayers( static_cast<renderingLayerMask_t>(Util::StringUtils::toNumber<uint32_t>( d.getString(Consts::ATTR_RENDERING_LAYERS) )));
 	
-	const NodeDescriptionList * subDescriptions = dynamic_cast<const NodeDescriptionList *> (d.getValue(Consts::CHILDREN));
+	const DescriptionArray * subDescriptions = dynamic_cast<const DescriptionArray *>(d.getValue(Consts::CHILDREN));
 	if(subDescriptions==nullptr)
 		return;
 
 	GroupNode * group=dynamic_cast<GroupNode *>(node);
 	// add states, behaviours and children
-	for (auto & subDescription : *subDescriptions) {
-		const NodeDescription * desc = dynamic_cast<const NodeDescription *> (subDescription.get());
-		if (desc == nullptr) {
+	for(auto & subDescription : *subDescriptions) {
+		const DescriptionMap * desc = dynamic_cast<const DescriptionMap *>(subDescription.get());
+		if( !desc )
 			FAIL();
-		}
 
 		const std::string type = desc->getString(Consts::TYPE);
-		if (type == Consts::TYPE_STATE || type == Consts::TYPE_BEHAVIOUR ) {
-			if (!processDescription(ctxt,*desc, node)) {
+		if(type == Consts::TYPE_STATE || type == Consts::TYPE_BEHAVIOUR ) {
+			if(!processDescription(ctxt,*desc, node)) {
 				WARN("Creating State failed.");
 				continue;
 			}
-		}else if (type == Consts::TYPE_NODE) {
-			if (group == nullptr) {
+		}else if(type == Consts::TYPE_NODE) {
+			if( !group ) {
 				WARN("Only GroupNodes can have children.");
 				continue;
 			}
-			if (!processDescription(ctxt,*desc, group)) {
+			if(!processDescription(ctxt,*desc, group)) {
 				WARN("Creation of child node failed.");
 				continue;
 			}
@@ -231,11 +230,11 @@ void finalizeNode(ImportContext & ctxt, Node * node,const NodeDescription & d){
 }
 
 //! (static)
-void finalizeState(ImportContext & ctxt, State * state,const NodeDescription & d){
+void finalizeState(ImportContext & ctxt, State * state,const DescriptionMap & d){
 	if(state==nullptr)
 		return;
 	registerNamedState(ctxt,d, state);
-	const NodeDescriptionList * subDescriptions = dynamic_cast<const NodeDescriptionList *> (d.getValue(Consts::CHILDREN));
+	const DescriptionArray * subDescriptions = dynamic_cast<const DescriptionArray *>(d.getValue(Consts::CHILDREN));
 	addAttributes(ctxt, subDescriptions, state);
 	
 	if(d.contains(Consts::ATTR_RENDERING_LAYERS)){
@@ -245,13 +244,13 @@ void finalizeState(ImportContext & ctxt, State * state,const NodeDescription & d
 }
 
 //! (static)
-Geometry::SRT getSRT(const NodeDescription & d) {
+Geometry::SRT getSRT(const DescriptionMap & d) {
 	Geometry::Vec3 pos(0,0,0);
 	{
 		Util::GenericAttribute * attr = d.getValue(Consts::ATTR_SRT_POS);
-		if (attr != nullptr) {
+		if(attr) {
 			const auto values = Util::StringUtils::toFloats(attr->toString());
-			if (values.size() != 3) {
+			if(values.size() != 3) {
 				WARN("Syntax error in position of SRT.");
 				return Geometry::SRT();
 			}
@@ -261,9 +260,9 @@ Geometry::SRT getSRT(const NodeDescription & d) {
 	Geometry::Vec3 dir(0,0,1);
 	{
 		Util::GenericAttribute * attr = d.getValue(Consts::ATTR_SRT_DIR);
-		if (attr != nullptr) {
+		if(attr) {
 			const auto values = Util::StringUtils::toFloats(attr->toString());
-			if (values.size() != 3) {
+			if(values.size() != 3) {
 				WARN("Syntax error in direction vector of SRT.");
 				return Geometry::SRT();
 			}
@@ -273,9 +272,9 @@ Geometry::SRT getSRT(const NodeDescription & d) {
 	Geometry::Vec3 up(0,1,0);
 	{
 		Util::GenericAttribute * attr = d.getValue(Consts::ATTR_SRT_UP);
-		if (attr != nullptr) {
+		if(attr) {
 			const auto values = Util::StringUtils::toFloats(attr->toString());
-			if (values.size() != 3) {
+			if(values.size() != 3) {
 				WARN("Syntax error in up vector of SRT.");
 				return Geometry::SRT();
 			}
@@ -285,7 +284,7 @@ Geometry::SRT getSRT(const NodeDescription & d) {
 	float scale = 1.0f;
 	{
 		Util::GenericAttribute * srtScale = d.getValue(Consts::ATTR_SRT_SCALE);
-		if (srtScale != nullptr) {
+		if(srtScale) {
 			scale = Util::StringUtils::toNumber<float>(srtScale->toString());
 		}
 	}
@@ -293,17 +292,15 @@ Geometry::SRT getSRT(const NodeDescription & d) {
 }
 
 //! (static)
-void addAttributes(ImportContext & ctxt, const NodeDescriptionList * subDescriptions, Util::AttributeProvider * attrProvider)  {
-	if (subDescriptions == nullptr) {
+void addAttributes(ImportContext & ctxt, const DescriptionArray * subDescriptions, Util::AttributeProvider * attrProvider)  {
+	if( !subDescriptions ) 
 		return;
-	}
-	for (auto & subDescription : *subDescriptions) {
-		const NodeDescription * desc = dynamic_cast<const NodeDescription *> (subDescription.get());
-		if (desc == nullptr) {
+	for(auto & subDescription : *subDescriptions) {
+		const DescriptionMap * desc = dynamic_cast<const DescriptionMap *>(subDescription.get());
+		if( !desc )
 			FAIL();
-		}
 		const std::string type = desc->getString(Consts::TYPE);
-		if (type == Consts::TYPE_ATTRIBUTE) {
+		if(type == Consts::TYPE_ATTRIBUTE) {
 			const std::string name = desc->getString(Consts::ATTR_ATTRIBUTE_NAME, "");
 			const std::string attrType = desc->getString(Consts::ATTR_ATTRIBUTE_TYPE, Consts::ATTRIBUTE_TYPE_STRING);
 			std::string value = desc->getString(Consts::ATTR_ATTRIBUTE_VALUE, "");
@@ -314,26 +311,26 @@ void addAttributes(ImportContext & ctxt, const NodeDescriptionList * subDescript
 				}
 			}
 			Util::GenericAttribute * attr = nullptr;
-			if (!name.empty() && !value.empty()) {
+			if(!name.empty() && !value.empty()) {
 				// Compare with strings used in ExporterTools::addAttributesToDescription
-				if (attrType == Consts::ATTRIBUTE_TYPE_FLOAT) {
+				if(attrType == Consts::ATTRIBUTE_TYPE_FLOAT) {
 					attr = Util::GenericAttribute::createNumber(Util::StringUtils::toNumber<float>(value));
-				} else if (attrType == Consts::ATTRIBUTE_TYPE_INT) {
+				} else if(attrType == Consts::ATTRIBUTE_TYPE_INT) {
 					attr = Util::GenericAttribute::createNumber(Util::StringUtils::toNumber<int>(value));
-				} else if (attrType == Consts::ATTRIBUTE_TYPE_BOOL) {
+				} else if(attrType == Consts::ATTRIBUTE_TYPE_BOOL) {
 					attr = Util::GenericAttribute::createBool(Util::StringUtils::toBool(value));
-				} else if (attrType == Consts::ATTRIBUTE_TYPE_STRING || attrType == "String") { // 'String' is deprecated!
+				} else if(attrType == Consts::ATTRIBUTE_TYPE_STRING || attrType == "String") { // 'String' is deprecated!
 					attr = Util::GenericAttribute::createString( value );
 				} // unspecific number
-				else if (attrType == Consts::ATTRIBUTE_TYPE_NUMBER) {
-					if (value.find('.') == std::string::npos) {
+				else if(attrType == Consts::ATTRIBUTE_TYPE_NUMBER) {
+					if(value.find('.') == std::string::npos) {
 						attr = Util::GenericAttribute::createNumber(Util::StringUtils::toNumber<int>(value));
 					} else {
 						attr = Util::GenericAttribute::createNumber(Util::StringUtils::toNumber<float>(value));
 					}
-				}else if (attrType == Consts::ATTRIBUTE_TYPE_JSON) {
+				}else if(attrType == Consts::ATTRIBUTE_TYPE_JSON) {
 					attr = Util::JSON_Parser::parse(value);
-				}else if (attrType == Consts::ATTRIBUTE_TYPE_GENERIC) {
+				}else if(attrType == Consts::ATTRIBUTE_TYPE_GENERIC) {
 					static const Util::StringIdentifier CONTEXT_DATA_SCENEMANAGER("SceneManager");
 					std::unique_ptr<Util::GenericAttributeMap> context(new Util::GenericAttributeMap);
 					context->setValue(CONTEXT_DATA_SCENEMANAGER, new Util::WrapperAttribute<SceneManager &>(ctxt.sceneManager));
@@ -343,7 +340,7 @@ void addAttributes(ImportContext & ctxt, const NodeDescriptionList * subDescript
 					attr = Util::GenericAttribute::createString(value);
 				}
 			}
-			if (attr != nullptr) {
+			if(attr) {
 				attrProvider->setAttribute(name, attr);
 			}
 		}
@@ -351,19 +348,18 @@ void addAttributes(ImportContext & ctxt, const NodeDescriptionList * subDescript
 }
 
 //! (static)
-std::deque<const NodeDescription *> filterElements(const std::string & type, 
-												   const NodeDescriptionList * subDescriptions) {
-	std::deque<const NodeDescription *> result;
-	if (subDescriptions == nullptr) {
+std::deque<const DescriptionMap *> filterElements(const std::string & type, 
+												   const DescriptionArray * subDescriptions) {
+	std::deque<const DescriptionMap *> result;
+	if( !subDescriptions ) 
 		return result;
-	}
-	for (auto & subDescription : *subDescriptions) {
-		const NodeDescription * desc = dynamic_cast<const NodeDescription *> (subDescription.get());
-		if (desc == nullptr) {
+
+	for(auto & subDescription : *subDescriptions) {
+		const DescriptionMap * desc = dynamic_cast<const DescriptionMap *>(subDescription.get());
+		if( !desc ) 
 			FAIL();
-		}
 		const std::string elementType = desc->getString(Consts::TYPE);
-		if (elementType == type) {
+		if(elementType == type) {
 			result.push_back(desc);
 		}
 	}
@@ -380,9 +376,9 @@ MeshImportHandler * getMeshImportHandler() 							{	return meshImportHandler.get
 //! @note This object takes ownership of the import handler and will delete it when it is not needed anymore.
 void setMeshImportHandler(std::unique_ptr<MeshImportHandler> handler)	{	meshImportHandler=std::move(handler);	}
 
-void buildSceneFromDescription(ImportContext & ctxt,const NodeDescription * d) {
+void buildSceneFromDescription(ImportContext & ctxt,const DescriptionMap * d) {
 	Util::info << "\nBegin parsing description:\n";
-	if(d == nullptr) {
+	if( !d ) {
 		WARN("No scene description!");
 		return;
 	}
@@ -398,13 +394,13 @@ void buildSceneFromDescription(ImportContext & ctxt,const NodeDescription * d) {
 	{
 		/// read Definitions
 		//		Util::info << "defs:\n";
-		auto defs = dynamic_cast<const NodeDescription *>(d->getValue(Consts::DEFINITIONS));
+		auto defs = dynamic_cast<const DescriptionMap *>(d->getValue(Consts::DEFINITIONS));
 		if(defs) {
 			/// prototype Nodes
-			auto nodes = dynamic_cast<const NodeDescriptionList *>(defs->getValue(Consts::CHILDREN));
+			auto nodes = dynamic_cast<const DescriptionArray *>(defs->getValue(Consts::CHILDREN));
 			if(nodes) {
 				for(auto & node : *nodes) {
-					auto p = dynamic_cast<const NodeDescription *>(node.get());
+					auto p = dynamic_cast<const DescriptionMap *>(node.get());
 					if(!p)
 						FAIL();
 					if(p->getString(Consts::TYPE) == Consts::TYPE_NODE) {
@@ -433,16 +429,14 @@ void buildSceneFromDescription(ImportContext & ctxt,const NodeDescription * d) {
 
 	{
 		/// read children
-		auto children = dynamic_cast<const NodeDescriptionList *>(d->getValue(Consts::CHILDREN));
-		if(children == nullptr) {
+		auto children = dynamic_cast<const DescriptionArray *>(d->getValue(Consts::CHILDREN));
+		if( !children )
 			return;
-		}
-		for(auto & elem : *children) {
-			auto e = dynamic_cast<const NodeDescription *>(elem.get());
-			if(e == nullptr) {
-				FAIL();
-			}
 
+		for(auto & elem : *children) {
+			auto e = dynamic_cast<const DescriptionMap *>(elem.get());
+			if(!e)
+				FAIL();
 			if(e->getString(Consts::TYPE) == Consts::TYPE_NODE) {
 				if(!processDescription(ctxt, *e, ctxt.getRootNode())) {
 					WARN("Could not create Node");

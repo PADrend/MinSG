@@ -50,7 +50,7 @@
 namespace MinSG {
 namespace SceneManagement {
 
-static Rendering::Uniform importUniform(const NodeDescription & d) {
+static Rendering::Uniform importUniform(const DescriptionMap & d) {
 
 	try {
 		const std::string dataType = d.getString(Consts::ATTR_SHADER_UNIFORM_TYPE);
@@ -59,34 +59,34 @@ static Rendering::Uniform importUniform(const NodeDescription & d) {
 
 		if(dataType == Consts::SHADER_UNIFORM_TYPE_BOOL)
 			return Rendering::Uniform(name, Util::StringUtils::toBools(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC2B)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC2B)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_VEC2B,Util::StringUtils::toBools(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC3B)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC3B)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_VEC3B,Util::StringUtils::toBools(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC4B)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC4B)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_VEC4B,Util::StringUtils::toBools(values));
 
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_INT)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_INT)
 			return Rendering::Uniform(name, Util::StringUtils::toInts(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC2I)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC2I)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_VEC2I,Util::StringUtils::toInts(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC3I)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC3I)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_VEC3I,Util::StringUtils::toInts(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC4I)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC4I)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_VEC4I,Util::StringUtils::toInts(values));
 
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_FLOAT)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_FLOAT)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_FLOAT, Util::StringUtils::toFloats(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC2F)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC2F)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_VEC2F,Util::StringUtils::toFloats(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC3F)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC3F)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_VEC3F,Util::StringUtils::toFloats(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC4F)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_VEC4F)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_VEC4F,Util::StringUtils::toFloats(values));
 
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_MATRIX_3X3F)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_MATRIX_3X3F)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_MATRIX_3X3F,Util::StringUtils::toFloats(values));
-		if(dataType == Consts::SHADER_UNIFORM_TYPE_MATRIX_4X4F)
+		else if(dataType == Consts::SHADER_UNIFORM_TYPE_MATRIX_4X4F)
 			return Rendering::Uniform(name, Rendering::Uniform::UNIFORM_MATRIX_4X4F,Util::StringUtils::toFloats(values));
 
 		WARN("Unknown uniform dataType");
@@ -96,13 +96,13 @@ static Rendering::Uniform importUniform(const NodeDescription & d) {
 	return Rendering::Uniform();
 }
 
-static bool importShaderState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_SHADER || parent == nullptr)
+static bool importShaderState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_SHADER || !parent)
 		return false;
 
 	Util::Reference<ShaderState> ss = new ShaderState;
 
-	const NodeDescriptionList * children = dynamic_cast<const NodeDescriptionList *>(d.getValue(Consts::CHILDREN));
+	const DescriptionArray * children = dynamic_cast<const DescriptionArray *>(d.getValue(Consts::CHILDREN));
 
 	ImporterTools::addAttributes(ctxt, children, ss.get());
 
@@ -187,13 +187,13 @@ static bool importShaderState(ImportContext & ctxt, const std::string & stateTyp
 	return true;
 }
 
-static bool importShaderUniformState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_SHADER_UNIFORM || parent == nullptr)
+static bool importShaderUniformState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_SHADER_UNIFORM || !parent)
 		return false;
 
 	auto sus = new ShaderUniformState();
 
-	const NodeDescriptionList * children = dynamic_cast<const NodeDescriptionList *>(d.getValue(Consts::CHILDREN));
+	const DescriptionArray * children = dynamic_cast<const DescriptionArray *>(d.getValue(Consts::CHILDREN));
 
 	ImporterTools::addAttributes(ctxt, children, sus);
 
@@ -215,14 +215,14 @@ static bool importShaderUniformState(ImportContext & ctxt, const std::string & s
 	return true;
 }
 
-static bool reuseState(ImportContext & ctxt, const std::string & /*stateType*/, const NodeDescription & d, Node * parent) {
+static bool reuseState(ImportContext & ctxt, const std::string & /*stateType*/, const DescriptionMap & d, Node * parent) {
 	if(parent==nullptr || d.getString(Consts::TYPE) != Consts::TYPE_STATE || (ctxt.importOptions & IMPORT_OPTION_REUSE_EXISTING_STATES) == 0)
 		return false;
 
 	// special case if old states should be reused
 	std::string id = d.getString(Consts::ATTR_STATE_ID);
 	State * s = ctxt.sceneManager.getRegisteredState(id);
-	if(s != nullptr) {
+	if(s) {
 		ImporterTools::finalizeState(ctxt, s, d);
 		parent->addState(s);
 		std::cout <<"State reused:"<<id<<"\n"; // \todo this line should soon be removed when it is clear that the "reuse existing state" functionality works
@@ -241,14 +241,14 @@ static Util::Reference<Rendering::Texture> createFallbackTexture(Rendering::Text
 		return texture;
 	}
 }
-static bool importTextureState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_TEXTURE || parent == nullptr)
+static bool importTextureState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_TEXTURE || !parent)
 		return false;
 
 	const auto dataDescList = ImporterTools::filterElements(Consts::TYPE_DATA,
-															dynamic_cast<const NodeDescriptionList *>(d.getValue(Consts::CHILDREN)));
+															dynamic_cast<const DescriptionArray *>(d.getValue(Consts::CHILDREN)));
 
-	if (dataDescList.empty()) {// No data block given -> TextureState intentionally without Texture
+	if(dataDescList.empty()) {// No data block given -> TextureState intentionally without Texture
 		auto ts = new TextureState;
 		ImporterTools::finalizeState(ctxt, ts, d);
 		parent->addState(ts);
@@ -262,7 +262,7 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 	}
 
 	// filename
-	const NodeDescription * dataDesc = dataDescList.front();
+	const DescriptionMap * dataDesc = dataDescList.front();
 
 	// dataType
 	const std::string dataType = dataDesc->getString(Consts::ATTR_DATA_TYPE);
@@ -327,20 +327,24 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 	return true;
 }
 
-static bool importReference(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_REFERENCE || parent == nullptr)
+static bool importReference(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_REFERENCE || !parent)
 		return false;
 
-	std::string refId = d.getString(Consts::ATTR_REFERENCED_STATE_ID);
+	const std::string refId = d.getString(Consts::ATTR_REFERENCED_STATE_ID);
 	State * state = ctxt.sceneManager.getRegisteredState(refId);
+	if(!state){
+		WARN("StateId unknown '"+refId+"'. Error in MinSG file.");
+		return true;
+	}
 
 	ImporterTools::finalizeState(ctxt, state, d);
 	parent->addState(state);
 	return true;
 }
 
-static bool importTransparencyRenderer(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_TRANSPARENCY_RENDERER || parent == nullptr)
+static bool importTransparencyRenderer(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_TRANSPARENCY_RENDERER || !parent)
 		return false;
 
 	auto state = new TransparencyRenderer;
@@ -351,8 +355,8 @@ static bool importTransparencyRenderer(ImportContext & ctxt, const std::string &
 	return true;
 }
 
-static bool importLightingState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_LIGHTING_STATE || parent == nullptr)
+static bool importLightingState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_LIGHTING_STATE || !parent)
 		return false;
 
 	const auto lightId = d.getString(Consts::ATTR_LIGHTING_LIGHT_ID);
@@ -361,7 +365,7 @@ static bool importLightingState(ImportContext & ctxt, const std::string & stateT
 	ctxt.addFinalizingAction([state, lightId](ImportContext & importerContext) {
 		std::cout << "Info: Assigning LightningState to Light: " << lightId << " ... ";
 		LightNode * ln = dynamic_cast<LightNode *>(importerContext.sceneManager.getRegisteredNode(lightId));
-		if(ln != nullptr) {
+		if(ln) {
 			state->setLight(ln);
 			std::cout << "ok.\n";
 		} else {
@@ -374,8 +378,8 @@ static bool importLightingState(ImportContext & ctxt, const std::string & stateT
 	return true;
 }
 
-static bool importPolygonModeState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_POLYGON_MODE || parent == nullptr)
+static bool importPolygonModeState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_POLYGON_MODE || !parent)
 		return false;
 
 	auto state = new PolygonModeState();
@@ -391,8 +395,8 @@ static bool importPolygonModeState(ImportContext & ctxt, const std::string & sta
 	return true;
 }
 
-static bool importGroupState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_GROUP || parent == nullptr)
+static bool importGroupState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_GROUP || !parent)
 		return false;
 
 	Util::Reference<GroupState> state = new GroupState();
@@ -414,8 +418,8 @@ static bool importGroupState(ImportContext & ctxt, const std::string & stateType
 	return true;
 }
 
-static bool importAlphaTestState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_ALPHA_TEST || parent == nullptr)
+static bool importAlphaTestState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_ALPHA_TEST || !parent)
 		return false;
 
 	auto state = new AlphaTestState();
@@ -434,8 +438,8 @@ static bool importAlphaTestState(ImportContext & ctxt, const std::string & state
 	return true;
 }
 
-static bool importCullFaceState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_CULL_FACE || parent == nullptr)
+static bool importCullFaceState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_CULL_FACE || !parent)
 		return false;
 
 	auto state = new CullFaceState();
@@ -461,8 +465,8 @@ static bool importCullFaceState(ImportContext & ctxt, const std::string & stateT
 	return true;
 }
 
-static bool importMaterialState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_MATERIAL || parent == nullptr)
+static bool importMaterialState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_MATERIAL || !parent)
 		return false;
 
 	auto state = new MaterialState();
@@ -496,8 +500,8 @@ static bool importMaterialState(ImportContext & ctxt, const std::string & stateT
 	return true;
 }
 
-static bool importBlendingState(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
-	if(stateType != Consts::STATE_TYPE_BLENDING || parent == nullptr)
+static bool importBlendingState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_BLENDING || !parent)
 		return false;
 
 	auto state = new BlendingState();
@@ -548,7 +552,7 @@ static bool importBlendingState(ImportContext & ctxt, const std::string & stateT
 }
 
 //! template for new importers
-// static bool importXY(ImportContext & ctxt, const std::string & stateType, const NodeDescription & d, Node * parent) {
+// static bool importXY(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 //  if(stateType != Consts::STATE_TYPE_XY) // check parent != nullptr is done by SceneManager
 //      return false;
 //

@@ -54,7 +54,7 @@ namespace LoaderCOLLADA {
 namespace ExternalImporter {
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-static void appendSkeletalAttributes(Rendering::MeshVertexData & vertexData, const SceneManagement::NodeDescription * vertexDesc,
+static void appendSkeletalAttributes(Rendering::MeshVertexData & vertexData, const SceneManagement::DescriptionMap * vertexDesc,
 									 const std::vector<uint32_t> triArray) {
 
 	Rendering::VertexDescription vd = vertexData.getVertexDescription();
@@ -132,8 +132,8 @@ static bool importSkeletonController(const COLLADAFW::Controller * controller, r
 
 	const COLLADAFW::SkinController * skinController = dynamic_cast<const COLLADAFW::SkinController *>(controller);
 
-	SceneManagement::NodeDescription * skinControllerDesc = new SceneManagement::NodeDescription();
-	SceneManagement::NodeDescription * skinDescription = referenceReg[skinController->getSkinControllerData()];
+	SceneManagement::DescriptionMap * skinControllerDesc = new SceneManagement::DescriptionMap();
+	SceneManagement::DescriptionMap * skinDescription = referenceReg[skinController->getSkinControllerData()];
 	LoaderCOLLADA::copyAttributesToNodeDescription(skinControllerDesc, skinDescription);
 
 	referenceReg.erase(skinController->getSkinControllerData());
@@ -148,7 +148,7 @@ static bool importSkeletonController(const COLLADAFW::Controller * controller, r
 	for(uint32_t i = 0; i < skinController->getJoints().getCount(); ++i) {
 		std::stringstream ss;
 		ss << idCounter;
-		SceneManagement::NodeDescription * jointDesc = new SceneManagement::NodeDescription();
+		SceneManagement::DescriptionMap * jointDesc = new SceneManagement::DescriptionMap();
 		jointDesc->setString(SceneManagement::Consts::ATTR_SKEL_JOINTID, ss.str());
 		idCounter++;
 
@@ -163,20 +163,20 @@ static bool importSkeletonController(const COLLADAFW::Controller * controller, r
 	}
 	skinControllerDesc->setValue(LoaderCOLLADA::Consts::DAE_JOINT_IDS, jointIds);
 
-	SceneManagement::NodeDescriptionList * geometries = dynamic_cast<SceneManagement::NodeDescriptionList *>(referenceReg[skinController->getSource()]->getValue(SceneManagement::Consts::CHILDREN));
+	SceneManagement::DescriptionArray * geometries = dynamic_cast<SceneManagement::DescriptionArray *>(referenceReg[skinController->getSource()]->getValue(SceneManagement::Consts::CHILDREN));
 	for(uint32_t i = 0; i < geometries->size(); ++i) {
-		SceneManagement::NodeDescription * geometryChild = dynamic_cast<SceneManagement::NodeDescription *>(geometries->at(i));
+		SceneManagement::DescriptionMap * geometryChild = dynamic_cast<SceneManagement::DescriptionMap *>(geometries->at(i));
 		if(geometryChild == nullptr) {
 			continue;
 		}
 
-		SceneManagement::NodeDescriptionList * meshList = dynamic_cast<SceneManagement::NodeDescriptionList *>(geometryChild->getValue(SceneManagement::Consts::CHILDREN));
+		SceneManagement::DescriptionArray * meshList = dynamic_cast<SceneManagement::DescriptionArray *>(geometryChild->getValue(SceneManagement::Consts::CHILDREN));
 		if(meshList == nullptr) {
 			continue;
 		}
 
 		for(uint32_t j = 0; j < meshList->size(); ++j) {
-			SceneManagement::NodeDescription * meshDesc = dynamic_cast<SceneManagement::NodeDescription *>(meshList->at(j));
+			SceneManagement::DescriptionMap * meshDesc = dynamic_cast<SceneManagement::DescriptionMap *>(meshList->at(j));
 			if(meshDesc == nullptr) {
 				continue;
 			}
@@ -203,13 +203,13 @@ static bool importSkeletonController(const COLLADAFW::Controller * controller, r
 	skinControllerDesc->setString(SceneManagement::Consts::ATTR_NODE_TYPE, SceneManagement::Consts::NODE_TYPE_SKEL_SKELETALOBJECT);
 	copyAttributesToNodeDescription(skinControllerDesc, referenceReg[skinController->getSource()]);
 
-	SceneManagement::NodeDescription * shaderState = new SceneManagement::NodeDescription();
+	SceneManagement::DescriptionMap * shaderState = new SceneManagement::DescriptionMap();
 	shaderState->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_STATE);
 	shaderState->setString(SceneManagement::Consts::ATTR_STATE_TYPE, SceneManagement::Consts::STATE_TYPE_SKEL_SKELETALHARDWARERENDERERSTATE);
 	shaderState->setString(SceneManagement::Consts::ATTR_SKEL_BINDMATRIX, skinControllerDesc->getString(LoaderCOLLADA::Consts::DAE_ARMATURE_BINDMATRIX));
 	addToMinSGChildren(skinControllerDesc, shaderState);
 
-	SceneManagement::NodeDescription * armature = new SceneManagement::NodeDescription();
+	SceneManagement::DescriptionMap * armature = new SceneManagement::DescriptionMap();
 	armature->setString(SceneManagement::Consts::TYPE, SceneManagement::Consts::TYPE_NODE);
 	armature->setString(SceneManagement::Consts::ATTR_NODE_TYPE, SceneManagement::Consts::NODE_TYPE_SKEL_ARMATURE);
 	daeReferenceList * refList = new daeReferenceList();
@@ -226,7 +226,7 @@ static bool importSkeletonController(const COLLADAFW::Controller * controller, r
 
 static bool importSkinControllerData(const COLLADAFW::SkinControllerData * skinController, referenceRegistry_t & referenceReg) {
 
-	SceneManagement::NodeDescription * skinDescription = new SceneManagement::NodeDescription();
+	SceneManagement::DescriptionMap * skinDescription = new SceneManagement::DescriptionMap();
 	skinDescription->setValue(LoaderCOLLADA::Consts::DAE_JOINT_COUNT,
 							  new Util::_NumberAttribute<uint32_t>(skinController->getJointsCount()));
 
@@ -278,19 +278,19 @@ static bool importSkinControllerData(const COLLADAFW::SkinControllerData * skinC
 	return true;
 }
 
-static SceneManagement::NodeDescription * sceneNodeImporter(const COLLADAFW::Node * childNode, referenceRegistry_t & referenceRegistry) {
+static SceneManagement::DescriptionMap * sceneNodeImporter(const COLLADAFW::Node * childNode, referenceRegistry_t & referenceRegistry) {
 	if(childNode == nullptr) {
 		return nullptr;
 	}
 
-	SceneManagement::NodeDescription * listDesc;
+	SceneManagement::DescriptionMap * listDesc;
 	referenceRegistry_t::iterator childIt = referenceRegistry.find(childNode->getUniqueId());
 	if(childIt == referenceRegistry.end()) {
-		listDesc = new SceneManagement::NodeDescription();
+		listDesc = new SceneManagement::DescriptionMap();
 	} else {
 		listDesc = childIt->second;
 		if(listDesc == nullptr) {
-			listDesc = new SceneManagement::NodeDescription();
+			listDesc = new SceneManagement::DescriptionMap();
 		}
 	}
 
@@ -306,10 +306,10 @@ static SceneManagement::NodeDescription * sceneNodeImporter(const COLLADAFW::Nod
 	}
 	listDesc->setString(SceneManagement::Consts::ATTR_NODE_ID, childNode->getOriginalId());
 
-	SceneManagement::NodeDescriptionList * children = dynamic_cast<SceneManagement::NodeDescriptionList *>(listDesc->getValue(SceneManagement::Consts::CHILDREN));
+	SceneManagement::DescriptionArray * children = dynamic_cast<SceneManagement::DescriptionArray *>(listDesc->getValue(SceneManagement::Consts::CHILDREN));
 	if(children != nullptr) {
-		for(SceneManagement::NodeDescriptionList::iterator it = children->begin(); it < children->end(); ++it) {
-			SceneManagement::NodeDescription * child = dynamic_cast<SceneManagement::NodeDescription *>(it->get());
+		for(SceneManagement::DescriptionArray::iterator it = children->begin(); it < children->end(); ++it) {
+			SceneManagement::DescriptionMap * child = dynamic_cast<SceneManagement::DescriptionMap *>(it->get());
 
 			if(child != nullptr) {
 				if(child->getString(SceneManagement::Consts::ATTR_NODE_TYPE) == SceneManagement::Consts::NODE_TYPE_SKEL_SKELETALOBJECT) {
@@ -335,7 +335,7 @@ static bool animationImporter(const COLLADAFW::Animation * animation, referenceR
 		return false;
 	}
 
-	SceneManagement::NodeDescription * animationDesc = new SceneManagement::NodeDescription();
+	SceneManagement::DescriptionMap * animationDesc = new SceneManagement::DescriptionMap();
 
 	if(animationCurve->getInPhysicalDimension() != COLLADAFW::PHYSICAL_DIMENSION_TIME) {
 		return false;
@@ -421,20 +421,20 @@ static bool animationListImporter(const COLLADAFW::AnimationList * animationList
 	if(container.empty()) {
 		return false;
 	}
-	SceneManagement::NodeDescription * skeletDesc = container.front();
+	SceneManagement::DescriptionMap * skeletDesc = container.front();
 
-	SceneManagement::NodeDescription * animationDesc = nullptr;
-	SceneManagement::NodeDescriptionList * aniDesc = nullptr;
+	SceneManagement::DescriptionMap * animationDesc = nullptr;
+	SceneManagement::DescriptionArray * aniDesc = nullptr;
 	{
 		const auto aniContainer = findDescriptions(referenceRegistry, SceneManagement::Consts::ATTR_BEHAVIOUR_TYPE, SceneManagement::Consts::BEHAVIOUR_TYPE_SKEL_ANIMATIONDATA);
 
 		if(!aniContainer.empty()) {
 			animationDesc = aniContainer.front();
 
-			aniDesc = dynamic_cast<SceneManagement::NodeDescriptionList *>(Util::JSON_Parser::parse(animationDesc->getString(SceneManagement::Consts::DATA_BLOCK)));
+			aniDesc = dynamic_cast<SceneManagement::DescriptionArray *>(Util::JSON_Parser::parse(animationDesc->getString(SceneManagement::Consts::DATA_BLOCK)));
 		} else {
-			animationDesc = new SceneManagement::NodeDescription();
-			aniDesc = new SceneManagement::NodeDescriptionList();
+			animationDesc = new SceneManagement::DescriptionMap();
+			aniDesc = new SceneManagement::DescriptionArray();
 
 			animationDesc->setString(SceneManagement::Consts::ATTR_BEHAVIOUR_TYPE, SceneManagement::Consts::BEHAVIOUR_TYPE_SKEL_ANIMATIONDATA);
 
@@ -462,7 +462,7 @@ static bool animationListImporter(const COLLADAFW::AnimationList * animationList
 	std::sort(jointNames.begin(), jointNames.end(), stringSorter);
 	if(jointIds != nullptr) {
 		for(uint32_t i = 0; i < animationList->getAnimationBindings().getCount(); ++i) {
-			SceneManagement::NodeDescription * ani = referenceRegistry[animationList->getAnimationBindings().getData()[i].animation];
+			SceneManagement::DescriptionMap * ani = referenceRegistry[animationList->getAnimationBindings().getData()[i].animation];
 			aniDesc->push_back(ani);
 			if(ani->contains(LoaderCOLLADA::Consts::DAE_ANIMATION_NAME)) {
 				std::string name = ani->getString(LoaderCOLLADA::Consts::DAE_ANIMATION_NAME);

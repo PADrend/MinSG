@@ -193,7 +193,7 @@ void MultiAlgoGroupNode::setAlgorithm(AlgoId newAlgoId) {
 		this->initAlgorithm(newAlgoId);
 	}
 	
-	Util::Color4f color;
+	Util::Color4ub color;
 	switch(newAlgoId) {
 		case BruteForce:
             color = Util::Color4ub(222, 222, 222);

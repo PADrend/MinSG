@@ -38,10 +38,10 @@ namespace MinSG {
 namespace SceneManagement {
 
 
-static void describeGeometryNode(ExporterContext & /*ctxt*/,NodeDescription & desc, Node * node) {
+static void describeGeometryNode(ExporterContext & /*ctxt*/,DescriptionMap & desc, Node * node) {
 	desc.setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_GEOMETRY);
 
-	NodeDescription dataDesc;
+	std::unique_ptr<DescriptionMap> dataDesc(new DescriptionMap);
 
 	GeometryNode * gn = dynamic_cast<GeometryNode*>(node);
 
@@ -50,7 +50,7 @@ static void describeGeometryNode(ExporterContext & /*ctxt*/,NodeDescription & de
 	const Geometry::Vec3 center = bb.getCenter();
 	std::stringstream s;
 	s << center.getX() << " " << center.getY() << " " << center.getZ() << " " << bb.getExtentX() << " " << bb.getExtentY() << " " << bb.getExtentZ();
-	dataDesc.setString(Consts::ATTR_MESH_BB, s.str());
+	dataDesc->setString(Consts::ATTR_MESH_BB, s.str());
 
 	Rendering::Mesh * m = gn->getMesh();
 	if(m!=nullptr) { // mesh present?
@@ -58,11 +58,11 @@ static void describeGeometryNode(ExporterContext & /*ctxt*/,NodeDescription & de
 		if(m->getFileName().empty()) {
 			std::ostringstream meshStream;
 			if(Rendering::Serialization::saveMesh(gn->getMesh(), "mmf", meshStream)) {
-				dataDesc.setString(Consts::ATTR_DATA_TYPE,"mesh");
-				dataDesc.setString(Consts::ATTR_DATA_ENCODING,"base64");
+				dataDesc->setString(Consts::ATTR_DATA_TYPE,"mesh");
+				dataDesc->setString(Consts::ATTR_DATA_ENCODING,"base64");
 				const std::string streamString = meshStream.str();
 				const std::string meshString = Util::encodeBase64(std::vector<uint8_t>(streamString.begin(), streamString.end()));
-				dataDesc.setString(Consts::DATA_BLOCK,meshString);
+				dataDesc->setString(Consts::DATA_BLOCK,meshString);
 			}
 		} else { // filename given?
 			Util::FileName meshFilename(m->getFileName());
@@ -70,20 +70,20 @@ static void describeGeometryNode(ExporterContext & /*ctxt*/,NodeDescription & de
 //			// make path to mesh relative to scene (if mesh lies below the scene)
 //			Util::FileUtils::makeRelativeIfPossible(ctxt.sceneFile, meshFilename);
 
-			dataDesc.setString(Consts::ATTR_DATA_TYPE,"mesh");
-			dataDesc.setString(Consts::ATTR_MESH_FILENAME,meshFilename.toShortString());
+			dataDesc->setString(Consts::ATTR_DATA_TYPE,"mesh");
+			dataDesc->setString(Consts::ATTR_MESH_FILENAME,meshFilename.toShortString());
 		}
 		ExporterTools::addDataEntry(desc, std::move(dataDesc));
 	}
 
 }
 
-static void describeListNode(ExporterContext & ctxt,NodeDescription & desc, Node * node) {
+static void describeListNode(ExporterContext & ctxt,DescriptionMap & desc, Node * node) {
 	desc.setValue(Consts::ATTR_NODE_TYPE,Util::GenericAttribute::createString(Consts::NODE_TYPE_LIST));
 	ExporterTools::addChildNodesToDescription(ctxt,desc,node);
 }
 
-static void describeLightNode(ExporterContext &,NodeDescription & desc, Node * node) {
+static void describeLightNode(ExporterContext &,DescriptionMap & desc, Node * node) {
 	LightNode * ln = dynamic_cast<LightNode*>(node);
 	switch(ln->getType()) {
 		case Rendering::LightParameters::DIRECTIONAL:

@@ -133,7 +133,7 @@ int test_automatic() {
 	}
 
 	std::cout << "Create chess texture ... ";
-	Rendering::Texture * t = Rendering::TextureUtils::createChessTexture(64, 64);
+	Util::Reference<Rendering::Texture> t = Rendering::TextureUtils::createChessTexture(64, 64);
 	std::cout << "done.\n";
 
 	std::cout << "Create scene graph root (ListNode) ... ";
@@ -146,7 +146,7 @@ int test_automatic() {
 	std::cout << "done.\n";
 
 	std::cout << "Attach TextureNode ... ";
-	TextureState * tn = new TextureState(t);
+	TextureState * tn = new TextureState(t.get());
 	geo->addState(tn);
 	std::cout << "done.\n";
 

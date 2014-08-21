@@ -73,7 +73,7 @@ struct AssignSpawnNodeAction {
 };
 
 //! load common and special data for emitters
-static void initEmitter(const NodeDescription & d, ParticleEmitter * em) {
+static void initEmitter(const DescriptionMap & d, ParticleEmitter * em) {
 	// common things to do with emitters
 	if(d.contains(Consts::ATTR_PARTICLE_PER_SECOND))
 		em->setParticlesPerSecond(d.getValue(Consts::ATTR_PARTICLE_PER_SECOND)->toFloat());
@@ -108,16 +108,16 @@ static void initEmitter(const NodeDescription & d, ParticleEmitter * em) {
 
 	v = Util::StringUtils::toFloats(d.getString(Consts::ATTR_PARTICLE_MIN_COLOR, ""));
 	if(v.size() == 4) {
-		em->setMinColor(Util::Color4f(v[0], v[1], v[2], v[3]));
+		em->setMinColor(Util::Color4ub(Util::Color4f(v[0], v[1], v[2], v[3])));
 	} else if(v.size() == 3) {
-		em->setMinColor(Util::Color4f(v[0], v[1], v[2]));
+		em->setMinColor(Util::Color4ub(Util::Color4f(v[0], v[1], v[2])));
 	}
 
 	v = Util::StringUtils::toFloats(d.getString(Consts::ATTR_PARTICLE_MAX_COLOR, ""));
 	if(v.size() == 4) {
-		em->setMaxColor(Util::Color4f(v[0], v[1], v[2], v[3]));
+		em->setMaxColor(Util::Color4ub(Util::Color4f(v[0], v[1], v[2], v[3])));
 	} else if(v.size() == 3) {
-		em->setMaxColor(Util::Color4f(v[0], v[1], v[2]));
+		em->setMaxColor(Util::Color4ub(Util::Color4f(v[0], v[1], v[2])));
 	}
 
 	if(d.contains(Consts::ATTR_PARTICLE_TIME_OFFSET)) {
@@ -125,8 +125,8 @@ static void initEmitter(const NodeDescription & d, ParticleEmitter * em) {
 	}
 }
 
-static bool importParticlePointEmitter(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parentNode) {
-    if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_POINT_EMITTER)
+static bool importParticlePointEmitter(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parentNode) {
+	if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_POINT_EMITTER)
 		return false;
 	ParticleSystemNode * psn = convertToTNode<ParticleSystemNode>(parentNode);
 	if(psn==nullptr)
@@ -146,8 +146,8 @@ static bool importParticlePointEmitter(ImportContext & ctxt, const std::string &
 	return true;
 }
 
-static bool importParticleBoxEmitter(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parentNode) {
-    if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_BOX_EMITTER)
+static bool importParticleBoxEmitter(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parentNode) {
+	if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_BOX_EMITTER)
 		return false;
 	ParticleSystemNode * psn = convertToTNode<ParticleSystemNode>(parentNode);
 	if(psn==nullptr)
@@ -166,8 +166,8 @@ static bool importParticleBoxEmitter(ImportContext & ctxt, const std::string & t
 	return true;
 }
 
-static bool importParticleGravityEffector(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parentNode) {
-    if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_GRAVITY_AFFECTOR)
+static bool importParticleGravityEffector(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parentNode) {
+	if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_GRAVITY_AFFECTOR)
 		return false;
 	ParticleSystemNode * psn = convertToTNode<ParticleSystemNode>(parentNode);
 	if(psn==nullptr)
@@ -181,8 +181,8 @@ static bool importParticleGravityEffector(ImportContext & ctxt, const std::strin
 	ctxt.sceneManager.getBehaviourManager()->registerBehaviour(af);
 	return true;
 }
-static bool importParticleReflectionAffector(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parentNode) {
-    if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_REFLECTION_AFFECTOR)
+static bool importParticleReflectionAffector(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parentNode) {
+	if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_REFLECTION_AFFECTOR)
 		return false;
 	ParticleSystemNode * psn = convertToTNode<ParticleSystemNode>(parentNode);
 	if(psn==nullptr)
@@ -203,8 +203,8 @@ static bool importParticleReflectionAffector(ImportContext & ctxt, const std::st
 	ctxt.sceneManager.getBehaviourManager()->registerBehaviour(af);
 	return true;
 }
-static bool importParticleFadeOutAffector(ImportContext & ctxt, const std::string & type, const NodeDescription & /*d*/, Node * parentNode) {
-    if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_FADE_OUT_AFFECTOR)
+static bool importParticleFadeOutAffector(ImportContext & ctxt, const std::string & type, const DescriptionMap & /*d*/, Node * parentNode) {
+	if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_FADE_OUT_AFFECTOR)
 		return false;
 	ParticleSystemNode * psn = convertToTNode<ParticleSystemNode>(parentNode);
 	if(psn==nullptr)
@@ -216,8 +216,8 @@ static bool importParticleFadeOutAffector(ImportContext & ctxt, const std::strin
 	return true;
 }
 
-static bool importParticleAnimator(ImportContext & ctxt, const std::string & type, const NodeDescription & /*d*/, Node * parentNode) {
-    if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_ANIMATOR)
+static bool importParticleAnimator(ImportContext & ctxt, const std::string & type, const DescriptionMap & /*d*/, Node * parentNode) {
+	if(type != Consts::BEHAVIOUR_TYPE_PARTICLE_ANIMATOR)
 		return false;
 	ParticleSystemNode * psn = convertToTNode<ParticleSystemNode>(parentNode);
 	if(psn==nullptr)
@@ -250,7 +250,7 @@ struct AssignPathAction {
 	}
 };
 
-static bool importFollowPathBehaviour(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) {
+static bool importFollowPathBehaviour(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parent) {
 	if(type != Consts::BEHAVIOUR_TYPE_FOLLOW_PATH)
 		return false;
 
@@ -263,105 +263,105 @@ static bool importFollowPathBehaviour(ImportContext & ctxt, const std::string & 
 	return true;
 }
 #endif
-    
+	
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
 typedef Util::WrapperAttribute<std::deque<float> > float_data_t;
 typedef Util::WrapperAttribute<std::deque<int> > int_data_t;
-    
-    
-static bool importerSkeletalAnimationBehaviour(ImportContext & ctxt, const std::string & type, const NodeDescription & d, Node * parent) 
+	
+	
+static bool importerSkeletalAnimationBehaviour(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parent) 
 {
-    if(type != Consts::BEHAVIOUR_TYPE_SKEL_ANIMATIONDATA)
-        return false;
-    
-    AnimationBehaviour *ani = new AnimationBehaviour(dynamic_cast<SkeletalNode*>(parent), d.getString(Consts::ATTR_SKEL_SKELETALANIMATIONNAME));
-    NodeDescriptionList *children = dynamic_cast<NodeDescriptionList *>(Util::JSON_Parser::parse(d.getString(Consts::DATA_BLOCK)));
-    if(children == nullptr)
-        WARN("Animationdata corrupt.");
-    
-    std::unordered_map<std::string, AbstractJoint *> jMap = convertToTNode<SkeletalNode>(parent)->getJointMap();
-    for(auto & elem : *children)
-    {        
-        NodeDescription *child = dynamic_cast<NodeDescription *>(elem.get());
-        
-        std::deque<float> sampleDataTemp;
-        Util::StringUtils::extractFloats(child->getString(Consts::ATTR_SKEL_SKELETALSAMPLERDATA), sampleDataTemp);
-        std::deque<float> timelineDataTemp;
-        Util::StringUtils::extractFloats(child->getString(Consts::ATTR_SKEL_TIMELINE), timelineDataTemp);
+	if(type != Consts::BEHAVIOUR_TYPE_SKEL_ANIMATIONDATA)
+		return false;
+	
+	AnimationBehaviour *ani = new AnimationBehaviour(dynamic_cast<SkeletalNode*>(parent), d.getString(Consts::ATTR_SKEL_SKELETALANIMATIONNAME));
+	DescriptionArray *children = dynamic_cast<DescriptionArray *>(Util::JSON_Parser::parse(d.getString(Consts::DATA_BLOCK)));
+	if(children == nullptr)
+		WARN("Animationdata corrupt.");
+	
+	std::unordered_map<std::string, AbstractJoint *> jMap = convertToTNode<SkeletalNode>(parent)->getJointMap();
+	for(auto & elem : *children)
+	{		
+		DescriptionMap *child = dynamic_cast<DescriptionMap *>(elem.get());
+		
+		std::deque<float> sampleDataTemp;
+		Util::StringUtils::extractFloats(child->getString(Consts::ATTR_SKEL_SKELETALSAMPLERDATA), sampleDataTemp);
+		std::deque<float> timelineDataTemp;
+		Util::StringUtils::extractFloats(child->getString(Consts::ATTR_SKEL_TIMELINE), timelineDataTemp);
 
-        std::deque<double> sampleData;
-        for(auto item : sampleDataTemp)
-            sampleData.emplace_back(item);
-        
-        std::deque<double> timelineData;
-        for(auto item : timelineDataTemp)
-            timelineData.emplace_back(item);
-        
-        std::deque<uint32_t> types;
-        std::string tmp;
-        std::string interData = child->getString(Consts::ATTR_SKEL_SKELETALINTERPOLATIONTYPE);
-        for(auto item : interData)
-        {
-            if(item != ' ')
-                tmp += item;
-            else
-            {
-                if(tmp == "LINEAR")
-                    types.push_back(0);
-                else if(tmp == "CONSTANT")
-                    types.push_back(1);
-                else if(tmp == "BEZIER")
-                    types.push_back(2);
-                
-                tmp.clear();
-            }
-        }
-        
-        tmp.clear();
-        interData = child->getString(Consts::ATTR_SKEL_SKELETALTOANIMATIONS);
-        for(auto item : interData)
-        {
-            if(item != ';')
-                tmp += item;
-            else
-            {
-                ani->addAnimationTargetName(tmp);
-                tmp.clear();
-            }
-        }
-        
-        tmp.clear();
-        interData = child->getString(Consts::ATTR_SKEL_SKELETALFROMANIMATIONS);
-        for(auto item : interData)
-        {
-            if(item != ';')
-                tmp += item;
-            else
-            {
-                ani->addAnimationSourceName(tmp);
-                tmp.clear();
-            }
-        }
-        
-        float startTime = Util::StringUtils::toFloats(child->getString(Consts::ATTR_SKEL_SKELETALANIMATIONSTARTTIME)).at(0);
-        std::string targetName = child->getString(Consts::ATTR_SKEL_SKELETALANIMATIONTARGET);
-        ani->addPose(new SRTPose(sampleData, timelineData, types, startTime, jMap[targetName]));
-    }
-    
-    if(d.contains(Consts::ATTR_SKEL_SKELETALSTARTANIMATION))
-        (convertToTNode<SkeletalNode>(parent))->setStartAnimation(ani->getName());
+		std::deque<double> sampleData;
+		for(auto item : sampleDataTemp)
+			sampleData.emplace_back(item);
+		
+		std::deque<double> timelineData;
+		for(auto item : timelineDataTemp)
+			timelineData.emplace_back(item);
+		
+		std::deque<uint32_t> types;
+		std::string tmp;
+		std::string interData = child->getString(Consts::ATTR_SKEL_SKELETALINTERPOLATIONTYPE);
+		for(auto item : interData)
+		{
+			if(item != ' ')
+				tmp += item;
+			else
+			{
+				if(tmp == "LINEAR")
+					types.push_back(0);
+				else if(tmp == "CONSTANT")
+					types.push_back(1);
+				else if(tmp == "BEZIER")
+					types.push_back(2);
+				
+				tmp.clear();
+			}
+		}
+		
+		tmp.clear();
+		interData = child->getString(Consts::ATTR_SKEL_SKELETALTOANIMATIONS);
+		for(auto item : interData)
+		{
+			if(item != ';')
+				tmp += item;
+			else
+			{
+				ani->addAnimationTargetName(tmp);
+				tmp.clear();
+			}
+		}
+		
+ 	   tmp.clear();
+		interData = child->getString(Consts::ATTR_SKEL_SKELETALFROMANIMATIONS);
+		for(auto item : interData)
+		{
+			if(item != ';')
+				tmp += item;
+			else
+			{
+				ani->addAnimationSourceName(tmp);
+				tmp.clear();
+			}
+		}
+		
+		float startTime = Util::StringUtils::toFloats(child->getString(Consts::ATTR_SKEL_SKELETALANIMATIONSTARTTIME)).at(0);
+		std::string targetName = child->getString(Consts::ATTR_SKEL_SKELETALANIMATIONTARGET);
+		ani->addPose(new SRTPose(sampleData, timelineData, types, startTime, jMap[targetName]));
+	}
+	
+	if(d.contains(Consts::ATTR_SKEL_SKELETALSTARTANIMATION))
+		(convertToTNode<SkeletalNode>(parent))->setStartAnimation(ani->getName());
 
-    ctxt.sceneManager.getBehaviourManager()->registerBehaviour(ani);
+	ctxt.sceneManager.getBehaviourManager()->registerBehaviour(ani);
   return true;
 }
-    
+	
 #endif
 
 
 //! template for new importers
-// static bool importXY(ImportContext & ctxt, const std::string & behaviourType, const NodeDescription & d, Node * parent) {
+// static bool importXY(ImportContext & ctxt, const std::string & behaviourType, const DescriptionMap & d, Node * parent) {
 //  if(behaviourType != Consts::BEHAVIOUR_TYPE_XY) // check parent != nullptr is done by SceneManager
-//      return false;
+//	  return false;
 //
 //  XY * behaviour = new XY;
 //
@@ -387,9 +387,9 @@ void initExtBehaviourImporter() {
 #ifdef MINSG_EXT_WAYPOINTS
 	ImporterTools::registerBehaviourImporter(&importFollowPathBehaviour);
 #endif
-    
+	
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
-    ImporterTools::registerBehaviourImporter(&importerSkeletalAnimationBehaviour);
+	ImporterTools::registerBehaviourImporter(&importerSkeletalAnimationBehaviour);
 #endif
 }
 
