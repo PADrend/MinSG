@@ -158,12 +158,12 @@ public:
 	void setSceneRootNode(Util::Reference<MinSG::Node> sceneRootNode);
 	void setRenderingContext(Rendering::RenderingContext& renderingContext);
 	void setFrameContext(MinSG::FrameContext& frameContext);
-	void addTreeToDebug(Geometry::Vec3 parentPos, float parentSize, unsigned int depth, unsigned int curID, Util::PixelAccessor* pixelAccessor);
+	unsigned int addTreeToDebug(Geometry::Vec3 parentPos, float parentSize, unsigned int depth, unsigned int curID, Util::PixelAccessor* pixelAccessor);
 	void activateLighting(Util::Reference<MinSG::Node> sceneRootNode, Util::Reference<MinSG::Node> lightRootNode, Rendering::RenderingContext& renderingContext, MinSG::FrameContext& frameContext);
 	void createLightNodes();
 	static void createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static void mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
-	void createLightEdges();
+	void createLightEdges(Rendering::Texture* atomicCounter);
 	void cleanUpDebug();
 	void cleanUp();
 
@@ -180,8 +180,8 @@ private:
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static bool isVisible(LightNode* source, LightNode* target);
 	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges);
-	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture);
-	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture);
+	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
+	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
 	void fillTexture(Rendering::Texture *texture, Util::Color4f color);
 	void fillTexture(Rendering::Texture *texture, uint8_t value);
 	void fillTextureFloat(Rendering::Texture *texture, float value);
