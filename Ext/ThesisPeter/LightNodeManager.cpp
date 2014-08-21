@@ -261,9 +261,9 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 //	}
 
 	//draw tree debug
-	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
-	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
-	std::cout << "Number debug nodes: " << addTreeToDebug(rootNodeMidpoint, lightRootNode->getWorldBB().getExtentMax(), 0, 0, voxelOctreeAcc.get()) << std::endl;
+//	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
+//	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
+//	std::cout << "Number debug nodes: " << addTreeToDebug(rootNodeMidpoint, lightRootNode->getWorldBB().getExtentMax(), 0, 0, voxelOctreeAcc.get()) << std::endl;
 
 	Rendering::checkGLError(__FILE__, __LINE__);
 	//DEBUG END
@@ -275,7 +275,7 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 //	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
 //		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
 //			Geometry::Vec3 pos = lightNodeMaps[i]->lightNodes[j]->position;
-//			debug->addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() + 0.1, pos.z()));
+//			debug->addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() - 0.01, pos.z()));
 //		}
 //	}
 	//DEBUG END
@@ -285,16 +285,16 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	createLightEdges(atomicCounter.get());
 
 	//DEBUG to show the edges
-//	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
-//		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
-//			debug->addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
-//		}
-//		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
-//			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-//				debug->addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
-//			}
-//		}
-//	}
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
+			debug->addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
+		}
+		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+				debug->addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
+			}
+		}
+	}
 	//DEBUG END
 
 	debug->buildDebugLineNode();
@@ -310,7 +310,7 @@ void LightNodeManager::createLightNodes(){
 }
 
 void LightNodeManager::createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
-	createLightNodesPerVertexRandom(node, lightNodes, 0.1f);
+	createLightNodesPerVertexPercent(node, lightNodes, 0.1f);
 }
 
 void LightNodeManager::mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
@@ -441,6 +441,30 @@ void LightNodeManager::setLightRootNode(Util::Reference<MinSG::Node> rootNode){
 	lightRootNode = rootNode;
 }
 
+void LightNodeManager::createLightNodesPerVertexPercent(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float percentage){
+	Rendering::Mesh* mesh = node->getMesh();
+
+	Util::Reference<Rendering::PositionAttributeAccessor> posAcc = Rendering::PositionAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::POSITION);
+	Util::Reference<Rendering::NormalAttributeAccessor> norAcc = Rendering::NormalAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::NORMAL);
+	Util::Reference<Rendering::ColorAttributeAccessor> colAcc = Rendering::ColorAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::COLOR);
+
+	unsigned int modNum = (int)(1 / percentage);
+	if(modNum <= 0) modNum = 1;
+
+	for(unsigned int i = 0; i < mesh->getVertexCount(); ++i){
+		if(i % modNum == 0){
+			LightNode* lightNode = new LightNode();
+			lightNode->position = posAcc->getPosition(i);
+			Geometry::Vec4 pos(lightNode->position.x(), lightNode->position.y(), lightNode->position.z(), 1);
+			pos = node->getWorldMatrix() * pos;
+			lightNode->position = Geometry::Vec3(pos.x(), pos.y(), pos.z());
+			lightNode->normal = norAcc->getNormal(i);
+			lightNode->color = colAcc->getColor4f(i);
+			lightNodes->push_back(lightNode);
+		}
+	}
+}
+
 void LightNodeManager::createLightNodesPerVertexRandom(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float randomVal){
 	Rendering::Mesh* mesh = node->getMesh();
 
@@ -551,29 +575,77 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 	std::cout << "texSize: " << textureSize << std::endl;
 	std::cout << "texture: " << edgeInput.get()->getWidth() << "x" << edgeInput.get()->getHeight() << " = " << edgeInput.get()->getDataSize() << std::endl;
 
+	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
+	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
+	float bla = lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f;
+	Geometry::Vec3 treeMin(rootNodeMidpoint.x() - bla, rootNodeMidpoint.y() - bla, rootNodeMidpoint.z() - bla);
+	Geometry::Vec3 treeMax(rootNodeMidpoint.x() + bla, rootNodeMidpoint.y() + bla, rootNodeMidpoint.z() + bla);
+
 	//encode the edges into the texture (writing the positions of the source and target)
 	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeInput.get());
 	for(unsigned int i = 0; i < edges->size(); i++){
+		//get the correct index, taking the edge length into account
 		unsigned int i2 = i * dataLengthPerEdge;
+		//calculate the 2D index for the position inside the texture
 		unsigned int x = i2 % textureSize;
 		unsigned int y = i2 / textureSize;
-		acc.get()->writeColor(x, y, Util::Color4f((*edges)[i]->source->position.x(), 0, 0, 0));
+
+		//DEBUG
+		if((*edges)[i]->source->position.x() < treeMin.x() || (*edges)[i]->source->position.y() < treeMin.y() || (*edges)[i]->source->position.z() < treeMin.z() ||
+			(*edges)[i]->source->position.x() > treeMax.x() || (*edges)[i]->source->position.y() > treeMax.y() || (*edges)[i]->source->position.z() > treeMax.z()){
+			std::cout << "Distance is too big!" << std::endl;
+		}
+		//DEBUG END
+
+		//write the data to the texture
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->source->position.x());
 		x = (x + 1) % textureSize;
 		if(x == 0) y++;
-		acc.get()->writeColor(x, y, Util::Color4f((*edges)[i]->source->position.y(), 0, 0, 0));
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->source->position.y());
 		x = (x + 1) % textureSize;
 		if(x == 0) y++;
-		acc.get()->writeColor(x, y, Util::Color4f((*edges)[i]->source->position.z(), 0, 0, 0));
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->source->position.z());
 		x = (x + 1) % textureSize;
 		if(x == 0) y++;
-		acc.get()->writeColor(x, y, Util::Color4f((*edges)[i]->target->position.x(), 0, 0, 0));
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->target->position.x());
 		x = (x + 1) % textureSize;
 		if(x == 0) y++;
-		acc.get()->writeColor(x, y, Util::Color4f((*edges)[i]->target->position.y(), 0, 0, 0));
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->target->position.y());
 		x = (x + 1) % textureSize;
 		if(x == 0) y++;
-		acc.get()->writeColor(x, y, Util::Color4f((*edges)[i]->target->position.z(), 0, 0, 0));
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->target->position.z());
 	}
+	edgeInput->dataChanged();
+
+//	for(unsigned int i = 0; i < edges->size(); i++){
+//		unsigned int i2 = i * dataLengthPerEdge;
+//		unsigned int x = i2 % textureSize;
+//		unsigned int y = i2 / textureSize;
+//
+//		Geometry::Vec3 startPos, endPos;
+//		startPos.setX(acc->readSingleValueFloat(x, y));
+//		i2++;
+//		x = i2 % textureSize;
+//		y = i2 / textureSize;
+//		startPos.setY(acc->readSingleValueFloat(x, y));
+//		i2++;
+//		x = i2 % textureSize;
+//		y = i2 / textureSize;
+//		startPos.setZ(acc->readSingleValueFloat(x, y));
+//		i2++;
+//		x = i2 % textureSize;
+//		y = i2 / textureSize;
+//		endPos.setX(acc->readSingleValueFloat(x, y));
+//		i2++;
+//		x = i2 % textureSize;
+//		y = i2 / textureSize;
+//		endPos.setY(acc->readSingleValueFloat(x, y));
+//		i2++;
+//		x = i2 % textureSize;
+//		y = i2 / textureSize;
+//		endPos.setZ(acc->readSingleValueFloat(x, y));
+//		debug->addDebugLine(startPos, endPos, Util::Color4f(1, 0, 1, 1), Util::Color4f(1, 0, 1, 1));
+//	}
 
 //	Util::Reference<Rendering::Texture> bla = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, 10, 10, 1, Util::TypeConstant::FLOAT, 1);
 //	fillTextureFloat(edgeInput.get(), 5.0f);
@@ -592,10 +664,9 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 
 	std::cout << "Output texture: " << outputTextureSize << " which gives " << outputTextureSize * outputTextureSize << " possible edges!" << std::endl;
 
-	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
-	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
 	debug->addDebugLine(rootNodeMidpoint, Geometry::Vec3(rootNodeMidpoint.x(), rootNodeMidpoint.y() + 1, rootNodeMidpoint.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
 	std::cout << "Root Node Midpoint: " << rootNodeMidpoint.x() << "x" << rootNodeMidpoint.y() << "x" << rootNodeMidpoint.z() << std::endl;
+	std::cout << "quarterSizeOfRootNode: " << lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f << std::endl;
 	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", rootNodeMidpoint));
 	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
 	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
@@ -634,18 +705,22 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 	//filter the edge list
 	edgeOutput.get()->downloadGLTexture(*renderingContext);
 //	uint8_t* data = edgeOutput.get()->openLocalData(*renderingContext);
-////	Util::Reference<Util::PixelAccessor> accOut = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeOutput.get());
-//	std::vector<LightEdge*> filteredEdges;
-////	unsigned int x = 0, y = 0;
-//	unsigned int before = 0;
-//	for(unsigned int i = 1; i < edges->size(); i++){
-////		uint8_t value = accOut.get()->readSingleValuvoid setLightRootNode(MinSG::Node *lightRootNode);eByte(x, y);
-////
-////		if(value == 0) filteredEdges.push_back((*edges)[i]);
-////
-////		x = (x + 1) % outputTextureSize;
-////		if(x == 0) y++;
-//
+	Util::Reference<Util::PixelAccessor> accOut = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeOutput.get());
+	std::vector<LightEdge*> filteredEdges;
+//	unsigned int x, y;
+	unsigned int before = 0;
+	for(unsigned int i = 1; i < edges->size(); i++){
+		unsigned int x = i % outputTextureSize;
+		unsigned int y = i / outputTextureSize;
+
+		uint8_t value = accOut.get()->readSingleValueByte(x, y);
+
+		if(value == 0) filteredEdges.push_back((*edges)[i]);
+		else debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(1, 0, 1, 1), Util::Color4f(1, 0, 1, 1));
+
+//		x = (x + 1) % outputTextureSize;
+//		if(x == 0) y++;
+
 //		if(data[before] != data[i] - 1){
 //			std::cout << i << ": " << (unsigned int)data[i] << " but " << before << ": " << (unsigned int)data[before] << std::endl;
 //			before = i;
@@ -653,12 +728,13 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 //		} else {
 //			before = i;
 //		}
-//
-////		if(data[i] == 0) filteredEdges.push_back((*edges)[i]);
-//	}
+
+//		if(data[i] == 0) filteredEdges.push_back((*edges)[i]);
+	}
+
 	unsigned int counter = 0;
 	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeOutput.get());
-	for(unsigned int i = 1; i < edges->size(); i++){
+	for(unsigned int i = 1; i < outputTextureSize * outputTextureSize; i++){
 		unsigned int x = i % outputTextureSize;
 		unsigned int y = i / outputTextureSize;
 		unsigned int xb = (i-1) % outputTextureSize;
@@ -671,12 +747,16 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 			if(counter++ >= 500) break;
 //			if(i >= 10) break;
 		}
+//		if(value != 9 && value != 10){
+//			counter++;
+//		}
 	}
 
+	std::cout << "Counter: " << counter << std::endl;
 	std::cout << "comming here 6" << std::endl;
 
 	//write back the filtered edges
-//	(*edges) = filteredEdges;
+	(*edges) = filteredEdges;
 }
 
 void LightNodeManager::fillTexture(Rendering::Texture *texture, Util::Color4f color){
@@ -693,7 +773,7 @@ void LightNodeManager::fillTexture(Rendering::Texture *texture, uint8_t value){
 	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *texture);
 	for(unsigned int y = 0; y < texture->getHeight(); y++){
 		for(unsigned int x = 0; x < texture->getWidth(); x++){
-			acc.get()->writeColor(x, y, value);
+			acc.get()->writeColor(x, y, Util::Color4ub(value, 0, 0, 0));
 		}
 	}
 	texture->dataChanged();
@@ -703,7 +783,7 @@ void LightNodeManager::fillTextureFloat(Rendering::Texture *texture, float value
 	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *texture);
 	for(unsigned int y = 0; y < texture->getHeight(); y++){
 		for(unsigned int x = 0; x < texture->getWidth(); x++){
-			acc.get()->writeColor(x, y, Util::Color4f(value, 0, 0, 0));
+			acc.get()->writeSingleValueFloat(x, y, value);
 		}
 	}
 	texture->dataChanged();

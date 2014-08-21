@@ -176,6 +176,7 @@ private:
 	static unsigned int nextPowOf2(unsigned int number);
 	static void getTexCoords(unsigned int index, unsigned int texWidth, Geometry::Vec2i* texCoords);
 	void setLightRootNode(Util::Reference<MinSG::Node> rootNode);
+	static void createLightNodesPerVertexPercent(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float percentage);
 	static void createLightNodesPerVertexRandom(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float randomVal);
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static bool isVisible(LightNode* source, LightNode* target);
