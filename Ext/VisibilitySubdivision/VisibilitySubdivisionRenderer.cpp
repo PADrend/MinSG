@@ -46,7 +46,7 @@ namespace VisibilitySubdivision {
 
 static Rendering::Shader * getTDMShader() {
 	static Util::Reference<Rendering::Shader> shader;
-	const std::string vertexProgram("uniform mat4 sg_modelViewProjectionMatrix;\
+	const std::string vertexProgram("uniform mat4 sg_matrix_modelToClipping;\
 										\
 										attribute vec3 sg_Position;\
 										attribute vec2 sg_TexCoord0;\
@@ -55,7 +55,7 @@ static Rendering::Shader * getTDMShader() {
 										\
 										void main() {\
 											texCoord0 = sg_TexCoord0;\
-											gl_Position = sg_modelViewProjectionMatrix * vec4(sg_Position, 1.0);\
+											gl_Position = sg_matrix_modelToClipping * vec4(sg_Position, 1.0);\
 										}");
 	const std::string fragmentProgram("varying vec2 texCoord0;\
 										uniform sampler2D sg_texture0;\
