@@ -16,33 +16,43 @@
 namespace MinSG {
 
 LightingState::LightingState() :
-	State(), light(nullptr) {
+	State(), enableLight(true), light(nullptr) {
 }
 
 LightingState::LightingState(LightNode * newLight) :
-	State(), light(newLight) {
+	State(), enableLight(true), light(newLight) {
 }
 
 LightingState::LightingState(const LightingState & source) :
-	State(source), light(source.light) {
+	State(source), enableLight(source.enableLight),  light(source.light) {
 }
 
 State::stateResult_t LightingState::doEnableState(FrameContext & context, Node * /*node*/, const RenderParam & /*rp*/) {
-    if (light == nullptr || !light->isActive()) {
+    if( !light || !light->isActive()) 
 		return State::STATE_SKIPPED;
-	}
 
-	light->switchOn(context);
+	originalState = light->isSwitchedOn();
+	if(enableLight){
+		if(!originalState)
+			light->switchOn(context);
+	}else{
+		if(originalState)
+			light->switchOff(context);
+	}
 
 	return State::STATE_OK;
 }
 
 void LightingState::doDisableState(FrameContext & context, Node * /*node*/, const RenderParam & /*rp*/) {
-	if (light == nullptr) {
-		return;
+	if(light){
+		if(originalState){
+			if(!light->isSwitchedOn())
+				light->switchOn(context);
+		}else{
+			if(light->isSwitchedOn())
+				light->switchOff(context);
+		}
 	}
-
-	light->switchOff(context);
 }
 
 LightingState * LightingState::clone() const {

@@ -30,7 +30,7 @@ LightNode * LightNode::createPointLight() {
 void LightNode::setCutoff(float cutoff) {
 	parameters.cutoff = std::min(std::max(cutoff, 0.0f), 90.0f);
 	parameters.cosCutoff = cos(Geometry::Convert::degToRad(cutoff));
-	if (parameters.type == Rendering::LightParameters::SPOT) {
+	if(parameters.type == Rendering::LightParameters::SPOT) {
 		removeMetaMesh();
 	}
 }
@@ -46,7 +46,7 @@ LightNode * LightNode::createSpotLight() {
 }
 
 LightNode::LightNode(Rendering::LightParameters::lightType_t type/*=POINT*/) :
-	Node(), parameters() {
+	Node(), parameters(), lightNumber(255) {
 	parameters.type = type;
 }
 
@@ -69,17 +69,16 @@ void LightNode::validateParameters() {
 
 //! ---|> Node
 void LightNode::doDisplay(FrameContext & context, const RenderParam & rp) {
-	if (!(rp.getFlag(SHOW_META_OBJECTS))) {
+	if(!(rp.getFlag(SHOW_META_OBJECTS))) {
 		return;
 	}
 	static Util::Reference<MaterialState> material;
-	if (material.isNull()) {
+	if( !material ) {
 		material = new MaterialState();
 		material->changeParameters().setShininess(128.0f);
 	}
-	if (metaMesh.isNull()) {
+	if( !metaMesh )
 		metaMesh = createMetaMesh();
-	}
 
 	material->changeParameters().setAmbient(parameters.ambient);
 	material->changeParameters().setDiffuse(parameters.diffuse);
@@ -94,10 +93,9 @@ void LightNode::removeMetaMesh() {
 	metaMesh = nullptr;
 }
 
-bool LightNode::switchOn(FrameContext & context) {
+void LightNode::switchOn(FrameContext & context) {
 	validateParameters();
 	lightNumber = context.getRenderingContext().enableLight(parameters);
-	return true;
 }
 
 void LightNode::switchOff(FrameContext & context) {

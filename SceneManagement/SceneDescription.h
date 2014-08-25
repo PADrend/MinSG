@@ -167,6 +167,7 @@ extern const Util::StringIdentifier ATTR_BLEND_DEPTH_MASK;
 
 // ATTR_STATE_TYPE = STATE_TYPE_LIGHTING_STATE
 extern const Util::StringIdentifier ATTR_LIGHTING_LIGHT_ID;
+extern const Util::StringIdentifier ATTR_LIGHTING_ENABLE_LIGHTING;
 
 // ATTR_STATE_TYPE = STATE_TYPE_COLOR
 extern const Util::StringIdentifier ATTR_COLOR_VALUE;

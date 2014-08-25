@@ -372,7 +372,8 @@ static bool importLightingState(ImportContext & ctxt, const std::string & stateT
 			std::cout << " not found!\n";
 		}
 	});
-
+	state->setEnableLight(d.getString(Consts::ATTR_LIGHTING_ENABLE_LIGHTING,"true") == "true");
+	
 	ImporterTools::finalizeState(ctxt, state, d);
 	parent->addState(state);
 	return true;

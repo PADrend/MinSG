@@ -27,20 +27,18 @@ namespace MinSG {
  */
 class LightingState : public State {
 	PROVIDES_TYPE_NAME(LightingState)
+		bool originalState, enableLight;
 	public:
 		LightingState();
 		LightingState(LightNode * newLight);
 		LightingState(const LightingState & source);
 
-		LightNode * getLight() const {
-			return light.get();
-		}
-
-		void setLight(LightNode * newLight) {
-			light = newLight;
-		}
-
+		LightNode * getLight() const 		{			return light.get();	}
+		void setLight(LightNode * newLight)	{			light = newLight;	}
 		LightingState * clone() const override;
+		
+		bool getEnableLight() const			{			return enableLight;	}
+		void setEnableLight(bool b)			{			enableLight = b;	}
 
 	private:
 		Util::Reference<LightNode> light;

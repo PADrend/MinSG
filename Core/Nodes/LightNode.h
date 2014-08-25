@@ -82,9 +82,9 @@ class LightNode : public Node {
 			return parameters;
 		}
 
-		/// ---o
-        bool switchOn(FrameContext & context);
-        void switchOff(FrameContext & context);
+		void switchOn(FrameContext & context);
+		void switchOff(FrameContext & context);
+		bool isSwitchedOn()const								{	return lightNumber != 255; }
 
 		/// ---|> [Node]
 		void doDisplay(FrameContext & context, const RenderParam & rp) override;
