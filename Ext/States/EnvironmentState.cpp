@@ -41,11 +41,11 @@ State::stateResult_t EnvironmentState::doEnableState(FrameContext & context, Nod
 		camRotationSrt.setScale(1.0);
 
 		// render the environment node as seen standing at the origin (0,0,0) but looking in the camera's direction.
-		context.getRenderingContext().pushMatrix();
-		context.getRenderingContext().setMatrix(Geometry::Matrix4x4(camRotationSrt));
-		context.getRenderingContext().multMatrix(Geometry::Matrix4x4f(Geometry::SRT(Geometry::Vec3f(0,0,0), context.getWorldFrontVector(), context.getWorldUpVector())));
+		context.getRenderingContext().pushMatrix_modelToCamera();
+		context.getRenderingContext().setMatrix_modelToCamera(Geometry::Matrix4x4(camRotationSrt));
+		context.getRenderingContext().multMatrix_modelToCamera(Geometry::Matrix4x4f(Geometry::SRT(Geometry::Vec3f(0,0,0), context.getWorldFrontVector(), context.getWorldUpVector())));
 		context.displayNode(environment.get(), rp);
-		context.getRenderingContext().popMatrix();
+		context.getRenderingContext().popMatrix_modelToCamera();
 
 	}
 

@@ -170,15 +170,14 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 	// - apply transformations
 	if( (rp.getFlag(USE_WORLD_MATRIX))>0 && getWorldMatrixPtr()!=nullptr ){
 		matrixMustBePopped = true;
-		context.getRenderingContext().pushMatrix();
-		context.getRenderingContext().resetMatrix();
-		context.getRenderingContext().multMatrix(*getWorldMatrixPtr());
+		context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
+		context.getRenderingContext().multMatrix_modelToCamera(*getWorldMatrixPtr());
 	}else{
 		const Geometry::Matrix4x4 * m=getMatrixPtr();
 		if (m) {
 			matrixMustBePopped = true;
-			context.getRenderingContext().pushMatrix();
-			context.getRenderingContext().multMatrix(*m);
+			context.getRenderingContext().pushMatrix_modelToCamera();
+			context.getRenderingContext().multMatrix_modelToCamera(*m);
 		}
 	}
 
@@ -224,7 +223,7 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 
 		// - revert transformations
 		if (matrixMustBePopped ){
-			context.getRenderingContext().popMatrix();
+			context.getRenderingContext().popMatrix_modelToCamera();
 		}
 	}catch(...){ // if something went wrong, return to consistent state
 		// - disable states
@@ -239,7 +238,7 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 		}
 		// - revert transformations
 		if (matrixMustBePopped ){
-			context.getRenderingContext().popMatrix();
+			context.getRenderingContext().popMatrix_modelToCamera();
 		}
 
 		throw;

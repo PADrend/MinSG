@@ -30,17 +30,17 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 	if(rc.getColorBufferParameters().isAnyWritingEnabled() || rc.getDepthBufferParameters().isWritingEnabled()) {
 		
 		rc.pushFBO();
-		rc.pushProjectionMatrix();
-		rc.pushMatrix();
+		rc.pushMatrix_cameraToClip();
+		rc.pushMatrix_modelToCamera();
 		rc.pushViewport();
 		rc.pushScissor();
 		
-		Geometry::Matrix4x4 mod = rc.getMatrix();
+		const Geometry::Matrix4x4 mod = rc.getMatrix_modelToCamera();
 		
 		rc.setFBO(fbo.get());
-		rc.setProjectionMatrix(debug->getFrustum().getProjectionMatrix());
+		rc.setMatrix_cameraToClip(debug->getFrustum().getProjectionMatrix());
 		rc.setMatrix_cameraToWorld(debug->getWorldMatrix());
-		rc.setMatrix(conversionMatrix * mod);
+		rc.setMatrix_modelToCamera(conversionMatrix * mod);
 		rc.setViewport(debug->getViewport());
 		if(debug->isScissorEnabled()) {
 			rc.setScissor(Rendering::ScissorParameters(debug->getScissor()));
@@ -54,8 +54,8 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 		rc.setMatrix_cameraToWorld(original->getWorldMatrix());
 		
 		rc.popFBO();
-		rc.popProjectionMatrix();
-		rc.popMatrix();
+		rc.popMatrix_cameraToClip();
+		rc.popMatrix_modelToCamera();
 		rc.popViewport();
 		rc.popScissor();
 

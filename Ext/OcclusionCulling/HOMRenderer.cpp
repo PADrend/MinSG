@@ -362,7 +362,7 @@ State::stateResult_t HOMRenderer::doEnableState(FrameContext & context,
 	context.pushAndSetCamera(camera.get());
 
 	const Geometry::Matrix4x4f cameraMatrix = renderingContext.getMatrix_worldToCamera();
-	const Geometry::Matrix4x4f projectionMatrix = renderingContext.getProjectionMatrix();
+	const Geometry::Matrix4x4f projectionMatrix = renderingContext.getMatrix_cameraToClip();
 
 	renderingContext.pushAndSetDepthBuffer(Rendering::DepthBufferParameters(false, false, Rendering::Comparison::LESS));
 	renderingContext.applyChanges();

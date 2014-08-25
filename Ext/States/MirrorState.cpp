@@ -70,7 +70,7 @@ class MirrorRenderer {
 			}
 
 			// ##### Create mirror texture #####
-			context.getRenderingContext().pushMatrix();
+			context.getRenderingContext().pushMatrix_modelToCamera();
 
 			context.getRenderingContext().pushAndSetFBO(mirrorState->getFBO());
 
@@ -100,7 +100,7 @@ class MirrorRenderer {
 
 			// Restore.
 			context.popCamera();
-			context.getRenderingContext().popMatrix();
+			context.getRenderingContext().popMatrix_modelToCamera();
 			return true;
 		}
 };
@@ -205,11 +205,10 @@ State::stateResult_t MirrorState::doEnableState(FrameContext & context, Node * n
 
 	if (rp.getFlag(SHOW_META_OBJECTS)) {
 		Rendering::RenderingContext & renderingContext = context.getRenderingContext();
-		renderingContext.pushMatrix();
-		renderingContext.resetMatrix();
+		renderingContext.pushAndSetMatrix_modelToCamera( renderingContext.getMatrix_worldToCamera() );
 		Rendering::drawVector(renderingContext, frameTopLeft, camera->getWorldPosition(), Util::ColorLibrary::BLUE);
 		Rendering::drawVector(renderingContext, frameBottomRight, camera->getWorldPosition(), Util::ColorLibrary::BLUE);
-		renderingContext.popMatrix();
+		renderingContext.popMatrix_modelToCamera();
 
 		camera->display(context, rp + USE_WORLD_MATRIX);
 	}

@@ -44,10 +44,9 @@ void AbstractCameraNode::setNearFar(float near, float far) {
 void AbstractCameraNode::doDisplay(FrameContext & context, const RenderParam & rp) {
 	if (rp.getFlag(SHOW_META_OBJECTS)) {
 		Rendering::RenderingContext & renderingContext = context.getRenderingContext();
-		renderingContext.pushMatrix();
-		renderingContext.resetMatrix();
+		renderingContext.pushAndSetMatrix_modelToCamera( renderingContext.getMatrix_worldToCamera() );
 		Rendering::drawFrustum(renderingContext, frustum, Util::ColorLibrary::WHITE, 1.0);
-		renderingContext.popMatrix();
+		renderingContext.popMatrix_modelToCamera();
 		Rendering::drawCamera(renderingContext, Util::ColorLibrary::RED);
 	}
 }

@@ -120,11 +120,10 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 			attribute = new MetaObjectAttribute(sphereNode.get());
 			node->setAttribute(attributeId, attribute);
 		}
-		context.getRenderingContext().pushMatrix();
-		context.getRenderingContext().resetMatrix();
-		context.getRenderingContext().multMatrix(groupNode->getWorldMatrix());
+		context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
+		context.getRenderingContext().multMatrix_modelToCamera(groupNode->getWorldMatrix());
 		attribute->get()->display(context, FRUSTUM_CULLING);
-		context.getRenderingContext().popMatrix();
+		context.getRenderingContext().popMatrix_modelToCamera();
 	} catch(const std::exception & e) {
 		WARN(std::string("Exception during rendering: ") + e.what());
 		deactivate();

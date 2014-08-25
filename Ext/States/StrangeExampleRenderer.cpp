@@ -66,10 +66,10 @@ State::stateResult_t StrangeExampleRenderer::doEnableState(FrameContext & contex
 		m.setIdentity();
 		m.scale(1.0+sin( f2)/40.0);
 		m.rotate_deg( sin( f2/0.7)/2.0,0,1,0);
-		context.getRenderingContext().pushMatrix();
-		context.getRenderingContext().multMatrix(m);
+		context.getRenderingContext().pushMatrix_modelToCamera();
+		context.getRenderingContext().multMatrix_modelToCamera(m);
 		context.displayNode(geoNode,rp);
-		context.getRenderingContext().popMatrix();
+		context.getRenderingContext().popMatrix_modelToCamera();
 		f+=137.0;
 
 	}

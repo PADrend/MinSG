@@ -88,12 +88,12 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 //		}
 //
 //		// display mesh
-//		context.getRenderingContext().pushMatrix();
-//		context.getRenderingContext().multMatrix(node->getMatrix());
+//		context.getRenderingContext().pushMatrix_modelToCamera();
+//		context.getRenderingContext().multMatrix_modelToCamera(node->getMatrix());
 //
 //		context.displayMesh(m, 0, indexCount);
 //
-//		context.getRenderingContext().popMatrix();
+//		context.getRenderingContext().popMatrix_modelToCamera();
 //		return NodeRendererResult::NODE_HANDLED;
 //	} else {
 //		return NodeRendererResult::PASS_ON;
@@ -107,10 +107,10 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 //			m = origM;
 //
 //		// display mesh
-//		context.getRenderingContext().pushMatrix();
-//		context.getRenderingContext().multMatrix(node->getMatrix());
+//		context.getRenderingContext().pushMatrix_modelToCamera();
+//		context.getRenderingContext().multMatrix_modelToCamera(node->getMatrix());
 //		context.displayMesh(m);
-//		context.getRenderingContext().popMatrix();
+//		context.getRenderingContext().popMatrix_modelToCamera();
 //
 //		return NodeRendererResult::NODE_HANDLED;
 //	} else {
@@ -370,8 +370,8 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 						uint32_t indexCount = std::min(3*triangleBudget, m->getIndexCount());
 
 						if(triangleBudget>0){ // condition is necessary, otherwise VBOs might get drawn and triangle count increases
-							context.getRenderingContext().pushMatrix();
-							context.getRenderingContext().multMatrix(node->getMatrix());
+							context.getRenderingContext().pushMatrix_modelToCamera();
+							context.getRenderingContext().multMatrix_modelToCamera(node->getMatrix());
 
 							// draw triangles
 							if(renderTriangles)
@@ -384,7 +384,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 								m->setDrawMode(Rendering::Mesh::DRAW_TRIANGLES);
 							}
 
-							context.getRenderingContext().popMatrix();
+							context.getRenderingContext().popMatrix_modelToCamera();
 						}
 
 						// use total triangle budget?
@@ -404,8 +404,8 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 								Rendering::Mesh * m_orig = geoNode->getMesh();
 								uint32_t indexCount_orig = std::min(3*triangleBudget-indexCount, m_orig->getIndexCount());
 
-								context.getRenderingContext().pushMatrix();
-								context.getRenderingContext().multMatrix(geoNode->getMatrix());
+								context.getRenderingContext().pushMatrix_modelToCamera();
+								context.getRenderingContext().multMatrix_modelToCamera(geoNode->getMatrix());
 
 								// draw triangles
 								if(renderTriangles)
@@ -418,7 +418,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 									m_orig->setDrawMode(Rendering::Mesh::DRAW_TRIANGLES);
 								}
 
-								context.getRenderingContext().popMatrix();
+								context.getRenderingContext().popMatrix_modelToCamera();
 								return NodeRendererResult::NODE_HANDLED;
 							}
 
@@ -442,8 +442,8 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 							Rendering::Mesh * m = geoNode->getMesh();
 							uint32_t indexCount = std::min(3*triangleBudget, m->getIndexCount());
 
-							context.getRenderingContext().pushMatrix();
-							context.getRenderingContext().multMatrix(geoNode->getMatrix());
+							context.getRenderingContext().pushMatrix_modelToCamera();
+							context.getRenderingContext().multMatrix_modelToCamera(geoNode->getMatrix());
 
 							// draw triangles
 							if(renderTriangles)
@@ -456,7 +456,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 								m->setDrawMode(Rendering::Mesh::DRAW_TRIANGLES);
 							}
 
-							context.getRenderingContext().popMatrix();
+							context.getRenderingContext().popMatrix_modelToCamera();
 						}
 
 //						node->setAttribute(renderResultId, Util::GenericAttribute::createString("render original mesh"));

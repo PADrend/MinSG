@@ -73,13 +73,12 @@ void BillboardNode::doDisplay(FrameContext & context,const RenderParam & rp){
 	if(getMesh()==nullptr)
 		createMesh();
 
-	context.getRenderingContext().pushMatrix();
-	context.getRenderingContext().resetMatrix();
-	context.getRenderingContext().multMatrix(getWorldMatrix());
+	context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
+	context.getRenderingContext().multMatrix_modelToCamera(getWorldMatrix());
 
 	GeometryNode::doDisplay(context,rp);
 
-	context.getRenderingContext().popMatrix();
+	context.getRenderingContext().popMatrix_modelToCamera();
 }
 
 ///

@@ -341,8 +341,7 @@ void ColorCubeGenerator::processColorCube(FrameContext& context, Node * node, de
 				continue;
 
 			context.getRenderingContext().clearScreen(Util::Color4f(0.0f, 0.0f, 0.0f, 0.0f));
-			context.getRenderingContext().pushMatrix();
-			context.getRenderingContext().resetMatrix();
+			context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
 
 
 			// draw faces using blending
@@ -373,7 +372,7 @@ void ColorCubeGenerator::processColorCube(FrameContext& context, Node * node, de
 			context.getRenderingContext().popDepthBuffer();
 			context.getRenderingContext().popCullFace();
 			context.getRenderingContext().popBlending();
-			context.getRenderingContext().popMatrix();
+			context.getRenderingContext().popMatrix_modelToCamera();
 		}
 		context.getRenderingContext().popFBO();
 		colorTexture->downloadGLTexture(context.getRenderingContext());

@@ -66,14 +66,13 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext & context, Node * no
 
 void SurfelRenderer::displaySurfels(FrameContext & context, Rendering::Mesh * surfelMesh, Geometry::Matrix4x4f worldMatrix, float surfelCount, float surfelSize) {
 	FAIL_IF(surfelSize <= 0);
-	context.getRenderingContext().pushMatrix();
-	context.getRenderingContext().resetMatrix();
-	context.getRenderingContext().multMatrix(worldMatrix);
+	context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
+	context.getRenderingContext().multMatrix_modelToCamera(worldMatrix);
 	context.getRenderingContext().pushAndSetPointParameters(Rendering::PointParameters(surfelSize));
 	surfelCount = std::max(surfelCount, 1.0f);
 	context.displayMesh(surfelMesh, 0, surfelCount);
 	context.getRenderingContext().popPointParameters();
-	context.getRenderingContext().popMatrix();
+	context.getRenderingContext().popMatrix_modelToCamera();
 }
 
 Rendering::Mesh * SurfelRenderer::getSurfels(Node * node) {
