@@ -51,6 +51,9 @@ Geometry::SRT worldSRTToRelSRT(const Node & node, const Geometry::SRT & worldSRT
 void rotateAroundLocalAxis(Node & node, const Geometry::Angle & angle,const Geometry::Line3 & localAxis);
 void rotateAroundRelAxis(Node & node, const Geometry::Angle & angle, const Geometry::Line3 & relAxis);
 void rotateAroundWorldAxis(Node & node, const Geometry::Angle & angle,const Geometry::Line3 & worldAxis);
+
+/*! \note As no up vector is specified, the rotation is not fully determined (so just see what happens...) */
+void rotateToWorldDir(Node & node, const Geometry::Vec3& worldDir);
 //	@}
 
 }

@@ -16,6 +16,7 @@
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/States/MaterialState.h"
 #include "../../Core/States/TextureState.h"
+#include "../../Core/Transformations.h"
 
 #include <Geometry/Box.h>
 #include <Geometry/Frustum.h>
@@ -52,13 +53,13 @@ namespace ImpostorFactory {
 
 GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node) {
 	const Geometry::Rect projectedRect = frameContext.getProjectedRect(node);
-	const Geometry::Vec3f position = frameContext.getCamera()->getWorldPosition();
+	const Geometry::Vec3f position = frameContext.getCamera()->getWorldOrigin();
 	// Negative direction for camera.
 	const Geometry::Vec3f direction = position - node->getWorldBB().getCenter();
 
 	Util::Reference<CameraNodeOrtho> cameraOrtho = new CameraNodeOrtho;
-	cameraOrtho->setWorldPosition(position);
-	cameraOrtho->rotateToWorldDir(direction);
+	cameraOrtho->setWorldOrigin(position);
+	Transformations::rotateToWorldDir(*cameraOrtho.get(),direction);
 
 	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldMatrix().inverse() * node->getWorldMatrix());
 	cameraOrtho->setNearFar(frustum.getNear(), frustum.getFar());
@@ -147,13 +148,13 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 
 GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node * node) {
 	const Geometry::Rect projectedRect = frameContext.getProjectedRect(node);
-	const Geometry::Vec3f position = frameContext.getCamera()->getWorldPosition();
+	const Geometry::Vec3f position = frameContext.getCamera()->getWorldOrigin();
 	// Negative direction for camera.
 	const Geometry::Vec3f direction = position - node->getWorldBB().getCenter();
 
 	Util::Reference<CameraNodeOrtho> cameraOrtho = new CameraNodeOrtho;
-	cameraOrtho->setWorldPosition(position);
-	cameraOrtho->rotateToWorldDir(direction);
+	cameraOrtho->setWorldOrigin(position);
+	Transformations::rotateToWorldDir(*cameraOrtho.get(),direction);
 
 	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldMatrix().inverse() * node->getWorldMatrix());
 	cameraOrtho->setNearFar(frustum.getNear(), frustum.getFar());

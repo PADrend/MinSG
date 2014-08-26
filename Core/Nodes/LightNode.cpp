@@ -47,19 +47,19 @@ LightNode * LightNode::createSpotLight() {
 }
 
 LightNode::LightNode(Rendering::LightParameters::lightType_t type/*=POINT*/) :
-	Node(), parameters(), lightNumber(255) {
+	Node(), parameters(), lightNumber(INVALID_LIGHT_NUMBER) {
 	parameters.type = type;
 }
 
 LightNode::LightNode(const LightNode & source) :
-	Node(), parameters(source.parameters), lightNumber(255) {
+	Node(), parameters(source.parameters), lightNumber(INVALID_LIGHT_NUMBER) {
 }
 
 LightNode::~LightNode() {
 
 }
 
-void LightNode::validateParameters() {
+void LightNode::validateParameters()const {
 	parameters.direction = Transformations::localDirToWorldDir(*this, Geometry::Vec3(0, 0, -1)).normalize();
 	parameters.position = getWorldOrigin();
 }
@@ -97,7 +97,7 @@ void LightNode::switchOn(FrameContext & context) {
 
 void LightNode::switchOff(FrameContext & context) {
 	context.getRenderingContext().disableLight(lightNumber);
-	lightNumber = 255;
+	lightNumber = INVALID_LIGHT_NUMBER;
 }
 
 const Geometry::Box& LightNode::doGetBB() const {

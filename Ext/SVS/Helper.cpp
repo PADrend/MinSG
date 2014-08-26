@@ -21,6 +21,7 @@
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/Nodes/Node.h"
 #include "../../Core/FrameContext.h"
+#include "../../Core/Transformations.h"
 #include "../../Helper/StdNodeVisitors.h"
 #include "../../SceneManagement/SceneManager.h"
 #include <Geometry/Box.h>
@@ -135,7 +136,7 @@ void transformCamera(AbstractCameraNode * camera, const Geometry::Sphere_f & sph
 	const auto worldSphere = transformSphere(sphere, worldMatrix);
 	// Camera is standing radius away from the sphere surface.
 	camera->setWorldPosition(worldSphere.getCenter() + position * 2 * worldSphere.getRadius());
-	camera->rotateToWorldDir(position);
+	Transformations::rotateToWorldDir(*camera,position);
 }
 
 Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const VisibilitySphere & visibilitySphere, interpolation_type_t interpolation) {

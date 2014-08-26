@@ -29,7 +29,7 @@ namespace MinSG {
 class LightNode : public Node {
 
 	PROVIDES_TYPE_NAME(LightNode)
-
+		static const uint8_t INVALID_LIGHT_NUMBER = 255;
 	public:
 
 
@@ -76,15 +76,14 @@ class LightNode : public Node {
 		void setExponent(float exponent)						{	parameters.exponent = exponent;	}
 		float getExponent() const								{	return parameters.exponent;	}
 
-		// FIXME: Make function const after getWorldMatrix() is (finally!) const.
-		const Rendering::LightParameters & getParameters() {
+		const Rendering::LightParameters & getParameters() const {
 			validateParameters();
 			return parameters;
 		}
 
 		void switchOn(FrameContext & context);
 		void switchOff(FrameContext & context);
-		bool isSwitchedOn()const								{	return lightNumber != 255; }
+		bool isSwitchedOn()const								{	return lightNumber != INVALID_LIGHT_NUMBER; }
 
 		/// ---|> [Node]
 		void doDisplay(FrameContext & context, const RenderParam & rp) override;
@@ -102,12 +101,12 @@ class LightNode : public Node {
 		//! Invalidate the meta mesh. This should be called when parameters have changed and the mesh should be recreated.
 		void removeMetaMesh();
 
-		Rendering::LightParameters parameters;
+		mutable Rendering::LightParameters parameters;
 
 		//! Temporary storage for the light number, when the light is enabled between @a activate and @a deactivate.
 		uint8_t lightNumber;
 
-		void validateParameters();
+		void validateParameters()const;
 
 		//! Reference for a Mesh that is used for displaying meta data.
 		Util::Reference<Rendering::Mesh> metaMesh;

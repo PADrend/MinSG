@@ -105,7 +105,16 @@ void rotateAroundWorldAxis(Node & node, const Geometry::Angle & angle,const Geom
 									Transformations::worldPosToRelPos(node,worldAxis.getOrigin()),
 									Transformations::worldDirToRelDir(node,worldAxis.getDirection())));
 }
+void rotateToWorldDir(Node & node, const Geometry::Vec3 & worldDir){
+	const Geometry::Vec3 relDir = worldDirToRelDir(node,worldDir).normalize();
+	
+	const Geometry::Vec3 relRight = relDir.cross( (std::abs(relDir.y())<0.99 ? Geometry::Vec3(0,1,0) : Geometry::Vec3(1,0,0))  ).normalize();
+	const Geometry::Vec3 relUp = relDir.cross( -relRight );
 
+	Geometry::SRT srt = node.getSRT();
+	srt.setRotation(relDir,relUp);
+	node.setSRT( srt );
+}
 
 }
 

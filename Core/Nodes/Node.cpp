@@ -504,43 +504,6 @@ std::vector<State*> Node::getStates()const{
 // -----------------------------------
 // ---- Transformations
 
-void Node::lookAtAbs(const Geometry::Vec3 & pointInWorldCoordinates){
-	rotateToWorldDir(pointInWorldCoordinates-getWorldOrigin());
-}
-
-void Node::rotateToWorldDir(const Geometry::Vec3 & directionInWorldCoordinates){
-
-	//! \todo this function may call transformationChanged() up to three times! Better first calculate new SRT and the simply set it once...
-	accessSRT().resetRotation(); // reset old rotations (makes things more stable, but removes z-rotations)
-	transformationChanged();
-
-	const Geometry::Vec3 current(0,0,1);
-	{ // rotate around y
-		const Geometry::Vec3 target=getWorldMatrix().inverse().transformPosition(directionInWorldCoordinates+getWorldOrigin());
-
-		Geometry::Vec3 a(target.x(),0,target.z());
-		Geometry::Vec3 b(current.x(),0,current.z());
-		if ( !a.isZero() && !b.isZero() ){
-			a.normalize();
-			b.normalize();
-			rotateRel_rad( acos(a.dot(b))* (a.dot(Geometry::Vec3(1,0,0))>0?1:-1) , Geometry::Vec3(0,1,0) );
-		}
-	}
-	{ // rotate around x
-		const Geometry::Vec3 target=getWorldMatrix().inverse().transformPosition(directionInWorldCoordinates+getWorldOrigin());
-
-		Geometry::Vec3 a(0,target.y(),target.z());
-		Geometry::Vec3 b(0,current.y(),current.z());
-		if ( !a.isZero() && !b.isZero() ){
-			a.normalize();
-			b.normalize();
-			rotateLocal_rad( acos(a.dot(b)) * (a.dot(Geometry::Vec3(0,1,0))<0?1:-1), Geometry::Vec3(1,0,0) );
-		}
-	}
-
-//	
-}
-
 void Node::setWorldOrigin(const Geometry::Vec3 & v) {
 	const Geometry::Matrix4x4 * parentWorldMatrix = hasParent() ? getParent()->getWorldMatrixPtr() : nullptr;
 	setRelPosition( parentWorldMatrix==nullptr ? v : parentWorldMatrix->inverse().transformPosition(v) );
