@@ -10,6 +10,7 @@
 */
 #include "LightNode.h"
 #include "../FrameContext.h"
+#include "../Transformations.h"
 #include "../States/MaterialState.h"
 #include <Geometry/Convert.h>
 #include <Rendering/Mesh/Mesh.h>
@@ -59,12 +60,8 @@ LightNode::~LightNode() {
 }
 
 void LightNode::validateParameters() {
-	parameters.direction = (getWorldMatrix() * Geometry::Vec4(0, 0, -1, 0));
-	assert(parameters.direction.w() == 0);
-	parameters.direction.normalize();
-	assert(parameters.direction.w() == 0);
-	parameters.position = (getWorldMatrix() * Geometry::Vec4(0, 0, 0, 1));
-	assert(parameters.position.w() == 1);
+	parameters.direction = Transformations::localDirToWorldDir(this, Geometry::Vec3(0, 0, -1)).normalize();
+	parameters.position = getWorldOrigin();
 }
 
 //! ---|> Node
