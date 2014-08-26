@@ -79,7 +79,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 		++numSpheresVisited;
 #endif /* MINSG_PROFILING */
 
-		const Geometry::Vec3f cameraPos = context.getCamera()->getWorldPosition();
+		const Geometry::Vec3f cameraPos = context.getCamera()->getWorldOrigin();
 		if(!worldSphere.isOutside(cameraPos)) {
 #ifdef MINSG_PROFILING
 			++numSpheresEntered;
@@ -141,7 +141,7 @@ void Renderer::displaySphere(FrameContext & context, GroupNode * groupNode, cons
 	const Geometry::Sphere_f & sphere = visibilitySphere.getSphere();
 	const auto worldCenter = groupNode->getWorldMatrix().transformPosition(sphere.getCenter());
 
-	const Geometry::Vec3f cameraPos = context.getCamera()->getWorldPosition();
+	const Geometry::Vec3f cameraPos = context.getCamera()->getWorldOrigin();
 	const Geometry::Vec3f direction = (cameraPos - worldCenter).getNormalized();
 	const auto vv = visibilitySphere.queryValue(direction, interpolationMethod);
 	const uint32_t maxIndex = vv.getIndexCount();

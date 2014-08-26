@@ -92,7 +92,7 @@ void ColorCubeRenderer::renderColorCubes(FrameContext& context,std::deque<Node*>
 	std::sort(
 		nodes.begin(),
 		nodes.end(),
-		_DistanceCompare<Node, std::greater<volatile float>, std::greater<const Node *> >(context.getCamera()->getWorldPosition())
+		_DistanceCompare<Node, std::greater<volatile float>, std::greater<const Node *> >(context.getCamera()->getWorldOrigin())
 	);
 
 

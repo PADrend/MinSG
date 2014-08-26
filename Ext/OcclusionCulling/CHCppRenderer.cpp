@@ -131,7 +131,7 @@ State::stateResult_t CHCppRenderer::doEnableState(FrameContext & frameContext, N
 //! (internal) Main culling method
 State::stateResult_t CHCppRenderer::performCulling(FrameContext & frameContext, Node * rootNode, const RenderParam & rp, CHCppContext & chcppContext)
 {
-	NodeDistancePriorityQueue_F2B distanceQueue(frameContext.getCamera()->getWorldPosition());
+	NodeDistancePriorityQueue_F2B distanceQueue(frameContext.getCamera()->getWorldOrigin());
 
 	chcppContext.frameNumber++;
 
@@ -411,7 +411,7 @@ bool CHCppRenderer::handleCameraInBox(FrameContext & frameContext, Node * node, 
 {
 	Geometry::Box extendedBox = node->getWorldBB();
 	extendedBox.resizeAbs(frameContext.getCamera()->getNearPlane());
-	if(extendedBox.contains(frameContext.getCamera()->getWorldPosition()))
+	if(extendedBox.contains(frameContext.getCamera()->getWorldOrigin()))
 	{
 		static std::default_random_engine engine;
 		nodeInfo->skippedFramesTillQuery = std::uniform_int_distribution<int>(0, skippedFramesTillQuery)(engine);

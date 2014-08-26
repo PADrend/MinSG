@@ -106,7 +106,7 @@ void OccOverheadEvaluator::measure(FrameContext & context,Node & node,const Geom
 			Geometry::Box extendedBox=groupNode->getWorldBB();
 			extendedBox.resizeAbs(context.getCamera()->getNearPlane());
 
-			if (queries[i].getResult() > 0 || extendedBox.contains(context.getCamera()->getWorldPosition()) ) {
+			if (queries[i].getResult() > 0 || extendedBox.contains(context.getCamera()->getWorldOrigin()) ) {
 				visibleGroupNodes.push_back(groupNode);
 			}
 			++i;

@@ -66,7 +66,7 @@ void OccRenderer::updateNodeInformation(FrameContext & context,Node * rootNode)c
 		Geometry::Vec3 camPos;
 
 		Vis(const OccRenderer & _r, const Node * _rootNode, AbstractCameraNode * _camera) :
-				r(_r), camera(_camera), rootNode(_rootNode), insideFrustum(0), camPos(_camera->getWorldPosition()) {}
+				r(_r), camera(_camera), rootNode(_rootNode), insideFrustum(0), camPos(_camera->getWorldOrigin()) {}
 		virtual ~Vis() {}
 
 		// ---|> NodeVisitor
@@ -158,7 +158,7 @@ State::stateResult_t OccRenderer::performCulling(FrameContext & context,Node * r
 
 	RenderParam childParam = rp + USE_WORLD_MATRIX;
 
-	const Geometry::Vec3 camPos=context.getCamera()->getWorldPosition();
+	const Geometry::Vec3 camPos=context.getCamera()->getWorldOrigin();
 
 
 //	NodeDistancePriorityQueue_F2B distanceQueue(camPos);

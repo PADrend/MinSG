@@ -37,7 +37,7 @@ void TransparencyRenderer::addNode(Node * n) {
 }
 
 State::stateResult_t TransparencyRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp) {
-	nodes.reset(new DistanceSetB2F<Node>(context.getCamera()->getWorldPosition()));
+	nodes.reset(new DistanceSetB2F<Node>(context.getCamera()->getWorldOrigin()));
 	return NodeRendererState::doEnableState(context, node, rp);
 }
 

@@ -146,7 +146,7 @@ State::stateResult_t VisibilitySubdivisionRenderer::doEnableState(
 		return State::STATE_SKIP_RENDERING;
 	}
 
-	Geometry::Vec3 pos = context.getCamera()->getWorldPosition();
+	Geometry::Vec3 pos = context.getCamera()->getWorldOrigin();
 	bool refreshCache = false;
 	// Check if cached cell can be used.
 	if (currentCell == nullptr || !currentCell->getBB().contains(pos)) {

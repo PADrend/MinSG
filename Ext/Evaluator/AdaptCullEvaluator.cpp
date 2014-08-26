@@ -97,7 +97,7 @@ void AdaptCullEvaluator::measure(FrameContext & context,Node & node,const Geomet
 			i=0;
 			// get results
 			for(auto & geoNode : objectsInVFList) {
-				if (queries[i].getResult() == 0 && !geoNode->getWorldBB().contains(context.getCamera()->getWorldPosition()) ) {
+				if (queries[i].getResult() == 0 && !geoNode->getWorldBB().contains(context.getCamera()->getWorldOrigin()) ) {
 					geoNode = nullptr;
 				}
 				++i;

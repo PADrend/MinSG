@@ -42,7 +42,7 @@ void BillboardNode::doDisplay(FrameContext & context,const RenderParam & rp){
 
 	Vec3 dir;
 	if(rotateRightAxis){
-		dir=getWorldPosition()-f.getPos();
+		dir=getWorldOrigin()-f.getPos();
 		dir.normalize();
 	}else{
 		dir=f.getDir();

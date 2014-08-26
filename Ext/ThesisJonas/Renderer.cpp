@@ -160,7 +160,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 						if(nodeWorldBB.isInvalid()){
 							nodeWorldBB = Geometry::Helper::getTransformedBox(node->getBB(), node->getWorldMatrix());
 						}
-						const Geometry::Vec3f cameraPos = context.getCamera()->getWorldPosition();
+						const Geometry::Vec3f cameraPos = context.getCamera()->getWorldOrigin();
 						traverse = nodeWorldBB.contains(cameraPos);
 					}
 					break;

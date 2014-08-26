@@ -228,7 +228,7 @@ void ValuatedRegionNode::doDisplay(FrameContext & context, const RenderParam & r
 		context.getRenderingContext().applyChanges();
 
 		std::vector< std::pair<float,ValuatedRegionNode*> > regions;
-		const Geometry::Vec3 pos = context.getCamera()->getWorldPosition();
+		const Geometry::Vec3 pos = context.getCamera()->getWorldOrigin();
 
 		std::stack<ValuatedRegionNode *> todo;
 		todo.push(this);

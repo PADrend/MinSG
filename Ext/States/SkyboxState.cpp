@@ -77,7 +77,7 @@ State::stateResult_t SkyboxState::doEnableState(FrameContext & context, Node *, 
 		return State::STATE_SKIPPED;
 	}
 
-	Vec3 pos = context.getCamera()->getWorldPosition();
+	Vec3 pos = context.getCamera()->getWorldOrigin();
 	Geometry::Matrix4x4 matrix;
 	matrix.translate(pos);
 	context.getRenderingContext().pushMatrix_modelToCamera();

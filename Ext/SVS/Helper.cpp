@@ -135,7 +135,7 @@ CameraNodeOrtho * createSamplingCamera(const Geometry::Sphere_f & sphere, const 
 void transformCamera(AbstractCameraNode * camera, const Geometry::Sphere_f & sphere, const Geometry::Matrix4x4f & worldMatrix, const Geometry::Vec3f & position) {
 	const auto worldSphere = transformSphere(sphere, worldMatrix);
 	// Camera is standing radius away from the sphere surface.
-	camera->setWorldPosition(worldSphere.getCenter() + position * 2 * worldSphere.getRadius());
+	camera->setWorldOrigin(worldSphere.getCenter() + position * 2 * worldSphere.getRadius());
 	Transformations::rotateToWorldDir(*camera,position);
 }
 

@@ -51,7 +51,7 @@ Behavior::behaviourResult_t SimplePhysics::doExecute(){
 	Geometry::Vec3 velocity(0,-9.81*duration,0);
 	speed+=velocity;
 	getNode()->moveRel(speed*duration);
-	float y=getNode()->getWorldPosition().getY();
+	float y=getNode()->getWorldOrigin().getY();
 	if(y<0.0){
 		getNode()->moveRel(Geometry::Vec3(0,-y,0));
 		if(speed.getY()<0 ) {
@@ -103,7 +103,7 @@ Behavior::behaviourResult_t SimplePhysics2::doExecute2(BehaviorStatus& status){
 	const Geometry::Vec3 velocity(0,-9.81*duration,0);
 	speed+=velocity;
 	node->moveRel(speed*duration);
-	const float y = node->getWorldPosition().getY();
+	const float y = node->getWorldOrigin().getY();
 	if(y<0.0){
 		node->moveRel(Geometry::Vec3(0,-y,0));
 		if(speed.getY()<0 ) {

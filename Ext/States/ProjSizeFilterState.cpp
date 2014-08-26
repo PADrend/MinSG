@@ -37,7 +37,7 @@ NodeRendererResult ProjSizeFilterState::displayNode(FrameContext & context, Node
 	if (!forceClosed || !node->isClosed()) {
 		if (minimumDistance > 0) {
 			AbstractCameraNode * cam = context.getCamera();
-			if (cam != nullptr && node->getWorldBB().getDistance(cam->getWorldPosition()) < minimumDistance) // too close? -> do nothing
+			if (cam != nullptr && node->getWorldBB().getDistance(cam->getWorldOrigin()) < minimumDistance) // too close? -> do nothing
 				return NodeRendererResult::PASS_ON;
 		}
 		Geometry::Rect projection = context.getProjectedRect(node);

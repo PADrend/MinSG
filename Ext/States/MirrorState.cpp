@@ -117,7 +117,7 @@ State::stateResult_t MirrorState::doEnableState(FrameContext & context, Node * n
 
 	// ##### Calculations for new frustum #####
 
-	const Geometry::Vec3 camPos = context.getCamera()->getWorldPosition();
+	const Geometry::Vec3 camPos = context.getCamera()->getWorldOrigin();
 
 	const Geometry::Box & box = node->getWorldBB();
 
@@ -206,8 +206,8 @@ State::stateResult_t MirrorState::doEnableState(FrameContext & context, Node * n
 	if (rp.getFlag(SHOW_META_OBJECTS)) {
 		Rendering::RenderingContext & renderingContext = context.getRenderingContext();
 		renderingContext.pushAndSetMatrix_modelToCamera( renderingContext.getMatrix_worldToCamera() );
-		Rendering::drawVector(renderingContext, frameTopLeft, camera->getWorldPosition(), Util::ColorLibrary::BLUE);
-		Rendering::drawVector(renderingContext, frameBottomRight, camera->getWorldPosition(), Util::ColorLibrary::BLUE);
+		Rendering::drawVector(renderingContext, frameTopLeft, camera->getWorldOrigin(), Util::ColorLibrary::BLUE);
+		Rendering::drawVector(renderingContext, frameBottomRight, camera->getWorldOrigin(), Util::ColorLibrary::BLUE);
 		renderingContext.popMatrix_modelToCamera();
 
 		camera->display(context, rp + USE_WORLD_MATRIX);

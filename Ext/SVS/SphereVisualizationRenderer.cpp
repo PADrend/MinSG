@@ -78,7 +78,7 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 			vertexDescription.appendTexCoord();
 			Util::Reference<Rendering::Mesh> sphereMesh = Rendering::MeshUtils::MeshBuilder::createSphere(vertexDescription, 64, 64);
 			Util::Reference<GeometryNode> sphereNode = new GeometryNode(sphereMesh);
-			sphereNode->setWorldPosition(sphere.getCenter());
+			sphereNode->setWorldOrigin(sphere.getCenter());
 			sphereNode->setScale(sphere.getRadius());
 
 			Rendering::MaterialParameters materialParams;

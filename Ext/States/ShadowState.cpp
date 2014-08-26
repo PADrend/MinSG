@@ -55,7 +55,7 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 		return State::STATE_SKIPPED;
 	}
 
-	const Geometry::Vec3f camPos = light->getWorldPosition();
+	const Geometry::Vec3f camPos = light->getWorldOrigin();
 	const Geometry::Box & box = node->getWorldBB();
 	const Geometry::Vec3f boxCenter = box.getCenter();
 

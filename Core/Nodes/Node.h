@@ -343,10 +343,10 @@ class Node :
 		inline void moveRel(const Geometry::Vec3 & v);
 		
 		inline void setRelOrigin(const Geometry::Vec3 & v);
-		void setRelPosition(const Geometry::Vec3 & v)	{	setRelOrigin(v);	}
+		void setRelPosition(const Geometry::Vec3 & v)__attribute__((deprecated))	{	setRelOrigin(v);	}
 		
 		void setWorldOrigin(const Geometry::Vec3 & v);
-		void setWorldPosition(const Geometry::Vec3 & v)	{	setWorldOrigin(v);	}
+		void setWorldPosition(const Geometry::Vec3 & v)__attribute__((deprecated))	{	setWorldOrigin(v);	}
 		inline void moveLocal(const Geometry::Vec3 & v);
 
 		//!	Rotate around a local direction around the object's local origin (0,0,0).

@@ -19,7 +19,7 @@ namespace MinSG {
 //! (ctor)
 SoundReceivingBehaviour::SoundReceivingBehaviour(Node * node) :
 		AbstractNodeBehaviour(node),
-		lastPosition(node->getWorldPosition()),lastTime(0) {
+		lastPosition(node->getWorldOrigin()),lastTime(0) {
 	//ctor
 }
 
@@ -31,7 +31,7 @@ AbstractBehaviour::behaviourResult_t SoundReceivingBehaviour::doExecute() {
 	const timestamp_t tDiff = timeSec-lastTime;
 
 	using namespace Geometry;
-	const Vec3 newPos( getNode()->getWorldPosition() );
+	const Vec3 newPos( getNode()->getWorldOrigin() );
 
 	// update velocity
 	Vec3 velocity( tDiff>0 ? (newPos-lastPosition)*(1.0/tDiff) : Vec3(0,0,0));

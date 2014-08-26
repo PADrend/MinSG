@@ -82,8 +82,8 @@ void ParticleEmitter::getSpawnCenter(Geometry::Vec3f& v, ParticleSystemNode* psy
 	} else {
 		// position is spawnNode.absolutePos - psystem.absolutePos (vec from psystem
 		// to spawnNode)
-		// v = spawnNode->getWorldPosition() - psystem->getWorldPosition();
-		v = spawnNode->getWorldBB().getCenter() - psystem->getWorldPosition();
+		// v = spawnNode->getWorldOrigin() - psystem->getWorldOrigin();
+		v = spawnNode->getWorldBB().getCenter() - psystem->getWorldOrigin();
 	}
 }
 

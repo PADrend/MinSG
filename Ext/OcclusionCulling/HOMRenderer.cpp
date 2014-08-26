@@ -166,13 +166,13 @@ struct HOMRenderer::DepthSorter {
 
 void HOMRenderer::selectOccluders(std::deque<SelectedOccluder> & occluders, AbstractCameraNode * camera) const {
 	const Geometry::Vec3f cameraDir = (camera->getWorldMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
-	const Geometry::Vec3f cameraPos = camera->getWorldPosition();
+	const Geometry::Vec3f cameraPos = camera->getWorldOrigin();
 
 	for (const auto & occluder : occluderDatabase) {
 		// Check if occluder is in the viewing frustum.
 		// Do not add occluder if the camera is inside it.
 		const Geometry::Box & bb = occluder->getWorldBB();
-		if (camera->testBoxFrustumIntersection(bb) != Geometry::Frustum::OUTSIDE && !bb.contains(camera->getWorldPosition())) {
+		if (camera->testBoxFrustumIntersection(bb) != Geometry::Frustum::OUTSIDE && !bb.contains(camera->getWorldOrigin())) {
 			float minDistance = std::numeric_limits<float>::max();
 			float maxDistance = 0.0f;
 			for (uint_fast8_t i = 0; i < 8; ++i) {
@@ -343,7 +343,7 @@ State::stateResult_t HOMRenderer::doEnableState(FrameContext & context,
 	renderingContext.pushAndSetFBO(fbo.get());
 	// Set perspective and viewport.
 	const Geometry::Vec3f cameraDir = (oldCamera->getWorldMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
-	const Geometry::Vec3f cameraPos = oldCamera->getWorldPosition();
+	const Geometry::Vec3f cameraPos = oldCamera->getWorldOrigin();
 
 	Util::Reference<CameraNode> camera = new CameraNode();
 	camera->setMatrix(oldCamera->getWorldMatrix());

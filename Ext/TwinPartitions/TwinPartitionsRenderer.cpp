@@ -78,7 +78,7 @@ State::stateResult_t TwinPartitionsRenderer::doEnableState(FrameContext & contex
 		return State::STATE_SKIPPED;
 	}
 
-	const Geometry::Vec3f pos = context.getCamera()->getWorldPosition();
+	const Geometry::Vec3f pos = context.getCamera()->getWorldOrigin();
 	// Check if cached cell can be used.
 	if (currentCell == INVALID_CELL || !data->cells[currentCell].bounds.contains(pos)) {
 		// Search the cell that contains the camera position.
