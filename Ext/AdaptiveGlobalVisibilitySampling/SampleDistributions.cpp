@@ -289,7 +289,7 @@ struct SampleDistributions::Implementation {
 
 		const auto u = zeroOneDist(gen);
 		std::uniform_real_distribution<value_t> barycentricVDist(0.0, 1.0 - u);
-		const auto origin = Transformations::localPosToWorldPos(object, triangle.calcPoint(u, barycentricVDist(gen)));
+		const auto origin = Transformations::localPosToWorldPos(*object, triangle.calcPoint(u, barycentricVDist(gen)));
 
 		Geometry::_Matrix3x3<value_t> rotation;
 		rotation.setRotation(triangle.getEdgeAB(), triangle.calcNormal());
@@ -297,7 +297,7 @@ struct SampleDistributions::Implementation {
 		const value_t inclination = std::acos(std::sqrt(zeroOneDist(gen)));
 		const value_t azimuth = azimuthDist(gen);
 		const auto localDirection = rotation * Geometry::_Sphere<value_t>::calcCartesianCoordinateUnitSphere(inclination, azimuth);
-		const auto worldDirection = Transformations::localDirToWorldDir(object, localDirection);
+		const auto worldDirection = Transformations::localDirToWorldDir(*object, localDirection);
 		Sample<value_t> newSample(ray_t(origin, worldDirection.getNormalized()));
 		newSample.setBackwardResult(object, 0.0);
 		return newSample;
@@ -317,7 +317,7 @@ struct SampleDistributions::Implementation {
 
 		const auto u = zeroOneDist(gen);
 		std::uniform_real_distribution<value_t> barycentricVDist(0.0, 1.0 - u);
-		const auto objectPoint = Transformations::localPosToWorldPos(object, triangle.calcPoint(u, barycentricVDist(gen)));
+		const auto objectPoint = Transformations::localPosToWorldPos(*object, triangle.calcPoint(u, barycentricVDist(gen)));
 
 		const auto viewSpacePoint = generateRandomViewSpacePoint();
 

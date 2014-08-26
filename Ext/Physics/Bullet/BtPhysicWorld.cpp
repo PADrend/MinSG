@@ -190,8 +190,8 @@ btRigidBody * BtPhysicWorld::createRigidBody(BtPhysicObject& physObj, ShapeConta
 	btVector3 localInertia(0,0,0);
 	shape->getShape()->calculateLocalInertia(mass,localInertia);
 
-	auto worldSRT =  Transformations::getWorldSRT(node);
-	worldSRT.translate( Transformations::localDirToWorldDir(node,physObj.getCenterOfMass() ) );
+	auto worldSRT =  Transformations::getWorldSRT(*node);
+	worldSRT.translate( Transformations::localDirToWorldDir(*node,physObj.getCenterOfMass() ) );
 
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,
 													new MotionState(*this,physObj, toBtTransform( worldSRT )),
@@ -216,7 +216,7 @@ void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 		physObj.contactListener = [physObjPtr,localSurfaceVelocity](btManifoldPoint& cp,  BtPhysicObject* physObj0, BtPhysicObject* physObj1){
 
 			Geometry::Vec3 worldVelocity;
-			worldVelocity = Transformations::localDirToWorldDir(physObjPtr->getNode(),localSurfaceVelocity);
+			worldVelocity = Transformations::localDirToWorldDir(*physObjPtr->getNode(),localSurfaceVelocity);
 			if(worldVelocity.isZero() || !physObj0 || !physObj1)
 				return false;
 
@@ -488,8 +488,8 @@ void BtPhysicWorld::onNodeTransformed(Node * node){
 		if(physObj){
 			btRigidBody* body = physObj->getRigidBody();
 
-			auto worldSRT =  Transformations::getWorldSRT(node);
-			worldSRT.translate( Transformations::localDirToWorldDir(node,physObj->getCenterOfMass() ) );
+			auto worldSRT =  Transformations::getWorldSRT(*node);
+			worldSRT.translate( Transformations::localDirToWorldDir(*node,physObj->getCenterOfMass() ) );
 
 			body->setWorldTransform( toBtTransform( worldSRT ));
 			body->activate(true);
@@ -581,11 +581,11 @@ void BtPhysicWorld::renderPhysicWorld(Rendering::RenderingContext& rctxt){
 }
 
 static Geometry::Vec3 worldPosToLocalBodyPos(const BtPhysicObject& obj,const Geometry::Vec3 & worldPos){
-    return (Transformations::worldPosToLocalPos(obj.getNode(),worldPos) - obj.getCenterOfMass()) * obj.getNode()->getScale();
+    return (Transformations::worldPosToLocalPos(*obj.getNode(),worldPos) - obj.getCenterOfMass()) * obj.getNode()->getScale();
 }
 
 void BtPhysicWorld::applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA ){
-    const auto worldPivot = Transformations::localPosToWorldPos(nodeA, pivotLocalA);
+    const auto worldPivot = Transformations::localPosToWorldPos(*nodeA, pivotLocalA);
 
     BtPhysicObject * physObjA = getPhysicObject(nodeA);
     BtPhysicObject * physObjB = getPhysicObject(nodeB);
@@ -607,7 +607,7 @@ void BtPhysicWorld::applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry:
 }
 
 void BtPhysicWorld::applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir ){
-   const auto worldPivot = Transformations::localPosToWorldPos(nodeA, pivotLocalA);
+   const auto worldPivot = Transformations::localPosToWorldPos(*nodeA, pivotLocalA);
 
     BtPhysicObject * physObjA = getPhysicObject(nodeA);
     BtPhysicObject * physObjB = getPhysicObject(nodeB);

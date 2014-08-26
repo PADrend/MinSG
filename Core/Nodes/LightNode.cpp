@@ -60,7 +60,7 @@ LightNode::~LightNode() {
 }
 
 void LightNode::validateParameters() {
-	parameters.direction = Transformations::localDirToWorldDir(this, Geometry::Vec3(0, 0, -1)).normalize();
+	parameters.direction = Transformations::localDirToWorldDir(*this, Geometry::Vec3(0, 0, -1)).normalize();
 	parameters.position = getWorldOrigin();
 }
 
