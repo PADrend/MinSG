@@ -397,37 +397,36 @@ bool ColorCubeGenerator::prepareCamera(FrameContext& context, const Box& _box, G
 	camera->setRelOrigin(box.getCenter());
 	switch(side){
 		case Geometry::SIDE_X_POS:
-			camera->rotateRel_deg(90.0f, Geometry::Vec3(0, 1, 0));
+			camera->rotateRel(Geometry::Angle::deg(90.0f), Geometry::Vec3(0, 1, 0));
 			if(box.getExtentY() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentX() == 0) box.resizeAbs(0.1,0,0); // depth equal zero
 			box.resizeRel(1.01,1,1);
 			break;
 		case Geometry::SIDE_X_NEG:
-			camera->rotateRel_deg(-90.0f, Geometry::Vec3(0, 1, 0));
+			camera->rotateRel(Geometry::Angle::deg(-90.0f), Geometry::Vec3(0, 1, 0));
 			if(box.getExtentY() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentX() == 0) box.resizeAbs(0.1,0,0); // depth equal zero
 			box.resizeRel(1.01,1,1);
 			break;
 		case Geometry::SIDE_Y_POS:
-			camera->rotateRel_deg(-90.0f, Geometry::Vec3(1, 0, 0));
+			camera->rotateRel(Geometry::Angle::deg(-90.0f), Geometry::Vec3(1, 0, 0));
 			if(box.getExtentX() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentY() == 0) box.resizeAbs(0,0.1,0); // depth equal zero
 			box.resizeRel(1,1.01,1);
 			break;
 		case Geometry::SIDE_Y_NEG:
-			camera->rotateRel_deg(90.0f, Geometry::Vec3(1, 0, 0));
+			camera->rotateRel(Geometry::Angle::deg(90.0f), Geometry::Vec3(1, 0, 0));
 			if(box.getExtentX() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentY() == 0) box.resizeAbs(0,0.1,0); // depth equal zero
 			box.resizeRel(1,1.01,1);
 			break;
 		case Geometry::SIDE_Z_POS:
-			camera->rotateRel_deg(0.0f, Geometry::Vec3(0, 1, 0));
 			if(box.getExtentX() == 0 || box.getExtentY() == 0) return false; // width or height equal zero
 			if(box.getExtentZ() == 0) box.resizeAbs(0,0,0.1); // depth equal zero
 			box.resizeRel(1,1,1.01);
 			break;
 		case Geometry::SIDE_Z_NEG:
-			camera->rotateRel_deg(180.0f, Geometry::Vec3(0, 1, 0));
+			camera->rotateRel(Geometry::Angle::deg(180.0f), Geometry::Vec3(0, 1, 0));
 			if(box.getExtentX() == 0 || box.getExtentY() == 0) return false; // width or height equal zero
 			if(box.getExtentZ() == 0) box.resizeAbs(0,0,0.1); // depth equal zero
 			box.resizeRel(1,1,1.01);
