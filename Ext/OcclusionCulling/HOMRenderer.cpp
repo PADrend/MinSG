@@ -165,7 +165,7 @@ struct HOMRenderer::DepthSorter {
 };
 
 void HOMRenderer::selectOccluders(std::deque<SelectedOccluder> & occluders, AbstractCameraNode * camera) const {
-	const Geometry::Vec3f cameraDir = (camera->getWorldMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
+	const Geometry::Vec3f cameraDir = (camera->getWorldTransformationMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
 	const Geometry::Vec3f cameraPos = camera->getWorldOrigin();
 
 	for (const auto & occluder : occluderDatabase) {
@@ -342,11 +342,11 @@ State::stateResult_t HOMRenderer::doEnableState(FrameContext & context,
 	// Use FBO for occluder rendering.
 	renderingContext.pushAndSetFBO(fbo.get());
 	// Set perspective and viewport.
-	const Geometry::Vec3f cameraDir = (oldCamera->getWorldMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
+	const Geometry::Vec3f cameraDir = (oldCamera->getWorldTransformationMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
 	const Geometry::Vec3f cameraPos = oldCamera->getWorldOrigin();
 
 	Util::Reference<CameraNode> camera = new CameraNode();
-	camera->setMatrix(oldCamera->getWorldMatrix());
+	camera->setRelTransformation(oldCamera->getWorldTransformationMatrix());
 	camera->setViewport(Geometry::Rect_i(0, 0, sideLength, sideLength));
 	float fovLeft;
 	float fovRight;

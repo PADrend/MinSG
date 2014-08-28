@@ -211,11 +211,15 @@ class Node :
 			The method invalidates the worldBB and traverses the tree up invalidating all worldBBs and compoundBBs (until a node has a fixed bb).	*/
 		void worldBBChanged();
 	public:
+		//! \note the bounding box is in local coordinates
 		const Geometry::Box& getBB() const;
 		
 		void setFixedBB(const Geometry::Box &fixedBB);
 		bool hasFixedBB()const							{	return getStatus(STATUS_CONTAINS_FIXED_BB);	}
 		virtual void removeFixedBB();
+		/*! \note Don't store the resulting reference, but make a copy for storing: The box may change 
+		when the Node is transformed. It may even get deleted when the Node's transformation is reset.	*/
+		const Geometry::Box& getWorldBB() const;
 	//@}
 
 	// -----------------
@@ -303,6 +307,8 @@ class Node :
 
 	/**
 	 * @name Transformation
+	*	\note (internal) If the node is not transformed inside the world, 
+     *		worldLocation is nullptr, the world bb equals the normal bb and the worldMatrix equals the identity.
 	 */
 	//@{
 	private:
@@ -312,56 +318,89 @@ class Node :
 		};
 		mutable std::unique_ptr<RelativeTransformation> relTransformation;
 
+		struct WorldLocation{
+			Geometry::Matrix4x4 matrix_localToWorld;
+			Geometry::Box worldBB;
+		};
+		mutable std::unique_ptr<WorldLocation> worldLocation;
+
+
+		void invalidateWorldMatrix() const;
+	
 	protected:
 		Geometry::SRT & accessSRT() const;
 
 	public:
-		/// Remove all relative transformations
-		void reset();
+		float getRelScaling() const									{	return accessSRT().getScale();	}
+		Geometry::Vec3 getRelOrigin() const							{	return accessSRT().getTranslation();	}
+		const Geometry::Matrix4x4& getRelTransformationMatrix() const;
+		const Geometry::Matrix4x4* getRelTransformationMatrixPtr() const;
+		const Geometry::SRT& getRelTransformationSRT()const;
+		Geometry::Vec3 getWorldOrigin() const						{	return getWorldTransformationMatrixPtr() == nullptr ? Geometry::Vec3(0,0,0) : (*getWorldTransformationMatrixPtr()).transformPosition(0,0,0);	}
 
-		// matrix
-		const Geometry::Matrix4x4* getMatrixPtr() const;
-		const Geometry::Matrix4x4& getMatrix() const;
-
-		//! If a SRT is set, it is removed.
-		void setMatrix(const Geometry::Matrix4x4 & m);
-		bool hasMatrix()const							{	return relTransformation!=nullptr; 	}
-
-		// srt
-		bool hasSRT() const								{	return relTransformation!=nullptr && getStatus(STATUS_HAS_SRT);	}
-		const Geometry::SRT& getSRT()const;
-		void setSRT(const Geometry::SRT & newSRT);
-
-		float getScale() const							{	return accessSRT().getScale();	}
-		inline void setScale(float f);
-		inline void scale(float f);
-
-		Geometry::Vec3 getRelOrigin() const				{	return accessSRT().getTranslation();	}
-		Geometry::Vec3 getRelPosition() const			{	return getRelOrigin();	} //! \deprecated
-		Geometry::Vec3 getWorldOrigin() const			{	return getWorldMatrixPtr() == nullptr ? Geometry::Vec3(0,0,0) : (*getWorldMatrixPtr()).transformPosition(0,0,0);	}
-		Geometry::Vec3 getWorldPosition() const			{	return getWorldOrigin();	} //! \deprecated
-		inline void moveRel(const Geometry::Vec3 & v);
+		/*! Transforms from local to world coordinate system.
+			\note (internal) the STATUS_WORLD_MATRIX_VALID is set to true by this function */
+		const Geometry::Matrix4x4& getWorldTransformationMatrix() const;
+		/*! (internal) Return the pointer to the current world matrix. If the node is transformed globally and
+			no world matrix has yet been created, a new one is calculated.
+			If the node is not transformed, nullptr may be returned.
+			\note (internal) the STATUS_WORLD_MATRIX_VALID is set to true by this function */
+		const Geometry::Matrix4x4* getWorldTransformationMatrixPtr() const;
+		Geometry::SRT getWorldTransformationSRT() const; 
 		
-		inline void setRelOrigin(const Geometry::Vec3 & v);
-		void setRelPosition(const Geometry::Vec3 & v)__attribute__((deprecated))	{	setRelOrigin(v);	}
+		//! Returns the inverse of getWorldTransformationMatrix()
+		Geometry::Matrix4x4 getWorldToLocalMatrix() const;
 		
-		void setWorldOrigin(const Geometry::Vec3 & v);
-		void setWorldPosition(const Geometry::Vec3 & v)__attribute__((deprecated))	{	setWorldOrigin(v);	}
-		inline void moveLocal(const Geometry::Vec3 & v);
-
+		bool hasRelTransformation()const							{	return relTransformation!=nullptr; 	}
+		bool hasRelTransformationSRT() const						{	return relTransformation!=nullptr && getStatus(STATUS_HAS_SRT);	}
+		void moveRel(const Geometry::Vec3 & v)						{	accessSRT().translate(v);		transformationChanged();	}
+		void moveLocal(const Geometry::Vec3 & v)					{	accessSRT().translateLocal(v);	transformationChanged();	}
+		
+		//! Remove all relative transformations
+		void resetRelTransformation();
+		void resetRelRotation()										{	accessSRT().resetRotation();	transformationChanged();	}			
+		
 		//!	Rotate around a local direction around the object's local origin (0,0,0).
-		inline void rotateLocal(const Geometry::Angle & angle, const Geometry::Vec3 & v);
-		void rotateLocal_deg(float deg, const Geometry::Vec3 & v)	{	rotateLocal(Geometry::Angle::deg(deg),v);    }
-		void rotateLocal_rad(float rad, const Geometry::Vec3 & v)	{	rotateLocal(Geometry::Angle::rad(rad),v);    }
+		void rotateLocal(const Geometry::Angle & angle, const Geometry::Vec3 & v)	{	accessSRT().rotateLocal_rad(angle.rad(),v);	transformationChanged();	}
 
 		//!	Rotate around a direction in the parent's coordinate system around the object's local origin (0,0,0).
-		inline void rotateRel(const Geometry::Angle & angle, const Geometry::Vec3 & v);
-		void rotateRel_deg(float deg, const Geometry::Vec3 & v)		{	rotateRel(Geometry::Angle::deg(deg),v);    }
-		void rotateRel_rad(float rad, const Geometry::Vec3 & v)		{	rotateRel(Geometry::Angle::rad(rad),v);    }
+		void rotateRel(const Geometry::Angle & angle, const Geometry::Vec3 & v)		{	accessSRT().rotateRel_rad(angle.rad(),v);	transformationChanged();}
+		void scale(float f)											{	accessSRT().scale(f);	transformationChanged();	}
+		void setRelScaling(float f)									{	accessSRT().setScale(f);	transformationChanged();	}
+		void setRelOrigin(const Geometry::Vec3 & v)					{	accessSRT().setTranslation(v);	transformationChanged();	}
+		void setRelRotation(const Geometry::Angle & angle,const Geometry::Vec3 & v){
+			accessSRT().resetRotation();	
+			accessSRT().rotateLocal_rad(angle.rad(),v);	
+			transformationChanged();
+		}
+		void setRelRotation(const Geometry::Vec3 & dir,const Geometry::Vec3 & up)	{	accessSRT().setRotation(dir,up);	transformationChanged();	}
 
-		inline void setRelRotation(const Geometry::Angle & angle,const Geometry::Vec3 & v);
-		void setRelRotation_deg(float deg,const Geometry::Vec3 & v)	{	setRelRotation(Geometry::Angle::deg(deg),v); }
-		void setRelRotation_rad(float rad,const Geometry::Vec3 & v)	{	setRelRotation(Geometry::Angle::rad(rad),v); }
+		void setRelTransformation(const Geometry::Matrix4x4 & m);
+		void setRelTransformation(const Geometry::SRT & srt);
+		void setWorldOrigin(const Geometry::Vec3 & v);
+		void setWorldTransformation(const Geometry::SRT & worldSRT);
+// ---
+
+		const Geometry::Matrix4x4& getMatrix() const				__attribute__((deprecated)){	return getRelTransformationMatrix(); 	}
+		Geometry::Vec3 getRelPosition() const 						__attribute__((deprecated)){	return getRelOrigin();	} 
+		float getScale() const										__attribute__((deprecated)){	return getRelScaling();	}
+		const Geometry::SRT& getSRT()const							__attribute__((deprecated)){	return getRelTransformationSRT(); 	}
+		const Geometry::Matrix4x4 & getWorldMatrix() const			__attribute__((deprecated)){	return getWorldTransformationMatrix();	}
+		Geometry::Vec3 getWorldPosition() const 					__attribute__((deprecated)){	return getWorldOrigin();	}
+		bool hasMatrix()const 										__attribute__((deprecated)){	return hasRelTransformation(); 	}
+		bool hasSRT() const											__attribute__((deprecated)){	return hasRelTransformationSRT();	}
+		void reset()												__attribute__((deprecated)){	resetRelTransformation();	}
+		void rotateLocal_deg(float deg, const Geometry::Vec3 & v)	__attribute__((deprecated)){	rotateLocal(Geometry::Angle::deg(deg),v);    }
+		void rotateLocal_rad(float rad, const Geometry::Vec3 & v)	__attribute__((deprecated)){	rotateLocal(Geometry::Angle::rad(rad),v);    }
+		void rotateRel_deg(float deg, const Geometry::Vec3 & v)		__attribute__((deprecated)){	rotateRel(Geometry::Angle::deg(deg),v);    }
+		void rotateRel_rad(float rad, const Geometry::Vec3 & v)		__attribute__((deprecated)){	rotateRel(Geometry::Angle::rad(rad),v);    }
+		void setScale(float f)										__attribute__((deprecated)){	setRelScaling(f);	}
+		void setMatrix(const Geometry::Matrix4x4 & m)	 			__attribute__((deprecated)){	setRelTransformation( m ); 	}
+		void setSRT(const Geometry::SRT & newSRT)					__attribute__((deprecated)){	return setRelTransformation(newSRT);}
+		void setRelPosition(const Geometry::Vec3 & v)				__attribute__((deprecated)){	setRelOrigin(v);	}
+		void setWorldPosition(const Geometry::Vec3 & v )			__attribute__((deprecated)){	setWorldOrigin(v);	}
+		void setRelRotation_deg(float deg,const Geometry::Vec3 & v)	__attribute__((deprecated)){	setRelRotation(Geometry::Angle::deg(deg),v); }
+		void setRelRotation_rad(float rad,const Geometry::Vec3 & v) __attribute__((deprecated)){	setRelRotation(Geometry::Angle::rad(rad),v); }
 	//@}
 
 	// -----------------
@@ -417,81 +456,7 @@ class Node :
 
 	// -----------------
 
-	/**
-	 * @name World location (pos and bb)
-	 *	\note (internal) If the node is not transformed inside the world, 
-     *		worldLocation is nullptr, the world bb equals the normal bb and the worldMatrix equals the identity.
-	 */
-
-	//@{
-	private:
-		struct WorldLocation{
-			Geometry::Matrix4x4 worldMatrix;
-			Geometry::Box worldBB;
-		};
-		mutable std::unique_ptr<WorldLocation> worldLocation;
-
-
-		void invalidateWorldMatrix() const;
-	public:
-		/*! \note Don't store the resulting reference, but make a copy for storing: The box may change 
-				when the Node is transformed. It may even get deleted when the Node's transformation is reset.	*/
-		const Geometry::Box& getWorldBB() const;
-
-		/*! Return the current world matrix. If no world matrix has yet been created, a new one is calculated.
-			\note (internal) the STATUS_WORLD_MATRIX_VALID is set to true by this function */
-		const Geometry::Matrix4x4 & getWorldMatrix() const;
-
-		/*! Return the pointer to the current world matrix. If the node is transformed globally and
-			no world matrix has yet been created, a new one is calculated.
-			If the node is not transformed, nullptr may be returned.
-			\note (internal) the STATUS_WORLD_MATRIX_VALID is set to true by this function */
-		const Geometry::Matrix4x4 * getWorldMatrixPtr() const;
-	
-	//@}
-
-
 };
-// ------------------------------------------------------------------------
-// ---- Inlines
-
-// -----------------------------------
-// ---- Transformations
-
-// srt
-inline void Node::setScale(float f) {
-	accessSRT().setScale(f);
-	transformationChanged();
-}
-inline void Node::scale(float f) {
-	accessSRT().scale(f);
-	transformationChanged();
-}
-inline void Node::moveLocal(const Geometry::Vec3 & v) {
-	accessSRT().translateLocal(v);
-	transformationChanged();
-}
-inline void Node::rotateLocal(const Geometry::Angle & angle, const Geometry::Vec3 & v) {
-	accessSRT().rotateLocal_rad(angle.rad(),v);
-	transformationChanged();
-}
-inline void Node::moveRel(const Geometry::Vec3 & v) {
-	accessSRT().translate(v);
-	transformationChanged();
-}
-inline void Node::rotateRel(const Geometry::Angle & angle, const Geometry::Vec3 & v) {
-	accessSRT().rotateRel_rad(angle.rad(),v);
-	transformationChanged();
-}
-inline void Node::setRelOrigin(const Geometry::Vec3 & v) {
-	accessSRT().setTranslation(v);
-	transformationChanged();
-}
-inline void Node::setRelRotation(const Geometry::Angle & angle,const Geometry::Vec3 & v) {
-	accessSRT().resetRotation();
-	accessSRT().rotateLocal_rad(angle.rad(),v);
-	transformationChanged();
-}
 
 }
 

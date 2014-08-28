@@ -81,7 +81,7 @@ void FrameContext::setCamera(AbstractCameraNode * newCamera) {
 	// projectionMatrix.scale(1.0f, 1.0f, 1.5f);
 
 	renderingContext->setMatrix_cameraToClip(projectionMatrix);
-	renderingContext->setMatrix_cameraToWorld(camera->getWorldMatrix());
+	renderingContext->setMatrix_cameraToWorld(camera->getWorldTransformationMatrix());
 	renderingContext->setMatrix_modelToCamera( renderingContext->getMatrix_worldToCamera() );
 
 	renderingContext->setViewport(camera->getViewport());
@@ -135,7 +135,7 @@ Geometry::Rect FrameContext::getProjectedRect(Node * node) const {
 }
 
 Geometry::Rect FrameContext::getProjectedRect(Node * node, const Geometry::Rect & screenRect) const {
-	return Geometry::projectBox(node->getBB(), renderingContext->getMatrix_worldToCamera() * node->getWorldMatrix(), renderingContext->getMatrix_cameraToClip(), screenRect);
+	return Geometry::projectBox(node->getBB(), renderingContext->getMatrix_worldToCamera() * node->getWorldTransformationMatrix(), renderingContext->getMatrix_cameraToClip(), screenRect);
 }
 
 // -----------------------------------

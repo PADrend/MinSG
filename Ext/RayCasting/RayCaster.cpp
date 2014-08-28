@@ -99,7 +99,7 @@ static TriangleTrees::SolidTree_3f_GeometryNode buildSolidGeoTree(GroupNode * sc
 				throw std::invalid_argument("Cannot handle vertices where the number of coordinates is not three.");
 			}
 
-			const Geometry::Matrix4x4 & transform = geoNodes[geoNodeId]->getWorldMatrix();
+			const Geometry::Matrix4x4 & transform = geoNodes[geoNodeId]->getWorldTransformationMatrix();
 			// Store a copy here.
 			meshes.push_back(inputMesh->clone());
 			auto currentMesh = meshes.back().get();

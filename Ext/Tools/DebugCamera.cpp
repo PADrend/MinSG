@@ -39,7 +39,7 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 		
 		rc.setFBO(fbo.get());
 		rc.setMatrix_cameraToClip(debug->getFrustum().getProjectionMatrix());
-		rc.setMatrix_cameraToWorld(debug->getWorldMatrix());
+		rc.setMatrix_cameraToWorld(debug->getWorldTransformationMatrix());
 		rc.setMatrix_modelToCamera(conversionMatrix * mod);
 		rc.setViewport(debug->getViewport());
 		if(debug->isScissorEnabled()) {
@@ -51,7 +51,7 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 		// Display for the "debug" camera.
 		mesh->_display(rc, 0, mesh->isUsingIndexData() ? mesh->getIndexCount() : mesh->getVertexCount());
 
-		rc.setMatrix_cameraToWorld(original->getWorldMatrix());
+		rc.setMatrix_cameraToWorld(original->getWorldTransformationMatrix());
 		
 		rc.popFBO();
 		rc.popMatrix_cameraToClip();
@@ -70,7 +70,7 @@ void DebugCamera::enable(RenderingContext & rc, AbstractCameraNode * _debug, Abs
 	debug->updateFrustum();
 	original->updateFrustum();
 
-	conversionMatrix = debug->getWorldMatrix().inverse() * original->getWorldMatrix();
+	conversionMatrix = debug->getWorldToLocalMatrix() * original->getWorldTransformationMatrix();
 
 	rc.setDisplayMeshFn(std::bind(std::mem_fn(&DebugCamera::displayMesh), this, _1, _2));
 }

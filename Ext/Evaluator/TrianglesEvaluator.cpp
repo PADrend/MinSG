@@ -112,7 +112,7 @@ size_t TrianglesEvaluator::getNumTrianglesVisible(FrameContext & context, Geomet
 	}
 
 	context.getRenderingContext().pushMatrix_modelToCamera();
-	context.getRenderingContext().multMatrix_modelToCamera(node->getWorldMatrix());
+	context.getRenderingContext().multMatrix_modelToCamera(node->getWorldTransformationMatrix());
 
 	const VertexDescription & desc = mesh->getVertexDescription();
 	const VertexAttribute & posAttr=desc.getAttribute(VertexAttributeIds::POSITION);

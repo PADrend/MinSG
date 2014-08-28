@@ -89,7 +89,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 //
 //		// display mesh
 //		context.getRenderingContext().pushMatrix_modelToCamera();
-//		context.getRenderingContext().multMatrix_modelToCamera(node->getMatrix());
+//		context.getRenderingContext().multMatrix_modelToCamera(node->getRelTransformationMatrix());
 //
 //		context.displayMesh(m, 0, indexCount);
 //
@@ -108,7 +108,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 //
 //		// display mesh
 //		context.getRenderingContext().pushMatrix_modelToCamera();
-//		context.getRenderingContext().multMatrix_modelToCamera(node->getMatrix());
+//		context.getRenderingContext().multMatrix_modelToCamera(node->getRelTransformationMatrix());
 //		context.displayMesh(m);
 //		context.getRenderingContext().popMatrix_modelToCamera();
 //
@@ -128,7 +128,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 
 	Geometry::Box nodeWorldBB(1, 0, 1, 0, 1, 0); // invalid box
 	if(frustumCulling){
-		nodeWorldBB = Geometry::Helper::getTransformedBox(node->getBB(), node->getWorldMatrix());
+		nodeWorldBB = Geometry::Helper::getTransformedBox(node->getBB(), node->getWorldTransformationMatrix());
 		if(context.getCamera()->testBoxFrustumIntersection(nodeWorldBB)==Geometry::Frustum::OUTSIDE){
 //			node->setAttribute(renderResultId, Util::GenericAttribute::createString("not handled: node outside frustum"));
 			if(dynamicPrimitiveCount)
@@ -158,7 +158,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 				case INSIDE_BB:
 					{
 						if(nodeWorldBB.isInvalid()){
-							nodeWorldBB = Geometry::Helper::getTransformedBox(node->getBB(), node->getWorldMatrix());
+							nodeWorldBB = Geometry::Helper::getTransformedBox(node->getBB(), node->getWorldTransformationMatrix());
 						}
 						const Geometry::Vec3f cameraPos = context.getCamera()->getWorldOrigin();
 						traverse = nodeWorldBB.contains(cameraPos);
@@ -194,7 +194,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 
 							NodeVisitor::status enter(Node * _node) override {
 								// frustum test
-								Geometry::Box nodeBB = Geometry::Helper::getTransformedBox(_node->getBB(), _node->getWorldMatrix());
+								Geometry::Box nodeBB = Geometry::Helper::getTransformedBox(_node->getBB(), _node->getWorldTransformationMatrix());
 								if(m_context.getCamera()->testBoxFrustumIntersection(nodeBB)==Geometry::Frustum::OUTSIDE){
 									uint32_t tmp = 2;
 									_node->setAttribute(m_stopTraverseId, Util::GenericAttribute::createNumber(tmp));
@@ -371,7 +371,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 
 						if(triangleBudget>0){ // condition is necessary, otherwise VBOs might get drawn and triangle count increases
 							context.getRenderingContext().pushMatrix_modelToCamera();
-							context.getRenderingContext().multMatrix_modelToCamera(node->getMatrix());
+							context.getRenderingContext().multMatrix_modelToCamera(node->getRelTransformationMatrix());
 
 							// draw triangles
 							if(renderTriangles)
@@ -405,7 +405,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 								uint32_t indexCount_orig = std::min(3*triangleBudget-indexCount, m_orig->getIndexCount());
 
 								context.getRenderingContext().pushMatrix_modelToCamera();
-								context.getRenderingContext().multMatrix_modelToCamera(geoNode->getMatrix());
+								context.getRenderingContext().multMatrix_modelToCamera(geoNode->getRelTransformationMatrix());
 
 								// draw triangles
 								if(renderTriangles)
@@ -443,7 +443,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 							uint32_t indexCount = std::min(3*triangleBudget, m->getIndexCount());
 
 							context.getRenderingContext().pushMatrix_modelToCamera();
-							context.getRenderingContext().multMatrix_modelToCamera(geoNode->getMatrix());
+							context.getRenderingContext().multMatrix_modelToCamera(geoNode->getRelTransformationMatrix());
 
 							// draw triangles
 							if(renderTriangles)

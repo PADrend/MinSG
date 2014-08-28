@@ -103,7 +103,7 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext & context, Node * no
 	
 	renderingContext.pushAndSetPointParameters( Rendering::PointParameters(std::min(surfelSize,32.0f) ));
 	renderingContext.pushAndSetMatrix_modelToCamera( renderingContext.getMatrix_worldToCamera() );
-	renderingContext.multMatrix_modelToCamera(node->getWorldMatrix());
+	renderingContext.multMatrix_modelToCamera(node->getWorldTransformationMatrix());
 	context.displayMesh(&surfelMesh,	0, surfelCount );
 	renderingContext.popMatrix_modelToCamera();
 	renderingContext.popPointParameters();

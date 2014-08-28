@@ -166,18 +166,18 @@ void finalizeNode(ImportContext & ctxt, Node * node,const DescriptionMap & d){
 	registerNamedNode(ctxt,d, node);
 	{ // applyTransformation(d, node);
 		Util::GenericAttribute * matrixAttribute = d.getValue(Consts::ATTR_MATRIX);
-		node->reset();
+		node->resetRelTransformation();
 		if(matrixAttribute) {
 			std::istringstream matrixStream(matrixAttribute->toString());
 			Geometry::Matrix4x4f matrix;
 			matrixStream >> matrix;
 			if(!matrix.isIdentity()) {
-				node->setMatrix(matrix);
+				node->setRelTransformation(matrix);
 			}
 		} else {
 			Geometry::SRT srt = getSRT(d);
 			if(srt.getScale() != 1.0f || !srt.getRotation().isIdentity() || !srt.getTranslation().isZero()) {
-				node->setSRT(srt);
+				node->setRelTransformation(srt);
 			}
 		}
 	}

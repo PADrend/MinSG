@@ -44,8 +44,8 @@ AbstractBehaviour::behaviourResult_t SoundReceivingBehaviour::doExecute() {
 	getListener()->setPosition(newPos.x(),newPos.y(),newPos.z());
 
 	// orientation
-	const Vec3 dir( getNode()->getWorldMatrix().transformDirection(0,0,-1) );
-	const Vec3 up( getNode()->getWorldMatrix().transformDirection(0,1,0) );
+	const Vec3 dir( getNode()->getWorldTransformationMatrix().transformDirection(0,0,-1) );
+	const Vec3 up( getNode()->getWorldTransformationMatrix().transformDirection(0,1,0) );
 	getListener()->setOrientation(dir.x(),dir.y(),dir.z(),up.x(),up.y(),up.z());
 
 	lastTime = timeSec;

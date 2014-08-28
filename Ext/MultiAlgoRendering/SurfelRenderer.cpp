@@ -36,10 +36,10 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext & context, Node * no
 		float available = static_cast<float>(surfels->getPrimitiveCount());
 
 		if(needed <= available) { // good case, enough surfels available
-			displaySurfels(context, surfels, node->getWorldMatrix(), needed, getSurfelSizeFactor());
+			displaySurfels(context, surfels, node->getWorldTransformationMatrix(), needed, getSurfelSizeFactor());
 			return NodeRendererResult::NODE_HANDLED;
 		} else if(getForceSurfels() && !dynamic_cast<GroupNode *>(node)) { // bad case 1: forced, less surfels available but leaf
-			displaySurfels(context, surfels, node->getWorldMatrix(), available, std::min(maxSurfelSize, std::sqrt(needed/available)) * getSurfelSizeFactor());
+			displaySurfels(context, surfels, node->getWorldTransformationMatrix(), available, std::min(maxSurfelSize, std::sqrt(needed/available)) * getSurfelSizeFactor());
 			return NodeRendererResult::NODE_HANDLED;
 		}
 	}
@@ -94,7 +94,7 @@ void SurfelRenderer::doDisableState(FrameContext & context, Node * node, const R
 		float projectedSize = getProjSize(context, n);
 		float needed = projectedSize * getSurfelCoverage(n) * getSurfelCountFactor();
 		float available = static_cast<float>(surfels->getPrimitiveCount());
-		displaySurfels(context, surfels, n->getWorldMatrix(), available, std::min(maxSurfelSize, std::sqrt(needed/available)) * getSurfelSizeFactor());
+		displaySurfels(context, surfels, n->getWorldTransformationMatrix(), available, std::min(maxSurfelSize, std::sqrt(needed/available)) * getSurfelSizeFactor());
 	}
 	displayOnDeaktivate.clear();
 

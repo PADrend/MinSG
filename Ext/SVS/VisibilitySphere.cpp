@@ -179,7 +179,7 @@ static void evaluateSample(SamplePoint & sample,
 						   FrameContext & frameContext,
 						   Evaluators::Evaluator & evaluator,
 						   Node * node) {
-	transformCamera(camera, sphere, node->getWorldMatrix(), sample.getPosition());
+	transformCamera(camera, sphere, node->getWorldTransformationMatrix(), sample.getPosition());
 	frameContext.setCamera(camera);
 
 	evaluator.beginMeasure();

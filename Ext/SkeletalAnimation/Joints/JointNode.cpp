@@ -18,7 +18,7 @@ namespace MinSG {
 	JointNode::JointNode(uint32_t _id, std::string _name) : AbstractJoint(_id, _name) { }
     
     JointNode::JointNode(const JointNode &source) : AbstractJoint(source) {
-        setMatrix(source.getMatrix());
+        setRelTransformation(source.getRelTransformationMatrix());
         setBindMatrix(*source.getBindMatrix());
     }
 

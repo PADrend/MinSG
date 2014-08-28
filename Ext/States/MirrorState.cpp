@@ -166,7 +166,7 @@ State::stateResult_t MirrorState::doEnableState(FrameContext & context, Node * n
 	// - change orientation of the camera to orthogonally face the projection plane
 	Geometry::SRT cameraSRT(mirrorPos, camDist, (frameTopLeft - frameBottomLeft));
 	Util::Reference<CameraNode> camera = new CameraNode;
-	camera->setSRT(cameraSRT);
+	camera->setRelTransformation(cameraSRT);
 
 	// - calculate corners relative to the camera
 	const Geometry::SRT invCameraSRT = cameraSRT.inverse();

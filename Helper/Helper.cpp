@@ -411,8 +411,8 @@ void changeParentKeepTransformation(Util::Reference<Node> child, GroupNode * new
 		
 	const Geometry::Matrix4x4f ncMat = (
 		newParent != nullptr
-		? newParent->getWorldMatrix().inverse() * child->getWorldMatrix()
-		: child->getWorldMatrix()
+		? newParent->getWorldToLocalMatrix() * child->getWorldTransformationMatrix()
+		: child->getWorldTransformationMatrix()
 	);
 
 	if(newParent){
@@ -422,11 +422,11 @@ void changeParentKeepTransformation(Util::Reference<Node> child, GroupNode * new
 		child->getParent()->removeChild(child.get());
 	}
 	
-	if(child->hasSRT() && ncMat.convertsSafelyToSRT()){
-		child->setSRT(ncMat._toSRT());
+	if(child->hasRelTransformationSRT() && ncMat.convertsSafelyToSRT()){
+		child->setRelTransformation(ncMat._toSRT());
 	}
 	else{
-		child->setMatrix(ncMat);
+		child->setRelTransformation(ncMat);
 	}
 }
 

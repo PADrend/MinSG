@@ -45,7 +45,6 @@ Geometry::Vec3 worldPosToRelPos(const Node & node, const Geometry::Vec3 & worldP
 	\note All functions defined here should also work for nodes having only matrixes (and no SRTs) -- if not noted otherwise.
 */
 //	@{
-Geometry::SRT getWorldSRT(const Node & node);
 Geometry::SRT worldSRTToRelSRT(const Node & node, const Geometry::SRT & worldSRT);
 
 void rotateAroundLocalAxis(Node & node, const Geometry::Angle & angle,const Geometry::Line3 & localAxis);

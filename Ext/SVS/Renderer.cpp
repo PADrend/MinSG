@@ -74,7 +74,7 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 
 		const VisibilitySphere & visibilitySphere = retrieveVisibilitySphere(groupNode);
 		const auto & sphere = visibilitySphere.getSphere();
-		const auto worldSphere = transformSphere(sphere, groupNode->getWorldMatrix());
+		const auto worldSphere = transformSphere(sphere, groupNode->getWorldTransformationMatrix());
 #ifdef MINSG_PROFILING
 		++numSpheresVisited;
 #endif /* MINSG_PROFILING */
@@ -139,7 +139,7 @@ static void setOrUpdateAttribute(Node * node, const Util::StringIdentifier & att
 void Renderer::displaySphere(FrameContext & context, GroupNode * groupNode, const RenderParam & rp, bool skipGeometryOcclusionTest) {
 	const VisibilitySphere & visibilitySphere = retrieveVisibilitySphere(groupNode);
 	const Geometry::Sphere_f & sphere = visibilitySphere.getSphere();
-	const auto worldCenter = groupNode->getWorldMatrix().transformPosition(sphere.getCenter());
+	const auto worldCenter = groupNode->getWorldTransformationMatrix().transformPosition(sphere.getCenter());
 
 	const Geometry::Vec3f cameraPos = context.getCamera()->getWorldOrigin();
 	const Geometry::Vec3f direction = (cameraPos - worldCenter).getNormalized();

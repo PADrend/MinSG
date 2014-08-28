@@ -49,7 +49,7 @@ void Server::onNodeTransformed(Node * node){
 	if(nodeId.empty())
 		return;
 
-	const Geometry::Matrix4x4 * matrix = node->getMatrixPtr();
+	const Geometry::Matrix4x4 * matrix = node->getRelTransformationMatrixPtr();
 	if(matrix == nullptr) {
 		return;
 	}
@@ -85,7 +85,7 @@ void TreeSyncClient::execute(SceneManagement::SceneManager & sm){
 		Node * node = sm.getRegisteredNode(idToMatrix.first);
 // 		std::cout <<" #" <<idToMatrix.first.toString() <<"< ";
 		if(node){
-			node->setMatrix(idToMatrix.second);
+			node->setRelTransformation(idToMatrix.second);
 		}
 	}
 	incomingMatrixes.clear();

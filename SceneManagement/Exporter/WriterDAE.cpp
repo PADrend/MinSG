@@ -231,7 +231,7 @@ bool WriterDAE::saveFile(const FileName & fileName, Node * scene) {
 			out << std::string(indention, '\t');
 			out << "<node>\n";
 			++indention;
-			Geometry::SRT srt = node->getSRT();
+			Geometry::SRT srt = node->getRelTransformationSRT();
 			const Geometry::Vec3f & translate = srt.getTranslation();
 			if (!translate.isZero()) {
 				out << std::string(indention, '\t');

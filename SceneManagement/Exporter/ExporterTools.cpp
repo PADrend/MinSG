@@ -113,13 +113,13 @@ void ExporterTools::addSRTToDescription(DescriptionMap & description, const Geom
 }
 
 void ExporterTools::addTransformationToDescription(DescriptionMap & description, Node * node) {
-	if(node->hasSRT()) {
-		addSRTToDescription(description, node->getSRT());
-	} else if(node->hasMatrix()) {
-		if(node->getMatrixPtr()->convertsSafelyToSRT()) {
-			addSRTToDescription(description, node->getMatrixPtr()->_toSRT());
+	if(node->hasRelTransformationSRT()) {
+		addSRTToDescription(description, node->getRelTransformationSRT());
+	} else if(node->hasRelTransformation()) {
+		if(node->getRelTransformationMatrixPtr()->convertsSafelyToSRT()) {
+			addSRTToDescription(description, node->getRelTransformationMatrixPtr()->_toSRT());
 		} else {
-			addMatrixToDescription(description, *node->getMatrixPtr());
+			addMatrixToDescription(description, *node->getRelTransformationMatrixPtr());
 		}
 	}
 }

@@ -103,8 +103,8 @@ AbstractBehaviour::behaviourResult_t ParticleBoxEmitter::doExecute() {
 	ParticleSystemNode* psn = dynamic_cast<ParticleSystemNode*>(getNode());
 	const uint64_t numParticlesToEmit = static_cast<uint64_t>(particlesPerSecond * getElapsed());
 
-	Geometry::Matrix4x4f psnInv = psn->getMatrixPtr() ? (*psn->getMatrixPtr()).inverse() : Geometry::Matrix4x4f();
-	Geometry::Matrix4x4f spawnNodeMatrix = (spawnNode.isNull() || spawnNode->getMatrixPtr() == nullptr) ? Geometry::Matrix4x4f() : spawnNode->getMatrix();
+	Geometry::Matrix4x4f psnInv = psn->getRelTransformationMatrixPtr() ? (*psn->getRelTransformationMatrixPtr()).inverse() : Geometry::Matrix4x4f();
+	Geometry::Matrix4x4f spawnNodeMatrix = (spawnNode.isNull() || spawnNode->getRelTransformationMatrixPtr() == nullptr) ? Geometry::Matrix4x4f() : spawnNode->getRelTransformationMatrix();
 
 	for(; numEmittedParticles < numParticlesToEmit; ++numEmittedParticles) {
 		// create particle!

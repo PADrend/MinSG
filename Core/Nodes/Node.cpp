@@ -10,6 +10,7 @@
 */
 #include "Node.h"
 #include "GroupNode.h"
+#include "../Transformations.h"
 #include "../FrameContext.h"
 #include "../NodeAttributeModifier.h"
 #include "../States/State.h"
@@ -47,10 +48,10 @@ Node::Node(const Node & source) :
 
 	// do not copy any attributes; these have to be handled by the cloning or instancing routine
 	
-	if (source.hasSRT()){
-		setSRT(source.getSRT());
-	}else if (source.hasMatrix()) {
-		setMatrix(source.getMatrix());
+	if (source.hasRelTransformationSRT()){
+		setRelTransformation(source.getRelTransformationSRT());
+	}else if (source.hasRelTransformation()) {
+		setRelTransformation(source.getRelTransformationMatrix());
 	}
 
 	if(source.hasStates()){
@@ -168,12 +169,12 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 	bool matrixMustBePopped=false;
 
 	// - apply transformations
-	if( (rp.getFlag(USE_WORLD_MATRIX))>0 && getWorldMatrixPtr()!=nullptr ){
+	if( (rp.getFlag(USE_WORLD_MATRIX))>0 && getWorldTransformationMatrixPtr()!=nullptr ){
 		matrixMustBePopped = true;
 		context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
-		context.getRenderingContext().multMatrix_modelToCamera(*getWorldMatrixPtr());
+		context.getRenderingContext().multMatrix_modelToCamera(*getWorldTransformationMatrixPtr());
 	}else{
-		const Geometry::Matrix4x4 * m=getMatrixPtr();
+		const Geometry::Matrix4x4 * m=getRelTransformationMatrixPtr();
 		if (m) {
 			matrixMustBePopped = true;
 			context.getRenderingContext().pushMatrix_modelToCamera();
@@ -401,21 +402,21 @@ Util::GenericAttribute * Node::findAttribute(const Util::StringIdentifier & key)
 // -----------------------------------
 // ---- Matrix
 
-const Geometry::Matrix4x4* Node::getMatrixPtr() const {
-	if(hasSRT() && !getStatus(STATUS_MATRIX_REFLECTS_SRT)){ // matrix is invalid
+const Geometry::Matrix4x4* Node::getRelTransformationMatrixPtr() const {
+	if(hasRelTransformationSRT() && !getStatus(STATUS_MATRIX_REFLECTS_SRT)){ // matrix is invalid
 		relTransformation->matrix = Geometry::Matrix4x4(accessSRT());
 		setStatus(STATUS_MATRIX_REFLECTS_SRT,true);
 	}
 	return relTransformation ? &(relTransformation->matrix) : nullptr;
 }
 
-const Geometry::Matrix4x4& Node::getMatrix() const {
-	const Geometry::Matrix4x4 *m = getMatrixPtr();
+const Geometry::Matrix4x4& Node::getRelTransformationMatrix() const {
+	const Geometry::Matrix4x4 *m = getRelTransformationMatrixPtr();
 	static const Geometry::Matrix4x4 nullTransform;
 	return m ? *m : nullTransform;
 }
 
-void Node::setMatrix(const Geometry::Matrix4x4 & m) {
+void Node::setRelTransformation(const Geometry::Matrix4x4 & m) {
 	if(!relTransformation)
 		relTransformation.reset( new RelativeTransformation );
 	relTransformation->matrix = m;
@@ -424,7 +425,7 @@ void Node::setMatrix(const Geometry::Matrix4x4 & m) {
 }
 
 
-void Node::reset() {
+void Node::resetRelTransformation() {
 	setStatus(STATUS_HAS_SRT,false);
 	relTransformation.reset();
 	worldLocation.reset();
@@ -434,16 +435,16 @@ void Node::reset() {
 // -----------------------------------
 // ---- SRT
 
-const Geometry::SRT& Node::getSRT() const {
-	if(hasSRT())
+const Geometry::SRT& Node::getRelTransformationSRT() const {
+	if(hasRelTransformationSRT())
 		return relTransformation->srt;
-	else if(hasMatrix())
+	else if(hasRelTransformation())
 		return accessSRT(); 
 	static const Geometry::SRT nullTransform;
 	return nullTransform;
 }
 
-void Node::setSRT(const Geometry::SRT & newSRT) {
+void Node::setRelTransformation(const Geometry::SRT & newSRT) {
 	if(!relTransformation)
 		relTransformation.reset( new RelativeTransformation );
 	relTransformation->srt = newSRT;
@@ -452,7 +453,7 @@ void Node::setSRT(const Geometry::SRT & newSRT) {
 }
 
 Geometry::SRT & Node::accessSRT() const {
-	if(!hasSRT()) {
+	if(!hasRelTransformationSRT()) {
 		if(relTransformation){ // == hasMatrix
 			if( !relTransformation->matrix.convertsSafelyToSRT() )
 				WARN("Dirty convert of matrix to SRT");
@@ -505,8 +506,8 @@ std::vector<State*> Node::getStates()const{
 // ---- Transformations
 
 void Node::setWorldOrigin(const Geometry::Vec3 & v) {
-	const Geometry::Matrix4x4 * parentWorldMatrix = hasParent() ? getParent()->getWorldMatrixPtr() : nullptr;
-	setRelPosition( parentWorldMatrix==nullptr ? v : parentWorldMatrix->inverse().transformPosition(v) );
+	const Geometry::Matrix4x4 * parentWorldMatrix = hasParent() ? getParent()->getWorldTransformationMatrixPtr() : nullptr;
+	setRelOrigin( parentWorldMatrix==nullptr ? v : parentWorldMatrix->inverse().transformPosition(v) );
 }
 
 // -----------------------------------
@@ -649,39 +650,40 @@ size_t Node::getMemoryUsage() const {
 const Geometry::Box& Node::getWorldBB() const {
 	if(!getStatus(STATUS_WORLD_BB_VALID)) {
 		// if the node is not transformed -> delete the worldBB and the world matrix
-		if(!hasMatrix() && ( getWorldMatrixPtr()==nullptr || getWorldMatrixPtr()->isIdentity() ) ){
+		if(!hasRelTransformation() && ( getWorldTransformationMatrixPtr()==nullptr || getWorldTransformationMatrixPtr()->isIdentity() ) ){
 			worldLocation.reset();
 			setStatus(STATUS_WORLD_MATRIX_VALID, true); // this also validates the world matrix
 		} else { // node is transformed 
 			if(!worldLocation)	// no worldLocation -> create a new worldLocation
 				worldLocation.reset( new WorldLocation );
-			worldLocation->worldBB = Geometry::Helper::getTransformedBox(getBB(), getWorldMatrix());
+			worldLocation->worldBB = Geometry::Helper::getTransformedBox(getBB(), getWorldTransformationMatrix());
 		} 
 		setStatus(STATUS_WORLD_BB_VALID, true); // \note the world matrix is now also valid.
 	}
 	return worldLocation ? worldLocation->worldBB : getBB();
 }
 
-const Geometry::Matrix4x4& Node::getWorldMatrix() const {
-	static const Geometry::Matrix4x4 nullTransform;
-	const Geometry::Matrix4x4* ptr = getWorldMatrixPtr();
-	return ptr ? *ptr : nullTransform;
+static const Geometry::Matrix4x4 MAT4x4_IDENTITY;
+
+const Geometry::Matrix4x4& Node::getWorldTransformationMatrix() const {
+	const Geometry::Matrix4x4* ptr = getWorldTransformationMatrixPtr();
+	return ptr ? *ptr : MAT4x4_IDENTITY;
 }
 
-const Geometry::Matrix4x4* Node::getWorldMatrixPtr() const {
+const Geometry::Matrix4x4* Node::getWorldTransformationMatrixPtr() const {
 	if(!getStatus(STATUS_WORLD_MATRIX_VALID)) {
-		const Geometry::Matrix4x4 * localMatrix = getMatrixPtr();
-		const Geometry::Matrix4x4 * parentWorldMatrix = hasParent() ? parentNode->getWorldMatrixPtr() : nullptr;
+		const Geometry::Matrix4x4 * localMatrix = getRelTransformationMatrixPtr();
+		const Geometry::Matrix4x4 * parentWorldMatrix = hasParent() ? parentNode->getWorldTransformationMatrixPtr() : nullptr;
 
 		if(localMatrix || parentWorldMatrix ){ // node is transformed
 			if(!worldLocation)	// no worldLocation -> create a new worldLocation
 				worldLocation.reset( new WorldLocation );
 			if(localMatrix && parentWorldMatrix){
-				worldLocation->worldMatrix = (*parentWorldMatrix) * (*localMatrix);
+				worldLocation->matrix_localToWorld = (*parentWorldMatrix) * (*localMatrix);
 			}else if(parentWorldMatrix){ // && !localMatrix
-				worldLocation->worldMatrix = (*parentWorldMatrix);
+				worldLocation->matrix_localToWorld = (*parentWorldMatrix);
 			}else{ // !parentWorldMatrix && localMatrix
-				worldLocation->worldMatrix = (*localMatrix);
+				worldLocation->matrix_localToWorld = (*localMatrix);
 			}
 		}else{ // node is not transformed -> delete the worldBB and the world matrix
 			worldLocation.reset();
@@ -689,7 +691,7 @@ const Geometry::Matrix4x4* Node::getWorldMatrixPtr() const {
 		}
 		setStatus(STATUS_WORLD_MATRIX_VALID, true);
 	}
-	return worldLocation ? &(worldLocation->worldMatrix) : nullptr;
+	return worldLocation ? &(worldLocation->matrix_localToWorld) : nullptr;
 }
 
 void Node::invalidateWorldMatrix() const {
@@ -704,7 +706,24 @@ void Node::invalidateWorldMatrix() const {
 		}
 	});
 }
+Geometry::Matrix4x4 Node::getWorldToLocalMatrix() const{
+	const Geometry::Matrix4x4* ptr = getWorldTransformationMatrixPtr();
+	return ptr ? ptr->inverse() : MAT4x4_IDENTITY;
+}
 
+void Node::setWorldTransformation(const Geometry::SRT & worldSRT){
+	setRelTransformation( Transformations::worldSRTToRelSRT(*this, worldSRT) );
+}
+
+Geometry::SRT Node::getWorldTransformationSRT() const{
+	if(!hasParent() || getParent()->getWorldTransformationMatrixPtr()==nullptr){	// the node is not in a transformed subtree
+		return getRelTransformationSRT();
+	}else{
+		const auto worldDir = getWorldTransformationMatrix().transformDirection( Geometry::Vec3(0,0,1) );
+		const auto worldUp =  getWorldTransformationMatrix().transformDirection( Geometry::Vec3(0,1,0) );
+		return Geometry::SRT( getWorldOrigin(),worldDir ,worldUp, worldDir.length() );
+	}
+}
 
 }
 

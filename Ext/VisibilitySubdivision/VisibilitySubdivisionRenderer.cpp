@@ -124,7 +124,7 @@ State::stateResult_t VisibilitySubdivisionRenderer::doEnableState(
 	// [AccumRendering]
 	if(accumRenderingEnabled){
 		// camera moved? -> start new frame
-		const Geometry::Matrix4x4 & newCamMat=context.getCamera()->getWorldMatrix();
+		const Geometry::Matrix4x4 & newCamMat=context.getCamera()->getWorldTransformationMatrix();
 		if(newCamMat!=lastCamMatrix){
 			lastCamMatrix = newCamMat;
 			startRuntime=0;

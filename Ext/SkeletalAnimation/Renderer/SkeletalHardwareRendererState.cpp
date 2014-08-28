@@ -211,7 +211,7 @@ void SkeletalHardwareRendererState::validateMatriceOrder(Node *node)
     
         if(!SkeletalAnimationUtils::generateUniformTexture(bindMatrix, inverseMatContainer, jointMats, &pa))
             WARN("Could not generate joint texture.");
-        SkeletalAnimationUtils::putMatrixInTexture(5, rootJoint->getWorldMatrix().inverse(), &pa);
+        SkeletalAnimationUtils::putMatrixInTexture(5, rootJoint->getWorldTransformationMatrix().inverse(), &pa);
     }else if(shaderType == UNIFORM)
     {
         if(rootJoint->getJointMapSize() > 8)
@@ -220,7 +220,7 @@ void SkeletalHardwareRendererState::validateMatriceOrder(Node *node)
             return;
         }else {            
             setUniform(Uniform("jointInv", inverseMatContainer));
-            setUniform(Uniform("invWorldMatrix", rootJoint->getWorldMatrix().inverse()));
+            setUniform(Uniform("invWorldMatrix", rootJoint->getWorldTransformationMatrix().inverse()));
         }
     }
     
@@ -250,7 +250,7 @@ State::stateResult_t SkeletalHardwareRendererState::doEnableState(FrameContext &
     
     if(shaderType == TEXTURE)
     {
-        SkeletalAnimationUtils::putMatrixInTexture(5, rootJoint->getWorldMatrix().inverse(), &pa);
+        SkeletalAnimationUtils::putMatrixInTexture(5, rootJoint->getWorldTransformationMatrix().inverse(), &pa);
         SkeletalAnimationUtils::putMatricesInTexture(9+inverseMatContainer.size()*4, jointMats, &pa);
         
         texture.get()->_uploadGLTexture(context.getRenderingContext());
@@ -260,7 +260,7 @@ State::stateResult_t SkeletalHardwareRendererState::doEnableState(FrameContext &
         }
         
     }else if(shaderType == UNIFORM) {
-        setUniform(context, Uniform("invWorldMatrix", rootJoint->getWorldMatrix().inverse()));
+        setUniform(context, Uniform("invWorldMatrix", rootJoint->getWorldTransformationMatrix().inverse()));
         setUniform(context, Uniform("joints", jointMats));
     }
     
@@ -275,7 +275,7 @@ void SkeletalHardwareRendererState::doDisableState(FrameContext & context,Node *
 void SkeletalHardwareRendererState::generateJointGLArray(vector<Geometry::Matrix4x4> *container)
 {        
     for(const auto item : matriceOrder)
-        container->emplace_back(item->getWorldMatrix());
+        container->emplace_back(item->getWorldTransformationMatrix());
 }
     
 }

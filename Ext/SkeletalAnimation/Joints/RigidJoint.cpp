@@ -21,7 +21,7 @@ namespace MinSG {
 RigidJoint::RigidJoint(JointNode *source) : JointNode(source->getId(), source->getName())
 {
     init(Matrix4x4(), false);
-    setMatrix(source->getMatrix());
+    setRelTransformation(source->getRelTransformationMatrix());
     setBindMatrix(*source->getBindMatrix());
 }
 
@@ -44,7 +44,7 @@ void RigidJoint::init(Geometry::Matrix4x4 _offsetMatrix, bool _stacking)
 //RigidJoint * RigidJoint::clone()const
 //{
 //    RigidJoint *myclone = new RigidJoint(getId(), getName(), offsetMatrix, stacking);
-//    myclone->setMatrix(getMatrix());
+//    myclone->setMatrix(getRelTransformationMatrix());
 //    myclone->setBindMatrix(*getBindMatrix());
 //    
 //    return myclone;
@@ -72,7 +72,7 @@ void RigidJoint::doAddChild(Util::Reference<Node> _child)
         for(uint32_t i=0; i<countChildren(); ++i)
             childPositionOffset.translate(0.0, 0.0, getChild(i)->getBB().getMaxZ());
     
-    _child.get()->setMatrix(_child.get()->getMatrix() * childPositionOffset);
+    _child.get()->setRelTransformation(_child.get()->getRelTransformationMatrix() * childPositionOffset);
     inverseChildMatrices[_child] = childPositionOffset.inverse();
     
     ListNode::doAddChild(_child);
@@ -82,7 +82,7 @@ bool RigidJoint::doRemoveChild(Util::Reference<Node> _childToRemove)
 {      
     for(auto child : inverseChildMatrices)
         if(child.first.get() == _childToRemove.get())
-            _childToRemove.get()->setMatrix(_childToRemove.get()->getMatrix() * child.second);
+            _childToRemove.get()->setRelTransformation(_childToRemove.get()->getRelTransformationMatrix() * child.second);
         
     return ListNode::doRemoveChild(_childToRemove);
 }

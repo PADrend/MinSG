@@ -23,9 +23,9 @@ void FakeInstanceNode::doDisplay(FrameContext & frameContext, const RenderParam 
 	}
 
 	auto camera = static_cast<AbstractCameraNode*>(frameContext.getCamera()->clone());
-	const Geometry::Matrix4x4f & cameraMatrix = frameContext.getCamera()->getWorldMatrix();
-	camera->setMatrix(	fakePrototype->getWorldMatrix() 
-						* getWorldMatrix().inverse() 
+	const Geometry::Matrix4x4f & cameraMatrix = frameContext.getCamera()->getWorldTransformationMatrix();
+	camera->setRelTransformation(	fakePrototype->getWorldTransformationMatrix() 
+						* getWorldToLocalMatrix() 
 						* cameraMatrix);
 
 	frameContext.pushAndSetCamera(camera);

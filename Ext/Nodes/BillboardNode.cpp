@@ -61,8 +61,8 @@ void BillboardNode::doDisplay(FrameContext & context,const RenderParam & rp){
 	// TODO here we have got a problem when using lots of Billboard nodes
 	// this should be reimplemented without inverting matrices
 
-	if(hasParent() && !getParent()->getWorldMatrix().isIdentity()){
-		Matrix4x4f iwm = getParent()->getWorldMatrix().inverse();
+	if(hasParent() && !getParent()->getWorldTransformationMatrix().isIdentity()){
+		Matrix4x4f iwm = getParent()->getWorldTransformationMatrix().inverse();
 		dir = iwm.transformDirection(dir);
 		up = iwm.transformDirection(up);
 	}
@@ -74,7 +74,7 @@ void BillboardNode::doDisplay(FrameContext & context,const RenderParam & rp){
 		createMesh();
 
 	context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
-	context.getRenderingContext().multMatrix_modelToCamera(getWorldMatrix());
+	context.getRenderingContext().multMatrix_modelToCamera(getWorldTransformationMatrix());
 
 	GeometryNode::doDisplay(context,rp);
 

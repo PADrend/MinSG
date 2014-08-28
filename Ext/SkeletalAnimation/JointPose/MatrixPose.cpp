@@ -48,7 +48,7 @@ void MatrixPose::init(std::deque<double> _values, std::deque<double> _timeline, 
 	maxPoseCount = 0;
     
     if(getBindetJoint() != nullptr && keyframes.size() > 0)
-        getBindetJoint()->setMatrix(keyframes[0]);
+        getBindetJoint()->setRelTransformation(keyframes[0]);
     
 	setValues(_values, _timeline, _interpolationTypes);
 }
@@ -214,7 +214,7 @@ void MatrixPose::update(double timeSec)
             tmpMat[i] = startMat[i];
     }
     
-    getBindetJoint()->setMatrix(tmpMat);
+    getBindetJoint()->setRelTransformation(tmpMat);
 }
 
 void MatrixPose::restart()
@@ -228,7 +228,7 @@ void MatrixPose::restart()
 	currentInterpolationType = interpolationTypes[0];
     
     if(getBindetJoint() != nullptr)
-        getBindetJoint()->setMatrix(startMat);
+        getBindetJoint()->setRelTransformation(startMat);
 }
 
 }

@@ -50,7 +50,7 @@ PathNode::PathNode(const PathNode & source):
 		metaDisplayWaypoints(source.metaDisplayWaypoints),
 		metaDisplayTimes(source.metaDisplayTimes) {
 	for(const auto & elem : source.waypoints) {
-		createWaypoint(elem.second->getSRT(), elem.second->getTime());
+		createWaypoint(elem.second->getRelTransformationSRT(), elem.second->getTime());
 	}
 }
 
@@ -79,7 +79,7 @@ void PathNode::closeLoop(AbstractBehaviour::timestamp_t time) {
 	if (countWaypoints()==0) {
 		return;
 	}
-	Geometry::SRT pos=(*waypoints.begin()).second->getSRT();
+	Geometry::SRT pos=(*waypoints.begin()).second->getRelTransformationSRT();
 	createWaypoint(pos,time);
 }
 
@@ -123,11 +123,11 @@ Geometry::SRT PathNode::getPosition(AbstractBehaviour::timestamp_t time)const {
 	}
 	auto it=getNextWaypoint(time);
 	if (it==waypoints.begin()) {
-		return it->second->getSRT();
+		return it->second->getRelTransformationSRT();
 	}
 	if (it==waypoints.end()) {
 		--it;
-		return it->second->getSRT();
+		return it->second->getRelTransformationSRT();
 	}
 	Waypoint * w1=it->second.get();
 	--it;
@@ -135,11 +135,11 @@ Geometry::SRT PathNode::getPosition(AbstractBehaviour::timestamp_t time)const {
 	// TODO Check if Geometry::Interpolation can be used here
 	float blend=1.0f-((w2->getTime()-time)/(w2->getTime()-w1->getTime()));
 
-	return Geometry::SRT( w1->getSRT(),w2->getSRT(),blend);
+	return Geometry::SRT( w1->getRelTransformationSRT(),w2->getRelTransformationSRT(),blend);
 }
 
 Geometry::SRT PathNode::getWorldPosition(AbstractBehaviour::timestamp_t time) {
-	return getWorldMatrix()._toSRT() * getPosition(time);
+	return getWorldTransformationMatrix()._toSRT() * getPosition(time);
 }
 
 void PathNode::updateWaypoint(Waypoint * wp,AbstractBehaviour::timestamp_t newTime){

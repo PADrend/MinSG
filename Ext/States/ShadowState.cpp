@@ -86,7 +86,7 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	const Geometry::Vec3f camUp = camRight.cross(camDir).normalize();
 
 	Util::Reference<CameraNode> camera = new CameraNode;
-	camera->setSRT(Geometry::SRT(camPos, -camDir, camUp));
+	camera->setRelTransformation(Geometry::SRT(camPos, -camDir, camUp));
 
 	// Calculate minimum and maximum distance of all bounding box corners to camera.
 	const Geometry::Plane camPlane(camPos, camDir);
@@ -97,7 +97,7 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	float rightAngle = 0.0f;
 	float topAngle = 0.0f;
 	float bottomAngle = 0.0f;
-	const Geometry::Matrix4x4f cameraMatrix = camera->getWorldMatrix().inverse();
+	const Geometry::Matrix4x4f cameraMatrix = camera->getWorldTransformationMatrix().inverse();
 	for (uint_fast8_t c = 0; c < 8; ++c) {
 		const Geometry::corner_t corner = static_cast<Geometry::corner_t>(c);
 		const Geometry::Vec3f cornerPos = box.getCorner(corner);

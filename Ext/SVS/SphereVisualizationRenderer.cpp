@@ -79,7 +79,7 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 			Util::Reference<Rendering::Mesh> sphereMesh = Rendering::MeshUtils::MeshBuilder::createSphere(vertexDescription, 64, 64);
 			Util::Reference<GeometryNode> sphereNode = new GeometryNode(sphereMesh);
 			sphereNode->setWorldOrigin(sphere.getCenter());
-			sphereNode->setScale(sphere.getRadius());
+			sphereNode->setRelScaling(sphere.getRadius());
 
 			Rendering::MaterialParameters materialParams;
 			materialParams.setAmbient(Util::Color4f(0.0f, 1.0f, 0.0f, 1.0f));
@@ -121,7 +121,7 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 			node->setAttribute(attributeId, attribute);
 		}
 		context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
-		context.getRenderingContext().multMatrix_modelToCamera(groupNode->getWorldMatrix());
+		context.getRenderingContext().multMatrix_modelToCamera(groupNode->getWorldTransformationMatrix());
 		attribute->get()->display(context, FRUSTUM_CULLING);
 		context.getRenderingContext().popMatrix_modelToCamera();
 	} catch(const std::exception & e) {

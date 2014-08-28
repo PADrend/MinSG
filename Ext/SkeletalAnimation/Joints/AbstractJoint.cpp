@@ -54,7 +54,7 @@ namespace MinSG {
     
     void AbstractJoint::setBindMatrix(Geometry::Matrix4x4 _bindMatrix) {
         bindMatrix = Geometry::Matrix4x4(_bindMatrix);
-        setMatrix(_bindMatrix);
+        setRelTransformation(_bindMatrix);
     }
 
 }

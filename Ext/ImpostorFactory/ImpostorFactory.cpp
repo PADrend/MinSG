@@ -61,7 +61,7 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 	cameraOrtho->setWorldOrigin(position);
 	Transformations::rotateToWorldDir(*cameraOrtho.get(),direction);
 
-	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldMatrix().inverse() * node->getWorldMatrix());
+	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldToLocalMatrix() * node->getWorldTransformationMatrix());
 	cameraOrtho->setNearFar(frustum.getNear(), frustum.getFar());
 	cameraOrtho->setClippingPlanes(frustum.getLeft(), frustum.getRight(), frustum.getBottom(), frustum.getTop());
 
@@ -156,7 +156,7 @@ GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node 
 	cameraOrtho->setWorldOrigin(position);
 	Transformations::rotateToWorldDir(*cameraOrtho.get(),direction);
 
-	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldMatrix().inverse() * node->getWorldMatrix());
+	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldToLocalMatrix() * node->getWorldTransformationMatrix());
 	cameraOrtho->setNearFar(frustum.getNear(), frustum.getFar());
 	cameraOrtho->setClippingPlanes(frustum.getLeft(), frustum.getRight(), frustum.getBottom(), frustum.getTop());
 
