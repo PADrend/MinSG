@@ -150,7 +150,7 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	context.getRenderingContext().clearDepth(1.0f);
 
 	// Save matrices.
-	const Geometry::Matrix4x4f lightProjectionMatrix = context.getRenderingContext().getMatrix_cameraToClip();
+	const Geometry::Matrix4x4f lightProjectionMatrix = context.getRenderingContext().getMatrix_cameraToClipping();
 	const Geometry::Matrix4x4f lightModelViewMatrix = context.getRenderingContext().getMatrix_modelToCamera();
 
 	context.getRenderingContext().pushAndSetPolygonOffset(Rendering::PolygonOffsetParameters(1.1f, 4.0f));

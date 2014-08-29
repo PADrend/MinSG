@@ -80,7 +80,7 @@ void FrameContext::setCamera(AbstractCameraNode * newCamera) {
 	// OVERSIZE_FRUSTUM: If you want to debug frustum culling, uncomment the next line.
 	// projectionMatrix.scale(1.0f, 1.0f, 1.5f);
 
-	renderingContext->setMatrix_cameraToClip(projectionMatrix);
+	renderingContext->setMatrix_cameraToClipping(projectionMatrix);
 	renderingContext->setMatrix_cameraToWorld(camera->getWorldTransformationMatrix());
 	renderingContext->setMatrix_modelToCamera( renderingContext->getMatrix_worldToCamera() );
 
@@ -112,7 +112,7 @@ Vec3 FrameContext::convertWorldPosToScreenPos(const Vec3 & objPos) const {
 		return Vec3();
 	}
 	const Geometry::Rect cameraViewport(getCamera()->getViewport());
-	const auto transformation = renderingContext->getMatrix_cameraToClip() * renderingContext->getMatrix_worldToCamera();
+	const auto transformation = renderingContext->getMatrix_cameraToClipping() * renderingContext->getMatrix_worldToCamera();
 	Vec3 result = Geometry::project(objPos, transformation, cameraViewport);
 	result.setY(cameraViewport.getHeight() - result.getY());
 	return result;
@@ -125,7 +125,7 @@ Vec3 FrameContext::convertScreenPosToWorldPos(const Vec3 & screenPos) const {
 		return Vec3();
 	}
 	const Geometry::Rect cameraViewport(getCamera()->getViewport());
-	const auto transformation = renderingContext->getMatrix_cameraToClip() * renderingContext->getMatrix_worldToCamera();
+	const auto transformation = renderingContext->getMatrix_cameraToClipping() * renderingContext->getMatrix_worldToCamera();
 	return Geometry::unProject(Geometry::Vec3(screenPos.getX(), cameraViewport.getHeight() - screenPos.getY(), screenPos.getZ()),
 								transformation, cameraViewport);
 }
@@ -135,7 +135,7 @@ Geometry::Rect FrameContext::getProjectedRect(Node * node) const {
 }
 
 Geometry::Rect FrameContext::getProjectedRect(Node * node, const Geometry::Rect & screenRect) const {
-	return Geometry::projectBox(node->getBB(), renderingContext->getMatrix_worldToCamera() * node->getWorldTransformationMatrix(), renderingContext->getMatrix_cameraToClip(), screenRect);
+	return Geometry::projectBox(node->getBB(), renderingContext->getMatrix_worldToCamera() * node->getWorldTransformationMatrix(), renderingContext->getMatrix_cameraToClipping(), screenRect);
 }
 
 // -----------------------------------

@@ -95,8 +95,8 @@ GenericAttribute * DirectionalInterpolator::calculateValue(Rendering::RenderingC
 void DirectionalInterpolator::calculateRatio(Rendering::RenderingContext & renderingContext, float ratio[6],const Frustum & frustum,float measurementApertureAngle_deg/*=90.0*/ ){
 
 	{ // Setup OpenGL
-		renderingContext.pushMatrix_cameraToClip();
-		renderingContext.setMatrix_cameraToClip(frustum.getProjectionMatrix());
+		renderingContext.pushMatrix_cameraToClipping();
+		renderingContext.setMatrix_cameraToClipping(frustum.getProjectionMatrix());
 
 		Matrix4x4 m;
 		m.lookAt(Vec3(0,0,0), frustum.getDir(), frustum.getUp());
@@ -152,7 +152,7 @@ void DirectionalInterpolator::calculateRatio(Rendering::RenderingContext & rende
 		renderingContext.popLighting();
 		renderingContext.popColorBuffer();
 		renderingContext.popMatrix_modelToCamera();
-		renderingContext.popMatrix_cameraToClip();
+		renderingContext.popMatrix_cameraToClipping();
 	}
 
 	 // query results

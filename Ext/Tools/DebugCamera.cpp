@@ -30,7 +30,7 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 	if(rc.getColorBufferParameters().isAnyWritingEnabled() || rc.getDepthBufferParameters().isWritingEnabled()) {
 		
 		rc.pushFBO();
-		rc.pushMatrix_cameraToClip();
+		rc.pushMatrix_cameraToClipping();
 		rc.pushMatrix_modelToCamera();
 		rc.pushViewport();
 		rc.pushScissor();
@@ -38,7 +38,7 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 		const Geometry::Matrix4x4 mod = rc.getMatrix_modelToCamera();
 		
 		rc.setFBO(fbo.get());
-		rc.setMatrix_cameraToClip(debug->getFrustum().getProjectionMatrix());
+		rc.setMatrix_cameraToClipping(debug->getFrustum().getProjectionMatrix());
 		rc.setMatrix_cameraToWorld(debug->getWorldTransformationMatrix());
 		rc.setMatrix_modelToCamera(conversionMatrix * mod);
 		rc.setViewport(debug->getViewport());
@@ -54,7 +54,7 @@ void DebugCamera::displayMesh(RenderingContext & rc, Mesh * mesh) {
 		rc.setMatrix_cameraToWorld(original->getWorldTransformationMatrix());
 		
 		rc.popFBO();
-		rc.popMatrix_cameraToClip();
+		rc.popMatrix_cameraToClipping();
 		rc.popMatrix_modelToCamera();
 		rc.popViewport();
 		rc.popScissor();
