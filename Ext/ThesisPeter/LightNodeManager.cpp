@@ -191,27 +191,30 @@ unsigned int LightNodeManager::addTreeToDebug(Geometry::Vec3 parentPos, float pa
 				case 7:	childPos += Geometry::Vec3(parentSize * 0.25f, parentSize * 0.25f, -parentSize * 0.25f); break;
 				}
 				//draw line
-				debug->addDebugLine(parentPos, childPos, Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 0.5f, 1, 1));
+//				debug->addDebugLine(parentPos, childPos, Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 0.5f, 1, 1));
 
 				counter += addTreeToDebug(childPos, parentSize * 0.5f, depth + 1, childID, pixelAccessor);
 			}
 		}
 	}
 
-	//draw box (as lines)
-	float mov = parentSize * 0.5f;
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
-	debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
+	if(depth >= VOXEL_OCTREE_DEPTH){
+		//draw box (as lines)
+//		float mov = parentSize * 0.5f;
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
+		debug->addDebugBox(parentPos, parentSize, boxColor, boxColor2);
+	}
 
 	return counter;
 }
@@ -261,9 +264,9 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 //	}
 
 	//draw tree debug
-//	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
-//	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
-//	std::cout << "Number debug nodes: " << addTreeToDebug(rootNodeMidpoint, lightRootNode->getWorldBB().getExtentMax(), 0, 0, voxelOctreeAcc.get()) << std::endl;
+	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
+	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
+	std::cout << "Number debug nodes: " << addTreeToDebug(rootNodeMidpoint, lightRootNode->getWorldBB().getExtentMax(), 0, 0, voxelOctreeAcc.get()) << std::endl;
 
 	Rendering::checkGLError(__FILE__, __LINE__);
 	//DEBUG END
@@ -285,19 +288,20 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	createLightEdges(atomicCounter.get());
 
 	//DEBUG to show the edges
-	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
-		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
-			debug->addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
-		}
-		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
-			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-				debug->addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
-			}
-		}
-	}
+//	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+//		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
+//			debug->addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
+//		}
+//		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+//			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+//				debug->addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
+//			}
+//		}
+//	}
 	//DEBUG END
 
 	debug->buildDebugLineNode();
+	debug->buildDebugFaceNode();
 	Rendering::checkGLError(__FILE__, __LINE__);
 }
 
@@ -310,7 +314,7 @@ void LightNodeManager::createLightNodes(){
 }
 
 void LightNodeManager::createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
-	createLightNodesPerVertexPercent(node, lightNodes, 0.1f);
+	createLightNodesPerVertexPercent(node, lightNodes, 0.01f);
 }
 
 void LightNodeManager::mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
@@ -558,7 +562,7 @@ void LightNodeManager::addLightEdge(LightNode* source, LightNode* target, std::v
 }
 
 void LightNodeManager::filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
-	filterIncorrectEdgesAsTexture(edges, octreeTexture, atomicCounter);
+	filterIncorrectEdgesAsTextureCPU(edges, octreeTexture, atomicCounter);
 }
 
 void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
@@ -666,7 +670,7 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 
 	debug->addDebugLine(rootNodeMidpoint, Geometry::Vec3(rootNodeMidpoint.x(), rootNodeMidpoint.y() + 1, rootNodeMidpoint.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
 	std::cout << "Root Node Midpoint: " << rootNodeMidpoint.x() << "x" << rootNodeMidpoint.y() << "x" << rootNodeMidpoint.z() << std::endl;
-	std::cout << "quarterSizeOfRootNode: " << lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f << std::endl;
+	std::cout << "halfSizeOfRootNode: " << lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f << std::endl;
 	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", rootNodeMidpoint));
 	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
 	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
@@ -716,7 +720,7 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 		uint8_t value = accOut.get()->readSingleValueByte(x, y);
 
 		if(value == 0) filteredEdges.push_back((*edges)[i]);
-		else debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(1, 0, 1, 1), Util::Color4f(1, 0, 1, 1));
+		else debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
 
 //		x = (x + 1) % outputTextureSize;
 //		if(x == 0) y++;
@@ -732,7 +736,7 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 //		if(data[i] == 0) filteredEdges.push_back((*edges)[i]);
 	}
 
-	unsigned int counter = 0;
+	unsigned int counter = 0, counter2 = 0, counter3 = 0;
 	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeOutput.get());
 	for(unsigned int i = 1; i < outputTextureSize * outputTextureSize; i++){
 		unsigned int x = i % outputTextureSize;
@@ -747,16 +751,526 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 			if(counter++ >= 500) break;
 //			if(i >= 10) break;
 		}
-//		if(value != 9 && value != 10){
+//		if(value == 2){
 //			counter++;
+//		} else if(value == 4){
+//			counter2++;
+//		} else {
+//			counter3++;
 //		}
 	}
+	std::cout << "Counter: " << counter << " Counter2: " << counter2 << " Counter3: " << counter3 << std::endl;
 
-	std::cout << "Counter: " << counter << std::endl;
 	std::cout << "comming here 6" << std::endl;
 
 	//write back the filtered edges
 	(*edges) = filteredEdges;
+}
+
+void LightNodeManager::filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
+	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
+	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
+	float rootSizeHalf = lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f;
+	Geometry::Vec3 treeMin(rootNodeMidpoint.x() - rootSizeHalf, rootNodeMidpoint.y() - rootSizeHalf, rootNodeMidpoint.z() - rootSizeHalf);
+	Geometry::Vec3 treeMax(rootNodeMidpoint.x() + rootSizeHalf, rootNodeMidpoint.y() + rootSizeHalf, rootNodeMidpoint.z() + rootSizeHalf);
+
+	std::vector<LightEdge*> filteredEdges;
+
+	quarterSizeOfRootNode = lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f;
+	voxelOctreeTextureSize = octreeTexture->getWidth();
+	rootMidPos = rootNodeMidpoint;
+	Util::Reference<Util::PixelAccessor> octreeAcc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *octreeTexture);
+
+//	int falseEdges = 8;
+
+	for(unsigned int i = 132; i < edges->size(); i++){
+		Geometry::Vec3 lineDirection = (*edges)[i]->target->position - (*edges)[i]->source->position;
+		lineDirection.normalize();
+
+		setStartEndNodes((*edges)[i]->source->position, (*edges)[i]->target->position, octreeAcc);
+
+		if(checkLine(treeMin, treeMax, (*edges)[i]->source->position, lineDirection, octreeAcc) == 0){
+			filteredEdges.push_back((*edges)[i]);
+//			debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 0, 1), Util::Color4f(0, 1, 0, 1));
+//			if(i > 0 && (*edges)[i]->source != (*edges)[i - 1]->source) falseEdges--;
+//			if(falseEdges <= 0){
+				std::cout << "Edge number: " << i << std::endl;
+//				break;
+//			}
+		} else {
+			debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
+		}
+		break;
+	}
+
+	*edges = filteredEdges;
+}
+
+//return 1, if the line shall be deleted, 0 if not
+int LightNodeManager::checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeMax, Geometry::Vec3 rayOrigin, Geometry::Vec3 rayDirection, Util::Reference<Util::PixelAccessor> octreeAcc){
+	Geometry::Vec3 newRayStart = rayOrigin;
+	Geometry::Vec3 newRayDir = rayDirection;
+
+	debug->addDebugLine(rayOrigin, Geometry::Vec3(rayOrigin.x(), rayOrigin.y() + 0.1f, rayOrigin.z()), Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
+	debug->addDebugLine(rayOrigin, rayOrigin + rayDirection, Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
+	//change lookup to only walk in positive directions
+	octreeLookupDifference = 0;
+	if(newRayDir.x() < 0.0){
+		newRayStart.setX(newRayStart.x() + 2 * (rootMidPos.x() - newRayStart.x()));
+		newRayDir.setX(-newRayDir.x());
+		octreeLookupDifference |= 4;
+	}
+	if(newRayDir.y() < 0.0){
+		newRayStart.setY(newRayStart.y() + 2 * (rootMidPos.y() - newRayStart.y()));
+		newRayDir.setY(-newRayDir.y());
+		octreeLookupDifference |= 2;
+	}
+	if(newRayDir.z() < 0.0){
+		newRayStart.setZ(newRayStart.z() + 2 * (rootMidPos.z() - newRayStart.z()));
+		newRayDir.setZ(-newRayDir.z());
+		octreeLookupDifference |= 1;
+	}
+
+	debug->addDebugLine(newRayStart, Geometry::Vec3(newRayStart.x(), newRayStart.y() + 0.1f, newRayStart.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 1, 1));
+	debug->addDebugLine(newRayStart, newRayStart + newRayDir, Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 1, 1));
+
+	//calculate the "boundings" for the ray within the octree
+	Geometry::Vec3 t0 = (octreeMin - newRayStart);// / newRayDir;
+	Geometry::Vec3 t1 = (octreeMax - newRayStart);// / newRayDir;
+	t0.setX(t0.x() / newRayDir.x());
+	t0.setY(t0.y() / newRayDir.y());
+	t0.setZ(t0.z() / newRayDir.z());
+	t1.setX(t1.x() / newRayDir.x());
+	t1.setY(t1.y() / newRayDir.y());
+	t1.setZ(t1.z() / newRayDir.z());
+
+//	debug->addDebugBoxLinesMinMax(octreeMin, octreeMax);
+//	debug->addDebugBoxLinesMinMax(t0, t1);
+
+	//look, if the line is inside the octree (TODO: might be skipped, since it will always be true in our scenario)
+	if(std::max(t0.x(), std::max(t0.y(), t0.z())) < std::min(t1.x(), std::min(t1.y(), t1.z()))){
+		//do the actual intersection test
+		return testIntersection(t0, t1, newRayStart, rayOrigin, newRayDir, octreeAcc);
+	} else {
+		//if the line is not inside the box, delete it (since the box surrounds the whole scene), should never happen though
+		return 1;
+	}
+}
+
+int LightNodeManager::testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geometry::Vec3 lineStart, Geometry::Vec3 origLineStart, Geometry::Vec3 lineDir, Util::Reference<Util::PixelAccessor> octreeAcc){
+	int curDepth = 0;
+	bool moveUp = false;
+
+	//the stack to iteratively simulate the recursive function calls
+	FilterEdgeState nodeStates[VOXEL_OCTREE_DEPTH + 1];
+
+	firstNodeRoot(t0, t1, origLineStart, nodeStates, &curDepth, octreeAcc);
+
+//	Geometry::Vec3 midpos = lineStart + Geometry::Vec3(lineDir.x() * t0.x(), lineDir.y() * t0.y(), lineDir.z() * t0.z());;
+//	debug->addDebugBox(midpos, 0.01);
+//	Geometry::Vec3 midpos2 = lineStart + Geometry::Vec3(lineDir.x() * t1.x(), lineDir.y() * t1.y(), lineDir.z() * t1.z());;
+//	debug->addDebugBox(midpos2, 0.1);
+
+	Geometry::Vec3 midPoints[VOXEL_OCTREE_DEPTH + 1];
+	midPoints[0] = rootMidPos;
+	debug->addDebugBoxLines(midPoints[0], (4 * quarterSizeOfRootNode) / (1 << 0));
+	std::cout << "lookupDifference: " << octreeLookupDifference << std::endl;
+	std::cout << "Child ids: " << (nodeStates[0].childID ^ octreeLookupDifference);
+	for(unsigned int i = 1; i < curDepth; i++){
+		std::cout << " " << (nodeStates[i].childID ^ octreeLookupDifference);
+		getNewMidPos(midPoints[i - 1], nodeStates[i - 1].childID ^ octreeLookupDifference, (i - 1), &midPoints[i]);
+		debug->addDebugBoxLines(midPoints[i], (4 * quarterSizeOfRootNode) / (1 << i));
+	}
+	std::cout << std::endl;
+
+////	if(bigChange){
+//		gl_FragColor = (1 + dot(t1, lineDir)) / 255.0;
+////	} else {
+////		gl_FragColor = 2 / 255.0;
+////	}
+//	return;
+
+//	gl_FragColor = curDepth / 255.0;// nodeStates[curDepth-1].childID / 255.0;
+//	return;
+
+	//test, if the maximum point is inside the node area TODO: needed? if yes needed for every node?
+//	if(t1.x < 0.0 || t1.y < 0.0 || t1.z < 0.0) return;
+//
+//	//initialize the root node data
+//	nodeStates[curDepth].t0 = t0;
+//	nodeStates[curDepth].t1 = t1;
+//	nodeStates[curDepth].nodeOffset = 0;
+//	nodeStates[curDepth].tm = 0.5 * (t0 + t1);
+//	nodeStates[curDepth].childID = getChildOffset(rootMidPos, lineStart); //firstNode(nodeStates[curDepth].t0, nodeStates[curDepth].tm);
+
+	do {
+		if(nodeStates[curDepth - 1].childID < 8 && !moveUp){
+			std::cout << "childID was " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << std::endl;
+			//Way is blocked, if not the same field as start or ending of the node
+			if(nodeStates[curDepth - 1].nodeOffset == endNodeID){
+				std::cout << "found end " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << std::endl;
+				//currentNode is the endPoint of the line, so the search is finished and no interference with objects was found
+//				gl_FragColor = 3.0 / 255.0;
+//				return;
+				return 0;
+			} else if(curDepth >= VOXEL_OCTREE_DEPTH + 1){
+				std::cout << "end not found: " << nodeStates[curDepth - 1].nodeOffset << ", but end: " << endNodeID << " with child " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << std::endl;
+				if(nodeStates[VOXEL_OCTREE_DEPTH].nodeOffset == startNodeID){
+					std::cout << "found start" << std::endl;
+					//current node is the startPoint of the line, so do not delete edge here, move on searching
+//					gl_FragColor = 2.0 / 255.0;
+//					return;
+//					return 0;
+					moveUp = true;
+				} else {
+					std::cout << "start not found: " << nodeStates[curDepth - 1].nodeOffset << ", but end: " << startNodeID << " with child " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << std::endl;
+					//current node is not the start or end point of the line, so delete the edge
+//					imageStore(voxelOctree, getNodeIndex(curNodeID * NODE_SIZE), uvec4(1, 0, 0, 0));
+					return 1;
+				}
+			} else {
+				std::cout << "traveling down" << " with child " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << std::endl;
+				//travel down to a leaf
+//				gl_FragColor = 4.0 / 255.0;
+//				return;
+				Geometry::Vec2i childIndex;
+				getNodeIndexVoxelOctree(nodeStates[curDepth - 1].nodeOffset * VOXEL_OCTREE_SIZE_PER_NODE + (nodeStates[curDepth - 1].childID ^ octreeLookupDifference), &childIndex);
+				nodeStates[curDepth].nodeOffset = (int)(octreeAcc->readColor4f(childIndex.x(), childIndex.y()).r());
+				if(nodeStates[curDepth].nodeOffset == 0){
+					std::cout << "node not existent" << " with child " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << std::endl;
+					//node did not exist, so move one level up again
+//					gl_FragColor = (curDepth + 6) / 255.0;
+//					return;
+					curDepth++;
+					moveUp = true;
+				} else {
+					std::cout << "node exists" << " with child " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << std::endl;
+					getNewMidPos(midPoints[curDepth - 1], nodeStates[curDepth - 1].childID ^ octreeLookupDifference, (curDepth - 1), &midPoints[curDepth]);
+					debug->addDebugBoxLines(midPoints[curDepth], (4 * quarterSizeOfRootNode) / (1 << curDepth));
+					//node exists, so fill stack with data
+//					gl_FragColor = 4.0 / 255.0;
+//					return;
+					switch(nodeStates[curDepth - 1].childID){
+					case 0:
+						nodeStates[curDepth].t0 = nodeStates[curDepth - 1].t0;
+						nodeStates[curDepth].t1 = nodeStates[curDepth - 1].tm;
+						break;
+					case 1:
+						nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].t0.x(), nodeStates[curDepth - 1].t0.y(), nodeStates[curDepth - 1].tm.z());
+						nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t1.z());
+						break;
+					case 2:
+						nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].t0.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t0.z());
+						nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t1.y(), nodeStates[curDepth - 1].tm.z());
+						break;
+					case 3:
+						nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].t0.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].tm.z());
+						nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t1.y(), nodeStates[curDepth - 1].t1.z());
+						break;
+					case 4:
+						nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t0.y(), nodeStates[curDepth - 1].t0.z());
+						nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].t1.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].tm.z());
+						break;
+					case 5:
+						nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t0.y(), nodeStates[curDepth - 1].tm.z());
+						nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].t1.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t1.z());
+						break;
+					case 6:
+						nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t0.z());
+						nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].t1.x(), nodeStates[curDepth - 1].t1.y(), nodeStates[curDepth - 1].tm.z());
+						break;
+					case 7:
+						nodeStates[curDepth].t0 = nodeStates[curDepth - 1].tm;
+						nodeStates[curDepth].t1 = nodeStates[curDepth - 1].t1;
+						break;
+					}
+					nodeStates[curDepth].tm = (nodeStates[curDepth].t0 + nodeStates[curDepth].t1) * 0.5f;
+					nodeStates[curDepth].childID = firstNode(nodeStates[curDepth].t0, nodeStates[curDepth].tm);
+					std::cout << "New childID = " << nodeStates[curDepth].childID << std::endl;
+					debug->addDebugLine(midPoints[curDepth - 1], midPoints[curDepth]);
+					curDepth++;
+				}
+			}
+		} else {
+			std::cout << "traveling up" << " with child " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << std::endl;
+//			gl_FragColor = 5.0 / 255.0;
+//			return;
+			moveUp = false;
+			curDepth--;
+			debug->addDebugLine(midPoints[curDepth], midPoints[curDepth - 1], Util::Color4f(0, 1, 0, 1), Util::Color4f(1, 1, 0, 1));
+			std::cout << "child is now " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << " (" << nodeStates[curDepth - 1].childID << ")" << std::endl;
+			switch(nodeStates[curDepth - 1].childID){
+			case 0:
+				nodeStates[curDepth - 1].childID = nextNode(nodeStates[curDepth - 1].tm, 4, 2, 1);
+				break;
+			case 1:
+				nodeStates[curDepth - 1].childID = nextNode(Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t1.z()), 5, 3, 8);
+				break;
+			case 2:
+				nodeStates[curDepth - 1].childID = nextNode(Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t1.y(), nodeStates[curDepth - 1].tm.z()), 6, 8, 3);
+				break;
+			case 3:
+				nodeStates[curDepth - 1].childID = nextNode(Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t1.y(), nodeStates[curDepth - 1].t1.z()), 7, 8, 8);
+				break;
+			case 4:
+				nodeStates[curDepth - 1].childID = nextNode(Geometry::Vec3(nodeStates[curDepth - 1].t1.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].tm.z()), 8, 6, 5);
+				break;
+			case 5:
+				nodeStates[curDepth - 1].childID = nextNode(Geometry::Vec3(nodeStates[curDepth - 1].t1.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t1.z()), 8, 7, 8);
+				break;
+			case 6:
+				nodeStates[curDepth - 1].childID = nextNode(Geometry::Vec3(nodeStates[curDepth - 1].t1.x(), nodeStates[curDepth - 1].t1.y(), nodeStates[curDepth - 1].tm.z()), 8, 8, 7);
+				break;
+			case 7:
+				nodeStates[curDepth - 1].childID = 8;
+				break;
+			}
+//			getNewMidPos(midPoints[curDepth - 1], nodeStates[curDepth - 1].childID ^ octreeLookupDifference, (curDepth - 1), &midPoints[curDepth]);
+//			debug->addDebugBoxLines(midPoints[curDepth], (4 * quarterSizeOfRootNode) / (1 << curDepth));
+		}
+	} while(nodeStates[0].childID < 8);
+
+	return 1;
+}
+
+void LightNodeManager::firstNodeRoot(Geometry::Vec3 t0, Geometry::Vec3 t1, Geometry::Vec3 lineStart, FilterEdgeState* nodeStates, int* depth, Util::Reference<Util::PixelAccessor> octreeAcc){
+	Geometry::Vec3 curMidPos;
+	Geometry::Vec2i childIndex;
+
+//	debug->addDebugLine(lineStart, Geometry::Vec3(lineStart.x(), lineStart.y() + 0.1f, lineStart.z()));
+//	std::cout << "Line: " << lineStart.x() << "x" << lineStart.y() << "x" << lineStart.z() << std::endl;
+//	std::cout << "lookupDifference: " << octreeLookupDifference << std::endl;
+//
+//	debug->addDebugBox(lineStart, 0.01);
+
+	int curDepth = 0;
+
+	nodeStates[0].t0 = t0;
+	nodeStates[0].t1 = t1;
+	nodeStates[0].nodeOffset = 0;
+	nodeStates[0].tm = (t0 + t1) * 0.5f;
+	nodeStates[0].childID = getChildOffset(rootMidPos, lineStart) ^ octreeLookupDifference;
+//	std::cout << "childID: " << nodeStates[0].childID << std::endl;
+	getNewMidPos(rootMidPos, nodeStates[0].childID ^ octreeLookupDifference, 0, &curMidPos);
+//	childIndex = getNodeIndexVoxelOctree(0 * NODE_SIZE + nodeStates[0].childID);
+//	nodeStates[0].nodeOffset = int(imageLoad(voxelOctree, childIndex).r);
+
+	for(curDepth = 1; curDepth < VOXEL_OCTREE_DEPTH + 1; curDepth++){
+//		debug->addDebugBoxLines(curMidPos, (4 * quarterSizeOfRootNode) / (1 << curDepth));
+
+		nodeStates[curDepth].childID = getChildOffset(curMidPos, lineStart) ^ octreeLookupDifference;
+		getNewMidPos(curMidPos, nodeStates[curDepth].childID ^ octreeLookupDifference, curDepth, &curMidPos);
+		getNodeIndexVoxelOctree(nodeStates[curDepth - 1].nodeOffset * VOXEL_OCTREE_SIZE_PER_NODE + nodeStates[curDepth - 1].childID ^ octreeLookupDifference, &childIndex);
+		nodeStates[curDepth].nodeOffset = (int)(octreeAcc->readColor4f(childIndex.x(), childIndex.y()).r());
+
+		if(nodeStates[curDepth].nodeOffset == 0){
+//			curDepth--;
+			break;
+		}
+
+		switch(nodeStates[curDepth - 1].childID){
+		case 0:
+			nodeStates[curDepth].t0 = nodeStates[curDepth - 1].t0;
+			nodeStates[curDepth].t1 = nodeStates[curDepth - 1].tm;
+			break;
+		case 1:
+			nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].t0.x(), nodeStates[curDepth - 1].t0.y(), nodeStates[curDepth - 1].tm.z());
+			nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t1.z());
+			break;
+		case 2:
+			nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].t0.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t0.z());
+			nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t1.y(), nodeStates[curDepth - 1].tm.z());
+			break;
+		case 3:
+			nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].t0.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].tm.z());
+			nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t1.y(), nodeStates[curDepth - 1].t1.z());
+			break;
+		case 4:
+			nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t0.y(), nodeStates[curDepth - 1].t0.z());
+			nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].t1.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].tm.z());
+			break;
+		case 5:
+			nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].t0.y(), nodeStates[curDepth - 1].tm.z());
+			nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].t1.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t1.z());
+			break;
+		case 6:
+			nodeStates[curDepth].t0 = Geometry::Vec3(nodeStates[curDepth - 1].tm.x(), nodeStates[curDepth - 1].tm.y(), nodeStates[curDepth - 1].t0.z());
+			nodeStates[curDepth].t1 = Geometry::Vec3(nodeStates[curDepth - 1].t1.x(), nodeStates[curDepth - 1].t1.y(), nodeStates[curDepth - 1].tm.z());
+			break;
+		case 7:
+			nodeStates[curDepth].t0 = nodeStates[curDepth - 1].tm;
+			nodeStates[curDepth].t1 = nodeStates[curDepth - 1].t1;
+			break;
+		}
+
+//		debug->addDebugBoxLines(nodeStates[curDepth].t0, nodeStates[curDepth].t1);
+
+		nodeStates[curDepth].tm = (nodeStates[curDepth].t0 + nodeStates[curDepth].t1) * 0.5f;
+	}
+
+	std::cout << "Running to depth " << curDepth << std::endl;
+
+	*depth = curDepth;
+
+
+//	nodeStates[0].t0 = t0;
+//	nodeStates[0].t1 = t1;
+//	nodeStates[0].nodeOffset = 0;
+//	nodeStates[0].tm = 0.5 * (t0 + t1);
+//	nodeStates[0].childID = getChildOffset(rootMidPos, lineStart);
+//	vec3 curMidPos = getNewMidPos(rootMidPos, nodeStates[0].childID, 0);
+//
+////	for(int i = 0; i < MAX_TREE_DEPTH; i++){
+////		nodeStates[i].childID = 1;
+////	}
+//
+//	for(curDepth = 1; curDepth < MAX_TREE_DEPTH; ++curDepth){
+//		ivec2 childIndex = getNodeIndexVoxelOctree(nodeStates[curDepth - 1].nodeOffset * NODE_SIZE + (nodeStates[curDepth - 1].childID));
+//		nodeStates[curDepth].nodeOffset = int(imageLoad(voxelOctree, childIndex).r);
+//
+//		if(nodeStates[curDepth].nodeOffset == 0){
+//			curDepth--;
+//			break;
+//		}
+//
+//		switch(nodeStates[curDepth - 1].childID ^ octreeLookupDifference){
+//		case 0:
+//			nodeStates[curDepth].t0 = nodeStates[curDepth - 1].t0;
+//			nodeStates[curDepth].t1 = nodeStates[curDepth - 1].tm;
+//			break;
+//		case 1:
+//			nodeStates[curDepth].t0 = vec3(nodeStates[curDepth - 1].t0.xy, nodeStates[curDepth - 1].tm.z);
+//			nodeStates[curDepth].t1 = vec3(nodeStates[curDepth - 1].tm.xy, nodeStates[curDepth - 1].t1.z);
+//			break;
+//		case 2:
+//			nodeStates[curDepth].t0 = vec3(nodeStates[curDepth - 1].t0.x, nodeStates[curDepth - 1].tm.y, nodeStates[curDepth - 1].t0.z);
+//			nodeStates[curDepth].t1 = vec3(nodeStates[curDepth - 1].tm.x, nodeStates[curDepth - 1].t1.y, nodeStates[curDepth - 1].tm.z);
+//			break;
+//		case 3:
+//			nodeStates[curDepth].t0 = vec3(nodeStates[curDepth - 1].t0.x, nodeStates[curDepth - 1].tm.yz);
+//			nodeStates[curDepth].t1 = vec3(nodeStates[curDepth - 1].tm.x, nodeStates[curDepth - 1].t1.yz);
+//			break;
+//		case 4:
+//			nodeStates[curDepth].t0 = vec3(nodeStates[curDepth - 1].tm.x, nodeStates[curDepth - 1].t0.yz);
+//			nodeStates[curDepth].t1 = vec3(nodeStates[curDepth - 1].t1.x, nodeStates[curDepth - 1].tm.yz);
+//			break;
+//		case 5:
+//			nodeStates[curDepth].t0 = vec3(nodeStates[curDepth - 1].tm.x, nodeStates[curDepth - 1].t0.y, nodeStates[curDepth - 1].tm.z);
+//			nodeStates[curDepth].t1 = vec3(nodeStates[curDepth - 1].t1.x, nodeStates[curDepth - 1].tm.y, nodeStates[curDepth - 1].t1.z);
+//			break;
+//		case 6:
+//			nodeStates[curDepth].t0 = vec3(nodeStates[curDepth - 1].tm.xy, nodeStates[curDepth - 1].t0.z);
+//			nodeStates[curDepth].t1 = vec3(nodeStates[curDepth - 1].t1.xy, nodeStates[curDepth - 1].tm.z);
+//			break;
+//		case 7:
+//			nodeStates[curDepth].t0 = nodeStates[curDepth - 1].tm;
+//			nodeStates[curDepth].t1 = nodeStates[curDepth - 1].t1;
+//			break;
+//		}
+//		nodeStates[curDepth].tm = 0.5 * (nodeStates[curDepth - 1].t0 + nodeStates[curDepth - 1].t1);
+//		nodeStates[curDepth].childID = getChildOffset(curMidPos, lineStart);
+//		curMidPos = getNewMidPos(curMidPos, nodeStates[curDepth].childID, curDepth);
+//	}
+
+//	nodeStates[curDepth - 1].nodeOffset = getNodeID(lineStart);
+}
+
+int LightNodeManager::nextNode(Geometry::Vec3 tm, int next1, int next2, int next3){
+	//return the int according to the smallest float
+	if(tm.x() < tm.y()){
+		if(tm.x() < tm.z()){
+			std::cout << "returning 1 (" << next1 << "), because tmX < tmY and tmX < tmZ: " << tm.x() << " < " << tm.y() << " and " << tm.x() << " < " << tm.z() << std::endl;
+			return next1;
+		} else {
+			std::cout << "returning 3 (" << next3 << "), because tmX < tmY and tmX >= tmZ: " << tm.x() << " < " << tm.y() << " and " << tm.x() << " >= " << tm.z() << std::endl;
+			return next3;
+		}
+	} else {
+		if(tm.y() < tm.z()){
+			std::cout << "returning 2 (" << next2 << "), because tmX >= tmY and tmY < tmZ: " << tm.x() << " >= " << tm.y() << " and " << tm.y() << " < " << tm.z() << std::endl;
+			return next2;
+		} else {
+			std::cout << "returning 3 (" << next3 << "), because tmX >= tmY and tmY >= tmZ: " << tm.x() << " >= " << tm.y() << " and " << tm.y() << " >= " << tm.z() << std::endl;
+			return next3;
+		}
+	}
+}
+
+int LightNodeManager::firstNode(Geometry::Vec3 t0, Geometry::Vec3 tm){
+	int childID = 0;
+	if(t0.x() > t0.y()){
+		if(t0.x() > t0.z()){
+			//plane YZ
+			if(tm.y() < t0.x()) childID += 2;
+			if(tm.z() < t0.x()) childID += 4;
+		} else {
+			//plane XY
+			if(tm.x() < t0.z()) childID += 1;
+			if(tm.y() < t0.z()) childID += 2;
+		}
+	} else {
+		if(t0.y() > t0.z()){
+			//plane XZ
+			if(tm.x() < t0.y()) childID += 1;
+			if(tm.z() < t0.y()) childID += 4;
+		} else {
+			//plane XY
+			if(tm.x() < t0.z()) childID += 1;
+			if(tm.y() < t0.z()) childID += 2;
+		}
+	}
+	return childID;
+}
+
+void LightNodeManager::setStartEndNodes(Geometry::Vec3 posStart, Geometry::Vec3 posEnd, Util::Reference<Util::PixelAccessor> octreeAcc){
+	startNodeID = getNodeID(posStart, octreeAcc);
+	endNodeID = getNodeID(posEnd, octreeAcc);
+}
+
+int LightNodeManager::getNodeID(Geometry::Vec3 pos, Util::Reference<Util::PixelAccessor> octreeAcc){
+	int curNodeID = 0;
+	int lastID;
+	Geometry::Vec3 curMidPos = rootMidPos;
+	int childOffset;
+	Geometry::Vec2i childIndex;
+
+	for(int i = 0; i < VOXEL_OCTREE_DEPTH; i++){
+		childOffset = getChildOffset(curMidPos, pos);
+		getNewMidPos(curMidPos, childOffset, i, &curMidPos);
+		getNodeIndexVoxelOctree(curNodeID * VOXEL_OCTREE_SIZE_PER_NODE + childOffset, &childIndex);
+		lastID = curNodeID;
+		curNodeID = (int)(octreeAcc->readColor4f(childIndex.x(), childIndex.y()).r());
+		if(curNodeID == 0) return lastID;
+	}
+
+	return curNodeID;
+}
+
+void LightNodeManager::getNewMidPos(Geometry::Vec3 oldMidPos, int childOffset, int curDepth, Geometry::Vec3* newMidPos){
+	switch(childOffset){
+	case 0: *newMidPos = Geometry::Vec3(-quarterSizeOfRootNode, -quarterSizeOfRootNode, quarterSizeOfRootNode) / (1 << curDepth) + oldMidPos; break;
+	case 1: *newMidPos = Geometry::Vec3(-quarterSizeOfRootNode, -quarterSizeOfRootNode, -quarterSizeOfRootNode) / (1 << curDepth) + oldMidPos; break;
+	case 2: *newMidPos = Geometry::Vec3(-quarterSizeOfRootNode, quarterSizeOfRootNode, quarterSizeOfRootNode) / (1 << curDepth) + oldMidPos; break;
+	case 3: *newMidPos = Geometry::Vec3(-quarterSizeOfRootNode, quarterSizeOfRootNode, -quarterSizeOfRootNode) / (1 << curDepth) + oldMidPos; break;
+	case 4: *newMidPos = Geometry::Vec3(quarterSizeOfRootNode, -quarterSizeOfRootNode, quarterSizeOfRootNode) / (1 << curDepth) + oldMidPos; break;
+	case 5: *newMidPos = Geometry::Vec3(quarterSizeOfRootNode, -quarterSizeOfRootNode, -quarterSizeOfRootNode) / (1 << curDepth) + oldMidPos; break;
+	case 6: *newMidPos = Geometry::Vec3(quarterSizeOfRootNode, quarterSizeOfRootNode, quarterSizeOfRootNode) / (1 << curDepth) + oldMidPos; break;
+	case 7: *newMidPos = Geometry::Vec3(quarterSizeOfRootNode, quarterSizeOfRootNode, -quarterSizeOfRootNode) / (1 << curDepth) + oldMidPos; break;
+	default: *newMidPos = Geometry::Vec3(quarterSizeOfRootNode, quarterSizeOfRootNode, quarterSizeOfRootNode) / (1 << curDepth) + oldMidPos; break;	//must never happen
+	}
+}
+
+int LightNodeManager::getChildOffset(Geometry::Vec3 midPos, Geometry::Vec3 targetPos){
+	int offset = 0;
+	if(targetPos.x() > midPos.x()) offset += 4;
+	if(targetPos.y() > midPos.y()) offset += 2;
+	if(targetPos.z() < midPos.z()) offset += 1;
+	return offset;
+}
+
+void LightNodeManager::getNodeIndexVoxelOctree(int nodeID, Geometry::Vec2i* index){
+	index->setX(nodeID % voxelOctreeTextureSize);
+	index->setY((int)(nodeID / voxelOctreeTextureSize));
 }
 
 void LightNodeManager::fillTexture(Rendering::Texture *texture, Util::Color4f color){

@@ -82,6 +82,12 @@ class GeometryNode;
 
 namespace ThesisPeter {
 
+struct FilterEdgeState {
+	int childID;
+	int nodeOffset;
+	Geometry::Vec3 t0, t1, tm;
+};
+
 struct LightNode {
 	Geometry::Vec3 position;
 	Geometry::Vec3 normal;
@@ -181,8 +187,27 @@ private:
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static bool isVisible(LightNode* source, LightNode* target);
 	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges);
+
 	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
 	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
+
+	void filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
+	int checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeMax, Geometry::Vec3 rayOrigin, Geometry::Vec3 rayDirection, Util::Reference<Util::PixelAccessor> octreeAcc);
+	int testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geometry::Vec3 lineStart, Geometry::Vec3 origLineStart, Geometry::Vec3 lineDir, Util::Reference<Util::PixelAccessor> octreeAcc);
+	void firstNodeRoot(Geometry::Vec3 t0, Geometry::Vec3 t1, Geometry::Vec3 lineStart, FilterEdgeState* nodeStates, int* curDepth, Util::Reference<Util::PixelAccessor> octreeAcc);
+	int nextNode(Geometry::Vec3 tm, int next1, int next2, int next3);
+	int firstNode(Geometry::Vec3 t0, Geometry::Vec3 tm);
+	void setStartEndNodes(Geometry::Vec3 posStart, Geometry::Vec3 posEnd, Util::Reference<Util::PixelAccessor> octreeAcc);
+	int getNodeID(Geometry::Vec3 pos, Util::Reference<Util::PixelAccessor> octreeAcc);
+	void getNodeIndexVoxelOctree(int nodeID, Geometry::Vec2i* index);
+	void getNewMidPos(Geometry::Vec3 oldMidPos, int childOffset, int curDepth, Geometry::Vec3* newMidPos);
+	int getChildOffset(Geometry::Vec3 midPos, Geometry::Vec3 targetPos);
+	int startNodeID, endNodeID;
+	int octreeLookupDifference;
+	float quarterSizeOfRootNode;
+	unsigned int voxelOctreeTextureSize;
+	Geometry::Vec3 rootMidPos;
+
 	void fillTexture(Rendering::Texture *texture, Util::Color4f color);
 	void fillTexture(Rendering::Texture *texture, uint8_t value);
 	void fillTextureFloat(Rendering::Texture *texture, float value);
