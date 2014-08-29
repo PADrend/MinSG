@@ -28,6 +28,17 @@ struct DebugLine {
 	Util::Color4f colorEnd;
 };
 
+struct DebugFace {
+	Geometry::Vec3 vert1;
+	Geometry::Vec3 vert2;
+	Geometry::Vec3 vert3;
+	Geometry::Vec3 vert4;
+	Util::Color4f col1;
+	Util::Color4f col2;
+	Util::Color4f col3;
+	Util::Color4f col4;
+};
+
 class DebugObjects {
 public:
 	DebugObjects();
@@ -35,12 +46,22 @@ public:
 
 	void setSceneRootNode(MinSG::Node* sceneRootNode);
 	void addDebugLine(Geometry::Vec3 start, Geometry::Vec3 end, Util::Color4f colStart = Util::Color4f(1.0, 1.0, 1.0, 1.0), Util::Color4f colEnd = Util::Color4f(0.0, 0.0, 1.0, 1.0));
+	void addDebugFace(Geometry::Vec3 vert1, Geometry::Vec3 vert2, Geometry::Vec3 vert3, Geometry::Vec3 vert4, Util::Color4f col1 = Util::Color4f(1.0, 1.0, 1.0, 1.0), Util::Color4f col2 = Util::Color4f(1.0, 1.0, 1.0, 1.0), Util::Color4f col3 = Util::Color4f(1.0, 1.0, 1.0, 1.0), Util::Color4f col4 = Util::Color4f(1.0, 1.0, 1.0, 1.0));
+	void addDebugBoxMinMax(Geometry::Vec3 min, Geometry::Vec3 max, Util::Color4f col1 = Util::Color4f(1.0, 1.0, 1.0, 0.4), Util::Color4f col2 = Util::Color4f(1.0, 1.0, 1.0, 0.4));
+	void addDebugBox(Geometry::Vec3 midPos, Geometry::Vec3 size, Util::Color4f col1 = Util::Color4f(1.0, 1.0, 1.0, 0.4), Util::Color4f col2 = Util::Color4f(1.0, 1.0, 1.0, 0.4));
+	void addDebugBox(Geometry::Vec3 midPos, float size, Util::Color4f col1 = Util::Color4f(1.0, 1.0, 1.0, 0.4), Util::Color4f col2 = Util::Color4f(1.0, 1.0, 1.0, 0.4));
+	void addDebugBoxLinesMinMax(Geometry::Vec3 min, Geometry::Vec3 max, Util::Color4f col1 = Util::Color4f(1.0, 1.0, 1.0, 0.4), Util::Color4f col2 = Util::Color4f(1.0, 1.0, 1.0, 0.4));
+	void addDebugBoxLines(Geometry::Vec3 midPos, Geometry::Vec3 size, Util::Color4f col1 = Util::Color4f(1.0, 1.0, 1.0, 0.4), Util::Color4f col2 = Util::Color4f(1.0, 1.0, 1.0, 0.4));
+	void addDebugBoxLines(Geometry::Vec3 midPos, float size, Util::Color4f col1 = Util::Color4f(1.0, 1.0, 1.0, 0.4), Util::Color4f col2 = Util::Color4f(1.0, 1.0, 1.0, 0.4));
 	void clearDebug();
 	void buildDebugLineNode();
+	void buildDebugFaceNode();
 private:
 	Util::Reference<MinSG::Node> lineNode;
+	Util::Reference<MinSG::Node> faceNode;
 	std::vector<DebugLine*> linesData;
-	bool nodeAdded;
+	std::vector<DebugFace*> facesData;
+	bool nodeAddedLines, nodeAddedFaces;
 	MinSG::GroupNode *sceneRootNode;
 };
 
