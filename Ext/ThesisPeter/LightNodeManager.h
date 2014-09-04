@@ -79,6 +79,7 @@ class LightNodeIndexAttributeAccessor : public VertexAttributeAccessor {
 namespace MinSG {
 class Node;
 class GeometryNode;
+class LightNode;
 
 namespace ThesisPeter {
 
@@ -117,6 +118,12 @@ struct LightNodeMap {
 	bool staticNode;
 };
 
+struct LightNodeLightMap {
+	LightNode light;
+	MinSG::LightNode* lightNode;
+	std::vector<LightEdge*> edges;
+};
+
 class LightInfoAttribute : public Util::GenericAttribute {
 public:
 	unsigned int lightNodeID;
@@ -135,6 +142,8 @@ public:
 	NodeCreaterVisitor();
 	static unsigned int nodeIndex;
 	std::vector<LightNodeMap*>* lightNodeMaps;
+	std::vector<LightNodeLightMap*>* lightNodeLightMaps;
+	bool useGeometryNodes, useLightNodes;
 
 private:
 	static const Util::StringIdentifier staticNodeIdent;
@@ -189,8 +198,9 @@ private:
 	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges);
 
 	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
-	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
+	void filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
 
+	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
 	void filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
 	int checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeMax, Geometry::Vec3 rayOrigin, Geometry::Vec3 rayDirection, Util::Reference<Util::PixelAccessor> octreeAcc);
 	int testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geometry::Vec3 lineStart, Geometry::Vec3 origLineStart, Geometry::Vec3 lineDir, Util::Reference<Util::PixelAccessor> octreeAcc);
@@ -219,15 +229,18 @@ private:
 	Util::Reference<MinSG::Node> sceneRootNode;
 	Rendering::RenderingContext* renderingContext;
 	MinSG::FrameContext* frameContext;
+	std::vector<LightNodeLightMap*> lightNodeLightMaps;
 	std::vector<LightNodeMap*> lightNodeMaps;
 	std::vector<LightEdge*> lightEdges;
 	Util::Reference<MinSG::CameraNodeOrtho> sceneEnclosingCameras[3];
 	Geometry::Vec3 lightRootCenter;
+	Util::Reference<Rendering::Texture> tmpTexVoxelOctreeSize;			//used to "render" the octree (at creation) and the edges into the octree (for collision)
 	Util::Reference<Rendering::Texture> voxelOctreeTextureStatic;
 	Util::Reference<Rendering::Texture> voxelOctreeLocksStatic;
 	Util::Reference<Rendering::Texture> atomicCounter;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderCreate;
-	Util::Reference<Rendering::Shader> voxelOctreeShaderRead;
+	Util::Reference<Rendering::Shader> voxelOctreeShaderReadTexture;
+	Util::Reference<Rendering::Shader> voxelOctreeShaderReadObject;
 
 	static const Util::StringIdentifier lightNodeIDIdent;
 	DebugObjects* debug;

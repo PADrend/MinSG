@@ -12,8 +12,11 @@
 #include "LightNodeManager.h"
 
 #include <Rendering/Mesh/Mesh.h>
+#include <Rendering/Mesh/VertexAttribute.h>
 #include <Rendering/Mesh/VertexAttributeIds.h>
+#include <Rendering/Mesh/VertexDescription.h>
 #include <Rendering/MeshUtils/MeshUtils.h>
+#include <Rendering/MeshUtils/MeshBuilder.h>
 #include <Rendering/Texture/TextureUtils.h>
 #include <Rendering/Shader/Uniform.h>
 #include <Rendering/Helper.h>
@@ -52,37 +55,46 @@ NodeCreaterVisitor::NodeCreaterVisitor(){
 NodeCreaterVisitor::status NodeCreaterVisitor::leave(MinSG::Node* node){
 //	if(typeid(node) == typeid(MinSG::GeometryNode)){
 	if(node->getTypeId() == MinSG::GeometryNode::getClassId()){
-		//create a lightNodeMap to save the mapping of parameters to the traversed node
-		LightNodeMap* lightNodeMap = new LightNodeMap();
-		lightNodeMap->geometryNode = static_cast<MinSG::GeometryNode*>(node);
-		lightNodeMap->staticNode = true;
-		lightNodeMaps->push_back(lightNodeMap);
+		if(useGeometryNodes){
+			//create a lightNodeMap to save the mapping of parameters to the traversed node
+			LightNodeMap* lightNodeMap = new LightNodeMap();
+			lightNodeMap->geometryNode = static_cast<MinSG::GeometryNode*>(node);
+			lightNodeMap->staticNode = true;
+			lightNodeMaps->push_back(lightNodeMap);
 
-		//create the light nodes
-		LightNodeManager::createLightNodes(lightNodeMap->geometryNode, &lightNodeMap->lightNodes);
+			//create the light nodes
+			LightNodeManager::createLightNodes(lightNodeMap->geometryNode, &lightNodeMap->lightNodes);
 
-		//update the nodes attributes (for inside the shaders)
-		LightInfoAttribute* infoAttrib = new LightInfoAttribute();
-		infoAttrib->staticNode = true;
-		infoAttrib->lightNodeID = nodeIndex;
-		nodeIndex += lightNodeMaps->size();
-		node->setAttribute(staticNodeIdent, infoAttrib);
+			//update the nodes attributes (for inside the shaders)
+			LightInfoAttribute* infoAttrib = new LightInfoAttribute();
+			infoAttrib->staticNode = true;
+			infoAttrib->lightNodeID = nodeIndex;
+			nodeIndex += lightNodeMaps->size();
+			node->setAttribute(staticNodeIdent, infoAttrib);
 
-		//map the light nodes to the objects
-		LightNodeManager::mapLightNodesToObject(lightNodeMap->geometryNode, &lightNodeMap->lightNodes);
+			//map the light nodes to the objects
+			LightNodeManager::mapLightNodesToObject(lightNodeMap->geometryNode, &lightNodeMap->lightNodes);
+		}
 	} else if(node->getTypeId() == MinSG::LightNode::getClassId()){
-		//TODO: implement light nodes
-		std::cout << "Found LightNode!" << std::endl;
+		if(useLightNodes){
+			LightNodeLightMap* lightNodeLightMap = new LightNodeLightMap();
+			lightNodeLightMap->lightNode = static_cast<MinSG::LightNode*>(node);
+			lightNodeLightMap->light.position = lightNodeLightMap->lightNode->getWorldOrigin();
+			lightNodeLightMap->light.color = lightNodeLightMap->lightNode->getAmbientLightColor();
+			lightNodeLightMap->light.normal = Geometry::Vec3(0, 1, 0);	//just no 0 vector, although this should not be used at all for lights
+
+			std::cout << "Found LightNode!" << std::endl;
+		}
 	} else {
-		if(typeid(MinSG::AbstractCameraNode*) == typeid(node)) std::cout << "AbstractCameraNode: " << std::endl;
-		if(typeid(MinSG::CameraNode*) == typeid(node)) std::cout << "CameraNode: " << std::endl;
-		if(typeid(MinSG::CameraNodeOrtho*) == typeid(node)) std::cout << "CameraNodeOrtho: " << std::endl;
-		if(typeid(MinSG::GeometryNode*) == typeid(node)) std::cout << "GeometryNode: " << std::endl;
-		if(typeid(MinSG::GroupNode*) == typeid(node)) std::cout << "GroupNode: " << std::endl;
-		if(typeid(MinSG::LightNode*) == typeid(node)) std::cout << "LightNode: " << std::endl;
-		if(typeid(MinSG::ListNode*) == typeid(node)) std::cout << "ListNode: " << std::endl;
-		if(typeid(MinSG::Node*) == typeid(node)) std::cout << "Node: " << std::endl;
-		std::cout << "But itself says it's " << node->getTypeName() << std::endl;
+//		if(typeid(MinSG::AbstractCameraNode*) == typeid(node)) std::cout << "AbstractCameraNode: " << std::endl;
+//		if(typeid(MinSG::CameraNode*) == typeid(node)) std::cout << "CameraNode: " << std::endl;
+//		if(typeid(MinSG::CameraNodeOrtho*) == typeid(node)) std::cout << "CameraNodeOrtho: " << std::endl;
+//		if(typeid(MinSG::GeometryNode*) == typeid(node)) std::cout << "GeometryNode: " << std::endl;
+//		if(typeid(MinSG::GroupNode*) == typeid(node)) std::cout << "GroupNode: " << std::endl;
+//		if(typeid(MinSG::LightNode*) == typeid(node)) std::cout << "LightNode: " << std::endl;
+//		if(typeid(MinSG::ListNode*) == typeid(node)) std::cout << "ListNode: " << std::endl;
+//		if(typeid(MinSG::Node*) == typeid(node)) std::cout << "Node: " << std::endl;
+//		std::cout << "But itself says it's " << node->getTypeName() << std::endl;
 	}
 
 	return CONTINUE_TRAVERSAL;
@@ -112,6 +124,8 @@ LightNodeManager::LightNodeManager(){
 	}
 	debug = new DebugObjects();
 
+	unsigned int tmpTextureSize = std::pow(2, VOXEL_OCTREE_DEPTH);
+	tmpTexVoxelOctreeSize = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, tmpTextureSize, tmpTextureSize, 1, Util::TypeConstant::UINT8, 1);
 	voxelOctreeTextureStatic = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE, VOXEL_OCTREE_TEXTURE_SIZE, 1, Util::TypeConstant::UINT32, 1);
 	voxelOctreeLocksStatic = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, 1, Util::TypeConstant::UINT32, 1);
 #ifdef USE_ATOMIC_COUNTER
@@ -121,7 +135,8 @@ LightNodeManager::LightNodeManager(){
 #endif // USE_ATOMIC_COUNTER
 
 	voxelOctreeShaderCreate = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeInit.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeInit.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
-	voxelOctreeShaderRead = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadTexture.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadTexture.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+	voxelOctreeShaderReadTexture = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadTexture.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadTexture.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+	voxelOctreeShaderReadObject = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadObject.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadObject.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
 }
 
 LightNodeManager::~LightNodeManager(){
@@ -154,8 +169,11 @@ void LightNodeManager::setRenderingContext(Rendering::RenderingContext& renderin
 	voxelOctreeShaderCreate.get()->setUniform(renderingContext, Rendering::Uniform("curVoxelOctreeIndex", (int32_t)2));
 #endif // USE_ATOMIC_COUNTER
 
-	voxelOctreeShaderRead.get()->setUniform(renderingContext, Rendering::Uniform("voxelOctree", (int32_t)0));
-	voxelOctreeShaderRead.get()->setUniform(renderingContext, Rendering::Uniform("edges", (int32_t)1));
+	voxelOctreeShaderReadTexture.get()->setUniform(renderingContext, Rendering::Uniform("voxelOctree", (int32_t)0));
+	voxelOctreeShaderReadTexture.get()->setUniform(renderingContext, Rendering::Uniform("edges", (int32_t)1));
+	voxelOctreeShaderReadObject.get()->setUniform(renderingContext, Rendering::Uniform("voxelOctree", (int32_t)0));
+	voxelOctreeShaderReadObject.get()->setUniform(renderingContext, Rendering::Uniform("edgeOutput", (int32_t)1));
+	voxelOctreeShaderReadObject.get()->setUniform(renderingContext, Rendering::Uniform("edgeInput", (int32_t)2));
 #ifndef USE_ATOMIC_COUNTER
 	voxelOctreeShaderCreate.get()->setUniform(renderingContext, Rendering::Uniform("curEdgeIndex", (int32_t)2));
 #endif // USE_ATOMIC_COUNTER
@@ -288,16 +306,16 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	createLightEdges(atomicCounter.get());
 
 	//DEBUG to show the edges
-//	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
-//		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
-//			debug->addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
-//		}
-//		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
-//			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-//				debug->addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
-//			}
-//		}
-//	}
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
+			debug->addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
+		}
+		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+				debug->addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
+			}
+		}
+	}
 	//DEBUG END
 
 	debug->buildDebugLineNode();
@@ -309,8 +327,17 @@ void LightNodeManager::createLightNodes(){
 	NodeCreaterVisitor createNodes;
 	createNodes.nodeIndex = 0;
 	createNodes.lightNodeMaps = &lightNodeMaps;
+	createNodes.lightNodeLightMaps = &lightNodeLightMaps;
+
+	//create from active selection the geometry lighting
+	createNodes.useGeometryNodes = true;
+	createNodes.useLightNodes = false;
 	lightRootNode->traverse(createNodes);
-//	sceneRootNode->traverse(createNodes);
+
+	//take all lights inside the scene into account
+	createNodes.useGeometryNodes = false;
+	createNodes.useLightNodes = true;
+	sceneRootNode->traverse(createNodes);
 }
 
 void LightNodeManager::createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
@@ -424,6 +451,16 @@ void LightNodeManager::cleanUp(){
 		delete lightNodeMaps[i];
 	}
 	lightNodeMaps.clear();
+
+	//clear memory of the lightsNodes from the light in the scene
+	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
+		for(unsigned int j = 0; j < lightNodeLightMaps[i]->edges.size(); j++){
+			delete lightNodeLightMaps[i]->edges[j];
+		}
+		lightNodeLightMaps[i]->edges.clear();
+		delete lightNodeLightMaps[i];
+	}
+	lightNodeLightMaps.clear();
 }
 
 unsigned int LightNodeManager::nextPowOf2(unsigned int number){
@@ -562,7 +599,243 @@ void LightNodeManager::addLightEdge(LightNode* source, LightNode* target, std::v
 }
 
 void LightNodeManager::filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
-	filterIncorrectEdgesAsTextureCPU(edges, octreeTexture, atomicCounter);
+	filterIncorrectEdgesAsObjects(edges, octreeTexture, atomicCounter);
+}
+
+void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
+	//setup texture to upload the edges onto the gpu
+	const unsigned int dataLengthPerEdge = 6;
+	unsigned int textureSize = std::ceil(std::sqrt(edges->size() * dataLengthPerEdge));
+	Util::Reference<Rendering::Texture> edgeInput = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, textureSize, textureSize, 1, Util::TypeConstant::FLOAT, 1);
+
+	std::cout << "comming here 1" << std::endl;
+	std::cout << "edges: " << edges->size() << std::endl;
+	std::cout << "texSize: " << textureSize << std::endl;
+	std::cout << "texture: " << edgeInput.get()->getWidth() << "x" << edgeInput.get()->getHeight() << " = " << edgeInput.get()->getDataSize() << std::endl;
+
+	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
+	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
+	float bla = lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f;
+	Geometry::Vec3 treeMin(rootNodeMidpoint.x() - bla, rootNodeMidpoint.y() - bla, rootNodeMidpoint.z() - bla);
+	Geometry::Vec3 treeMax(rootNodeMidpoint.x() + bla, rootNodeMidpoint.y() + bla, rootNodeMidpoint.z() + bla);
+
+	//encode the edges into the texture (writing the positions of the source and target)
+	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeInput.get());
+	for(unsigned int i = 0; i < edges->size(); i++){
+		//get the correct index, taking the edge length into account
+		unsigned int i2 = i * dataLengthPerEdge;
+		//calculate the 2D index for the position inside the texture
+		unsigned int x = i2 % textureSize;
+		unsigned int y = i2 / textureSize;
+
+		//DEBUG
+		if((*edges)[i]->source->position.x() < treeMin.x() || (*edges)[i]->source->position.y() < treeMin.y() || (*edges)[i]->source->position.z() < treeMin.z() ||
+			(*edges)[i]->source->position.x() > treeMax.x() || (*edges)[i]->source->position.y() > treeMax.y() || (*edges)[i]->source->position.z() > treeMax.z()){
+			std::cout << "Distance is too big!" << std::endl;
+		}
+		//DEBUG END
+
+		//write the data to the texture
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->source->position.x());
+		x = (x + 1) % textureSize;
+		if(x == 0) y++;
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->source->position.y());
+		x = (x + 1) % textureSize;
+		if(x == 0) y++;
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->source->position.z());
+		x = (x + 1) % textureSize;
+		if(x == 0) y++;
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->target->position.x());
+		x = (x + 1) % textureSize;
+		if(x == 0) y++;
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->target->position.y());
+		x = (x + 1) % textureSize;
+		if(x == 0) y++;
+		acc.get()->writeSingleValueFloat(x, y, (*edges)[i]->target->position.z());
+	}
+	edgeInput->dataChanged();
+
+	static const Util::StringIdentifier EDGE_ID("edgeID");
+	static const Util::StringIdentifier EDGE_ID2("edgeID2");
+	Rendering::VertexDescription vertexDesc;
+	vertexDesc.appendPosition3D();
+//	const Rendering::VertexAttribute & edgeIDAttr = vertexDesc.appendUnsignedIntAttribute(EDGE_ID, 1);
+	const Rendering::VertexAttribute & edgeIDAttr = vertexDesc.appendFloatAttribute(EDGE_ID, 1);
+	const Rendering::VertexAttribute & edgeID2Attr = vertexDesc.appendFloatAttribute(EDGE_ID2, 1);
+
+	Rendering::MeshUtils::MeshBuilder mb(vertexDesc);
+	for(unsigned int i = 0; i < edges->size(); i++){
+		mb.position((*edges)[i]->source->position);
+		mb.addVertex();
+
+		mb.position((*edges)[i]->target->position);
+		mb.addVertex();
+	}
+
+	Rendering::Mesh *mesh = mb.buildMesh();
+	mesh->setUseIndexData(false);
+	mesh->setDrawMode(Rendering::Mesh::DRAW_LINES);
+	const size_t vertexSize = vertexDesc.getVertexSize();
+	Rendering::MeshVertexData & vertexData = mesh->openVertexData();
+	uint8_t* vertexDataPtr = vertexData.data() + edgeIDAttr.getOffset();
+	for(uint32_t i = 0; i < edges->size(); ++i) {
+		*reinterpret_cast<float *>(vertexDataPtr + i * 2 * vertexSize) = i;
+		*reinterpret_cast<float *>(vertexDataPtr + ((i * 2) + 1) * vertexSize) = i;
+	}
+	vertexDataPtr = vertexData.data() + edgeID2Attr.getOffset();
+	for(uint32_t i = 0; i < edges->size(); ++i) {
+		*reinterpret_cast<float *>(vertexDataPtr + i * 2 * vertexSize) = 0;
+		*reinterpret_cast<float *>(vertexDataPtr + ((i * 2) + 1) * vertexSize) = 1;
+	}
+//	vertexData.markAsChanged();
+//	vertexData.upload();
+//	vertexData.releaseLocalData();
+//	Rendering::MeshVertexData & vertexData2 = mesh->openVertexData();
+//	std::cout << "Num Vertices: " << vertexData2.getVertexCount() << " vs " << edges->size()*2 << std::endl;
+//	for(unsigned int i = 0; i < 100 /*vertexData2.getVertexCount()*/; i++){
+//		unsigned int index = i * 4 * 4;
+//		std::cout << "Vertex " << i << " Pos: ";
+//		for(unsigned int j = 0; j < 3; j++){
+//			vertexDataPtr = vertexData2.data();
+//			std::cout << *reinterpret_cast<float*>(vertexDataPtr + index + j * 4) << ", ";
+//		}
+//		std::cout << " ID: " << *reinterpret_cast<float*>(vertexDataPtr + index + 3 * 4) << std::endl;
+//	}
+
+	std::cout << "Vertex description: " << mesh->getVertexDescription().toString() << std::endl;
+
+	//create the output texture (one pixel per edge, 0 = ok, 1 = edge must be deleted)
+	unsigned int outputTextureSize = std::ceil(std::sqrt(edges->size()));
+	Util::Reference<Rendering::Texture> edgeOutput = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, outputTextureSize, outputTextureSize, 1, Util::TypeConstant::UINT32, 1);
+	fillTexture(edgeOutput.get(), 0);
+
+	std::cout << "Output texture: " << outputTextureSize << " which gives " << outputTextureSize * outputTextureSize << " possible edges!" << std::endl;
+
+	debug->addDebugLine(rootNodeMidpoint, Geometry::Vec3(rootNodeMidpoint.x(), rootNodeMidpoint.y() + 1, rootNodeMidpoint.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
+	std::cout << "Root Node Midpoint: " << rootNodeMidpoint.x() << "x" << rootNodeMidpoint.y() << "x" << rootNodeMidpoint.z() << std::endl;
+	std::cout << "halfSizeOfRootNode: " << lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f << std::endl;
+	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", rootNodeMidpoint));
+	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
+	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
+	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("outputTextureSize", (int32_t)outputTextureSize));
+	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("voxelOctreeTextureSize", (int32_t)octreeTexture->getWidth()));
+
+	std::cout << "comming here 4" << std::endl;
+
+	renderingContext->pushAndSetBoundImage(0, Rendering::ImageBindParameters(octreeTexture));
+	renderingContext->pushAndSetBoundImage(1, Rendering::ImageBindParameters(edgeOutput.get()));
+	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(edgeInput.get()));
+#ifdef USE_ATOMIC_COUNTER
+	renderingContext->pushAndSetAtomicCounterTextureBuffer(0, atomicCounter);
+#else
+	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(atomicCounter));
+#endif // USE_ATOMIC_COUNTER
+
+	std::cout << "comming here 4.5" << std::endl;
+
+	//activate new camera
+	frameContext->pushCamera();
+	//deactivate culling and depth tests
+	renderingContext->pushCullFace();
+	renderingContext->pushAndSetDepthBuffer(Rendering::DepthBufferParameters(false, false, Rendering::Comparison::LESS));
+
+	for(unsigned int i = 0; i < 1; i++){
+		frameContext->setCamera(sceneEnclosingCameras[i].get());
+		//activate the shader and check the edges
+		TextureProcessor textureProcessor;
+		textureProcessor.setRenderingContext(this->renderingContext);
+		textureProcessor.setOutputTexture(tmpTexVoxelOctreeSize.get());
+		textureProcessor.setShader(voxelOctreeShaderReadObject.get());
+		textureProcessor.begin();
+
+	//	renderingContext->setCullFace(Rendering::CullFaceParameters(Rendering::CullFaceParameters()));
+	//	frameContext->displayMesh(mesh);
+		renderingContext->setCullFace(Rendering::CullFaceParameters(Rendering::CullFaceParameters::CULL_BACK));
+		frameContext->displayMesh(mesh);
+		renderingContext->setCullFace(Rendering::CullFaceParameters(Rendering::CullFaceParameters::CULL_FRONT));
+		frameContext->displayMesh(mesh);
+
+		textureProcessor.end();
+	}
+
+	//reset depth test
+	renderingContext->popDepthBuffer();
+	//reset culling
+	renderingContext->popCullFace();
+	//reset camera
+	frameContext->popCamera();
+
+	renderingContext->popBoundImage(0);
+	renderingContext->popBoundImage(1);
+	renderingContext->popBoundImage(2);
+#ifdef USE_ATOMIC_COUNTER
+	renderingContext->popAtomicCounterTextureBuffer(0);
+#else
+	renderingContext->popBoundImage(2);
+#endif // USE_ATOMIC_COUNTER
+
+	std::cout << "comming here 5" << std::endl;
+
+	//filter the edge list
+	edgeOutput.get()->downloadGLTexture(*renderingContext);
+//	uint8_t* data = edgeOutput.get()->openLocalData(*renderingContext);
+	Util::Reference<Util::PixelAccessor> accOut = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeOutput.get());
+	std::vector<LightEdge*> filteredEdges;
+//	unsigned int x, y;
+	unsigned int before = 0;
+	for(unsigned int i = 1; i < edges->size(); i++){
+		unsigned int x = i % outputTextureSize;
+		unsigned int y = i / outputTextureSize;
+
+		uint8_t value = accOut.get()->readSingleValueByte(x, y);
+
+		if(value == 0) filteredEdges.push_back((*edges)[i]);
+		else debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
+
+//		x = (x + 1) % outputTextureSize;
+//		if(x == 0) y++;
+
+//		if(data[before] != data[i] - 1){
+//			std::cout << i << ": " << (unsigned int)data[i] << " but " << before << ": " << (unsigned int)data[before] << std::endl;
+//			before = i;
+//			if(i >= 10) break;
+//		} else {
+//			before = i;
+//		}
+
+//		if(data[i] == 0) filteredEdges.push_back((*edges)[i]);
+	}
+
+	unsigned int counter = 0, counter2 = 0, counter3 = 0;
+	edgeOutput.get()->downloadGLTexture(*renderingContext);
+	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeOutput.get());
+	for(unsigned int i = 1; i < edgeOutput->getWidth() * edgeOutput->getHeight(); i++){
+		unsigned int x = i % edgeOutput->getWidth();
+		unsigned int y = i / edgeOutput->getWidth();
+		unsigned int xb = (i-1) % edgeOutput->getWidth();
+		unsigned int yb = (i-1) / edgeOutput->getWidth();
+
+		uint8_t valueBefore = acc2.get()->readSingleValueByte(xb, yb);
+		uint8_t value = acc2.get()->readSingleValueByte(x, y);
+		if(valueBefore != value || i % 1000 == 0 || i == 1){
+			std::cout << i << " (of " << edges->size() << ")" << ": " << (unsigned int)value << " but " << (i-1) << ": " << (unsigned int)valueBefore << std::endl;
+			if(counter++ >= 100) break;
+//			if(i >= 10) break;
+		}
+//		if(value == 2){
+//			counter++;
+//		} else if(value == 4){
+//			counter2++;
+//		} else {
+//			counter3++;
+//		}
+	}
+	std::cout << "Counter: " << counter << " Counter2: " << counter2 << " Counter3: " << counter3 << std::endl;
+
+	std::cout << "comming here 6" << std::endl;
+
+	//write back the filtered edges
+	(*edges) = filteredEdges;
 }
 
 void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
@@ -671,12 +944,12 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 	debug->addDebugLine(rootNodeMidpoint, Geometry::Vec3(rootNodeMidpoint.x(), rootNodeMidpoint.y() + 1, rootNodeMidpoint.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
 	std::cout << "Root Node Midpoint: " << rootNodeMidpoint.x() << "x" << rootNodeMidpoint.y() << "x" << rootNodeMidpoint.z() << std::endl;
 	std::cout << "halfSizeOfRootNode: " << lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f << std::endl;
-	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", rootNodeMidpoint));
-	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
-	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
-	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("inputTextureSize", (int32_t)textureSize));
-	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("outputTextureSize", (int32_t)outputTextureSize));
-	voxelOctreeShaderRead.get()->setUniform(*renderingContext, Rendering::Uniform("voxelOctreeTextureSize", (int32_t)octreeTexture->getWidth()));
+	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", rootNodeMidpoint));
+	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
+	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
+	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("inputTextureSize", (int32_t)textureSize));
+	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("outputTextureSize", (int32_t)outputTextureSize));
+	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("voxelOctreeTextureSize", (int32_t)octreeTexture->getWidth()));
 
 	std::cout << "comming here 4" << std::endl;
 
@@ -693,7 +966,7 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 	textureProcessor.setRenderingContext(this->renderingContext);
 	textureProcessor.setInputTexture(unneeded.get());
 	textureProcessor.setOutputTexture(edgeOutput.get());
-	textureProcessor.setShader(voxelOctreeShaderRead.get());
+	textureProcessor.setShader(voxelOctreeShaderReadTexture.get());
 	textureProcessor.execute();
 
 	renderingContext->popBoundImage(0);
@@ -784,12 +1057,16 @@ void LightNodeManager::filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> 
 //	int falseEdges = 8;
 
 	for(unsigned int i = 132; i < edges->size(); i++){
-		Geometry::Vec3 lineDirection = (*edges)[i]->target->position - (*edges)[i]->source->position;
+//		Geometry::Vec3 lineStart = (*edges)[i]->source->position;
+//		Geometry::Vec3 lineEnd = (*edges)[i]->target->position;
+		Geometry::Vec3 lineStart(rootMidPos.x() - quarterSizeOfRootNode * 1.1, rootMidPos.y() - quarterSizeOfRootNode * 1.1, rootMidPos.z() - quarterSizeOfRootNode * 0.9);
+		Geometry::Vec3 lineEnd(rootMidPos.x() + quarterSizeOfRootNode * 1.01, rootMidPos.y() + quarterSizeOfRootNode * 1.1, rootMidPos.z() - quarterSizeOfRootNode * 0.9);
+		Geometry::Vec3 lineDirection = lineEnd - lineStart;
 		lineDirection.normalize();
 
-		setStartEndNodes((*edges)[i]->source->position, (*edges)[i]->target->position, octreeAcc);
+		setStartEndNodes(lineStart, lineEnd, octreeAcc);
 
-		if(checkLine(treeMin, treeMax, (*edges)[i]->source->position, lineDirection, octreeAcc) == 0){
+		if(checkLine(treeMin, treeMax, lineStart, lineDirection, octreeAcc) == 0){
 			filteredEdges.push_back((*edges)[i]);
 //			debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 0, 1), Util::Color4f(0, 1, 0, 1));
 //			if(i > 0 && (*edges)[i]->source != (*edges)[i - 1]->source) falseEdges--;
@@ -798,7 +1075,7 @@ void LightNodeManager::filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> 
 //				break;
 //			}
 		} else {
-			debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
+			debug->addDebugLine(lineStart, lineEnd, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
 		}
 		break;
 	}
@@ -811,8 +1088,8 @@ int LightNodeManager::checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeM
 	Geometry::Vec3 newRayStart = rayOrigin;
 	Geometry::Vec3 newRayDir = rayDirection;
 
-	debug->addDebugLine(rayOrigin, Geometry::Vec3(rayOrigin.x(), rayOrigin.y() + 0.1f, rayOrigin.z()), Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
-	debug->addDebugLine(rayOrigin, rayOrigin + rayDirection, Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
+//	debug->addDebugLine(rayOrigin, Geometry::Vec3(rayOrigin.x(), rayOrigin.y() + 0.1f, rayOrigin.z()), Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
+//	debug->addDebugLine(rayOrigin, rayOrigin + rayDirection, Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
 	//change lookup to only walk in positive directions
 	octreeLookupDifference = 0;
 	if(newRayDir.x() < 0.0){
@@ -837,12 +1114,12 @@ int LightNodeManager::checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeM
 	//calculate the "boundings" for the ray within the octree
 	Geometry::Vec3 t0 = (octreeMin - newRayStart);// / newRayDir;
 	Geometry::Vec3 t1 = (octreeMax - newRayStart);// / newRayDir;
-	t0.setX(t0.x() / newRayDir.x());
-	t0.setY(t0.y() / newRayDir.y());
-	t0.setZ(t0.z() / newRayDir.z());
-	t1.setX(t1.x() / newRayDir.x());
-	t1.setY(t1.y() / newRayDir.y());
-	t1.setZ(t1.z() / newRayDir.z());
+	t0.setX(t0.x() / ((newRayDir.x() == 0) ? 0.00001 : newRayDir.x()));
+	t0.setY(t0.y() / ((newRayDir.y() == 0) ? 0.00001 : newRayDir.y()));
+	t0.setZ(t0.z() / ((newRayDir.z() == 0) ? 0.00001 : newRayDir.z()));
+	t1.setX(t1.x() / ((newRayDir.x() == 0) ? 0.00001 : newRayDir.x()));
+	t1.setY(t1.y() / ((newRayDir.y() == 0) ? 0.00001 : newRayDir.y()));
+	t1.setZ(t1.z() / ((newRayDir.z() == 0) ? 0.00001 : newRayDir.z()));
 
 //	debug->addDebugBoxLinesMinMax(octreeMin, octreeMax);
 //	debug->addDebugBoxLinesMinMax(t0, t1);
@@ -877,7 +1154,7 @@ int LightNodeManager::testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geo
 	std::cout << "lookupDifference: " << octreeLookupDifference << std::endl;
 	std::cout << "Child ids: " << (nodeStates[0].childID ^ octreeLookupDifference);
 	for(unsigned int i = 1; i < curDepth; i++){
-		std::cout << " " << (nodeStates[i].childID ^ octreeLookupDifference);
+		std::cout << " " << (nodeStates[i].childID ^ octreeLookupDifference) << " (" << (nodeStates[i].tm.z()) << ")";
 		getNewMidPos(midPoints[i - 1], nodeStates[i - 1].childID ^ octreeLookupDifference, (i - 1), &midPoints[i]);
 		debug->addDebugBoxLines(midPoints[i], (4 * quarterSizeOfRootNode) / (1 << i));
 	}
@@ -1045,6 +1322,8 @@ void LightNodeManager::firstNodeRoot(Geometry::Vec3 t0, Geometry::Vec3 t1, Geome
 
 	int curDepth = 0;
 
+	std::cout << "Values: " << t0.z() << " " << t1.z() << std::endl;
+
 	nodeStates[0].t0 = t0;
 	nodeStates[0].t1 = t1;
 	nodeStates[0].nodeOffset = 0;
@@ -1200,20 +1479,24 @@ int LightNodeManager::firstNode(Geometry::Vec3 t0, Geometry::Vec3 tm){
 	int childID = 0;
 	if(t0.x() > t0.y()){
 		if(t0.x() > t0.z()){
+			std::cout << "x > y && x > z" << ": " << t0.x() << " > " << t0.y() << " && " << t0.x() << " > " << t0.z() << std::endl;
 			//plane YZ
 			if(tm.y() < t0.x()) childID += 2;
 			if(tm.z() < t0.x()) childID += 4;
 		} else {
+			std::cout << "x > y && x <= z" << ": " << t0.x() << " > " << t0.y() << " && " << t0.x() << " <= " << t0.z() << std::endl;
 			//plane XY
 			if(tm.x() < t0.z()) childID += 1;
 			if(tm.y() < t0.z()) childID += 2;
 		}
 	} else {
 		if(t0.y() > t0.z()){
+			std::cout << "x <= y && y > z" << ": " << t0.x() << " <= " << t0.y() << " && " << t0.y() << " > " << t0.z() << std::endl;
 			//plane XZ
 			if(tm.x() < t0.y()) childID += 1;
 			if(tm.z() < t0.y()) childID += 4;
 		} else {
+			std::cout << "x <= y && y <= z" << ": " << t0.x() << " <= " << t0.y() << " && " << t0.y() << " <= " << t0.z() << std::endl;
 			//plane XY
 			if(tm.x() < t0.z()) childID += 1;
 			if(tm.y() < t0.z()) childID += 2;
@@ -1389,12 +1672,6 @@ void LightNodeManager::createWorldBBCameras(){
 }
 
 void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks){
-	//TODO: set correct size of texture and convert to image, instead of texture
-	unsigned int textureSize = std::pow(2, VOXEL_OCTREE_DEPTH);
-	Util::Reference<Rendering::Texture> outputTex = Rendering::TextureUtils::createStdTexture(textureSize, textureSize, true);
-
-	std::cout << "TextureSize: " << textureSize << std::endl;
-
 	renderingContext->pushAndSetBoundImage(0, Rendering::ImageBindParameters(octreeTexture));
 	renderingContext->pushAndSetBoundImage(1, Rendering::ImageBindParameters(octreeLocks));
 #ifdef USE_ATOMIC_COUNTER
@@ -1414,6 +1691,7 @@ void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rende
 	frameContext->pushCamera();
 	//activate new culling
 	renderingContext->pushCullFace();
+	renderingContext->pushAndSetDepthBuffer(Rendering::DepthBufferParameters(false, false, Rendering::Comparison::LESS));
 	for(unsigned int i = 0; i < 1; i++){
 		frameContext->setCamera(sceneEnclosingCameras[i].get());
 //		voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("inverseMat", sceneEnclosingCameras[i]->getMatrix().inverse()));
@@ -1421,24 +1699,26 @@ void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rende
 		//write into a texture
 		TextureProcessor textureProcessor;
 		textureProcessor.setRenderingContext(renderingContext);
-		textureProcessor.setOutputTexture(outputTex.get());
+		textureProcessor.setOutputTexture(tmpTexVoxelOctreeSize.get());
 		textureProcessor.setShader(voxelOctreeShaderCreate.get());
 		textureProcessor.begin();
 
 		renderingContext->clearScreen(Util::Color4f(1, 1, 1, 1));
 
+//		renderingContext->setCullFace(Rendering::CullFaceParameters(Rendering::CullFaceParameters()));
+//		renderAllNodes(lightRootNode.get());
 		renderingContext->setCullFace(Rendering::CullFaceParameters(Rendering::CullFaceParameters::CULL_BACK));
 		renderAllNodes(lightRootNode.get());
-		renderingContext->pushAndSetCullFace(Rendering::CullFaceParameters(Rendering::CullFaceParameters::CULL_FRONT));
+		renderingContext->setCullFace(Rendering::CullFaceParameters(Rendering::CullFaceParameters::CULL_FRONT));
 		renderAllNodes(lightRootNode.get());
 
 		textureProcessor.end();
 	}
 
 	//DEBUG output of the unneeded data as png
-	outputTex.get()->downloadGLTexture(*renderingContext);
-	Rendering::Serialization::saveTexture(*renderingContext, outputTex.get(), Util::FileName("screens/voxelOctreeTex.png"));
-//	Rendering::TextureUtils::drawTextureToScreen(*renderingContext, Geometry::Rect_i(0, 0, textureSize, textureSize), *outputTex.get(), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
+//	tmpTexVoxelOctreeSize.get()->downloadGLTexture(*renderingContext);
+//	Rendering::Serialization::saveTexture(*renderingContext, tmpTexVoxelOctreeSize.get(), Util::FileName("screens/voxelOctreeTex.png"));
+////	Rendering::TextureUtils::drawTextureToScreen(*renderingContext, Geometry::Rect_i(0, 0, textureSize, textureSize), *tmpTexVoxelOctreeSize.get(), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
 	//DEBUG END
 
 //	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *octreeTexture);
@@ -1449,6 +1729,8 @@ void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rende
 //		acc2->writeColor(x, y, Util::Color4f(i + 1, 0, 0, 0));
 //	}
 
+	//reset depth test
+	renderingContext->popDepthBuffer();
 	//reset culling
 	renderingContext->popCullFace();
 	//reset camera
