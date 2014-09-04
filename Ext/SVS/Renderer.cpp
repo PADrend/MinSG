@@ -74,12 +74,12 @@ NodeRendererResult Renderer::displayNode(FrameContext & context, Node * node, co
 
 		const VisibilitySphere & visibilitySphere = retrieveVisibilitySphere(groupNode);
 		const auto & sphere = visibilitySphere.getSphere();
-		const auto worldSphere = transformSphere(sphere, groupNode->getWorldMatrix());
+		const auto worldSphere = transformSphere(sphere, groupNode->getWorldTransformationMatrix());
 #ifdef MINSG_PROFILING
 		++numSpheresVisited;
 #endif /* MINSG_PROFILING */
 
-		const Geometry::Vec3f cameraPos = context.getCamera()->getWorldPosition();
+		const Geometry::Vec3f cameraPos = context.getCamera()->getWorldOrigin();
 		if(!worldSphere.isOutside(cameraPos)) {
 #ifdef MINSG_PROFILING
 			++numSpheresEntered;
@@ -139,9 +139,9 @@ static void setOrUpdateAttribute(Node * node, const Util::StringIdentifier & att
 void Renderer::displaySphere(FrameContext & context, GroupNode * groupNode, const RenderParam & rp, bool skipGeometryOcclusionTest) {
 	const VisibilitySphere & visibilitySphere = retrieveVisibilitySphere(groupNode);
 	const Geometry::Sphere_f & sphere = visibilitySphere.getSphere();
-	const auto worldCenter = groupNode->getWorldMatrix().transformPosition(sphere.getCenter());
+	const auto worldCenter = groupNode->getWorldTransformationMatrix().transformPosition(sphere.getCenter());
 
-	const Geometry::Vec3f cameraPos = context.getCamera()->getWorldPosition();
+	const Geometry::Vec3f cameraPos = context.getCamera()->getWorldOrigin();
 	const Geometry::Vec3f direction = (cameraPos - worldCenter).getNormalized();
 	const auto vv = visibilitySphere.queryValue(direction, interpolationMethod);
 	const uint32_t maxIndex = vv.getIndexCount();

@@ -206,6 +206,7 @@ const Util::StringIdentifier ATTR_LIGHT_SPOT_CUTOFF("spot_cutoff");
 const Util::StringIdentifier ATTR_LIGHT_SPOT_EXPONENT("spot_exponent");
 
 const Util::StringIdentifier ATTR_LIGHTING_LIGHT_ID("lightId");
+const Util::StringIdentifier ATTR_LIGHTING_ENABLE_LIGHTING("enableLight");
 
 const Util::StringIdentifier ATTR_COLOR_VALUE("value");
 

@@ -79,8 +79,7 @@ void ColorCubeRenderer::doDisableState(FrameContext & context, Node * node, cons
 
 //! (internal) used to render the color cubes stored in the priority queue
 void ColorCubeRenderer::renderColorCubes(FrameContext& context,std::deque<Node*> & nodes) const{
-	context.getRenderingContext().pushMatrix();
-	context.getRenderingContext().resetMatrix();
+	context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
 // 	context.getRenderingContext().pushAndSetShader(nullptr);
 	context.getRenderingContext().pushAndSetBlending(BlendingParameters(BlendingParameters::SRC_ALPHA, BlendingParameters::ONE_MINUS_SRC_ALPHA));
 	context.getRenderingContext().pushAndSetCullFace( CullFaceParameters::CULL_BACK );
@@ -93,7 +92,7 @@ void ColorCubeRenderer::renderColorCubes(FrameContext& context,std::deque<Node*>
 	std::sort(
 		nodes.begin(),
 		nodes.end(),
-		_DistanceCompare<Node, std::greater<volatile float>, std::greater<const Node *> >(context.getCamera()->getWorldPosition())
+		_DistanceCompare<Node, std::greater<volatile float>, std::greater<const Node *> >(context.getCamera()->getWorldOrigin())
 	);
 
 
@@ -115,7 +114,7 @@ void ColorCubeRenderer::renderColorCubes(FrameContext& context,std::deque<Node*>
 	context.getRenderingContext().popCullFace();
 	context.getRenderingContext().popBlending();
 // 	context.getRenderingContext().popShader();
-	context.getRenderingContext().popMatrix();
+	context.getRenderingContext().popMatrix_modelToCamera();
 }
 
 //! (static,internal) used by renderColorCubes(...)

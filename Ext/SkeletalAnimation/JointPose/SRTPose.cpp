@@ -48,7 +48,7 @@ void SRTPose::init(std::deque<double> _values, std::deque<double> _timeline, std
     maxPoseCount = 0;
     
     if(getBindetJoint() != nullptr && keyframes.size() > 0) 
-        getBindetJoint()->setSRT(keyframes[0]._toSRT());
+        getBindetJoint()->setRelTransformation(keyframes[0]._toSRT());
     
     setValues(_values, _timeline, _interpolationTypes);
 }
@@ -182,7 +182,7 @@ void SRTPose::update(double timeSec)
     currentInterpolationType = interpolationTypes[timeIndex];
     
     double interpolFactor = (timeSec-timeline[timeIndex]) / (timeline[timeIndex+1] - timeline[timeIndex]);
-    getBindetJoint()->setSRT(SRT(animationData[timeIndex], animationData[timeIndex+1], interpolFactor));
+    getBindetJoint()->setRelTransformation(SRT(animationData[timeIndex], animationData[timeIndex+1], interpolFactor));
 }
 
 void SRTPose::restart()

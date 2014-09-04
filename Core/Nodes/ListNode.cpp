@@ -90,8 +90,8 @@ const Geometry::Box& ListNode::doGetBB() const {
 		for(const auto & child : children) {
 			if(child.isNull()) 
 				continue;
-			if(child->hasMatrix()) {
-				newBB.include(Geometry::Helper::getTransformedBox(child->getBB(), child->getMatrix()));
+			if(child->hasRelTransformation()) {
+				newBB.include(Geometry::Helper::getTransformedBox(child->getBB(), child->getRelTransformationMatrix()));
 			} else {
 				newBB.include(child->getBB());
 			}

@@ -14,8 +14,8 @@
             this file in MinSG::DataDirectory::getPath().
 */
 
-uniform mat4 sg_projectionMatrix;
-uniform mat4 sg_modelViewMatrix;
+uniform mat4 sg_matrix_cameraToClipping;
+uniform mat4 sg_matrix_modelToCamera;
 
 in vec3 sg_Position;
 in vec4 sg_Normal;
@@ -31,7 +31,7 @@ void main() {
 	normal = normalize(sg_Normal.xyz);
 	texCoord0 = sg_TexCoord0;
 	color = sg_Color;
-	vec4 eyePosition = sg_modelViewMatrix * vec4(sg_Position, 1.0);
+	vec4 eyePosition = sg_matrix_modelToCamera * vec4(sg_Position, 1.0);
 	position = eyePosition.xyz / eyePosition.w;
-	gl_Position = sg_projectionMatrix * eyePosition;
+	gl_Position = sg_matrix_cameraToClipping * eyePosition;
 }

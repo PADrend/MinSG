@@ -10,6 +10,7 @@
 */
 #include "LightNode.h"
 #include "../FrameContext.h"
+#include "../Transformations.h"
 #include "../States/MaterialState.h"
 #include <Geometry/Convert.h>
 #include <Rendering/Mesh/Mesh.h>
@@ -30,7 +31,7 @@ LightNode * LightNode::createPointLight() {
 void LightNode::setCutoff(float cutoff) {
 	parameters.cutoff = std::min(std::max(cutoff, 0.0f), 90.0f);
 	parameters.cosCutoff = cos(Geometry::Convert::degToRad(cutoff));
-	if (parameters.type == Rendering::LightParameters::SPOT) {
+	if(parameters.type == Rendering::LightParameters::SPOT) {
 		removeMetaMesh();
 	}
 }
@@ -46,40 +47,35 @@ LightNode * LightNode::createSpotLight() {
 }
 
 LightNode::LightNode(Rendering::LightParameters::lightType_t type/*=POINT*/) :
-	Node(), parameters() {
+	Node(), parameters(), lightNumber(INVALID_LIGHT_NUMBER) {
 	parameters.type = type;
 }
 
 LightNode::LightNode(const LightNode & source) :
-	Node(), parameters(source.parameters), lightNumber(255) {
+	Node(), parameters(source.parameters), lightNumber(INVALID_LIGHT_NUMBER) {
 }
 
 LightNode::~LightNode() {
 
 }
 
-void LightNode::validateParameters() {
-	parameters.direction = (getWorldMatrix() * Geometry::Vec4(0, 0, -1, 0));
-	assert(parameters.direction.w() == 0);
-	parameters.direction.normalize();
-	assert(parameters.direction.w() == 0);
-	parameters.position = (getWorldMatrix() * Geometry::Vec4(0, 0, 0, 1));
-	assert(parameters.position.w() == 1);
+void LightNode::validateParameters()const {
+	parameters.direction = Transformations::localDirToWorldDir(*this, Geometry::Vec3(0, 0, -1)).normalize();
+	parameters.position = getWorldOrigin();
 }
 
 //! ---|> Node
 void LightNode::doDisplay(FrameContext & context, const RenderParam & rp) {
-	if (!(rp.getFlag(SHOW_META_OBJECTS))) {
+	if(!(rp.getFlag(SHOW_META_OBJECTS))) {
 		return;
 	}
 	static Util::Reference<MaterialState> material;
-	if (material.isNull()) {
+	if( !material ) {
 		material = new MaterialState();
 		material->changeParameters().setShininess(128.0f);
 	}
-	if (metaMesh.isNull()) {
+	if( !metaMesh )
 		metaMesh = createMetaMesh();
-	}
 
 	material->changeParameters().setAmbient(parameters.ambient);
 	material->changeParameters().setDiffuse(parameters.diffuse);
@@ -94,15 +90,14 @@ void LightNode::removeMetaMesh() {
 	metaMesh = nullptr;
 }
 
-bool LightNode::switchOn(FrameContext & context) {
+void LightNode::switchOn(FrameContext & context) {
 	validateParameters();
 	lightNumber = context.getRenderingContext().enableLight(parameters);
-	return true;
 }
 
 void LightNode::switchOff(FrameContext & context) {
 	context.getRenderingContext().disableLight(lightNumber);
-	lightNumber = 255;
+	lightNumber = INVALID_LIGHT_NUMBER;
 }
 
 const Geometry::Box& LightNode::doGetBB() const {

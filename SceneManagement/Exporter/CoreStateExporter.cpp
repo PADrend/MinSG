@@ -293,6 +293,8 @@ static void describeLightingState(ExporterContext & ctxt,DescriptionMap & desc,S
 			desc.setString(Consts::ATTR_LIGHTING_LIGHT_ID,lightId);
 		}
 	}
+	if(!ls->getEnableLight())
+		desc.setString( Consts::ATTR_LIGHTING_ENABLE_LIGHTING,"false");
 }
 
 static void describeMaterialState(ExporterContext &,DescriptionMap & desc,State * state) {

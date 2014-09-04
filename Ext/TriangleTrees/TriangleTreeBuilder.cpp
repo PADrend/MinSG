@@ -56,7 +56,7 @@ Rendering::Mesh * Builder::mergeGeometry(const std::vector<GeometryNode *> & geo
 				throw std::invalid_argument("Cannot handle vertices where the number of coordinates is not three.");
 			}
 
-			const Geometry::Matrix4x4 & transform = geoNode->getWorldMatrix();
+			const Geometry::Matrix4x4 & transform = geoNode->getWorldTransformationMatrix();
 			// Store a copy here.
 			meshes.push_back(mesh->clone());
 			transformations.push_back(transform);

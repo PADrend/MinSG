@@ -9,17 +9,15 @@
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
 #include "CameraNodeOrtho.h"
+#include "../Transformations.h"
 
 namespace MinSG {
 
 void CameraNodeOrtho::updateFrustum() {
 	frustum.setOrthogonal(left, right, bottom, top, getNearPlane(), getFarPlane());
-
-	const Geometry::Matrix4x4 & worldMat = getWorldMatrix();
-	const Geometry::Vec3 pos = worldMat.getColumnAsVec3(3);
-	const Geometry::Vec3 dir = -worldMat.getColumnAsVec3(2);
-	const Geometry::Vec3 up = worldMat.getColumnAsVec3(1);
-	frustum.setPosition(pos, dir, up);
+	frustum.setPosition( 	getWorldOrigin(), // pos
+							Transformations::localDirToWorldDir(*this,Geometry::Vec3(0,0,-1)),  // dir
+							Transformations::localDirToWorldDir(*this,Geometry::Vec3(0,1,0)));	// up
 }
 
 }

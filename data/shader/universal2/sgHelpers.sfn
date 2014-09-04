@@ -60,12 +60,12 @@ attribute vec3 sg_Position;
 attribute vec4 sg_Tangent;
 #endif
 
-uniform mat4 sg_cameraInverseMatrix;
+uniform mat4 sg_matrix_cameraToWorld;
 uniform sg_LightSourceParameters sg_LightSource[8];
 uniform int sg_lightCount;
 uniform sg_MaterialParameters sg_Material;
-uniform mat4 sg_modelViewMatrix;
-uniform mat4 sg_modelViewProjectionMatrix;
+uniform mat4 sg_matrix_modelToCamera;
+uniform mat4 sg_matrix_modelToClipping;
 uniform bool sg_useMaterials;
 uniform float sg_pointSize;
 
@@ -80,26 +80,26 @@ uniform float sg_pointSize;
 */
 
 // coordinates and normals
-/*! [vs] Calculate the eye space bitangent based on sg_Normal,sg_Tangent and sg_modelViewMatrix 
+/*! [vs] Calculate the eye space bitangent based on sg_Normal,sg_Tangent and sg_matrix_modelToCamera 
 	\note The value is not normalized! If it is passed on as varying, this is not needed.	*/
 vec3 sg_calcDefaultBitangent_es();
 vec3 sg_calcBitangent_es(in vec3 normal_ms);
 
-/*! [vs] Calculate the eye space normal based on sg_Normal and sg_modelViewMatrix 
+/*! [vs] Calculate the eye space normal based on sg_Normal and sg_matrix_modelToCamera 
 	\note The value is not normalized! If it is passed on as varying, this is not needed.	*/
 vec3 sg_calcDefaultNormal_es();
 vec3 sg_calcNormal_es(in vec3 normal_ms);
 
 /*! [vs] Calculate the homogenous clipping space vertex position 
-		based on sg_Position and sg_modelViewProjectionMatrix */
+		based on sg_Position and sg_matrix_modelToClipping */
 vec4 sg_calcDefaultPosition_hcs();
 vec4 sg_calcPosition_hcs(in vec3 position_ms);
 
-//! [vs] Calculate the homogenous eye space position based on sg_Position and sg_modelViewMatrix 
+//! [vs] Calculate the homogenous eye space position based on sg_Position and sg_matrix_modelToCamera 
 vec4 sg_calcDefaultPosition_hes();
 vec4 sg_calcPosition_hes(in vec3 position_ms);
 
-/*! [vs] Calculate the eye space tangent based on sg_Tangent and sg_modelViewMatrix 
+/*! [vs] Calculate the eye space tangent based on sg_Tangent and sg_matrix_modelToCamera 
 	\note The value is not normalized! If it is passed on as varying, this is not needed.	*/
 vec3 sg_calcTangent_es();
 
@@ -110,11 +110,11 @@ vec3 sg_getVertexPosition_ms();
 vec3 sg_getVertexNormal_ms();
 
 // conversions
-/*! [fs,vs] Use sg_cameraInverseMatrix to convert a 
+/*! [fs,vs] Use sg_matrix_cameraToWorld to convert a 
 	homogenous coordinate in Eye(=View)Space into WorldSpace. */
 vec4 sg_eyeToWorld_hws(vec4 pos_hms);
 
-/*! [fs,vs] Use sg_cameraInverseMatrix and sg_modelViewMatrix to convert a 
+/*! [fs,vs] Use sg_matrix_cameraToWorld and sg_matrix_modelToCamera to convert a 
 	homogenous coordinate in ModelSpace into WorldSpace. */
 vec4 sg_modelToWorld_hws(vec4 pos_hms);
 
@@ -134,18 +134,18 @@ float sg_getPointSize();
 
 #ifdef SG_VERTEX_SHADER
 	vec3 sg_calcDefaultBitangent_es()	{	return sg_calcBitangent_es(sg_Normal);	}
-	vec3 sg_calcBitangent_es(in vec3 normal_ms)  {   return (sg_modelViewMatrix * vec4(cross(normal_ms, sg_Tangent.xyz) * sg_Tangent.w,0)).xyz; }
+	vec3 sg_calcBitangent_es(in vec3 normal_ms)  {   return (sg_matrix_modelToCamera * vec4(cross(normal_ms, sg_Tangent.xyz) * sg_Tangent.w,0)).xyz; }
 
 	vec4 sg_calcDefaultPosition_hcs()	{	return sg_calcPosition_hcs(sg_Position);	}
-	vec4 sg_calcPosition_hcs(in vec3 position_ms) { return sg_modelViewProjectionMatrix * vec4(position_ms,1); }
+	vec4 sg_calcPosition_hcs(in vec3 position_ms) { return sg_matrix_modelToClipping * vec4(position_ms,1); }
 
 	vec3 sg_calcDefaultNormal_es()		{	return sg_calcNormal_es(sg_Normal);	}
-	vec3 sg_calcNormal_es(in vec3 normal_ms)		{	return (sg_modelViewMatrix * vec4(normal_ms,0)).xyz;	}
+	vec3 sg_calcNormal_es(in vec3 normal_ms)		{	return (sg_matrix_modelToCamera * vec4(normal_ms,0)).xyz;	}
 
 	vec4 sg_calcDefaultPosition_hes()	{	return sg_calcPosition_hes(sg_Position);	}
-	vec4 sg_calcPosition_hes(in vec3 position_ms)	{	return sg_modelViewMatrix * vec4(position_ms, 1);	}
+	vec4 sg_calcPosition_hes(in vec3 position_ms)	{	return sg_matrix_modelToCamera * vec4(position_ms, 1);	}
 
-	vec3 sg_calcTangent_es()	{	return (sg_modelViewMatrix * vec4(sg_Tangent.xyz,0)).xyz;	}
+	vec3 sg_calcTangent_es()	{	return (sg_matrix_modelToCamera * vec4(sg_Tangent.xyz,0)).xyz;	}
 
 	vec4 sg_getVertexColor()	{ return sg_Color; }
 
@@ -170,8 +170,8 @@ void multiplyFragmentColor(inout FragmentColor c, vec4 f){
 	c.specular *= f;
 }
 
-vec4 sg_eyeToWorld_hws(vec4 pos_hes)	{	return sg_cameraInverseMatrix  * pos_hes;	}
-vec4 sg_modelToWorld_hws(vec4 pos_hms)	{	return sg_cameraInverseMatrix * sg_modelViewMatrix * pos_hms;	}
+vec4 sg_eyeToWorld_hws(vec4 pos_hes)	{	return sg_matrix_cameraToWorld  * pos_hes;	}
+vec4 sg_modelToWorld_hws(vec4 pos_hms)	{	return sg_matrix_cameraToWorld * sg_matrix_modelToCamera * pos_hms;	}
 
 float sg_getPointSize() {
 	return sg_pointSize;

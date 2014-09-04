@@ -28,7 +28,7 @@ namespace MinSG {
 
 Waypoint::Waypoint(const Geometry::SRT & _srt, AbstractBehaviour::timestamp_t timeSec) :
 	Node(), time(timeSec) {
-	setSRT(_srt);
+	setRelTransformation(_srt);
 }
 
 void Waypoint::setTime(AbstractBehaviour::timestamp_t newTime) {

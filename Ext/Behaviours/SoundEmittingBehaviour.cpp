@@ -19,7 +19,7 @@ namespace MinSG {
 //! (ctor)
 SoundEmittingBehaviour::SoundEmittingBehaviour(Node * node) :
 		AbstractNodeBehaviour(node),
-		source(Sound::Source::create()),removeWhenStopped(true),lastPosition(node->getWorldPosition()),lastTime(0) {
+		source(Sound::Source::create()),removeWhenStopped(true),lastPosition(node->getWorldOrigin()),lastTime(0) {
 	//ctor
 }
 
@@ -42,7 +42,7 @@ AbstractBehaviour::behaviourResult_t SoundEmittingBehaviour::doExecute() {
 	const timestamp_t tDiff = timeSec-lastTime;
 
 	using namespace Geometry;
-	const Vec3 newPos( getNode()->getWorldPosition() );
+	const Vec3 newPos( getNode()->getWorldOrigin() );
 
 	// update velocity
 	Vec3 velocity( tDiff>0 ? (newPos-lastPosition)*(1.0/tDiff) : Vec3(0,0,0));

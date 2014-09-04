@@ -169,7 +169,7 @@ State::stateResult_t AlgoSelector::doEnableState(FrameContext & fc, Node * /*nod
 	
 	// fetching samples
 
-    auto camPos = fc.getCamera()->getWorldPosition();
+    auto camPos = fc.getCamera()->getWorldOrigin();
 
     std::deque<SamplePoint> queue = asContext.storage->getStorage().getSortedClosestPoints(camPos, 4);
 	// failback 1, no samples found

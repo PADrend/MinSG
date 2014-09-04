@@ -28,7 +28,7 @@
 namespace MinSG {
     using namespace std;
     
-    SkeletalNode::SkeletalNode() : startAnimation(nullptr), currentAnimation(nullptr), jointMap(), inverseWorldMatrix(getWorldMatrix().inverse())
+    SkeletalNode::SkeletalNode() : startAnimation(nullptr), currentAnimation(nullptr), jointMap(), inverseWorldMatrix(getWorldTransformationMatrix().inverse())
     {
 
     }

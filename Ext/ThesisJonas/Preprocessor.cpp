@@ -138,18 +138,18 @@ static void openMesh(Node * displayedNode, Node * processedNode, std::vector<dou
 					if(geoNode->isInstance()){
 						if(processedNode->isInstance() && storeAtProto){
 							// mesh comes form prototype and is stored at prototype (geoNode correct)
-							vmp->worldMatrix = processedNode->getWorldMatrix().inverse()*displayedNode->getWorldMatrix();
+							vmp->worldMatrix = processedNode->getWorldTransformationMatrix().inverse()*displayedNode->getWorldTransformationMatrix();
 						} else {
 							// mesh comes from prototype and is stored at node (listNode correct)
-							vmp->worldMatrix = processedNode->getWorldMatrix().inverse()*displayedNode->getWorldMatrix();
+							vmp->worldMatrix = processedNode->getWorldTransformationMatrix().inverse()*displayedNode->getWorldTransformationMatrix();
 						}
 					} else {
 						if(processedNode->isInstance() && storeAtProto){
 							// mesh comes form node and is stored at prototype (case not possible?!?)
-							vmp->worldMatrix = processedNode->getWorldMatrix().inverse()*displayedNode->getWorldMatrix();
+							vmp->worldMatrix = processedNode->getWorldTransformationMatrix().inverse()*displayedNode->getWorldTransformationMatrix();
 						} else {
 							// mesh comes from node and is stored at node (geoNode correct)
-							vmp->worldMatrix = processedNode->getWorldMatrix().inverse()*displayedNode->getWorldMatrix();
+							vmp->worldMatrix = processedNode->getWorldTransformationMatrix().inverse()*displayedNode->getWorldTransformationMatrix();
 						}
 					}
 				} else {
@@ -160,18 +160,18 @@ static void openMesh(Node * displayedNode, Node * processedNode, std::vector<dou
 					if(!hasSamplingMesh(displayedNode, false)){
 						if(processedNode->isInstance() && storeAtProto){
 							// sampling mesh comes form prototype and is stored at prototype (listNode correct)
-							vmp->worldMatrix = processedNode->getWorldMatrix().inverse()*displayedNode->getWorldMatrix();
+							vmp->worldMatrix = processedNode->getWorldTransformationMatrix().inverse()*displayedNode->getWorldTransformationMatrix();
 						} else {
 							// sampling mesh comes from prototype and is stored at node (listNode correct)
-							vmp->worldMatrix = processedNode->getWorldMatrix().inverse()*displayedNode->getWorldMatrix();
+							vmp->worldMatrix = processedNode->getWorldTransformationMatrix().inverse()*displayedNode->getWorldTransformationMatrix();
 						}
 					} else {
 						if(processedNode->isInstance() && storeAtProto){
 							// sampling mesh comes form node and is stored at prototype (case not possible?!?)
-							vmp->worldMatrix = processedNode->getWorldMatrix().inverse()*displayedNode->getWorldMatrix();
+							vmp->worldMatrix = processedNode->getWorldTransformationMatrix().inverse()*displayedNode->getWorldTransformationMatrix();
 						} else {
 							// sampling mesh comes from node and is stored at node (listNode correct)
-							vmp->worldMatrix = processedNode->getWorldMatrix().inverse()*displayedNode->getWorldMatrix();
+							vmp->worldMatrix = processedNode->getWorldTransformationMatrix().inverse()*displayedNode->getWorldTransformationMatrix();
 						}
 					}
 				}

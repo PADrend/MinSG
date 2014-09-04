@@ -25,11 +25,11 @@ void MotionState::setWorldTransform(const btTransform &worldTrans) {
 	}else if(node->isDestroyed()){
 		world.removeNode(node);
 	}else{
-		const float nodeScale = node->getScale();
-		Geometry::SRT relSRT = Transformations::worldSRTToRelSRT(node, toSRT(worldTrans));
+		const float nodeScale = node->getRelScaling();
+		Geometry::SRT relSRT = Transformations::worldSRTToRelSRT(*node, toSRT(worldTrans));
 		relSRT.setScale( nodeScale );
-		relSRT.translate( -Transformations::localDirToRelDir(node,physObj.getCenterOfMass()));
-		node->setSRT(relSRT);
+		relSRT.translate( -Transformations::localDirToRelDir(*node,physObj.getCenterOfMass()));
+		node->setRelTransformation(relSRT);
 	}
 }
 

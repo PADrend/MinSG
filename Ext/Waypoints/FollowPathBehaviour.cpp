@@ -52,10 +52,10 @@ AbstractBehaviour::behaviourResult_t FollowPathBehaviour::doExecute() {
 
 	// convert the absolute path srt into coordinate system of the parent.
 	if(getNode()->hasParent()){
-		srt=getNode()->getParent()->getWorldMatrix().inverse() * srt ;
+		srt=getNode()->getParent()->getWorldToLocalMatrix() * srt ;
 	}
 
-	getNode()->setSRT(srt);
+	getNode()->setRelTransformation(srt);
 	if(position >= path->getMaxTime() && !path->isLooping())
 		return FINISHED;
 	return CONTINUE;

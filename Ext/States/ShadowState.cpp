@@ -55,7 +55,7 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 		return State::STATE_SKIPPED;
 	}
 
-	const Geometry::Vec3f camPos = light->getWorldPosition();
+	const Geometry::Vec3f camPos = light->getWorldOrigin();
 	const Geometry::Box & box = node->getWorldBB();
 	const Geometry::Vec3f boxCenter = box.getCenter();
 
@@ -86,7 +86,7 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	const Geometry::Vec3f camUp = camRight.cross(camDir).normalize();
 
 	Util::Reference<CameraNode> camera = new CameraNode;
-	camera->setSRT(Geometry::SRT(camPos, -camDir, camUp));
+	camera->setRelTransformation(Geometry::SRT(camPos, -camDir, camUp));
 
 	// Calculate minimum and maximum distance of all bounding box corners to camera.
 	const Geometry::Plane camPlane(camPos, camDir);
@@ -97,7 +97,7 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	float rightAngle = 0.0f;
 	float topAngle = 0.0f;
 	float bottomAngle = 0.0f;
-	const Geometry::Matrix4x4f cameraMatrix = camera->getWorldMatrix().inverse();
+	const Geometry::Matrix4x4f cameraMatrix = camera->getWorldTransformationMatrix().inverse();
 	for (uint_fast8_t c = 0; c < 8; ++c) {
 		const Geometry::corner_t corner = static_cast<Geometry::corner_t>(c);
 		const Geometry::Vec3f cornerPos = box.getCorner(corner);
@@ -150,8 +150,8 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	context.getRenderingContext().clearDepth(1.0f);
 
 	// Save matrices.
-	const Geometry::Matrix4x4f lightProjectionMatrix = context.getRenderingContext().getProjectionMatrix();
-	const Geometry::Matrix4x4f lightModelViewMatrix = context.getRenderingContext().getMatrix();
+	const Geometry::Matrix4x4f lightProjectionMatrix = context.getRenderingContext().getMatrix_cameraToClipping();
+	const Geometry::Matrix4x4f lightModelViewMatrix = context.getRenderingContext().getMatrix_modelToCamera();
 
 	context.getRenderingContext().pushAndSetPolygonOffset(Rendering::PolygonOffsetParameters(1.1f, 4.0f));
 

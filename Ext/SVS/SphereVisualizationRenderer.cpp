@@ -78,8 +78,8 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 			vertexDescription.appendTexCoord();
 			Util::Reference<Rendering::Mesh> sphereMesh = Rendering::MeshUtils::MeshBuilder::createSphere(vertexDescription, 64, 64);
 			Util::Reference<GeometryNode> sphereNode = new GeometryNode(sphereMesh);
-			sphereNode->setWorldPosition(sphere.getCenter());
-			sphereNode->setScale(sphere.getRadius());
+			sphereNode->setWorldOrigin(sphere.getCenter());
+			sphereNode->setRelScaling(sphere.getRadius());
 
 			Rendering::MaterialParameters materialParams;
 			materialParams.setAmbient(Util::Color4f(0.0f, 1.0f, 0.0f, 1.0f));
@@ -120,11 +120,10 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 			attribute = new MetaObjectAttribute(sphereNode.get());
 			node->setAttribute(attributeId, attribute);
 		}
-		context.getRenderingContext().pushMatrix();
-		context.getRenderingContext().resetMatrix();
-		context.getRenderingContext().multMatrix(groupNode->getWorldMatrix());
+		context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
+		context.getRenderingContext().multMatrix_modelToCamera(groupNode->getWorldTransformationMatrix());
 		attribute->get()->display(context, FRUSTUM_CULLING);
-		context.getRenderingContext().popMatrix();
+		context.getRenderingContext().popMatrix_modelToCamera();
 	} catch(const std::exception & e) {
 		WARN(std::string("Exception during rendering: ") + e.what());
 		deactivate();

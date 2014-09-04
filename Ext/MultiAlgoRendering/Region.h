@@ -100,7 +100,7 @@ public:
 		void display(FrameContext & frameContext, float alpha) const{
 			std::deque<const Region *> regions;
 			getLeaveRegions(regions);
-			std::sort(begin(regions), end(regions), Region::SortB2F(frameContext.getCamera()->getWorldPosition()));
+			std::sort(begin(regions), end(regions), Region::SortB2F(frameContext.getCamera()->getWorldOrigin()));
 			debugDisplay<std::deque<const Region*>>(regions, frameContext, alpha, &getBounds2, &getColor2);
 		}
 

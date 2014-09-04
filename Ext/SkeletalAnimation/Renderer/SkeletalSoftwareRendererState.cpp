@@ -102,10 +102,10 @@ State::stateResult_t SkeletalSoftwareRendererState::doEnableState(FrameContext &
     
     jointMats.clear();
     for(const auto joint : matriceOrder) {
-        jointMats.emplace_back(joint->getWorldMatrix());
+        jointMats.emplace_back(joint->getWorldTransformationMatrix());
     }
     
-    const Geometry::Matrix4x4 inverse = rootJoint->getWorldMatrix().inverse();
+    const Geometry::Matrix4x4 inverse = rootJoint->getWorldTransformationMatrix().inverse();
     for(const auto skin : meshSkins) {
         Rendering::MeshVertexData &vData = skin.first->getMesh()->openVertexData();
         const Rendering::VertexDescription &vd = vData.getVertexDescription();        

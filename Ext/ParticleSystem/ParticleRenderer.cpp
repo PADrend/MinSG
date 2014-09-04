@@ -35,7 +35,7 @@ void ParticleBillboardRenderer::operator()(ParticleSystemNode * psys, FrameConte
 		return;
 	}
 
-	const auto & worldToCamera = context.getRenderingContext().getCameraMatrix();
+	const auto & worldToCamera = context.getRenderingContext().getMatrix_worldToCamera();
 	const auto cameraToWorld = worldToCamera.inverse();
 
 	const auto halfRight = cameraToWorld.transformDirection(context.getWorldRightVector() * 0.5f);

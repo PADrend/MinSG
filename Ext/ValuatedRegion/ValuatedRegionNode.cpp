@@ -228,7 +228,7 @@ void ValuatedRegionNode::doDisplay(FrameContext & context, const RenderParam & r
 		context.getRenderingContext().applyChanges();
 
 		std::vector< std::pair<float,ValuatedRegionNode*> > regions;
-		const Geometry::Vec3 pos = context.getCamera()->getWorldPosition();
+		const Geometry::Vec3 pos = context.getCamera()->getWorldOrigin();
 
 		std::stack<ValuatedRegionNode *> todo;
 		todo.push(this);
@@ -383,8 +383,8 @@ void ValuatedRegionNode::drawColorBox(FrameContext & context) {
 			if (i>3) break;
 			Geometry::Matrix4x4 translation;
 			translation.translate(displacement[i][0], displacement[i][1], displacement[i][2]);
-			context.getRenderingContext().pushMatrix();
-			context.getRenderingContext().multMatrix(translation);
+			context.getRenderingContext().pushMatrix_modelToCamera();
+			context.getRenderingContext().multMatrix_modelToCamera(translation);
 			Rendering::drawQuad(
 				context.getRenderingContext(),
 				corners[index[i * 4]],
@@ -393,7 +393,7 @@ void ValuatedRegionNode::drawColorBox(FrameContext & context) {
 				corners[index[i * 4 + 3]],
 				*it
 			);
-			context.getRenderingContext().popMatrix();
+			context.getRenderingContext().popMatrix_modelToCamera();
 			++i;
 		}
 	} else if (numColors != 0) {

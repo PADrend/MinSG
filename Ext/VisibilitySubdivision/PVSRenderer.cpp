@@ -58,7 +58,7 @@ State::stateResult_t PVSRenderer::doEnableState(FrameContext & context,
 		return State::STATE_SKIPPED;
 	}
 
-	const auto pos = context.getCamera()->getWorldPosition();
+	const auto pos = context.getCamera()->getWorldOrigin();
 	// Check if cached cell can be used.
 	if(lastViewCell == nullptr || !lastViewCell->getBB().contains(pos)) {
 		lastViewCell = viewCells->getNodeAtPosition(pos);

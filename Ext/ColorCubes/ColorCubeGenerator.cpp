@@ -341,8 +341,7 @@ void ColorCubeGenerator::processColorCube(FrameContext& context, Node * node, de
 				continue;
 
 			context.getRenderingContext().clearScreen(Util::Color4f(0.0f, 0.0f, 0.0f, 0.0f));
-			context.getRenderingContext().pushMatrix();
-			context.getRenderingContext().resetMatrix();
+			context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
 
 
 			// draw faces using blending
@@ -373,7 +372,7 @@ void ColorCubeGenerator::processColorCube(FrameContext& context, Node * node, de
 			context.getRenderingContext().popDepthBuffer();
 			context.getRenderingContext().popCullFace();
 			context.getRenderingContext().popBlending();
-			context.getRenderingContext().popMatrix();
+			context.getRenderingContext().popMatrix_modelToCamera();
 		}
 		context.getRenderingContext().popFBO();
 		colorTexture->downloadGLTexture(context.getRenderingContext());
@@ -394,41 +393,40 @@ void ColorCubeGenerator::processColorCube(FrameContext& context, Node * node, de
 bool ColorCubeGenerator::prepareCamera(FrameContext& context, const Box& _box, Geometry::side_t side) {
 
 	Geometry::Box box(_box);
-	
-	camera->setRelPosition(box.getCenter());
+	camera->resetRelTransformation();
+	camera->setRelOrigin(box.getCenter());
 	switch(side){
 		case Geometry::SIDE_X_POS:
-			camera->setRelRotation_deg(90.0f, Geometry::Vec3(0, 1, 0));
+			camera->rotateRel(Geometry::Angle::deg(90.0f), Geometry::Vec3(0, 1, 0));
 			if(box.getExtentY() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentX() == 0) box.resizeAbs(0.1,0,0); // depth equal zero
 			box.resizeRel(1.01,1,1);
 			break;
 		case Geometry::SIDE_X_NEG:
-			camera->setRelRotation_deg(-90.0f, Geometry::Vec3(0, 1, 0));
+			camera->rotateRel(Geometry::Angle::deg(-90.0f), Geometry::Vec3(0, 1, 0));
 			if(box.getExtentY() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentX() == 0) box.resizeAbs(0.1,0,0); // depth equal zero
 			box.resizeRel(1.01,1,1);
 			break;
 		case Geometry::SIDE_Y_POS:
-			camera->setRelRotation_deg(-90.0f, Geometry::Vec3(1, 0, 0));
+			camera->rotateRel(Geometry::Angle::deg(-90.0f), Geometry::Vec3(1, 0, 0));
 			if(box.getExtentX() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentY() == 0) box.resizeAbs(0,0.1,0); // depth equal zero
 			box.resizeRel(1,1.01,1);
 			break;
 		case Geometry::SIDE_Y_NEG:
-			camera->setRelRotation_deg(90.0f, Geometry::Vec3(1, 0, 0));
+			camera->rotateRel(Geometry::Angle::deg(90.0f), Geometry::Vec3(1, 0, 0));
 			if(box.getExtentX() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentY() == 0) box.resizeAbs(0,0.1,0); // depth equal zero
 			box.resizeRel(1,1.01,1);
 			break;
 		case Geometry::SIDE_Z_POS:
-			camera->setRelRotation_deg(0.0f, Geometry::Vec3(0, 1, 0));
 			if(box.getExtentX() == 0 || box.getExtentY() == 0) return false; // width or height equal zero
 			if(box.getExtentZ() == 0) box.resizeAbs(0,0,0.1); // depth equal zero
 			box.resizeRel(1,1,1.01);
 			break;
 		case Geometry::SIDE_Z_NEG:
-			camera->setRelRotation_deg(180.0f, Geometry::Vec3(0, 1, 0));
+			camera->rotateRel(Geometry::Angle::deg(180.0f), Geometry::Vec3(0, 1, 0));
 			if(box.getExtentX() == 0 || box.getExtentY() == 0) return false; // width or height equal zero
 			if(box.getExtentZ() == 0) box.resizeAbs(0,0,0.1); // depth equal zero
 			box.resizeRel(1,1,1.01);
@@ -438,7 +436,7 @@ bool ColorCubeGenerator::prepareCamera(FrameContext& context, const Box& _box, G
 	}
 	
 	//box.resizeRel(1.01);
-	Geometry::Frustum f = Geometry::calcEnclosingOrthoFrustum(box, camera->getWorldMatrix().inverse());
+	Geometry::Frustum f = Geometry::calcEnclosingOrthoFrustum(box, camera->getWorldTransformationMatrix().inverse());
 	camera->setClippingPlanes(f.getLeft(), f.getRight(), f.getBottom(), f.getTop());
 	camera->setNearFar(f.getNear() , f.getFar());
 	camera->setViewport(Geometry::Rect_i(maxTexSize*static_cast<uint8_t>(side), 0, maxTexSize, maxTexSize), true);

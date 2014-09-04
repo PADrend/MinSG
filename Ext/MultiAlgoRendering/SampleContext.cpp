@@ -170,7 +170,7 @@ static const Util::Color4f getColor2(const SampleRegion::ref_t & region, const S
 
 void SampleContext::displayRegions(FrameContext & frameContext, float alpha, float redGreenThreshold) const {
 	regions_t tmp(begin(regions), end(regions));
-	std::sort(begin(tmp), end(tmp), SampleRegion::SortB2F(frameContext.getCamera()->getWorldPosition()));
+	std::sort(begin(tmp), end(tmp), SampleRegion::SortB2F(frameContext.getCamera()->getWorldOrigin()));
 
 	debugDisplay<regions_t>(tmp, frameContext, alpha, &getBounds2, std::bind(&getColor2, std::placeholders::_1, this, redGreenThreshold));
 }

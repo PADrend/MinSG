@@ -50,7 +50,7 @@ AbstractBehaviour::behaviourResult_t SRTBehaviour::doExecute(){
 	if(!getNode()) return FINISHED;
 
 	int frame = static_cast<int>(floor(getCurrentTime())) % srts.size();
-	getNode()->setSRT(srts[frame]);
+	getNode()->setRelTransformation(srts[frame]);
 	return CONTINUE;
 }
 

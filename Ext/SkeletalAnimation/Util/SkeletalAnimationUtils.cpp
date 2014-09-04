@@ -309,7 +309,7 @@ Geometry::Box SkeletalAnimationUtils::getBoundingBoxOfJoint(AbstractJoint *joint
     for(auto geoNode : geometryNodes)
         box.include(getBoundingBoxOfJointForMesh(&geoNode->getMesh()->openVertexData(), joint));
     
-    return Geometry::Helper::getTransformedBox(box, joint->getWorldMatrix().inverse());
+    return Geometry::Helper::getTransformedBox(box, joint->getWorldTransformationMatrix().inverse());
 }
 
 Geometry::Box SkeletalAnimationUtils::getBoundingBoxOfJointForMesh(Rendering::MeshVertexData *mesh, AbstractJoint *joint)
@@ -753,8 +753,8 @@ SkeletalNode *SkeletalAnimationUtils::generateSkeletalNode(GeometryNode *mesh, A
         float zOffset = 0.0;
         for(JointNode *joint : joints)
         {
-            Vec3 curNodePos = joint->getWorldMatrix().getColumnAsVec3(3);
-            Vec3 parentNodePose = joint->getParent()->getWorldMatrix().getColumnAsVec3(3);
+            Vec3 curNodePos = joint->getWorldTransformationMatrix().getColumnAsVec3(3);
+            Vec3 parentNodePose = joint->getParent()->getWorldTransformationMatrix().getColumnAsVec3(3);
             if(precision != 0)
             {
                 xOffset = (parentNodePose.x() - curNodePos.x())/precision;
@@ -774,7 +774,7 @@ SkeletalNode *SkeletalAnimationUtils::generateSkeletalNode(GeometryNode *mesh, A
         {
             JointNode *closestNode = joints[0];
             for(JointNode *joint : joints)
-                if(vertices[i].distance(joint->getWorldMatrix().getColumnAsVec3(3)) < vertices[i].distance(closestNode->getWorldMatrix().getColumnAsVec3(3)))
+                if(vertices[i].distance(joint->getWorldTransformationMatrix().getColumnAsVec3(3)) < vertices[i].distance(closestNode->getWorldTransformationMatrix().getColumnAsVec3(3)))
                     closestNode = joint;
             
             nodes.emplace_back(closestNode);

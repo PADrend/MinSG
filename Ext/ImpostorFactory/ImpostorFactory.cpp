@@ -16,6 +16,7 @@
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/States/MaterialState.h"
 #include "../../Core/States/TextureState.h"
+#include "../../Core/Transformations.h"
 
 #include <Geometry/Box.h>
 #include <Geometry/Frustum.h>
@@ -52,15 +53,15 @@ namespace ImpostorFactory {
 
 GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node) {
 	const Geometry::Rect projectedRect = frameContext.getProjectedRect(node);
-	const Geometry::Vec3f position = frameContext.getCamera()->getWorldPosition();
+	const Geometry::Vec3f position = frameContext.getCamera()->getWorldOrigin();
 	// Negative direction for camera.
 	const Geometry::Vec3f direction = position - node->getWorldBB().getCenter();
 
 	Util::Reference<CameraNodeOrtho> cameraOrtho = new CameraNodeOrtho;
-	cameraOrtho->setWorldPosition(position);
-	cameraOrtho->rotateToWorldDir(direction);
+	cameraOrtho->setWorldOrigin(position);
+	Transformations::rotateToWorldDir(*cameraOrtho.get(),direction);
 
-	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldMatrix().inverse() * node->getWorldMatrix());
+	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldToLocalMatrix() * node->getWorldTransformationMatrix());
 	cameraOrtho->setNearFar(frustum.getNear(), frustum.getFar());
 	cameraOrtho->setClippingPlanes(frustum.getLeft(), frustum.getRight(), frustum.getBottom(), frustum.getTop());
 
@@ -126,7 +127,7 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 		frameContext.popCamera();
 		return nullptr;
 	}
-	Matrix4x4 transMat = (renderingContext.getProjectionMatrix() * renderingContext.getCameraMatrix()).inverse();
+	const Matrix4x4 transMat = (renderingContext.getMatrix_cameraToClipping() * renderingContext.getMatrix_worldToCamera()).inverse();
 	MeshVertexData & vd = mesh->openVertexData();
 	Rendering::MeshUtils::transformCoordinates(vd, VertexAttributeIds::POSITION, transMat, 0, mesh->getVertexCount());
 	vd.updateBoundingBox();
@@ -147,15 +148,15 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 
 GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node * node) {
 	const Geometry::Rect projectedRect = frameContext.getProjectedRect(node);
-	const Geometry::Vec3f position = frameContext.getCamera()->getWorldPosition();
+	const Geometry::Vec3f position = frameContext.getCamera()->getWorldOrigin();
 	// Negative direction for camera.
 	const Geometry::Vec3f direction = position - node->getWorldBB().getCenter();
 
 	Util::Reference<CameraNodeOrtho> cameraOrtho = new CameraNodeOrtho;
-	cameraOrtho->setWorldPosition(position);
-	cameraOrtho->rotateToWorldDir(direction);
+	cameraOrtho->setWorldOrigin(position);
+	Transformations::rotateToWorldDir(*cameraOrtho.get(),direction);
 
-	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldMatrix().inverse() * node->getWorldMatrix());
+	const Geometry::Frustum frustum = Geometry::calcEnclosingOrthoFrustum(node->getBB(), cameraOrtho->getWorldToLocalMatrix() * node->getWorldTransformationMatrix());
 	cameraOrtho->setNearFar(frustum.getNear(), frustum.getFar());
 	cameraOrtho->setClippingPlanes(frustum.getLeft(), frustum.getRight(), frustum.getBottom(), frustum.getTop());
 
@@ -263,7 +264,7 @@ GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node 
 		return nullptr;
 	}
 
-	Geometry::Matrix4x4f transMat = (renderingContext.getProjectionMatrix() * renderingContext.getCameraMatrix()).inverse();
+	const Geometry::Matrix4x4f transMat = (renderingContext.getMatrix_cameraToClipping() * renderingContext.getMatrix_worldToCamera()).inverse();
 	MeshVertexData & vertexData = mesh->openVertexData();
 	Rendering::MeshUtils::transformCoordinates(vertexData, VertexAttributeIds::POSITION, transMat, 0, mesh->getVertexCount());
 	vertexData.updateBoundingBox();

@@ -37,7 +37,7 @@ namespace TwinPartitions {
 
 static Rendering::Shader * getTDMShader() {
 	static Rendering::Shader * shader = nullptr;
-	const std::string vertexProgram("uniform mat4 sg_modelViewProjectionMatrix;\
+	const std::string vertexProgram("uniform mat4 sg_matrix_modelToClipping;\
 										\
 										attribute vec3 sg_Position;\
 										attribute vec2 sg_TexCoord0;\
@@ -46,7 +46,7 @@ static Rendering::Shader * getTDMShader() {
 										\
 										void main() {\
 											texCoord0 = sg_TexCoord0;\
-											gl_Position = sg_modelViewProjectionMatrix * vec4(sg_Position, 1.0);\
+											gl_Position = sg_matrix_modelToClipping * vec4(sg_Position, 1.0);\
 										}");
 	const std::string fragmentProgram("varying vec2 texCoord0;\
 										uniform sampler2D sg_texture0;\
@@ -78,7 +78,7 @@ State::stateResult_t TwinPartitionsRenderer::doEnableState(FrameContext & contex
 		return State::STATE_SKIPPED;
 	}
 
-	const Geometry::Vec3f pos = context.getCamera()->getWorldPosition();
+	const Geometry::Vec3f pos = context.getCamera()->getWorldOrigin();
 	// Check if cached cell can be used.
 	if (currentCell == INVALID_CELL || !data->cells[currentCell].bounds.contains(pos)) {
 		// Search the cell that contains the camera position.

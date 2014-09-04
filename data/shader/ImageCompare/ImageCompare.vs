@@ -11,8 +11,8 @@
 
 in vec3 sg_Position;
 
-uniform mat4 sg_modelViewProjectionMatrix;
+uniform mat4 sg_matrix_modelToClipping;
 
 void main(void){
-	gl_Position = sg_modelViewProjectionMatrix * vec4(sg_Position,1);
+	gl_Position = sg_matrix_modelToClipping * vec4(sg_Position,1);
 }

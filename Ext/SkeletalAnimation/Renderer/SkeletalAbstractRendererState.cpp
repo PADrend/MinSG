@@ -78,7 +78,7 @@ void SkeletalAbstractRendererState::validateMatriceOrder(Node *node) {
     
     jointMats.clear();
     for(const auto item : matriceOrder) {
-        jointMats.emplace_back(item->getWorldMatrix());
+        jointMats.emplace_back(item->getWorldTransformationMatrix());
         inverseMatContainer.emplace_back(item->getInverseBindMatrix());
     }
     

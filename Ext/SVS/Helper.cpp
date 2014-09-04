@@ -21,6 +21,7 @@
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/Nodes/Node.h"
 #include "../../Core/FrameContext.h"
+#include "../../Core/Transformations.h"
 #include "../../Helper/StdNodeVisitors.h"
 #include "../../SceneManagement/SceneManager.h"
 #include <Geometry/Box.h>
@@ -134,8 +135,8 @@ CameraNodeOrtho * createSamplingCamera(const Geometry::Sphere_f & sphere, const 
 void transformCamera(AbstractCameraNode * camera, const Geometry::Sphere_f & sphere, const Geometry::Matrix4x4f & worldMatrix, const Geometry::Vec3f & position) {
 	const auto worldSphere = transformSphere(sphere, worldMatrix);
 	// Camera is standing radius away from the sphere surface.
-	camera->setWorldPosition(worldSphere.getCenter() + position * 2 * worldSphere.getRadius());
-	camera->rotateToWorldDir(position);
+	camera->setWorldOrigin(worldSphere.getCenter() + position * 2 * worldSphere.getRadius());
+	Transformations::rotateToWorldDir(*camera,position);
 }
 
 Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const VisibilitySphere & visibilitySphere, interpolation_type_t interpolation) {
@@ -215,12 +216,12 @@ static Geometry::Sphere_f computeLocalBoundingSphere(PreprocessingContext & prep
 		meshesAndTransformations.reserve(geoNodes.size());
 		for(const auto & geoNode : geoNodes) {
 			// For simplicity, compute sphere in world coordinates
-			meshesAndTransformations.emplace_back(geoNode->getMesh(), geoNode->getWorldMatrix());
+			meshesAndTransformations.emplace_back(geoNode->getMesh(), geoNode->getWorldTransformationMatrix());
 		}
 
 		const auto sphere = Rendering::MeshUtils::calculateBoundingSphere(meshesAndTransformations);
 		// Transform sphere from world to local coordinates
-		return transformSphere(sphere, groupNode->getWorldMatrix().inverse());
+		return transformSphere(sphere, groupNode->getWorldTransformationMatrix().inverse());
 	} else {
 		// Start with an invalid sphere
 		Geometry::Sphere_f sphere(Geometry::Vec3f(0, 0, 0), -1);
@@ -237,7 +238,7 @@ static Geometry::Sphere_f computeLocalBoundingSphere(PreprocessingContext & prep
 				const auto & childSphere = childVisibilitySphere.getSphere();
 
 				// Transform sphere from child local to parent local coordinates
-				sphere.include(transformSphere(childSphere, groupChild->getMatrix()));
+				sphere.include(transformSphere(childSphere, groupChild->getRelTransformationMatrix()));
 				continue;
 			}
 			GeometryNode * geoChild = dynamic_cast<GeometryNode *>(childNode);
@@ -246,7 +247,7 @@ static Geometry::Sphere_f computeLocalBoundingSphere(PreprocessingContext & prep
 																  geoChild);
 
 				// Transform sphere from child local to parent local coordinates
-				sphere.include(transformSphere(geoSphere, geoChild->getMatrix()));
+				sphere.include(transformSphere(geoSphere, geoChild->getRelTransformationMatrix()));
 			}
 
 			// Stop early if the radius of the combined sphere is too large
@@ -345,7 +346,7 @@ void createVisibilitySphere(PreprocessingContext & preprocessingContext, GroupNo
 	VisibilitySubdivision::CostEvaluator evaluator(Evaluators::Evaluator::SINGLE_VALUE);
 
 	preprocessingContext.getFrameContext().pushCamera();
-	Util::Reference<CameraNodeOrtho> camera = createSamplingCamera(sphere, node->getWorldMatrix(), static_cast<int>(preprocessingContext.getResolution()));
+	Util::Reference<CameraNodeOrtho> camera = createSamplingCamera(sphere, node->getWorldTransformationMatrix(), static_cast<int>(preprocessingContext.getResolution()));
 
 	// Check if there are only leaves below this node
 	if(!preprocessingContext.getUseExistingVisibilityResults() ||
@@ -480,7 +481,7 @@ static void transformSphereWorlToLocal(GroupNode * node) {
 	}
 	VisibilitySphere & visibilitySphere = accessVisibilitySphere(node);
 	const auto & oldSphere = visibilitySphere.getSphere();
-	const auto inverseWorldMatrix = node->getWorldMatrix().inverse();
+	const auto inverseWorldMatrix = node->getWorldTransformationMatrix().inverse();
 	visibilitySphere.setSphere(transformSphere(oldSphere, inverseWorldMatrix));
 }
 

@@ -165,14 +165,14 @@ struct HOMRenderer::DepthSorter {
 };
 
 void HOMRenderer::selectOccluders(std::deque<SelectedOccluder> & occluders, AbstractCameraNode * camera) const {
-	const Geometry::Vec3f cameraDir = (camera->getWorldMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
-	const Geometry::Vec3f cameraPos = camera->getWorldPosition();
+	const Geometry::Vec3f cameraDir = (camera->getWorldTransformationMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
+	const Geometry::Vec3f cameraPos = camera->getWorldOrigin();
 
 	for (const auto & occluder : occluderDatabase) {
 		// Check if occluder is in the viewing frustum.
 		// Do not add occluder if the camera is inside it.
 		const Geometry::Box & bb = occluder->getWorldBB();
-		if (camera->testBoxFrustumIntersection(bb) != Geometry::Frustum::OUTSIDE && !bb.contains(camera->getWorldPosition())) {
+		if (camera->testBoxFrustumIntersection(bb) != Geometry::Frustum::OUTSIDE && !bb.contains(camera->getWorldOrigin())) {
 			float minDistance = std::numeric_limits<float>::max();
 			float maxDistance = 0.0f;
 			for (uint_fast8_t i = 0; i < 8; ++i) {
@@ -342,11 +342,11 @@ State::stateResult_t HOMRenderer::doEnableState(FrameContext & context,
 	// Use FBO for occluder rendering.
 	renderingContext.pushAndSetFBO(fbo.get());
 	// Set perspective and viewport.
-	const Geometry::Vec3f cameraDir = (oldCamera->getWorldMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
-	const Geometry::Vec3f cameraPos = oldCamera->getWorldPosition();
+	const Geometry::Vec3f cameraDir = (oldCamera->getWorldTransformationMatrix() * Geometry::Vec4f(0.0f, 0.0f, -1.0f, 0.0f)).xyz().normalize();
+	const Geometry::Vec3f cameraPos = oldCamera->getWorldOrigin();
 
 	Util::Reference<CameraNode> camera = new CameraNode();
-	camera->setMatrix(oldCamera->getWorldMatrix());
+	camera->setRelTransformation(oldCamera->getWorldTransformationMatrix());
 	camera->setViewport(Geometry::Rect_i(0, 0, sideLength, sideLength));
 	float fovLeft;
 	float fovRight;
@@ -361,8 +361,8 @@ State::stateResult_t HOMRenderer::doEnableState(FrameContext & context,
 	}
 	context.pushAndSetCamera(camera.get());
 
-	const Geometry::Matrix4x4f cameraMatrix = renderingContext.getCameraMatrix();
-	const Geometry::Matrix4x4f projectionMatrix = renderingContext.getProjectionMatrix();
+	const Geometry::Matrix4x4f cameraMatrix = renderingContext.getMatrix_worldToCamera();
+	const Geometry::Matrix4x4f projectionMatrix = renderingContext.getMatrix_cameraToClipping();
 
 	renderingContext.pushAndSetDepthBuffer(Rendering::DepthBufferParameters(false, false, Rendering::Comparison::LESS));
 	renderingContext.applyChanges();

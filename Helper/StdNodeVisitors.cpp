@@ -82,7 +82,7 @@ std::deque<Node *> collectClosedNodesAtPosition(Node * root, const Geometry::Vec
 		} else if(!node->isClosed()) {
 			return NodeVisitor::CONTINUE_TRAVERSAL;
 		}
-		const Geometry::Matrix4x4 iTransMat = node->getWorldMatrix().inverse();
+		const Geometry::Matrix4x4 iTransMat = node->getWorldTransformationMatrix().inverse();
 		if(node->getBB().contains(iTransMat.transformPosition(position))) {
 			nodes.push_back(node);
 		}
@@ -140,7 +140,7 @@ std::deque<GeometryNode *> collectGeoNodesAtPosition(Node * root, const Geometry
 			if(geoNode == nullptr) {
 				return CONTINUE_TRAVERSAL;
 			}
-			Geometry::Matrix4x4 iTransMat = geoNode->getWorldMatrix().inverse();
+			Geometry::Matrix4x4 iTransMat = geoNode->getWorldTransformationMatrix().inverse();
 			if(geoNode->getBB().contains(iTransMat.transformPosition(position))) {
 				geoNodes.push_back(geoNode);
 			}
@@ -390,11 +390,11 @@ void moveTransformationsIntoClosedNodes(Node * root) {
 						return EXIT_TRAVERSAL;
 					}
 				}else if(node->hasParent()){
-					Geometry::Matrix4x4f m = node->getParent()->getMatrix() * node->getMatrix();
+					Geometry::Matrix4x4f m = node->getParent()->getRelTransformationMatrix() * node->getRelTransformationMatrix();
 					if(m.convertsSafelyToSRT())
-						node->setSRT(m._toSRT());
+						node->setRelTransformation(m._toSRT());
 					else
-						node->setMatrix(m);
+						node->setRelTransformation(m);
 				}
 				if(node->isClosed())
 					return BREAK_TRAVERSAL;
@@ -403,7 +403,7 @@ void moveTransformationsIntoClosedNodes(Node * root) {
 
 			NodeVisitor::status leave(Node * node) override {
 				if(!node->isClosed())
-					node->reset();
+					node->resetRelTransformation();
 				return CONTINUE_TRAVERSAL;
 			}
 
@@ -428,11 +428,11 @@ void moveTransformationsIntoLeaves(Node * root) {
 						return EXIT_TRAVERSAL;
 					}
 				}else if(node->hasParent()){
-					const Geometry::Matrix4x4f m(node->getParent()->getMatrix() * node->getMatrix());
+					const Geometry::Matrix4x4f m(node->getParent()->getRelTransformationMatrix() * node->getRelTransformationMatrix());
 					if(m.convertsSafelyToSRT())
-						node->setSRT(m._toSRT());
+						node->setRelTransformation(m._toSRT());
 					else
-						node->setMatrix(m);
+						node->setRelTransformation(m);
 				}
 				return CONTINUE_TRAVERSAL;
 			}
@@ -440,7 +440,7 @@ void moveTransformationsIntoLeaves(Node * root) {
 			NodeVisitor::status leave(Node * node) override {
 				GroupNode * gn = dynamic_cast<GroupNode*>(node);
 				if(gn && gn->countChildren() != 0)
-					node->reset();
+					node->resetRelTransformation();
 				return CONTINUE_TRAVERSAL;
 			}
 

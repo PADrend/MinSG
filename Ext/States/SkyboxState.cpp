@@ -77,11 +77,11 @@ State::stateResult_t SkyboxState::doEnableState(FrameContext & context, Node *, 
 		return State::STATE_SKIPPED;
 	}
 
-	Vec3 pos = context.getCamera()->getWorldPosition();
+	Vec3 pos = context.getCamera()->getWorldOrigin();
 	Geometry::Matrix4x4 matrix;
 	matrix.translate(pos);
-	context.getRenderingContext().pushMatrix();
-	context.getRenderingContext().multMatrix(matrix);
+	context.getRenderingContext().pushMatrix_modelToCamera();
+	context.getRenderingContext().multMatrix_modelToCamera(matrix);
 	context.getRenderingContext().pushTexture(0);
 
 	context.getRenderingContext().pushAndSetDepthBuffer(Rendering::DepthBufferParameters(true, false, Rendering::Comparison::LESS));
@@ -101,7 +101,7 @@ State::stateResult_t SkyboxState::doEnableState(FrameContext & context, Node *, 
 	context.getRenderingContext().popDepthBuffer();
 	context.getRenderingContext().popTexture(0);
 
-	context.getRenderingContext().popMatrix();
+	context.getRenderingContext().popMatrix_modelToCamera();
 	return State::STATE_OK;
 }
 

@@ -123,7 +123,7 @@ static void describePathNode(ExporterContext & ctxt,DescriptionMap & desc,Node *
 		const Waypoint * wp = elem.second.get();
 		ExporterTools::addAttributesToDescription(ctxt, *waypointDesc, wp->getAttributes());
 		waypointDesc->setString(Consts::ATTR_WAYPOINT_TIME, Util::StringUtils::toString(wp->getTime()));
-		ExporterTools::addSRTToDescription(*waypointDesc, wp->getSRT());
+		ExporterTools::addSRTToDescription(*waypointDesc, wp->getRelTransformationSRT());
 		ExporterTools::addDataEntry(desc,std::move(waypointDesc));
 	}
 	

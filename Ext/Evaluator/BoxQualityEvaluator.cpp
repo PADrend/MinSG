@@ -88,7 +88,7 @@ void BoxQualityEvaluator::measure(FrameContext & context,Node & node,const Geome
 		i=0;
 		// get results
 		for(auto & geoNode : objectsInVFList) {
-			if (queries[i].getResult() == 0 && !geoNode->getWorldBB().contains(context.getCamera()->getWorldPosition()) ) {
+			if (queries[i].getResult() == 0 && !geoNode->getWorldBB().contains(context.getCamera()->getWorldOrigin()) ) {
 				geoNode = nullptr;
 			} else {
 				objectsClassifiedAsV[reinterpret_cast<uintptr_t>(geoNode)] = geoNode;
