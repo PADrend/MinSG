@@ -157,6 +157,8 @@ void DebugObjects::clearDebug(){
 }
 
 void DebugObjects::buildDebugLineNode(){
+	if(linesData.size() <= 0) return;
+
 	Rendering::VertexDescription vertexDesc;
 	vertexDesc.appendPosition3D();
 	vertexDesc.appendColorRGBAByte();
@@ -186,6 +188,8 @@ void DebugObjects::buildDebugLineNode(){
 }
 
 void DebugObjects::buildDebugFaceNode(){
+	if(facesData.size() <= 0) return;
+
 	Rendering::VertexDescription vertexDesc;
 	vertexDesc.appendPosition3D();
 	vertexDesc.appendColorRGBAByte();
