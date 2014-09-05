@@ -285,9 +285,7 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 //	}
 
 	//draw tree debug
-	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
-	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
-	std::cout << "Number debug nodes: " << addTreeToDebug(rootNodeMidpoint, lightRootNode->getWorldBB().getExtentMax(), 0, 0, voxelOctreeAcc.get()) << std::endl;
+	std::cout << "Number debug nodes: " << addTreeToDebug(lightingArea.center, lightingArea.extend, 0, 0, voxelOctreeAcc.get()) << std::endl;
 
 	Rendering::checkGLError(__FILE__, __LINE__);
 	//DEBUG END
@@ -310,11 +308,8 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 
 	//DEBUG to show the edges
 	//edges from lights
-	std::cout << "drawing debug edges" << std::endl;
 	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
-		std::cout << "Running through light " << i << std::endl;
 		for(unsigned int j = 0; j < lightNodeLightMaps[i]->edges.size(); j++){
-			std::cout << "Running through edge " << j << std::endl;
 			debug->addDebugLine(lightNodeLightMaps[i]->edges[j]->source->position, lightNodeLightMaps[i]->edges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
 		}
 	}
@@ -507,6 +502,8 @@ void getTexCoords(unsigned int index, unsigned int texWidth, Geometry::Vec2i* te
 
 void LightNodeManager::setLightRootNode(Util::Reference<MinSG::Node> rootNode){
 	lightRootNode = rootNode;
+	lightingArea.center = lightRootNode->getWorldBB().getCenter();
+	lightingArea.extend = lightRootNode->getWorldBB().getExtentMax();
 }
 
 void LightNodeManager::createLightNodesPerVertexPercent(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float percentage){
@@ -640,11 +637,9 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 	std::cout << "texSize: " << textureSize << std::endl;
 	std::cout << "texture: " << edgeInput.get()->getWidth() << "x" << edgeInput.get()->getHeight() << " = " << edgeInput.get()->getDataSize() << std::endl;
 
-	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
-	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
-	float bla = lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f;
-	Geometry::Vec3 treeMin(rootNodeMidpoint.x() - bla, rootNodeMidpoint.y() - bla, rootNodeMidpoint.z() - bla);
-	Geometry::Vec3 treeMax(rootNodeMidpoint.x() + bla, rootNodeMidpoint.y() + bla, rootNodeMidpoint.z() + bla);
+	float extendHalf = lightingArea.extend * 0.5f;
+	Geometry::Vec3 treeMin(lightingArea.center.x() - extendHalf, lightingArea.center.y() - extendHalf, lightingArea.center.z() - extendHalf);
+	Geometry::Vec3 treeMax(lightingArea.center.x() + extendHalf, lightingArea.center.y() + extendHalf, lightingArea.center.z() + extendHalf);
 
 	//encode the edges into the texture (writing the positions of the source and target)
 	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeInput.get());
@@ -739,11 +734,11 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 
 	std::cout << "Output texture: " << outputTextureSize << " which gives " << outputTextureSize * outputTextureSize << " possible edges!" << std::endl;
 
-	debug->addDebugLine(rootNodeMidpoint, Geometry::Vec3(rootNodeMidpoint.x(), rootNodeMidpoint.y() + 1, rootNodeMidpoint.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
-	std::cout << "Root Node Midpoint: " << rootNodeMidpoint.x() << "x" << rootNodeMidpoint.y() << "x" << rootNodeMidpoint.z() << std::endl;
-	std::cout << "halfSizeOfRootNode: " << lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f << std::endl;
-	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", rootNodeMidpoint));
-	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
+//	debug->addDebugLine(lightingArea.center, Geometry::Vec3(lightingArea.center.x(), lightingArea.center.y() + 1, lightingArea.center.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
+//	std::cout << "Root Node Midpoint: " << lightingArea.center.x() << "x" << lightingArea.center.y() << "x" << lightingArea.center.z() << std::endl;
+//	std::cout << "halfSizeOfRootNode: " << lightingArea.extend * 0.5f << std::endl;
+	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", lightingArea.center));
+	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightingArea.extend * 0.25f));
 	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
 	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("outputTextureSize", (int32_t)outputTextureSize));
 	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("inputTextureSize", (int32_t)textureSize));
@@ -881,11 +876,9 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 	std::cout << "texSize: " << textureSize << std::endl;
 	std::cout << "texture: " << edgeInput.get()->getWidth() << "x" << edgeInput.get()->getHeight() << " = " << edgeInput.get()->getDataSize() << std::endl;
 
-	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
-	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
-	float bla = lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f;
-	Geometry::Vec3 treeMin(rootNodeMidpoint.x() - bla, rootNodeMidpoint.y() - bla, rootNodeMidpoint.z() - bla);
-	Geometry::Vec3 treeMax(rootNodeMidpoint.x() + bla, rootNodeMidpoint.y() + bla, rootNodeMidpoint.z() + bla);
+	float extendHalf = lightingArea.extend * 0.5f;
+	Geometry::Vec3 treeMin(lightingArea.center.x() - extendHalf, lightingArea.center.y() - extendHalf, lightingArea.center.z() - extendHalf);
+	Geometry::Vec3 treeMax(lightingArea.center.x() + extendHalf, lightingArea.center.y() + extendHalf, lightingArea.center.z() + extendHalf);
 
 	//encode the edges into the texture (writing the positions of the source and target)
 	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeInput.get());
@@ -970,11 +963,11 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 
 	std::cout << "Output texture: " << outputTextureSize << " which gives " << outputTextureSize * outputTextureSize << " possible edges!" << std::endl;
 
-	debug->addDebugLine(rootNodeMidpoint, Geometry::Vec3(rootNodeMidpoint.x(), rootNodeMidpoint.y() + 1, rootNodeMidpoint.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
-	std::cout << "Root Node Midpoint: " << rootNodeMidpoint.x() << "x" << rootNodeMidpoint.y() << "x" << rootNodeMidpoint.z() << std::endl;
-	std::cout << "halfSizeOfRootNode: " << lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f << std::endl;
-	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", rootNodeMidpoint));
-	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
+//	debug->addDebugLine(lightingArea.center, Geometry::Vec3(lightingArea.center.x(), lightingArea.center.y() + 1, lightingArea.center.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
+//	std::cout << "Root Node Midpoint: " << lightingArea.center.x() << "x" << lightingArea.center.y() << "x" << lightingArea.center.z() << std::endl;
+//	std::cout << "halfSizeOfRootNode: " << lightingArea.extend * 0.5f << std::endl;
+	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", lightingArea.center));
+	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightingArea.extend * 0.25f));
 	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
 	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("inputTextureSize", (int32_t)textureSize));
 	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("outputTextureSize", (int32_t)outputTextureSize));
@@ -1070,17 +1063,14 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 }
 
 void LightNodeManager::filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
-	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
-	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
-	float rootSizeHalf = lightRootNode.get()->getWorldBB().getExtentMax() * 0.5f;
-	Geometry::Vec3 treeMin(rootNodeMidpoint.x() - rootSizeHalf, rootNodeMidpoint.y() - rootSizeHalf, rootNodeMidpoint.z() - rootSizeHalf);
-	Geometry::Vec3 treeMax(rootNodeMidpoint.x() + rootSizeHalf, rootNodeMidpoint.y() + rootSizeHalf, rootNodeMidpoint.z() + rootSizeHalf);
+	float rootSizeHalf = lightingArea.extend * 0.5f;
+	Geometry::Vec3 treeMin(lightingArea.center.x() - rootSizeHalf, lightingArea.center.y() - rootSizeHalf, lightingArea.center.z() - rootSizeHalf);
+	Geometry::Vec3 treeMax(lightingArea.center.x() + rootSizeHalf, lightingArea.center.y() + rootSizeHalf, lightingArea.center.z() + rootSizeHalf);
 
 	std::vector<LightEdge*> filteredEdges;
 
-	quarterSizeOfRootNode = lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f;
+	quarterSizeOfRootNode = lightingArea.extend * 0.25f;
 	voxelOctreeTextureSize = octreeTexture->getWidth();
-	rootMidPos = rootNodeMidpoint;
 	Util::Reference<Util::PixelAccessor> octreeAcc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *octreeTexture);
 
 //	int falseEdges = 8;
@@ -1088,8 +1078,8 @@ void LightNodeManager::filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> 
 	for(unsigned int i = 132; i < edges->size(); i++){
 //		Geometry::Vec3 lineStart = (*edges)[i]->source->position;
 //		Geometry::Vec3 lineEnd = (*edges)[i]->target->position;
-		Geometry::Vec3 lineStart(rootMidPos.x() - quarterSizeOfRootNode * 1.1, rootMidPos.y() - quarterSizeOfRootNode * 1.1, rootMidPos.z() - quarterSizeOfRootNode * 0.9);
-		Geometry::Vec3 lineEnd(rootMidPos.x() + quarterSizeOfRootNode * 1.01, rootMidPos.y() + quarterSizeOfRootNode * 1.1, rootMidPos.z() - quarterSizeOfRootNode * 0.9);
+		Geometry::Vec3 lineStart(lightingArea.center.x() - quarterSizeOfRootNode * 1.1, lightingArea.center.y() - quarterSizeOfRootNode * 1.1, lightingArea.center.z() - quarterSizeOfRootNode * 0.9);
+		Geometry::Vec3 lineEnd(lightingArea.center.x() + quarterSizeOfRootNode * 1.01, lightingArea.center.y() + quarterSizeOfRootNode * 1.1, lightingArea.center.z() - quarterSizeOfRootNode * 0.9);
 		Geometry::Vec3 lineDirection = lineEnd - lineStart;
 		lineDirection.normalize();
 
@@ -1122,17 +1112,17 @@ int LightNodeManager::checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeM
 	//change lookup to only walk in positive directions
 	octreeLookupDifference = 0;
 	if(newRayDir.x() < 0.0){
-		newRayStart.setX(newRayStart.x() + 2 * (rootMidPos.x() - newRayStart.x()));
+		newRayStart.setX(newRayStart.x() + 2 * (lightingArea.center.x() - newRayStart.x()));
 		newRayDir.setX(-newRayDir.x());
 		octreeLookupDifference |= 4;
 	}
 	if(newRayDir.y() < 0.0){
-		newRayStart.setY(newRayStart.y() + 2 * (rootMidPos.y() - newRayStart.y()));
+		newRayStart.setY(newRayStart.y() + 2 * (lightingArea.center.y() - newRayStart.y()));
 		newRayDir.setY(-newRayDir.y());
 		octreeLookupDifference |= 2;
 	}
 	if(newRayDir.z() < 0.0){
-		newRayStart.setZ(newRayStart.z() + 2 * (rootMidPos.z() - newRayStart.z()));
+		newRayStart.setZ(newRayStart.z() + 2 * (lightingArea.center.z() - newRayStart.z()));
 		newRayDir.setZ(-newRayDir.z());
 		octreeLookupDifference |= 1;
 	}
@@ -1178,7 +1168,7 @@ int LightNodeManager::testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geo
 //	debug->addDebugBox(midpos2, 0.1);
 
 	Geometry::Vec3 midPoints[VOXEL_OCTREE_DEPTH + 1];
-	midPoints[0] = rootMidPos;
+	midPoints[0] = lightingArea.center;
 	debug->addDebugBoxLines(midPoints[0], (4 * quarterSizeOfRootNode) / (1 << 0));
 	std::cout << "lookupDifference: " << octreeLookupDifference << std::endl;
 	std::cout << "Child ids: " << (nodeStates[0].childID ^ octreeLookupDifference);
@@ -1207,7 +1197,7 @@ int LightNodeManager::testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geo
 //	nodeStates[curDepth].t1 = t1;
 //	nodeStates[curDepth].nodeOffset = 0;
 //	nodeStates[curDepth].tm = 0.5 * (t0 + t1);
-//	nodeStates[curDepth].childID = getChildOffset(rootMidPos, lineStart); //firstNode(nodeStates[curDepth].t0, nodeStates[curDepth].tm);
+//	nodeStates[curDepth].childID = getChildOffset(lightingArea.center, lineStart); //firstNode(nodeStates[curDepth].t0, nodeStates[curDepth].tm);
 
 	do {
 		if(nodeStates[curDepth - 1].childID < 8 && !moveUp){
@@ -1357,9 +1347,9 @@ void LightNodeManager::firstNodeRoot(Geometry::Vec3 t0, Geometry::Vec3 t1, Geome
 	nodeStates[0].t1 = t1;
 	nodeStates[0].nodeOffset = 0;
 	nodeStates[0].tm = (t0 + t1) * 0.5f;
-	nodeStates[0].childID = getChildOffset(rootMidPos, lineStart) ^ octreeLookupDifference;
+	nodeStates[0].childID = getChildOffset(lightingArea.center, lineStart) ^ octreeLookupDifference;
 //	std::cout << "childID: " << nodeStates[0].childID << std::endl;
-	getNewMidPos(rootMidPos, nodeStates[0].childID ^ octreeLookupDifference, 0, &curMidPos);
+	getNewMidPos(lightingArea.center, nodeStates[0].childID ^ octreeLookupDifference, 0, &curMidPos);
 //	childIndex = getNodeIndexVoxelOctree(0 * NODE_SIZE + nodeStates[0].childID);
 //	nodeStates[0].nodeOffset = int(imageLoad(voxelOctree, childIndex).r);
 
@@ -1425,8 +1415,8 @@ void LightNodeManager::firstNodeRoot(Geometry::Vec3 t0, Geometry::Vec3 t1, Geome
 //	nodeStates[0].t1 = t1;
 //	nodeStates[0].nodeOffset = 0;
 //	nodeStates[0].tm = 0.5 * (t0 + t1);
-//	nodeStates[0].childID = getChildOffset(rootMidPos, lineStart);
-//	vec3 curMidPos = getNewMidPos(rootMidPos, nodeStates[0].childID, 0);
+//	nodeStates[0].childID = getChildOffset(lightingArea.center, lineStart);
+//	vec3 curMidPos = getNewMidPos(lightingArea.center, nodeStates[0].childID, 0);
 //
 ////	for(int i = 0; i < MAX_TREE_DEPTH; i++){
 ////		nodeStates[i].childID = 1;
@@ -1542,7 +1532,7 @@ void LightNodeManager::setStartEndNodes(Geometry::Vec3 posStart, Geometry::Vec3 
 int LightNodeManager::getNodeID(Geometry::Vec3 pos, Util::Reference<Util::PixelAccessor> octreeAcc){
 	int curNodeID = 0;
 	int lastID;
-	Geometry::Vec3 curMidPos = rootMidPos;
+	Geometry::Vec3 curMidPos = lightingArea.center;
 	int childOffset;
 	Geometry::Vec2i childIndex;
 
@@ -1617,13 +1607,11 @@ void LightNodeManager::fillTextureFloat(Rendering::Texture *texture, float value
 
 void LightNodeManager::createWorldBBCameras(){
 	const Geometry::Vec3 worldDirections[3] = {Geometry::Vec3(1, 0, 0), Geometry::Vec3(0, 1, 0), Geometry::Vec3(0, 0, 1)};
-	float maxExtend = lightRootNode.get()->getWorldBB().getExtentMax();
-	float maxExtendHalf = maxExtend * 0.5f;
+	float maxExtendHalf = lightingArea.extend * 0.5f;
 //	float diameterHalf = lightRootNode->getWorldBB().getDiameter() * 0.5;
-	lightRootCenter = lightRootNode.get()->getWorldBB().getCenter();
 
 	for(unsigned int i = 0; i < 3; i++){
-		sceneEnclosingCameras[i].get()->setWorldPosition(lightRootCenter - worldDirections[i] * (maxExtendHalf + 1));
+		sceneEnclosingCameras[i].get()->setWorldPosition(lightingArea.center - worldDirections[i] * (maxExtendHalf + 1));
 //		camera.setWorldPosition(rootCenter - worldDir * (diameterHalf + 1));
 //		camera.setWorldPosition(rootCenter - (worldDir.getNormalized()) * (maxExtend + 1));
 //		sceneEnclosingCameras[i].get()->rotateToWorldDir(worldDirections[i]);
@@ -1645,7 +1633,7 @@ void LightNodeManager::createWorldBBCameras(){
 //		var offset = worldDir * frustum.getNear() * 0.99;
 //		var offsetFar = worldDir * frustum.getFar() * 1.01;
 		Geometry::Vec3 offset = worldDirections[i];
-		Geometry::Vec3 offsetFar = worldDirections[i] * (maxExtend + 1);
+		Geometry::Vec3 offsetFar = worldDirections[i] * (lightingArea.extend + 1);
 //		outln("right: "+right+" offset: "+offset+" offsetFar: "+offsetFar);
 		float cl;
 		float cr;
@@ -1668,7 +1656,7 @@ void LightNodeManager::createWorldBBCameras(){
 //			ct = frustum.getTop();
 //		}
 
-		sceneEnclosingCameras[i].get()->setNearFar(-1, -maxExtend - 1);
+		sceneEnclosingCameras[i].get()->setNearFar(-1, -lightingArea.extend - 1);
 //		camera.setNearFar(maxExtend + 1, 1);
 //		camera.setNearFar(1, diameterHalf*2 + 1);
 		sceneEnclosingCameras[i].get()->setClippingPlanes(-maxExtendHalf, maxExtendHalf, -maxExtendHalf, maxExtendHalf);
@@ -1710,10 +1698,8 @@ void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rende
 	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(atomicCounter));
 #endif // USE_ATOMIC_COUNTER
 
-	Geometry::Vec3 rootNodeMidpoint = lightRootNode.get()->getWorldOrigin();
-	rootNodeMidpoint.setY(rootNodeMidpoint.y() + lightRootNode->getWorldBB().getExtentMax() * 0.5f);
-	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", rootNodeMidpoint));
-	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightRootNode.get()->getWorldBB().getExtentMax() * 0.25f));
+	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", lightingArea.center));
+	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightingArea.extend * 0.25f));
 	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("textureWidth", (int32_t)octreeTexture->getWidth()));
 	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("lockTextureWidth", (int32_t)octreeLocks->getWidth()));
 

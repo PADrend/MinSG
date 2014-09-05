@@ -124,6 +124,11 @@ struct LightNodeLightMap {
 	std::vector<LightEdge*> edges;
 };
 
+struct LightingArea {
+	float extend;
+	Geometry::Vec3 center;
+};
+
 class LightInfoAttribute : public Util::GenericAttribute {
 public:
 	unsigned int lightNodeID;
@@ -217,7 +222,6 @@ private:
 	int octreeLookupDifference;
 	float quarterSizeOfRootNode;
 	unsigned int voxelOctreeTextureSize;
-	Geometry::Vec3 rootMidPos;
 
 	void fillTexture(Rendering::Texture *texture, Util::Color4f color);
 	void fillTexture(Rendering::Texture *texture, uint8_t value);
@@ -226,15 +230,12 @@ private:
 	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks);
 	void renderAllNodes(MinSG::Node* node);
 
-	Util::Reference<MinSG::Node> lightRootNode;
-	Util::Reference<MinSG::Node> sceneRootNode;
 	Rendering::RenderingContext* renderingContext;
 	MinSG::FrameContext* frameContext;
 	std::vector<LightNodeLightMap*> lightNodeLightMaps;
 	std::vector<LightNodeMap*> lightNodeMaps;
 	std::vector<LightEdge*> lightEdges;
 	Util::Reference<MinSG::CameraNodeOrtho> sceneEnclosingCameras[3];
-	Geometry::Vec3 lightRootCenter;
 	Util::Reference<Rendering::Texture> tmpTexVoxelOctreeSize;			//used to "render" the octree (at creation) and the edges into the octree (for collision)
 	Util::Reference<Rendering::Texture> voxelOctreeTextureStatic;
 	Util::Reference<Rendering::Texture> voxelOctreeLocksStatic;
@@ -242,6 +243,10 @@ private:
 	Util::Reference<Rendering::Shader> voxelOctreeShaderCreate;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderReadTexture;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderReadObject;
+
+	LightingArea lightingArea;			//The area, in which the objects are placed for lighting (calculated from the bounding boxes of the objects)
+	Util::Reference<MinSG::Node> lightRootNode;
+	Util::Reference<MinSG::Node> sceneRootNode;
 
 	static const Util::StringIdentifier lightNodeIDIdent;
 	DebugObjects* debug;
