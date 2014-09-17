@@ -93,12 +93,13 @@ struct LightNode {
 	Geometry::Vec3 position;
 	Geometry::Vec3 normal;
 	Util::Color4f color;
+	unsigned int id;			//used to identify the position inside the texture on GPU
 };
 
 struct LightEdge {
 	LightNode* source;
 	LightNode* target;
-	float weight;
+	Geometry::Vec3 weight;
 };
 
 struct LightNodeMap;
@@ -201,7 +202,7 @@ private:
 	static void createLightNodesPerVertexRandom(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float randomVal);
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static bool isVisible(LightNode* source, LightNode* target);
-	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, bool checkVisibility);
+	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, bool checkVisibility, bool useNormal);
 
 	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
 	void filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
@@ -215,14 +216,18 @@ private:
 	int firstNode(Geometry::Vec3 t0, Geometry::Vec3 tm);
 	void setStartEndNodes(Geometry::Vec3 posStart, Geometry::Vec3 posEnd, Util::Reference<Util::PixelAccessor> octreeAcc);
 	int getNodeID(Geometry::Vec3 pos, Util::Reference<Util::PixelAccessor> octreeAcc);
-	void getNodeIndexVoxelOctree(int nodeID, Geometry::Vec2i* index);
 	void getNewMidPos(Geometry::Vec3 oldMidPos, int childOffset, int curDepth, Geometry::Vec3* newMidPos);
 	int getChildOffset(Geometry::Vec3 midPos, Geometry::Vec3 targetPos);
+	void getNodeIndexVoxelOctree(int nodeID, Geometry::Vec2i* index);
 	int startNodeID, endNodeID;
 	int octreeLookupDifference;
 	float quarterSizeOfRootNode;
 	unsigned int voxelOctreeTextureSize;
 
+	void createNodeTextures();
+	void propagateLight();
+
+	void copyTexture(Rendering::Texture *source, Rendering::Texture *target);
 	void fillTexture(Rendering::Texture *texture, Util::Color4f color);
 	void fillTexture(Rendering::Texture *texture, uint8_t value);
 	void fillTextureFloat(Rendering::Texture *texture, float value);
@@ -240,16 +245,40 @@ private:
 	Util::Reference<Rendering::Texture> voxelOctreeTextureStatic;
 	Util::Reference<Rendering::Texture> voxelOctreeLocksStatic;
 	Util::Reference<Rendering::Texture> atomicCounter;
+
+	Util::Reference<Rendering::Texture> tmpTexSmallest;
+	Util::Reference<Rendering::Texture> tmpTexEdgeSize;
+	Util::Reference<Rendering::Texture> nodeTextureStatic;
+	Util::Reference<Rendering::Texture> nodeTextureTemporary;
+	Util::Reference<Rendering::Texture> nodeTextureComplete;
+	Util::Reference<Rendering::Texture> edgeTextureNodes;
+	Util::Reference<Rendering::Texture> edgeTextureWeights;
+//	Util::Reference<Rendering::Texture> nodeTextureStaticR;
+//	Util::Reference<Rendering::Texture> nodeTextureStaticG;
+//	Util::Reference<Rendering::Texture> nodeTextureStaticB;
+//	Util::Reference<Rendering::Texture> nodeTextureTemporaryR;
+//	Util::Reference<Rendering::Texture> nodeTextureTemporaryG;
+//	Util::Reference<Rendering::Texture> nodeTextureTemporaryB;
+//	Util::Reference<Rendering::Texture> nodeTextureCompleteR;
+//	Util::Reference<Rendering::Texture> nodeTextureCompleteG;
+//	Util::Reference<Rendering::Texture> nodeTextureCompleteB;
+//	Util::Reference<Rendering::Texture> edgeTextureNodesSources;
+//	Util::Reference<Rendering::Texture> edgeTextureNodesTargets;
+//	Util::Reference<Rendering::Texture> edgeTextureWeightsR;
+//	Util::Reference<Rendering::Texture> edgeTextureWeightsG;
+//	Util::Reference<Rendering::Texture> edgeTextureWeightsB;
+
 	Util::Reference<Rendering::Shader> voxelOctreeShaderCreate;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderReadTexture;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderReadObject;
+	Util::Reference<Rendering::Shader> propagateLightShader;
 
 	LightingArea lightingArea;			//The area, in which the objects are placed for lighting (calculated from the bounding boxes of the objects)
 	Util::Reference<MinSG::Node> lightRootNode;
 	Util::Reference<MinSG::Node> sceneRootNode;
 
 	static const Util::StringIdentifier lightNodeIDIdent;
-	DebugObjects* debug;
+	static DebugObjects debug;
 };
 
 }

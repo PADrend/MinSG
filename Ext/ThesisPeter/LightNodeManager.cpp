@@ -40,12 +40,13 @@ namespace ThesisPeter {
 
 const Util::StringIdentifier NodeCreaterVisitor::staticNodeIdent = Util::StringIdentifier(NodeAttributeModifier::create("staticNode", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 const Util::StringIdentifier LightNodeManager::lightNodeIDIdent = Util::StringIdentifier(NodeAttributeModifier::create("lightNodeID", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+DebugObjects LightNodeManager::debug;
 unsigned int NodeCreaterVisitor::nodeIndex = 0;
 
-const float LightNodeManager::MAX_EDGE_LENGTH = 10.0f;
-const float LightNodeManager::MAX_EDGE_LENGTH_LIGHT = 40000.0f;
+const float LightNodeManager::MAX_EDGE_LENGTH = 1.0f;
+const float LightNodeManager::MAX_EDGE_LENGTH_LIGHT = 4000.0f;
 const unsigned int LightNodeManager::VOXEL_OCTREE_DEPTH = 7;
-const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_SIZE = 1024;
+const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_SIZE = 2048;
 const unsigned int LightNodeManager::VOXEL_OCTREE_SIZE_PER_NODE = 8;
 
 #define USE_ATOMIC_COUNTER
@@ -125,9 +126,9 @@ LightNodeManager::LightNodeManager(){
 	for(unsigned int i = 0; i < 3; i++){
 		sceneEnclosingCameras[i] = new MinSG::CameraNodeOrtho();
 	}
-	debug = new DebugObjects();
+//	debug = new DebugObjects();
 
-	unsigned int tmpTextureSize = std::pow(2, VOXEL_OCTREE_DEPTH);
+	unsigned int tmpTextureSize = std::pow(2, VOXEL_OCTREE_DEPTH) * 4;
 	tmpTexVoxelOctreeSize = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, tmpTextureSize, tmpTextureSize, 1, Util::TypeConstant::UINT8, 1);
 	voxelOctreeTextureStatic = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE, VOXEL_OCTREE_TEXTURE_SIZE, 1, Util::TypeConstant::UINT32, 1);
 	voxelOctreeLocksStatic = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, 1, Util::TypeConstant::UINT32, 1);
@@ -137,9 +138,12 @@ LightNodeManager::LightNodeManager(){
 	atomicCounter = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_1D, 1, 1, 1, Util::TypeConstant::UINT32, 1);
 #endif // USE_ATOMIC_COUNTER
 
+	tmpTexSmallest = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_BUFFER, 1, 1, 1, Util::TypeConstant::UINT8, 1);
+
 	voxelOctreeShaderCreate = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeInit.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeInit.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
 	voxelOctreeShaderReadTexture = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadTexture.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadTexture.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
 	voxelOctreeShaderReadObject = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadObject.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadObject.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+	propagateLightShader = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/propagateLight.vs"), Util::FileName("./extPlugins/ThesisPeter/propagateLight.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
 }
 
 LightNodeManager::~LightNodeManager(){
@@ -159,7 +163,7 @@ void LightNodeManager::test(MinSG::FrameContext& frameContext, Util::Reference<M
 
 void LightNodeManager::setSceneRootNode(Util::Reference<MinSG::Node> sceneRootNode){
 	this->sceneRootNode = sceneRootNode;
-	debug->setSceneRootNode(sceneRootNode.get());
+	debug.setSceneRootNode(sceneRootNode.get());
 }
 
 void LightNodeManager::setRenderingContext(Rendering::RenderingContext& renderingContext){
@@ -174,12 +178,29 @@ void LightNodeManager::setRenderingContext(Rendering::RenderingContext& renderin
 
 	voxelOctreeShaderReadTexture.get()->setUniform(renderingContext, Rendering::Uniform("voxelOctree", (int32_t)0));
 	voxelOctreeShaderReadTexture.get()->setUniform(renderingContext, Rendering::Uniform("edges", (int32_t)1));
+#ifndef USE_ATOMIC_COUNTER
+	voxelOctreeShaderReadTexture.get()->setUniform(renderingContext, Rendering::Uniform("curEdgeIndex", (int32_t)2));
+#endif // USE_ATOMIC_COUNTER
+
 	voxelOctreeShaderReadObject.get()->setUniform(renderingContext, Rendering::Uniform("voxelOctree", (int32_t)0));
 	voxelOctreeShaderReadObject.get()->setUniform(renderingContext, Rendering::Uniform("edgeOutput", (int32_t)1));
 	voxelOctreeShaderReadObject.get()->setUniform(renderingContext, Rendering::Uniform("edgeInput", (int32_t)2));
-#ifndef USE_ATOMIC_COUNTER
-	voxelOctreeShaderCreate.get()->setUniform(renderingContext, Rendering::Uniform("curEdgeIndex", (int32_t)2));
-#endif // USE_ATOMIC_COUNTER
+
+	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("edgeNodes", (int32_t)0));
+	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("edgeWeights", (int32_t)1));
+	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("sourceColors", (int32_t)2));
+	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("targetColors", (int32_t)3));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("edgeSources", (int32_t)0));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("edgeTargets", (int32_t)1));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("edgeWeightsR", (int32_t)2));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("edgeWeightsG", (int32_t)3));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("edgeWeightsB", (int32_t)4));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("sourceColorR", (int32_t)5));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("sourceColorG", (int32_t)6));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("sourceColorB", (int32_t)7));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("targetColorR", (int32_t)8));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("targetColorG", (int32_t)9));
+//	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("targetColorB", (int32_t)10));
 }
 
 void LightNodeManager::setFrameContext(MinSG::FrameContext& frameContext){
@@ -212,7 +233,7 @@ unsigned int LightNodeManager::addTreeToDebug(Geometry::Vec3 parentPos, float pa
 				case 7:	childPos += Geometry::Vec3(parentSize * 0.25f, parentSize * 0.25f, -parentSize * 0.25f); break;
 				}
 				//draw line
-//				debug->addDebugLine(parentPos, childPos, Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 0.5f, 1, 1));
+//				debug.addDebugLine(parentPos, childPos, Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 0.5f, 1, 1));
 
 				counter += addTreeToDebug(childPos, parentSize * 0.5f, depth + 1, childID, pixelAccessor);
 			}
@@ -222,19 +243,19 @@ unsigned int LightNodeManager::addTreeToDebug(Geometry::Vec3 parentPos, float pa
 	if(depth >= VOXEL_OCTREE_DEPTH){
 		//draw box (as lines)
 //		float mov = parentSize * 0.5f;
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
-//		debug->addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
-		debug->addDebugBox(parentPos, parentSize, boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() + mov, parentPos.z() + mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() + mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() - mov, parentPos.y() - mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() + mov, parentPos.z() - mov), boxColor, boxColor2);
+//		debug.addDebugLine(Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() - mov), Geometry::Vec3(parentPos.x() + mov, parentPos.y() - mov, parentPos.z() + mov), boxColor, boxColor2);
+		debug.addDebugBox(parentPos, parentSize, boxColor, boxColor2);
 	}
 
 	return counter;
@@ -248,7 +269,7 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	fillTexture(voxelOctreeTextureStatic.get(), 0);
 	fillTexture(voxelOctreeLocksStatic.get(), 0);
 	fillTexture(atomicCounter.get(), 0);
-	debug->clearDebug();
+	debug.clearDebug();
 
 	//some needed variables (for rendering etc.)
 	setSceneRootNode(sceneRootNode);
@@ -267,10 +288,12 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	Util::Reference<Util::PixelAccessor> counterAcc = Rendering::TextureUtils::createColorPixelAccessor(renderingContext, *atomicCounter.get());
 	Rendering::checkGLError(__FILE__, __LINE__);
 	Util::Color4f numNodes = counterAcc.get()->readColor4f(0, 0);
-	if(VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE < numNodes.r()){
-		std::cout << "ERROR: Texture is too small: " << (numNodes.r() * VOXEL_OCTREE_SIZE_PER_NODE) << " > " << (VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE) << std::endl;
+	if(VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE < ((unsigned int)numNodes.r()) * VOXEL_OCTREE_SIZE_PER_NODE){
+		std::cout << "ERROR: Texture is too small: " << (((unsigned int)numNodes.r()) * VOXEL_OCTREE_SIZE_PER_NODE) << " > " << (VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE) << std::endl;
+		cleanUp();
+		return;
 	} else {
-		std::cout << "Texture is big enough: " << (numNodes.r() * VOXEL_OCTREE_SIZE_PER_NODE) << " <= " << (VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE) << std::endl;
+		std::cout << "Texture is big enough: " << (((unsigned int)numNodes.r()) * VOXEL_OCTREE_SIZE_PER_NODE) << " <= " << (VOXEL_OCTREE_TEXTURE_SIZE * VOXEL_OCTREE_TEXTURE_SIZE) << std::endl;
 	}
 	Rendering::checkGLError(__FILE__, __LINE__);
 
@@ -293,11 +316,11 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	createLightNodes();
 
 	//DEBUG to show the nodes
-//	debug->addDebugLine(Geometry::Vec3(0, 0, 0), Geometry::Vec3(0, 3, 0), Util::Color4f(1, 1, 1, 1), Util::Color4f(1, 0, 0, 1));
+//	debug.addDebugLine(Geometry::Vec3(0, 0, 0), Geometry::Vec3(0, 3, 0), Util::Color4f(1, 1, 1, 1), Util::Color4f(1, 0, 0, 1));
 //	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
 //		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
 //			Geometry::Vec3 pos = lightNodeMaps[i]->lightNodes[j]->position;
-//			debug->addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() - 0.01, pos.z()));
+//			debug.addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() - 0.01, pos.z()));
 //		}
 //	}
 	//DEBUG END
@@ -310,25 +333,30 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	//edges from lights
 	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
 		for(unsigned int j = 0; j < lightNodeLightMaps[i]->edges.size(); j++){
-			debug->addDebugLine(lightNodeLightMaps[i]->edges[j]->source->position, lightNodeLightMaps[i]->edges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
+			debug.addDebugLine(lightNodeLightMaps[i]->edges[j]->source->position, lightNodeLightMaps[i]->edges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
 		}
 	}
 	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
 		//internal edges
 		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
-			debug->addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
+			debug.addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
 		}
 		//external edges
 		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
 			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-				debug->addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
+				debug.addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
 			}
 		}
 	}
 	//DEBUG END
 
-	debug->buildDebugLineNode();
-	debug->buildDebugFaceNode();
+	//first initialize the graph structures on the GPU
+	createNodeTextures();
+	//then propagate the light the first time
+	propagateLight();
+
+	debug.buildDebugLineNode();
+	debug.buildDebugFaceNode();
 	Rendering::checkGLError(__FILE__, __LINE__);
 }
 
@@ -365,7 +393,7 @@ void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
 			LightNode* source = &lightNodeLightMaps[lightNodeLightMapID]->light;
 			for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeTargetID++){
 				LightNode* target = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeTargetID];
-				addLightEdge(source, target, &lightNodeLightMaps[lightNodeLightMapID]->edges, MAX_EDGE_LENGTH_LIGHT, false);
+				addLightEdge(source, target, &lightNodeLightMaps[lightNodeLightMapID]->edges, MAX_EDGE_LENGTH_LIGHT, false, false);
 			}
 		}
 
@@ -374,31 +402,43 @@ void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
 			for(unsigned int lightNodeTargetID = lightNodeSourceID + 1; lightNodeTargetID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeTargetID++){
 				LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
 				LightNode* target = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeTargetID];
-				addLightEdge(source, target, &lightNodeMaps[lightNodeMapID]->internalLightEdges, MAX_EDGE_LENGTH, true);
+				addLightEdge(source, target, &lightNodeMaps[lightNodeMapID]->internalLightEdges, MAX_EDGE_LENGTH, true, true);
 			}
 		}
 		filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->internalLightEdges, voxelOctreeTextureStatic.get(), atomicCounter);
 
 		//create (possible) external edges to other objects
 		for(unsigned int lightNodeMapID2 = lightNodeMapID + 1; lightNodeMapID2 < lightNodeMaps.size(); lightNodeMapID2++){
+			LightNodeMapConnection* mapConnection = new LightNodeMapConnection();
+			mapConnection->map1 = lightNodeMaps[lightNodeMapID];
+			mapConnection->map2 = lightNodeMaps[lightNodeMapID2];
+
 			for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
 				for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
 					LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
 					LightNode* target = lightNodeMaps[lightNodeMapID2]->lightNodes[lightNodeTargetID];
-					LightNodeMapConnection* mapConnection = new LightNodeMapConnection();
-					mapConnection->map1 = lightNodeMaps[lightNodeMapID];
-					mapConnection->map2 = lightNodeMaps[lightNodeMapID2];
-					if(lightNodeMaps[lightNodeMapID]->staticNode == true && lightNodeMaps[lightNodeMapID2]->staticNode == true){
-						lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.push_back(mapConnection);
-					} else {
-						lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
-					}
-					addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, true);
+					addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, true, true);
 				}
+			}
+
+			if(lightNodeMaps[lightNodeMapID]->staticNode == true && lightNodeMaps[lightNodeMapID2]->staticNode == true){
+				lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.push_back(mapConnection);
+			} else {
+				lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
 			}
 		}
 
-		//TODO: filter the static edges with the static voxelOctree
+		//filter external edges
+		for(unsigned int mapConID = 0; mapConID < lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.size(); mapConID++){
+			if(lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic[mapConID]->edges.size() > 0){
+				filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic[mapConID]->edges, voxelOctreeTextureStatic.get(), atomicCounter);
+			}
+		}
+		for(unsigned int mapConID = 0; mapConID < lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.size(); mapConID++){
+			if(lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic[mapConID]->edges.size() > 0){
+				filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic[mapConID]->edges, voxelOctreeTextureStatic.get(), atomicCounter);
+			}
+		}
 	}
 	//filter the edges from the lights
 	for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
@@ -407,10 +447,10 @@ void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
 }
 
 void LightNodeManager::cleanUpDebug(){
-	if(debug != 0){
-		delete debug;
-		debug = 0;
-	}
+//	if(debug != 0){
+//		delete debug;
+//		debug = 0;
+//	}
 }
 
 void LightNodeManager::cleanUp(){
@@ -600,15 +640,20 @@ void LightNodeManager::mapLightNodesToObjectClosest(MinSG::GeometryNode* node, s
 bool LightNodeManager::isVisible(LightNode* source, LightNode* target){
 	Geometry::Vec3 direction = target->position - source->position;
 	//quick test, if the angles could fit
-	if(target->position.dot(direction) < 0 || source->position.dot(direction) > 0){
-		return false;
-	} else {
-		//TODO: do a correct ray cast or filter later all edges
+	if(source->normal.dot(direction) > 0 && target->normal.dot(direction) < 0){
+//		debug.addDebugLine(source->position, target->position, Util::Color4f(1, 1, 1, 1), Util::Color4f(0.5f, 0.5f, 0.5f, 1));
+//		debug.addDebugLine(target->position, target->position + target->normal * 0.1, Util::Color4f(0.7, 0.7, 0.1, 1), Util::Color4f(0.7, 0.7, 0.1, 1));
+//		debug.addDebugLine(target->position, target->position + target->normal * 0.1, Util::Color4f(0.7, 0.7, 0.1, 1), Util::Color4f(0.7, 0.7, 0.1, 1));
 		return true;
+	} else {
+//		debug.addDebugLine(source->position, target->position, Util::Color4f(1, 1, 1, 1), Util::Color4f(0.5f, 0.5f, 0.5f, 1));
+//		debug.addDebugLine(target->position, target->position + target->normal * 0.1, Util::Color4f(0.7, 0.7, 0.1, 1), Util::Color4f(0.7, 0.7, 0.1, 1));
+//		debug.addDebugLine(target->position, target->position + target->normal * 0.1, Util::Color4f(0.7, 0.7, 0.1, 1), Util::Color4f(0.7, 0.7, 0.1, 1));
+		return false;
 	}
 }
 
-void LightNodeManager::addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, bool checkVisibility){
+void LightNodeManager::addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, bool checkVisibility, bool useNormal){
 	//take maximum edge length into account
 	float distance = source->position.distance(target->position);
 	if(distance <= maxEdgeLength){
@@ -616,14 +661,25 @@ void LightNodeManager::addLightEdge(LightNode* source, LightNode* target, std::v
 			LightEdge* lightEdge = new LightEdge();
 			lightEdge->source = source;
 			lightEdge->target = target;
-			lightEdge->weight = 1.0f / (distance * distance);	//quadratic decrease of light
+			if(useNormal){
+				float dotN = std::max(-source->normal.dot(target->normal), 0.0f);										//taking normal into account
+				float distanceDecrease = 1.0f / (distance * distance);													//quadratic decrease of light
+				lightEdge->weight.setX(dotN * distanceDecrease * std::min(source->color.getR(), target->color.getR()));	//taking color into account
+				lightEdge->weight.setY(dotN * distanceDecrease * std::min(source->color.getG(), target->color.getG()));	//taking color into account
+				lightEdge->weight.setZ(dotN * distanceDecrease * std::min(source->color.getB(), target->color.getB()));	//taking color into account
+			} else {
+				float distanceDecrease = 1.0f / (distance * distance);												//quadratic decrease of light
+				lightEdge->weight.setX(distanceDecrease * std::min(source->color.getR(), target->color.getR()));	//taking color into account
+				lightEdge->weight.setY(distanceDecrease * std::min(source->color.getG(), target->color.getG()));	//taking color into account
+				lightEdge->weight.setZ(distanceDecrease * std::min(source->color.getB(), target->color.getB()));	//taking color into account
+			}
 			lightEdges->push_back(lightEdge);
 		}
 	}
 }
 
 void LightNodeManager::filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
-	filterIncorrectEdgesAsObjects(edges, octreeTexture, atomicCounter);
+	if(edges->size() > 0) filterIncorrectEdgesAsObjects(edges, octreeTexture, atomicCounter);
 }
 
 void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
@@ -632,14 +688,14 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 	unsigned int textureSize = std::ceil(std::sqrt(edges->size() * dataLengthPerEdge));
 	Util::Reference<Rendering::Texture> edgeInput = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, textureSize, textureSize, 1, Util::TypeConstant::FLOAT, 1);
 
-	std::cout << "comming here 1" << std::endl;
-	std::cout << "edges: " << edges->size() << std::endl;
-	std::cout << "texSize: " << textureSize << std::endl;
-	std::cout << "texture: " << edgeInput.get()->getWidth() << "x" << edgeInput.get()->getHeight() << " = " << edgeInput.get()->getDataSize() << std::endl;
+//	std::cout << "comming here 1" << std::endl;
+//	std::cout << "edges: " << edges->size() << std::endl;
+//	std::cout << "texSize: " << textureSize << std::endl;
+//	std::cout << "texture: " << edgeInput.get()->getWidth() << "x" << edgeInput.get()->getHeight() << " = " << edgeInput.get()->getDataSize() << std::endl;
 
-	float extendHalf = lightingArea.extend * 0.5f;
-	Geometry::Vec3 treeMin(lightingArea.center.x() - extendHalf, lightingArea.center.y() - extendHalf, lightingArea.center.z() - extendHalf);
-	Geometry::Vec3 treeMax(lightingArea.center.x() + extendHalf, lightingArea.center.y() + extendHalf, lightingArea.center.z() + extendHalf);
+//	float extendHalf = lightingArea.extend * 0.5f;
+//	Geometry::Vec3 treeMin(lightingArea.center.x() - extendHalf, lightingArea.center.y() - extendHalf, lightingArea.center.z() - extendHalf);
+//	Geometry::Vec3 treeMax(lightingArea.center.x() + extendHalf, lightingArea.center.y() + extendHalf, lightingArea.center.z() + extendHalf);
 
 	//encode the edges into the texture (writing the positions of the source and target)
 	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeInput.get());
@@ -651,10 +707,10 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 		unsigned int y = i2 / textureSize;
 
 		//DEBUG
-		if((*edges)[i]->source->position.x() < treeMin.x() || (*edges)[i]->source->position.y() < treeMin.y() || (*edges)[i]->source->position.z() < treeMin.z() ||
-			(*edges)[i]->source->position.x() > treeMax.x() || (*edges)[i]->source->position.y() > treeMax.y() || (*edges)[i]->source->position.z() > treeMax.z()){
-			std::cout << "Distance is too big!" << std::endl;
-		}
+//		if((*edges)[i]->source->position.x() < treeMin.x() || (*edges)[i]->source->position.y() < treeMin.y() || (*edges)[i]->source->position.z() < treeMin.z() ||
+//			(*edges)[i]->source->position.x() > treeMax.x() || (*edges)[i]->source->position.y() > treeMax.y() || (*edges)[i]->source->position.z() > treeMax.z()){
+//			std::cout << "Distance is too big!" << std::endl;
+//		}
 		//DEBUG END
 
 		//write the data to the texture
@@ -725,26 +781,26 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 //		std::cout << " ID: " << *reinterpret_cast<float*>(vertexDataPtr + index + 3 * 4) << std::endl;
 //	}
 
-	std::cout << "Vertex description: " << mesh->getVertexDescription().toString() << std::endl;
+//	std::cout << "Vertex description: " << mesh->getVertexDescription().toString() << std::endl;
 
 	//create the output texture (one pixel per edge, 0 = ok, 1 = edge must be deleted)
 	unsigned int outputTextureSize = std::ceil(std::sqrt(edges->size()));
 	Util::Reference<Rendering::Texture> edgeOutput = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, outputTextureSize, outputTextureSize, 1, Util::TypeConstant::UINT32, 1);
 	fillTexture(edgeOutput.get(), 0);
 
-	std::cout << "Output texture: " << outputTextureSize << " which gives " << outputTextureSize * outputTextureSize << " possible edges!" << std::endl;
+//	std::cout << "Output texture: " << outputTextureSize << " which gives " << outputTextureSize * outputTextureSize << " possible edges!" << std::endl;
 
-//	debug->addDebugLine(lightingArea.center, Geometry::Vec3(lightingArea.center.x(), lightingArea.center.y() + 1, lightingArea.center.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
+//	debug.addDebugLine(lightingArea.center, Geometry::Vec3(lightingArea.center.x(), lightingArea.center.y() + 1, lightingArea.center.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
 //	std::cout << "Root Node Midpoint: " << lightingArea.center.x() << "x" << lightingArea.center.y() << "x" << lightingArea.center.z() << std::endl;
 //	std::cout << "halfSizeOfRootNode: " << lightingArea.extend * 0.5f << std::endl;
 	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", lightingArea.center));
 	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightingArea.extend * 0.25f));
-	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
+//	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)edges->size()));
 	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("outputTextureSize", (int32_t)outputTextureSize));
 	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("inputTextureSize", (int32_t)textureSize));
 	voxelOctreeShaderReadObject.get()->setUniform(*renderingContext, Rendering::Uniform("voxelOctreeTextureSize", (int32_t)octreeTexture->getWidth()));
 
-	std::cout << "comming here 4" << std::endl;
+//	std::cout << "comming here 4" << std::endl;
 
 	renderingContext->pushAndSetBoundImage(0, Rendering::ImageBindParameters(octreeTexture));
 	renderingContext->pushAndSetBoundImage(1, Rendering::ImageBindParameters(edgeOutput.get()));
@@ -755,7 +811,7 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(atomicCounter));
 #endif // USE_ATOMIC_COUNTER
 
-	std::cout << "comming here 4.5" << std::endl;
+//	std::cout << "comming here 4.5" << std::endl;
 
 	//activate new camera
 	frameContext->pushCamera();
@@ -798,7 +854,7 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 	renderingContext->popBoundImage(2);
 #endif // USE_ATOMIC_COUNTER
 
-	std::cout << "comming here 5" << std::endl;
+//	std::cout << "comming here 5" << std::endl;
 
 	//filter the edge list
 	edgeOutput.get()->downloadGLTexture(*renderingContext);
@@ -814,7 +870,7 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 		uint8_t value = accOut.get()->readSingleValueByte(x, y);
 
 		if(value == 0) filteredEdges.push_back((*edges)[i]);
-		else debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
+//		else debug.addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
 
 //		x = (x + 1) % outputTextureSize;
 //		if(x == 0) y++;
@@ -830,33 +886,33 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 //		if(data[i] == 0) filteredEdges.push_back((*edges)[i]);
 	}
 
-	unsigned int counter = 0, counter2 = 0, counter3 = 0;
-	edgeOutput.get()->downloadGLTexture(*renderingContext);
-	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeOutput.get());
-	for(unsigned int i = 1; i < edgeOutput->getWidth() * edgeOutput->getHeight(); i++){
-		unsigned int x = i % edgeOutput->getWidth();
-		unsigned int y = i / edgeOutput->getWidth();
-		unsigned int xb = (i-1) % edgeOutput->getWidth();
-		unsigned int yb = (i-1) / edgeOutput->getWidth();
-
-		uint8_t valueBefore = acc2.get()->readSingleValueByte(xb, yb);
-		uint8_t value = acc2.get()->readSingleValueByte(x, y);
-		if(valueBefore != value || i % 1000 == 0 || i == 1){
-			std::cout << i << " (of " << edges->size() << ")" << ": " << (unsigned int)value << " but " << (i-1) << ": " << (unsigned int)valueBefore << std::endl;
-			if(counter++ >= 100) break;
-//			if(i >= 10) break;
-		}
-//		if(value == 2){
-//			counter++;
-//		} else if(value == 4){
-//			counter2++;
-//		} else {
-//			counter3++;
+//	unsigned int counter = 0, counter2 = 0, counter3 = 0;
+//	edgeOutput.get()->downloadGLTexture(*renderingContext);
+//	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeOutput.get());
+//	for(unsigned int i = 1; i < edgeOutput->getWidth() * edgeOutput->getHeight(); i++){
+//		unsigned int x = i % edgeOutput->getWidth();
+//		unsigned int y = i / edgeOutput->getWidth();
+//		unsigned int xb = (i-1) % edgeOutput->getWidth();
+//		unsigned int yb = (i-1) / edgeOutput->getWidth();
+//
+//		uint8_t valueBefore = acc2.get()->readSingleValueByte(xb, yb);
+//		uint8_t value = acc2.get()->readSingleValueByte(x, y);
+//		if(valueBefore != value || i % 1000 == 0 || i == 1){
+//			std::cout << i << " (of " << edges->size() << ")" << ": " << (unsigned int)value << " but " << (i-1) << ": " << (unsigned int)valueBefore << std::endl;
+//			if(counter++ >= 100) break;
+////			if(i >= 10) break;
 //		}
-	}
-	std::cout << "Counter: " << counter << " Counter2: " << counter2 << " Counter3: " << counter3 << std::endl;
-
-	std::cout << "comming here 6" << std::endl;
+////		if(value == 2){
+////			counter++;
+////		} else if(value == 4){
+////			counter2++;
+////		} else {
+////			counter3++;
+////		}
+//	}
+//	std::cout << "Counter: " << counter << " Counter2: " << counter2 << " Counter3: " << counter3 << std::endl;
+//
+//	std::cout << "comming here 6" << std::endl;
 
 	//write back the filtered edges
 	(*edges) = filteredEdges;
@@ -943,7 +999,7 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 //		x = i2 % textureSize;
 //		y = i2 / textureSize;
 //		endPos.setZ(acc->readSingleValueFloat(x, y));
-//		debug->addDebugLine(startPos, endPos, Util::Color4f(1, 0, 1, 1), Util::Color4f(1, 0, 1, 1));
+//		debug.addDebugLine(startPos, endPos, Util::Color4f(1, 0, 1, 1), Util::Color4f(1, 0, 1, 1));
 //	}
 
 //	Util::Reference<Rendering::Texture> bla = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, 10, 10, 1, Util::TypeConstant::FLOAT, 1);
@@ -963,7 +1019,7 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 
 	std::cout << "Output texture: " << outputTextureSize << " which gives " << outputTextureSize * outputTextureSize << " possible edges!" << std::endl;
 
-//	debug->addDebugLine(lightingArea.center, Geometry::Vec3(lightingArea.center.x(), lightingArea.center.y() + 1, lightingArea.center.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
+//	debug.addDebugLine(lightingArea.center, Geometry::Vec3(lightingArea.center.x(), lightingArea.center.y() + 1, lightingArea.center.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 0, 1));
 //	std::cout << "Root Node Midpoint: " << lightingArea.center.x() << "x" << lightingArea.center.y() << "x" << lightingArea.center.z() << std::endl;
 //	std::cout << "halfSizeOfRootNode: " << lightingArea.extend * 0.5f << std::endl;
 	voxelOctreeShaderReadTexture.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", lightingArea.center));
@@ -1015,7 +1071,7 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 		uint8_t value = accOut.get()->readSingleValueByte(x, y);
 
 		if(value == 0) filteredEdges.push_back((*edges)[i]);
-		else debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
+		else debug.addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
 
 //		x = (x + 1) % outputTextureSize;
 //		if(x == 0) y++;
@@ -1087,14 +1143,14 @@ void LightNodeManager::filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> 
 
 		if(checkLine(treeMin, treeMax, lineStart, lineDirection, octreeAcc) == 0){
 			filteredEdges.push_back((*edges)[i]);
-//			debug->addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 0, 1), Util::Color4f(0, 1, 0, 1));
+//			debug.addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 0, 1), Util::Color4f(0, 1, 0, 1));
 //			if(i > 0 && (*edges)[i]->source != (*edges)[i - 1]->source) falseEdges--;
 //			if(falseEdges <= 0){
 				std::cout << "Edge number: " << i << std::endl;
 //				break;
 //			}
 		} else {
-			debug->addDebugLine(lineStart, lineEnd, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
+			debug.addDebugLine(lineStart, lineEnd, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
 		}
 		break;
 	}
@@ -1107,8 +1163,8 @@ int LightNodeManager::checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeM
 	Geometry::Vec3 newRayStart = rayOrigin;
 	Geometry::Vec3 newRayDir = rayDirection;
 
-//	debug->addDebugLine(rayOrigin, Geometry::Vec3(rayOrigin.x(), rayOrigin.y() + 0.1f, rayOrigin.z()), Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
-//	debug->addDebugLine(rayOrigin, rayOrigin + rayDirection, Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
+//	debug.addDebugLine(rayOrigin, Geometry::Vec3(rayOrigin.x(), rayOrigin.y() + 0.1f, rayOrigin.z()), Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
+//	debug.addDebugLine(rayOrigin, rayOrigin + rayDirection, Util::Color4f(1, 0, 0, 1), Util::Color4f(1, 1, 0, 1));
 	//change lookup to only walk in positive directions
 	octreeLookupDifference = 0;
 	if(newRayDir.x() < 0.0){
@@ -1127,8 +1183,8 @@ int LightNodeManager::checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeM
 		octreeLookupDifference |= 1;
 	}
 
-	debug->addDebugLine(newRayStart, Geometry::Vec3(newRayStart.x(), newRayStart.y() + 0.1f, newRayStart.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 1, 1));
-	debug->addDebugLine(newRayStart, newRayStart + newRayDir, Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 1, 1));
+	debug.addDebugLine(newRayStart, Geometry::Vec3(newRayStart.x(), newRayStart.y() + 0.1f, newRayStart.z()), Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 1, 1));
+	debug.addDebugLine(newRayStart, newRayStart + newRayDir, Util::Color4f(0, 1, 0, 1), Util::Color4f(0, 1, 1, 1));
 
 	//calculate the "boundings" for the ray within the octree
 	Geometry::Vec3 t0 = (octreeMin - newRayStart);// / newRayDir;
@@ -1140,8 +1196,8 @@ int LightNodeManager::checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeM
 	t1.setY(t1.y() / ((newRayDir.y() == 0) ? 0.00001 : newRayDir.y()));
 	t1.setZ(t1.z() / ((newRayDir.z() == 0) ? 0.00001 : newRayDir.z()));
 
-//	debug->addDebugBoxLinesMinMax(octreeMin, octreeMax);
-//	debug->addDebugBoxLinesMinMax(t0, t1);
+//	debug.addDebugBoxLinesMinMax(octreeMin, octreeMax);
+//	debug.addDebugBoxLinesMinMax(t0, t1);
 
 	//look, if the line is inside the octree (TODO: might be skipped, since it will always be true in our scenario)
 	if(std::max(t0.x(), std::max(t0.y(), t0.z())) < std::min(t1.x(), std::min(t1.y(), t1.z()))){
@@ -1163,19 +1219,19 @@ int LightNodeManager::testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geo
 	firstNodeRoot(t0, t1, origLineStart, nodeStates, &curDepth, octreeAcc);
 
 //	Geometry::Vec3 midpos = lineStart + Geometry::Vec3(lineDir.x() * t0.x(), lineDir.y() * t0.y(), lineDir.z() * t0.z());;
-//	debug->addDebugBox(midpos, 0.01);
+//	debug.addDebugBox(midpos, 0.01);
 //	Geometry::Vec3 midpos2 = lineStart + Geometry::Vec3(lineDir.x() * t1.x(), lineDir.y() * t1.y(), lineDir.z() * t1.z());;
-//	debug->addDebugBox(midpos2, 0.1);
+//	debug.addDebugBox(midpos2, 0.1);
 
 	Geometry::Vec3 midPoints[VOXEL_OCTREE_DEPTH + 1];
 	midPoints[0] = lightingArea.center;
-	debug->addDebugBoxLines(midPoints[0], (4 * quarterSizeOfRootNode) / (1 << 0));
+	debug.addDebugBoxLines(midPoints[0], (4 * quarterSizeOfRootNode) / (1 << 0));
 	std::cout << "lookupDifference: " << octreeLookupDifference << std::endl;
 	std::cout << "Child ids: " << (nodeStates[0].childID ^ octreeLookupDifference);
 	for(unsigned int i = 1; i < curDepth; i++){
 		std::cout << " " << (nodeStates[i].childID ^ octreeLookupDifference) << " (" << (nodeStates[i].tm.z()) << ")";
 		getNewMidPos(midPoints[i - 1], nodeStates[i - 1].childID ^ octreeLookupDifference, (i - 1), &midPoints[i]);
-		debug->addDebugBoxLines(midPoints[i], (4 * quarterSizeOfRootNode) / (1 << i));
+		debug.addDebugBoxLines(midPoints[i], (4 * quarterSizeOfRootNode) / (1 << i));
 	}
 	std::cout << std::endl;
 
@@ -1242,7 +1298,7 @@ int LightNodeManager::testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geo
 				} else {
 					std::cout << "node exists" << " with child " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << std::endl;
 					getNewMidPos(midPoints[curDepth - 1], nodeStates[curDepth - 1].childID ^ octreeLookupDifference, (curDepth - 1), &midPoints[curDepth]);
-					debug->addDebugBoxLines(midPoints[curDepth], (4 * quarterSizeOfRootNode) / (1 << curDepth));
+					debug.addDebugBoxLines(midPoints[curDepth], (4 * quarterSizeOfRootNode) / (1 << curDepth));
 					//node exists, so fill stack with data
 //					gl_FragColor = 4.0 / 255.0;
 //					return;
@@ -1283,7 +1339,7 @@ int LightNodeManager::testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geo
 					nodeStates[curDepth].tm = (nodeStates[curDepth].t0 + nodeStates[curDepth].t1) * 0.5f;
 					nodeStates[curDepth].childID = firstNode(nodeStates[curDepth].t0, nodeStates[curDepth].tm);
 					std::cout << "New childID = " << nodeStates[curDepth].childID << std::endl;
-					debug->addDebugLine(midPoints[curDepth - 1], midPoints[curDepth]);
+					debug.addDebugLine(midPoints[curDepth - 1], midPoints[curDepth]);
 					curDepth++;
 				}
 			}
@@ -1293,7 +1349,7 @@ int LightNodeManager::testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geo
 //			return;
 			moveUp = false;
 			curDepth--;
-			debug->addDebugLine(midPoints[curDepth], midPoints[curDepth - 1], Util::Color4f(0, 1, 0, 1), Util::Color4f(1, 1, 0, 1));
+			debug.addDebugLine(midPoints[curDepth], midPoints[curDepth - 1], Util::Color4f(0, 1, 0, 1), Util::Color4f(1, 1, 0, 1));
 			std::cout << "child is now " << (nodeStates[curDepth - 1].childID ^ octreeLookupDifference) << " (" << nodeStates[curDepth - 1].childID << ")" << std::endl;
 			switch(nodeStates[curDepth - 1].childID){
 			case 0:
@@ -1322,7 +1378,7 @@ int LightNodeManager::testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geo
 				break;
 			}
 //			getNewMidPos(midPoints[curDepth - 1], nodeStates[curDepth - 1].childID ^ octreeLookupDifference, (curDepth - 1), &midPoints[curDepth]);
-//			debug->addDebugBoxLines(midPoints[curDepth], (4 * quarterSizeOfRootNode) / (1 << curDepth));
+//			debug.addDebugBoxLines(midPoints[curDepth], (4 * quarterSizeOfRootNode) / (1 << curDepth));
 		}
 	} while(nodeStates[0].childID < 8);
 
@@ -1333,11 +1389,11 @@ void LightNodeManager::firstNodeRoot(Geometry::Vec3 t0, Geometry::Vec3 t1, Geome
 	Geometry::Vec3 curMidPos;
 	Geometry::Vec2i childIndex;
 
-//	debug->addDebugLine(lineStart, Geometry::Vec3(lineStart.x(), lineStart.y() + 0.1f, lineStart.z()));
+//	debug.addDebugLine(lineStart, Geometry::Vec3(lineStart.x(), lineStart.y() + 0.1f, lineStart.z()));
 //	std::cout << "Line: " << lineStart.x() << "x" << lineStart.y() << "x" << lineStart.z() << std::endl;
 //	std::cout << "lookupDifference: " << octreeLookupDifference << std::endl;
 //
-//	debug->addDebugBox(lineStart, 0.01);
+//	debug.addDebugBox(lineStart, 0.01);
 
 	int curDepth = 0;
 
@@ -1354,7 +1410,7 @@ void LightNodeManager::firstNodeRoot(Geometry::Vec3 t0, Geometry::Vec3 t1, Geome
 //	nodeStates[0].nodeOffset = int(imageLoad(voxelOctree, childIndex).r);
 
 	for(curDepth = 1; curDepth < VOXEL_OCTREE_DEPTH + 1; curDepth++){
-//		debug->addDebugBoxLines(curMidPos, (4 * quarterSizeOfRootNode) / (1 << curDepth));
+//		debug.addDebugBoxLines(curMidPos, (4 * quarterSizeOfRootNode) / (1 << curDepth));
 
 		nodeStates[curDepth].childID = getChildOffset(curMidPos, lineStart) ^ octreeLookupDifference;
 		getNewMidPos(curMidPos, nodeStates[curDepth].childID ^ octreeLookupDifference, curDepth, &curMidPos);
@@ -1401,7 +1457,7 @@ void LightNodeManager::firstNodeRoot(Geometry::Vec3 t0, Geometry::Vec3 t1, Geome
 			break;
 		}
 
-//		debug->addDebugBoxLines(nodeStates[curDepth].t0, nodeStates[curDepth].t1);
+//		debug.addDebugBoxLines(nodeStates[curDepth].t0, nodeStates[curDepth].t1);
 
 		nodeStates[curDepth].tm = (nodeStates[curDepth].t0 + nodeStates[curDepth].t1) * 0.5f;
 	}
@@ -1575,6 +1631,328 @@ void LightNodeManager::getNodeIndexVoxelOctree(int nodeID, Geometry::Vec2i* inde
 	index->setY((int)(nodeID / voxelOctreeTextureSize));
 }
 
+void LightNodeManager::createNodeTextures(){
+	//count the nodes
+	unsigned int numNodes = lightNodeLightMaps.size();
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+        numNodes += lightNodeMaps[i]->lightNodes.size();
+	}
+
+	//create the node textures
+	const unsigned int dataLengthPerNode = 3;
+	unsigned int nodeTextureSize = std::ceil(std::sqrt(numNodes * dataLengthPerNode));
+	nodeTextureStatic = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+	nodeTextureTemporary = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+	nodeTextureComplete = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	nodeTextureStaticR = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	nodeTextureStaticG = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	nodeTextureStaticB = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	nodeTextureTemporaryR = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	nodeTextureTemporaryG = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	nodeTextureTemporaryB = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	nodeTextureCompleteR = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	nodeTextureCompleteG = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	nodeTextureCompleteB = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+
+	//fill the node textures and set the node id's
+	unsigned int curNodeID = 0;
+	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStatic.get());
+//	Util::Reference<Util::PixelAccessor> accR = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStaticR.get());
+//	Util::Reference<Util::PixelAccessor> accG = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStaticG.get());
+//	Util::Reference<Util::PixelAccessor> accB = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStaticB.get());
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
+			unsigned int x = (curNodeID * dataLengthPerNode) % nodeTextureSize;
+			unsigned int y = (curNodeID * dataLengthPerNode) / nodeTextureSize;
+
+////			accR->writeColor(x, y, Util::Color4f(lightNodeMaps[i]->lightNodes[j]->color.r(), 0, 0, 0));
+////			accG->writeColor(x, y, Util::Color4f(lightNodeMaps[i]->lightNodes[j]->color.g(), 0, 0, 0));
+////			accB->writeColor(x, y, Util::Color4f(lightNodeMaps[i]->lightNodes[j]->color.b(), 0, 0, 0));
+//			accR->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
+//			accG->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
+//			accB->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
+
+			acc->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
+			x = (x + 1) % nodeTextureSize;
+			if(x == 0) y++;
+			acc->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
+			x = (x + 1) % nodeTextureSize;
+			if(x == 0) y++;
+			acc->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
+
+			lightNodeMaps[i]->lightNodes[j]->id = curNodeID;
+			curNodeID++;
+		}
+	}
+
+	const float lightStrength = 1000;
+
+	//fill with the light nodes, too
+	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
+		unsigned int x = (curNodeID * dataLengthPerNode) % nodeTextureSize;
+		unsigned int y = (curNodeID * dataLengthPerNode) / nodeTextureSize;
+
+//		accR->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.r() * lightStrength, 0, 0, 0));
+//		accG->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.g() * lightStrength, 0, 0, 0));
+//		accB->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.b() * lightStrength, 0, 0, 0));
+////		x = (x + 1) % nodeTextureSize;
+////		if(x == 0) y++;
+////		acc->writeSingleValueFloat(x, y, lightNodeLightMaps[i]->light.color.g());
+////		x = (x + 1) % nodeTextureSize;
+////		if(x == 0) y++;
+////		acc->writeSingleValueFloat(x, y, lightNodeLightMaps[i]->light.color.b());
+
+		acc->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.r() * lightStrength, 0, 0, 0));
+		x = (x + 1) % nodeTextureSize;
+		if(x == 0) y++;
+		acc->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.g() * lightStrength, 0, 0, 0));
+		x = (x + 1) % nodeTextureSize;
+		if(x == 0) y++;
+		acc->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.b() * lightStrength, 0, 0, 0));
+
+		lightNodeLightMaps[i]->light.id = curNodeID;
+		curNodeID++;
+	}
+
+	//count the edges
+	unsigned int numEdges = 0;
+	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
+		numEdges += lightNodeLightMaps[i]->edges.size();
+	}
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		numEdges += lightNodeMaps[i]->internalLightEdges.size();
+		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+			numEdges += lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size();
+		}
+		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesDynamic.size(); j++){
+			numEdges += lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size();
+		}
+	}
+
+	//create the edge texture
+	unsigned int nodeDataLengthPerEdge = 2;
+	unsigned int weightDataLengthPerEdge = 3;
+	unsigned int tmpEdgeTextureSize = std::ceil(std::sqrt(numEdges));
+	unsigned int nodeEdgeTextureSize = std::ceil(std::sqrt(numEdges * nodeDataLengthPerEdge));
+	unsigned int weightEdgeTextureSize = std::ceil(std::sqrt(numEdges * weightDataLengthPerEdge));
+	tmpTexEdgeSize = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, tmpEdgeTextureSize, tmpEdgeTextureSize, 1, Util::TypeConstant::UINT8, 1);
+	edgeTextureNodes = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeEdgeTextureSize, nodeEdgeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+	edgeTextureWeights = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, weightEdgeTextureSize, weightEdgeTextureSize, 1, Util::TypeConstant::FLOAT, 1);
+//	edgeTextureNodesSources = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeEdgeTextureSize, nodeEdgeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	edgeTextureNodesTargets = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeEdgeTextureSize, nodeEdgeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+//	edgeTextureWeightsR = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, weightEdgeTextureSize, weightEdgeTextureSize, 1, Util::TypeConstant::FLOAT, 1);
+//	edgeTextureWeightsG = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, weightEdgeTextureSize, weightEdgeTextureSize, 1, Util::TypeConstant::FLOAT, 1);
+//	edgeTextureWeightsB = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, weightEdgeTextureSize, weightEdgeTextureSize, 1, Util::TypeConstant::FLOAT, 1);
+
+	//fill the edge texture
+	unsigned int curEdgeID = 0;
+	Util::Reference<Util::PixelAccessor> accEdgesNodes = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeTextureNodes.get());
+	Util::Reference<Util::PixelAccessor> accEdgesWeights = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeTextureWeights.get());
+//	Util::Reference<Util::PixelAccessor> accEdgesSources = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeTextureNodesSources.get());
+//	Util::Reference<Util::PixelAccessor> accEdgesTargets = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeTextureNodesTargets.get());
+//	Util::Reference<Util::PixelAccessor> accEdgesWeightsR = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeTextureWeightsR.get());
+//	Util::Reference<Util::PixelAccessor> accEdgesWeightsG = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeTextureWeightsG.get());
+//	Util::Reference<Util::PixelAccessor> accEdgesWeightsB = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *edgeTextureWeightsB.get());
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		//internal edges
+		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
+			unsigned int nodeX = (curEdgeID * nodeDataLengthPerEdge) % nodeEdgeTextureSize;
+			unsigned int nodeY = (curEdgeID * nodeDataLengthPerEdge) / nodeEdgeTextureSize;
+			unsigned int weightX = (curEdgeID * weightDataLengthPerEdge) % weightEdgeTextureSize;
+			unsigned int weightY = (curEdgeID * weightDataLengthPerEdge) / weightEdgeTextureSize;
+
+//			accEdgesSources->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->source->id, 0, 0, 0));
+//			accEdgesTargets->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->target->id, 0, 0, 0));
+//			accEdgesWeightsR->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.x());
+//			accEdgesWeightsG->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.y());
+//			accEdgesWeightsB->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.z());
+
+			accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->source->id, 0, 0, 0));
+			nodeX = (nodeX + 1) % nodeEdgeTextureSize;
+			if(nodeX == 0) nodeY++;
+			accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->target->id, 0, 0, 0));
+
+			accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->internalLightEdges[j]->weight.x());
+			weightX = (weightX + 1) % weightEdgeTextureSize;
+			if(weightX == 0) weightY++;
+			accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->internalLightEdges[j]->weight.y());
+			weightX = (weightX + 1) % weightEdgeTextureSize;
+			if(weightX == 0) weightY++;
+			accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->internalLightEdges[j]->weight.z());
+
+			curEdgeID++;
+		}
+		//external edges
+		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+				LightNode *source = lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source;
+				LightNode *target = lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target;
+
+				unsigned int nodeX = (curEdgeID * nodeDataLengthPerEdge) % nodeEdgeTextureSize;
+				unsigned int nodeY = (curEdgeID * nodeDataLengthPerEdge) / nodeEdgeTextureSize;
+				unsigned int weightX = (curEdgeID * weightDataLengthPerEdge) % weightEdgeTextureSize;
+				unsigned int weightY = (curEdgeID * weightDataLengthPerEdge) / weightEdgeTextureSize;
+
+//				accEdgesSources->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->externalLightEdgesStatic[j]->source->id, 0, 0, 0));
+//				accEdgesTargets->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->externalLightEdgesStatic[j]->target->id, 0, 0, 0));
+//				accEdgesWeightsR->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->externalLightEdgesStatic[j]->weight.x());
+//				accEdgesWeightsG->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->externalLightEdgesStatic[j]->weight.y());
+//				accEdgesWeightsB->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->externalLightEdgesStatic[j]->weight.z());
+
+				accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->id, 0, 0, 0));
+				nodeX = (nodeX + 1) % nodeEdgeTextureSize;
+				if(nodeX == 0) nodeY++;
+				accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->id, 0, 0, 0));
+
+				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->weight.x());
+				weightX = (weightX + 1) % weightEdgeTextureSize;
+				if(weightX == 0) weightY++;
+				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->weight.y());
+				weightX = (weightX + 1) % weightEdgeTextureSize;
+				if(weightX == 0) weightY++;
+				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->weight.z());
+
+				curEdgeID++;
+			}
+		}
+		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesDynamic.size(); j++){
+			for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
+				LightNode *source = lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k]->source;
+				LightNode *target = lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k]->target;
+
+				unsigned int nodeX = (curEdgeID * nodeDataLengthPerEdge) % nodeEdgeTextureSize;
+				unsigned int nodeY = (curEdgeID * nodeDataLengthPerEdge) / nodeEdgeTextureSize;
+				unsigned int weightX = (curEdgeID * weightDataLengthPerEdge) % weightEdgeTextureSize;
+				unsigned int weightY = (curEdgeID * weightDataLengthPerEdge) / weightEdgeTextureSize;
+
+//				accEdgesSources->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->externalLightEdgesDynamic[j]->source->id, 0, 0, 0));
+//				accEdgesTargets->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->externalLightEdgesDynamic[j]->target->id, 0, 0, 0));
+//				accEdgesWeightsR->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->externalLightEdgesDynamic[j]->weight.x());
+//				accEdgesWeightsG->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->externalLightEdgesDynamic[j]->weight.y());
+//				accEdgesWeightsB->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->externalLightEdgesDynamic[j]->weight.z());
+
+				accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k]->source->id, 0, 0, 0));
+				nodeX = (nodeX + 1) % nodeEdgeTextureSize;
+				if(nodeX == 0) nodeY++;
+				accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k]->target->id, 0, 0, 0));
+
+				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k]->weight.x());
+				weightX = (weightX + 1) % weightEdgeTextureSize;
+				if(weightX == 0) weightY++;
+				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k]->weight.y());
+				weightX = (weightX + 1) % weightEdgeTextureSize;
+				if(weightX == 0) weightY++;
+				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k]->weight.z());
+
+				curEdgeID++;
+			}
+		}
+	}
+
+	//fill with edges from the lights
+	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
+		for(unsigned int j = 0; j < lightNodeLightMaps[i]->edges.size(); j++){
+				LightNode *source = lightNodeLightMaps[i]->edges[j]->source;
+				LightNode *target = lightNodeLightMaps[i]->edges[j]->target;
+
+				unsigned int nodeX = (curEdgeID * nodeDataLengthPerEdge) % nodeEdgeTextureSize;
+				unsigned int nodeY = (curEdgeID * nodeDataLengthPerEdge) / nodeEdgeTextureSize;
+				unsigned int weightX = (curEdgeID * weightDataLengthPerEdge) % weightEdgeTextureSize;
+				unsigned int weightY = (curEdgeID * weightDataLengthPerEdge) / weightEdgeTextureSize;
+
+//				accEdgesSources->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->source->id, 0, 0, 0));
+//				accEdgesTargets->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->target->id, 0, 0, 0));
+//				accEdgesWeightsR->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.x());
+//				accEdgesWeightsG->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.y());
+//				accEdgesWeightsB->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.z());
+
+				accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeLightMaps[i]->edges[j]->source->id, 0, 0, 0));
+				nodeX = (nodeX + 1) % nodeEdgeTextureSize;
+				if(nodeX == 0) nodeY++;
+				accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeLightMaps[i]->edges[j]->target->id, 0, 0, 0));
+
+				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeLightMaps[i]->edges[j]->weight.x());
+				weightX = (weightX + 1) % weightEdgeTextureSize;
+				if(weightX == 0) weightY++;
+				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeLightMaps[i]->edges[j]->weight.y());
+				weightX = (weightX + 1) % weightEdgeTextureSize;
+				if(weightX == 0) weightY++;
+				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeLightMaps[i]->edges[j]->weight.z());
+
+				curEdgeID++;
+		}
+	}
+}
+
+void LightNodeManager::propagateLight(){
+	//copy the light nodes
+	copyTexture(nodeTextureStatic.get(), nodeTextureTemporary.get());
+	fillTexture(nodeTextureComplete.get(), Util::Color4f(0, 0, 0, 0));
+//	copyTexture(nodeTextureStaticR.get(), nodeTextureTemporaryR.get());
+//	copyTexture(nodeTextureStaticG.get(), nodeTextureTemporaryG.get());
+//	copyTexture(nodeTextureStaticB.get(), nodeTextureTemporaryB.get());
+//	fillTexture(nodeTextureCompleteR.get(), Util::Color4f(0, 0, 0, 0));
+//	fillTexture(nodeTextureCompleteG.get(), Util::Color4f(0, 0, 0, 0));
+//	fillTexture(nodeTextureCompleteB.get(), Util::Color4f(0, 0, 0, 0));
+
+	std::cout << "Setting the image units!" << std::endl;
+	renderingContext->pushAndSetBoundImage(0, Rendering::ImageBindParameters(edgeTextureNodes.get()));
+	renderingContext->pushAndSetBoundImage(1, Rendering::ImageBindParameters(edgeTextureWeights.get()));
+	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(nodeTextureTemporary.get()));
+	renderingContext->pushAndSetBoundImage(3, Rendering::ImageBindParameters(nodeTextureComplete.get()));
+//	renderingContext->pushAndSetBoundImage(0, Rendering::ImageBindParameters(edgeTextureNodesSources.get()));
+//	renderingContext->pushAndSetBoundImage(1, Rendering::ImageBindParameters(edgeTextureNodesTargets.get()));
+//	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(edgeTextureWeightsR.get()));
+//	renderingContext->pushAndSetBoundImage(3, Rendering::ImageBindParameters(edgeTextureWeightsG.get()));
+//	renderingContext->pushAndSetBoundImage(4, Rendering::ImageBindParameters(edgeTextureWeightsB.get()));
+//	renderingContext->pushAndSetBoundImage(5, Rendering::ImageBindParameters(nodeTextureTemporaryR.get()));
+//	renderingContext->pushAndSetBoundImage(6, Rendering::ImageBindParameters(nodeTextureTemporaryG.get()));
+//	renderingContext->pushAndSetBoundImage(7, Rendering::ImageBindParameters(nodeTextureTemporaryB.get()));
+//	renderingContext->pushAndSetBoundImage(8, Rendering::ImageBindParameters(nodeTextureCompleteR.get()));
+//	renderingContext->pushAndSetBoundImage(9, Rendering::ImageBindParameters(nodeTextureCompleteG.get()));
+//	renderingContext->pushAndSetBoundImage(10, Rendering::ImageBindParameters(nodeTextureCompleteB.get()));
+
+	std::cout << "setting uniform" << std::endl;
+	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("outputTextureSize", (int32_t)tmpTexEdgeSize->getWidth()));
+	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("edgeNodesSize", (int32_t)edgeTextureNodes->getWidth()));
+	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("edgeWeightsSize", (int32_t)edgeTextureWeights->getWidth()));
+	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("nodeColorsSize", (int32_t)nodeTextureTemporary->getWidth()));
+
+	//write into a texture
+	TextureProcessor textureProcessor;
+	textureProcessor.setRenderingContext(renderingContext);
+	textureProcessor.setInputTexture(tmpTexSmallest.get());
+	textureProcessor.setOutputTexture(tmpTexEdgeSize.get());
+	textureProcessor.setShader(propagateLightShader.get());
+
+	std::cout << "executing texture processor" << std::endl;
+	textureProcessor.execute();
+
+	std::cout << "popping images" << std::endl;
+	renderingContext->popBoundImage(0);
+	renderingContext->popBoundImage(1);
+	renderingContext->popBoundImage(2);
+	renderingContext->popBoundImage(3);
+//	renderingContext->popBoundImage(4);
+//	renderingContext->popBoundImage(5);
+//	renderingContext->popBoundImage(6);
+//	renderingContext->popBoundImage(7);
+//	renderingContext->popBoundImage(8);
+//	renderingContext->popBoundImage(9);
+//	renderingContext->popBoundImage(10);
+}
+
+void LightNodeManager::copyTexture(Rendering::Texture *source, Rendering::Texture *target){
+	Util::Reference<Util::PixelAccessor> accSource = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *source);
+	Util::Reference<Util::PixelAccessor> accTarget = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *target);
+	for(unsigned int y = 0; y < target->getHeight(); y++){
+		for(unsigned int x = 0; x < target->getWidth(); x++){
+			accTarget->writeColor(x, y, accSource->readColor4f(x, y));
+		}
+	}
+	target->dataChanged();
+}
+
 void LightNodeManager::fillTexture(Rendering::Texture *texture, Util::Color4f color){
 	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *texture);
 	for(unsigned int y = 0; y < texture->getHeight(); y++){
@@ -1667,26 +2045,26 @@ void LightNodeManager::createWorldBBCameras(){
 
 //		//DEBUG
 //		Geometry::Vec3 debPos = sceneEnclosingCameras[i].get()->getWorldPosition();
-//		debug->addDebugLine(debPos + offset + right * cl + up * cb, debPos + offset + right * cr + up * cb);
-//		debug->addDebugLine(debPos + offset + right * cl + up * cb, debPos + offset + right * cl + up * ct);
-//		debug->addDebugLine(debPos + offset + right * cr + up * cb, debPos + offset + right * cr + up * ct);
-//		debug->addDebugLine(debPos + offset + right * cl + up * ct, debPos + offset + right * cr + up * ct);
-//		debug->addDebugLine(debPos + offsetFar + right * cl + up * cb, debPos + offsetFar + right * cr + up * cb);
-//		debug->addDebugLine(debPos + offsetFar + right * cl + up * cb, debPos + offsetFar + right * cl + up * ct);
-//		debug->addDebugLine(debPos + offsetFar + right * cr + up * cb, debPos + offsetFar + right * cr + up * ct);
-//		debug->addDebugLine(debPos + offsetFar + right * cl + up * ct, debPos + offsetFar + right * cr + up * ct);
+//		debug.addDebugLine(debPos + offset + right * cl + up * cb, debPos + offset + right * cr + up * cb);
+//		debug.addDebugLine(debPos + offset + right * cl + up * cb, debPos + offset + right * cl + up * ct);
+//		debug.addDebugLine(debPos + offset + right * cr + up * cb, debPos + offset + right * cr + up * ct);
+//		debug.addDebugLine(debPos + offset + right * cl + up * ct, debPos + offset + right * cr + up * ct);
+//		debug.addDebugLine(debPos + offsetFar + right * cl + up * cb, debPos + offsetFar + right * cr + up * cb);
+//		debug.addDebugLine(debPos + offsetFar + right * cl + up * cb, debPos + offsetFar + right * cl + up * ct);
+//		debug.addDebugLine(debPos + offsetFar + right * cr + up * cb, debPos + offsetFar + right * cr + up * ct);
+//		debug.addDebugLine(debPos + offsetFar + right * cl + up * ct, debPos + offsetFar + right * cr + up * ct);
 ////		outln("left: "+cl+" right: "+cr+" top: "+ct+" bottom: "+cb);
 //
-//		debug->addDebugLine(sceneEnclosingCameras[i].get()->getWorldPosition(), sceneEnclosingCameras[i].get()->getWorldPosition() + offset, Util::Color4f(0.0,0.0,1.0,1.0), Util::Color4f(1.0,0.0,0.0,1.0));
-//		debug->addDebugLine(sceneEnclosingCameras[i].get()->getWorldPosition() + offset, sceneEnclosingCameras[i].get()->getWorldPosition() + offsetFar, Util::Color4f(0.0,1.0,0.0,1.0), Util::Color4f(1.0,0.0,0.0,1.0));
+//		debug.addDebugLine(sceneEnclosingCameras[i].get()->getWorldPosition(), sceneEnclosingCameras[i].get()->getWorldPosition() + offset, Util::Color4f(0.0,0.0,1.0,1.0), Util::Color4f(1.0,0.0,0.0,1.0));
+//		debug.addDebugLine(sceneEnclosingCameras[i].get()->getWorldPosition() + offset, sceneEnclosingCameras[i].get()->getWorldPosition() + offsetFar, Util::Color4f(0.0,1.0,0.0,1.0), Util::Color4f(1.0,0.0,0.0,1.0));
 //		//DEBUG END
 	}
-//	debug->addDebugLineCol2(cameras[0].getWorldPosition(), cameras[0].getWorldPosition() + worldDirections[0], new Util.Color4f(0.0,0.0,1.0,1.0), new Util.Color4f(1.0,0.0,0.0,1.0));
-//	debug->addDebugLineCol2(cameras[0].getWorldPosition() + worldDirections[0], cameras[0].getWorldPosition() + worldDirections[0] * (maxExtend + 1), new Util.Color4f(0.0,1.0,0.0,1.0), new Util.Color4f(1.0,0.0,0.0,1.0));
+//	debug.addDebugLineCol2(cameras[0].getWorldPosition(), cameras[0].getWorldPosition() + worldDirections[0], new Util.Color4f(0.0,0.0,1.0,1.0), new Util.Color4f(1.0,0.0,0.0,1.0));
+//	debug.addDebugLineCol2(cameras[0].getWorldPosition() + worldDirections[0], cameras[0].getWorldPosition() + worldDirections[0] * (maxExtend + 1), new Util.Color4f(0.0,1.0,0.0,1.0), new Util.Color4f(1.0,0.0,0.0,1.0));
 
-//	debug->addDebugLineCol2(new Geometry.Vec3(0, 0, 0), new Geometry.Vec3(1, 0, 0), new Util.Color4f(1, 0, 0, 1), new Util.Color4f(1, 0, 0, 1));
-//	debug->addDebugLineCol2(new Geometry.Vec3(0, 0, 0), new Geometry.Vec3(0, 1, 0), new Util.Color4f(0, 1, 0, 1), new Util.Color4f(0, 1, 0, 1));
-//	debug->addDebugLineCol2(new Geometry.Vec3(0, 0, 0), new Geometry.Vec3(0, 0, 1), new Util.Color4f(0, 0, 1, 1), new Util.Color4f(0, 0, 1, 1));
+//	debug.addDebugLineCol2(new Geometry.Vec3(0, 0, 0), new Geometry.Vec3(1, 0, 0), new Util.Color4f(1, 0, 0, 1), new Util.Color4f(1, 0, 0, 1));
+//	debug.addDebugLineCol2(new Geometry.Vec3(0, 0, 0), new Geometry.Vec3(0, 1, 0), new Util.Color4f(0, 1, 0, 1), new Util.Color4f(0, 1, 0, 1));
+//	debug.addDebugLineCol2(new Geometry.Vec3(0, 0, 0), new Geometry.Vec3(0, 0, 1), new Util.Color4f(0, 0, 1, 1), new Util.Color4f(0, 0, 1, 1));
 }
 
 void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks){
