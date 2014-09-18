@@ -43,6 +43,7 @@ const Util::StringIdentifier LightNodeManager::lightNodeIDIdent = Util::StringId
 DebugObjects LightNodeManager::debug;
 unsigned int NodeCreaterVisitor::nodeIndex = 0;
 
+const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 3;
 const float LightNodeManager::MAX_EDGE_LENGTH = 1.0f;
 const float LightNodeManager::MIN_EDGE_WEIGHT = 0.00001f;
 const float LightNodeManager::MAX_EDGE_LENGTH_LIGHT = 4000.0f;
@@ -1649,8 +1650,8 @@ void LightNodeManager::createNodeTextures(){
 	const unsigned int dataLengthPerNode = 3;
 	unsigned int nodeTextureSize = std::ceil(std::sqrt(numNodes * dataLengthPerNode));
 	nodeTextureStatic = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-	nodeTextureTemporary = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-	nodeTextureComplete = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+	nodeTextureRendering[0] = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+	nodeTextureRendering[1] = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
 //	nodeTextureStaticR = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
 //	nodeTextureStaticG = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
 //	nodeTextureStaticB = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
@@ -1692,7 +1693,7 @@ void LightNodeManager::createNodeTextures(){
 		}
 	}
 
-	const float lightStrength = 1000;
+	const float lightStrength = 10000000;
 
 	//fill with the light nodes, too
 	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
@@ -1897,8 +1898,8 @@ void LightNodeManager::createNodeTextures(){
 
 void LightNodeManager::propagateLight(){
 	//copy the light nodes
-	copyTexture(nodeTextureStatic.get(), nodeTextureTemporary.get());
-	copyTexture(nodeTextureStatic.get(), nodeTextureComplete.get());
+	copyTexture(nodeTextureStatic.get(), nodeTextureRendering[0].get());
+	copyTexture(nodeTextureStatic.get(), nodeTextureRendering[1].get());
 //	fillTexture(nodeTextureComplete.get(), Util::Color4f(0, 0, 0, 0));
 
 //	copyTexture(nodeTextureStaticR.get(), nodeTextureTemporaryR.get());
@@ -1908,29 +1909,16 @@ void LightNodeManager::propagateLight(){
 //	fillTexture(nodeTextureCompleteG.get(), Util::Color4f(0, 0, 0, 0));
 //	fillTexture(nodeTextureCompleteB.get(), Util::Color4f(0, 0, 0, 0));
 
-	renderingContext->pushAndSetBoundImage(0, Rendering::ImageBindParameters(edgeTextureNodes.get()));			//setting the node-texture
-	renderingContext->pushAndSetBoundImage(1, Rendering::ImageBindParameters(edgeTextureWeights.get()));		//setting the weights-texture
-	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(nodeTextureTemporary.get()));		//setting the source-texture
-	renderingContext->pushAndSetBoundImage(3, Rendering::ImageBindParameters(nodeTextureComplete.get()));		//setting the target-texture
-//	renderingContext->pushAndSetBoundImage(0, Rendering::ImageBindParameters(edgeTextureNodesSources.get()));
-//	renderingContext->pushAndSetBoundImage(1, Rendering::ImageBindParameters(edgeTextureNodesTargets.get()));
-//	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(edgeTextureWeightsR.get()));
-//	renderingContext->pushAndSetBoundImage(3, Rendering::ImageBindParameters(edgeTextureWeightsG.get()));
-//	renderingContext->pushAndSetBoundImage(4, Rendering::ImageBindParameters(edgeTextureWeightsB.get()));
-//	renderingContext->pushAndSetBoundImage(5, Rendering::ImageBindParameters(nodeTextureTemporaryR.get()));
-//	renderingContext->pushAndSetBoundImage(6, Rendering::ImageBindParameters(nodeTextureTemporaryG.get()));
-//	renderingContext->pushAndSetBoundImage(7, Rendering::ImageBindParameters(nodeTextureTemporaryB.get()));
-//	renderingContext->pushAndSetBoundImage(8, Rendering::ImageBindParameters(nodeTextureCompleteR.get()));
-//	renderingContext->pushAndSetBoundImage(9, Rendering::ImageBindParameters(nodeTextureCompleteG.get()));
-//	renderingContext->pushAndSetBoundImage(10, Rendering::ImageBindParameters(nodeTextureCompleteB.get()));
-
-	std::cout << "TEXTURE SIZE IS : " << tmpTexEdgeSize->getWidth() << std::endl;
-	std::cout << "num edges: " << curNumEdges << std::endl;
 	propagateLightShader.get()->setUniform(*renderingContext, Rendering::Uniform("numEdges", (int32_t)curNumEdges));
 	propagateLightShader.get()->setUniform(*renderingContext, Rendering::Uniform("outputTextureSize", (int32_t)tmpTexEdgeSize->getWidth()));
 	propagateLightShader.get()->setUniform(*renderingContext, Rendering::Uniform("edgeNodesSize", (int32_t)edgeTextureNodes->getWidth()));
 	propagateLightShader.get()->setUniform(*renderingContext, Rendering::Uniform("edgeWeightsSize", (int32_t)edgeTextureWeights->getWidth()));
-	propagateLightShader.get()->setUniform(*renderingContext, Rendering::Uniform("nodeColorsSize", (int32_t)nodeTextureTemporary->getWidth()));
+	propagateLightShader.get()->setUniform(*renderingContext, Rendering::Uniform("nodeColorsSize", (int32_t)nodeTextureStatic->getWidth()));
+
+	renderingContext->pushBoundImage(0);
+	renderingContext->pushBoundImage(1);
+	renderingContext->pushBoundImage(2);
+	renderingContext->pushBoundImage(3);
 
 	//write into a texture
 	TextureProcessor textureProcessor;
@@ -1939,28 +1927,34 @@ void LightNodeManager::propagateLight(){
 	textureProcessor.setOutputTexture(tmpTexEdgeSize.get());
 	textureProcessor.setShader(propagateLightShader.get());
 
-	textureProcessor.execute();
+	curNodeTextureRenderingIndex = 0;
+	unsigned int curCycle = 0;
+	do {
+		renderingContext->setBoundImage(0, Rendering::ImageBindParameters(edgeTextureNodes.get()));													//setting the node-texture
+		renderingContext->setBoundImage(1, Rendering::ImageBindParameters(edgeTextureWeights.get()));												//setting the weights-texture
+		renderingContext->setBoundImage(2, Rendering::ImageBindParameters(nodeTextureRendering[curNodeTextureRenderingIndex].get()));				//setting the source-texture
+		renderingContext->setBoundImage(3, Rendering::ImageBindParameters(nodeTextureRendering[(curNodeTextureRenderingIndex + 1) % 2].get()));		//setting the target-texture
+
+		textureProcessor.execute();
+
+		curNodeTextureRenderingIndex = (curNodeTextureRenderingIndex + 1) % 2;
+
+		curCycle++;
+	} while(curCycle < NUMBER_LIGHT_PROPAGATION_CYCLES);
 
 	renderingContext->popBoundImage(0);
 	renderingContext->popBoundImage(1);
 	renderingContext->popBoundImage(2);
 	renderingContext->popBoundImage(3);
-//	renderingContext->popBoundImage(4);
-//	renderingContext->popBoundImage(5);
-//	renderingContext->popBoundImage(6);
-//	renderingContext->popBoundImage(7);
-//	renderingContext->popBoundImage(8);
-//	renderingContext->popBoundImage(9);
-//	renderingContext->popBoundImage(10);
 
 	unsigned int counter = 0, counter2 = 0, counter3 = 0;
-	nodeTextureComplete->downloadGLTexture(*renderingContext);
-	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureComplete.get());
-	for(unsigned int i = 1; i < nodeTextureComplete->getWidth() * nodeTextureComplete->getHeight(); i++){
-		unsigned int x = i % nodeTextureComplete->getWidth();
-		unsigned int y = i / nodeTextureComplete->getWidth();
-		unsigned int xb = (i-1) % nodeTextureComplete->getWidth();
-		unsigned int yb = (i-1) / nodeTextureComplete->getWidth();
+	nodeTextureRendering[curNodeTextureRenderingIndex]->downloadGLTexture(*renderingContext);
+	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureRendering[curNodeTextureRenderingIndex].get());
+	for(unsigned int i = 1; i < nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth() * nodeTextureRendering[curNodeTextureRenderingIndex]->getHeight(); i++){
+		unsigned int x = i % nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
+		unsigned int y = i / nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
+		unsigned int xb = (i-1) % nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
+		unsigned int yb = (i-1) / nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
 
 		uint32_t valueBefore = acc2->readColor4f(xb, yb).r();//readSingleValueByte(xb, yb);
 		uint32_t value = acc2->readColor4f(x, y).r();//readSingleValueByte(x, y);

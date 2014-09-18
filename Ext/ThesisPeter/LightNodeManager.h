@@ -188,13 +188,14 @@ public:
 	void cleanUpDebug();
 	void cleanUp();
 
-	static const float MAX_EDGE_LENGTH;						//maximal edge length between 2 nodes
-	static const float MIN_EDGE_WEIGHT;						//minimal edge weight between 2 nodes
-	static const float MAX_EDGE_LENGTH_LIGHT;				//maximal edge length between a node an a light node
-	static const float MIN_EDGE_WEIGHT_LIGHT;				//minimal edge weight between a node an a light node
-	static const unsigned int VOXEL_OCTREE_DEPTH;			//more depth = more precision = more memory usage
-	static const unsigned int VOXEL_OCTREE_TEXTURE_SIZE;	//max = 16384;	size*size = 18874368 if tree completely filled with depth 7
-	static const unsigned int VOXEL_OCTREE_SIZE_PER_NODE;	//must be set to the same value as the shader definition!!!
+	static const unsigned int NUMBER_LIGHT_PROPAGATION_CYCLES;	//the number of light propagation cycles, which directly corresponds to the number of light "reflection" between objects
+	static const float MAX_EDGE_LENGTH;							//maximal edge length between 2 nodes
+	static const float MIN_EDGE_WEIGHT;							//minimal edge weight between 2 nodes
+	static const float MAX_EDGE_LENGTH_LIGHT;					//maximal edge length between a node an a light node
+	static const float MIN_EDGE_WEIGHT_LIGHT;					//minimal edge weight between a node an a light node
+	static const unsigned int VOXEL_OCTREE_DEPTH;				//more depth = more precision = more memory usage
+	static const unsigned int VOXEL_OCTREE_TEXTURE_SIZE;		//max = 16384;	size*size = 18874368 if tree completely filled with depth 7
+	static const unsigned int VOXEL_OCTREE_SIZE_PER_NODE;		//must be set to the same value as the shader definition!!!
 
 private:
 	static unsigned int nextPowOf2(unsigned int number);
@@ -249,11 +250,11 @@ private:
 	Util::Reference<Rendering::Texture> atomicCounter;
 
 	unsigned int curNumEdges;
+	unsigned int curNodeTextureRenderingIndex;
 	Util::Reference<Rendering::Texture> tmpTexSmallest;
 	Util::Reference<Rendering::Texture> tmpTexEdgeSize;
 	Util::Reference<Rendering::Texture> nodeTextureStatic;
-	Util::Reference<Rendering::Texture> nodeTextureTemporary;
-	Util::Reference<Rendering::Texture> nodeTextureComplete;
+	Util::Reference<Rendering::Texture> nodeTextureRendering[2];
 	Util::Reference<Rendering::Texture> edgeTextureNodes;
 	Util::Reference<Rendering::Texture> edgeTextureWeights;
 //	Util::Reference<Rendering::Texture> nodeTextureStaticR;
