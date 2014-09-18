@@ -24,11 +24,14 @@
 #include <MinSG/Core/Nodes/GeometryNode.h>
 #include <MinSG/Core/Nodes/LightNode.h>
 #include <MinSG/Core/FrameContext.h>
+#include <MinSG/Helper/DataDirectory.h>
+#include <MinSG/Helper/Helper.h>
 #include <random>
 #include <Rendering/Serialization/Serialization.h>
 #include <MinSG/Core/Nodes/CameraNode.h>
 #include <MinSG/Core/Nodes/ListNode.h>
 #include <MinSG/Core/Transformations.h>
+#include <Util/IO/FileLocator.h>
 
 namespace Rendering {
 const std::string Rendering::LightNodeIndexAttributeAccessor::noAttrErrorMsg("No attribute named '");
@@ -43,7 +46,7 @@ const Util::StringIdentifier LightNodeManager::lightNodeIDIdent = Util::StringId
 DebugObjects LightNodeManager::debug;
 unsigned int NodeCreaterVisitor::nodeIndex = 0;
 
-const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 3;
+const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 1;
 const float LightNodeManager::MAX_EDGE_LENGTH = 1.0f;
 const float LightNodeManager::MIN_EDGE_WEIGHT = 0.00001f;
 const float LightNodeManager::MAX_EDGE_LENGTH_LIGHT = 4000.0f;
@@ -51,6 +54,7 @@ const float LightNodeManager::MIN_EDGE_WEIGHT_LIGHT = 0.00001f;
 const unsigned int LightNodeManager::VOXEL_OCTREE_DEPTH = 7;
 const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_SIZE = 2048;
 const unsigned int LightNodeManager::VOXEL_OCTREE_SIZE_PER_NODE = 8;
+unsigned int LightNodeManager::globalNodeCounter = 0;
 
 #define USE_ATOMIC_COUNTER
 
@@ -88,6 +92,7 @@ NodeCreaterVisitor::status NodeCreaterVisitor::leave(MinSG::Node* node){
 			lightNodeLightMap->light.position = lightNodeLightMap->lightNode->getWorldOrigin();
 			lightNodeLightMap->light.color = lightNodeLightMap->lightNode->getAmbientLightColor();
 			lightNodeLightMap->light.normal = Geometry::Vec3(0, 1, 0);	//just no 0 vector, although this should not be used at all for lights
+			lightNodeLightMap->light.id = LightNodeManager::globalNodeCounter++;
 			lightNodeLightMaps->push_back(lightNodeLightMap);
 
 			std::cout << "Found LightNode!" << std::endl;
@@ -126,6 +131,8 @@ NodeRenderVisitor::status NodeRenderVisitor::leave(MinSG::Node* node){
 }
 
 LightNodeManager::LightNodeManager(){
+	globalNodeCounter = 0;
+
 	for(unsigned int i = 0; i < 3; i++){
 		sceneEnclosingCameras[i] = new MinSG::CameraNodeOrtho();
 	}
@@ -143,10 +150,26 @@ LightNodeManager::LightNodeManager(){
 
 	tmpTexSmallest = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_BUFFER, 1, 1, 1, Util::TypeConstant::UINT8, 1);
 
-	voxelOctreeShaderCreate = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeInit.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeInit.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
-	voxelOctreeShaderReadTexture = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadTexture.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadTexture.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
-	voxelOctreeShaderReadObject = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadObject.vs"), Util::FileName("./extPlugins/ThesisPeter/voxelOctreeReadObject.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
-	propagateLightShader = Rendering::Shader::loadShader(Util::FileName("./extPlugins/ThesisPeter/propagateLight.vs"), Util::FileName("./extPlugins/ThesisPeter/propagateLight.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+	std::string shaderPath = "./extPlugins/ThesisPeter/";
+	voxelOctreeShaderCreate = Rendering::Shader::loadShader(Util::FileName(shaderPath + "voxelOctreeInit.vs"), Util::FileName(shaderPath + "voxelOctreeInit.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+	voxelOctreeShaderReadTexture = Rendering::Shader::loadShader(Util::FileName(shaderPath + "voxelOctreeReadTexture.vs"), Util::FileName(shaderPath + "voxelOctreeReadTexture.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+	voxelOctreeShaderReadObject = Rendering::Shader::loadShader(Util::FileName(shaderPath + "voxelOctreeReadObject.vs"), Util::FileName(shaderPath + "voxelOctreeReadObject.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+	propagateLightShader = Rendering::Shader::loadShader(Util::FileName(shaderPath + "propagateLight.vs"), Util::FileName(shaderPath + "propagateLight.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+
+	lightGraphShader = new ShaderState;
+	std::string stdShaderPath = "./plugins/LibRenderingExt/resources/shader/universal3/";
+	std::vector<std::string> vsFiles;
+	vsFiles.push_back(stdShaderPath + "main.sfn");
+	vsFiles.push_back(stdShaderPath + "sgHelpers.sfn");
+	vsFiles.push_back(stdShaderPath + "vertexEffect_none.sfn");
+	vsFiles.push_back(stdShaderPath + "surfaceProps_matTex.sfn");
+	vsFiles.push_back(stdShaderPath + "surfaceEffect_none.sfn");
+	vsFiles.push_back(shaderPath + "lighting_phongGraph.sfn");
+	vsFiles.push_back(stdShaderPath + "fragmentEffect_none.sfn");
+	std::vector<std::string> gsFiles;
+	std::vector<std::string> fsFiles(vsFiles);
+	initShaderState(lightGraphShader.get(), vsFiles, gsFiles, fsFiles, Rendering::Shader::USE_UNIFORMS, Util::FileLocator());
+	graphShaderAssigned = false;
 }
 
 LightNodeManager::~LightNodeManager(){
@@ -204,6 +227,8 @@ void LightNodeManager::setRenderingContext(Rendering::RenderingContext& renderin
 //	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("targetColorR", (int32_t)8));
 //	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("targetColorG", (int32_t)9));
 //	propagateLightShader->setUniform(renderingContext, Rendering::Uniform("targetColorB", (int32_t)10));
+
+	lightGraphShader->setUniform(Rendering::Uniform("globalLighting", (int32_t)0));
 }
 
 void LightNodeManager::setFrameContext(MinSG::FrameContext& frameContext){
@@ -311,7 +336,7 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 //	}
 
 	//draw tree debug
-	std::cout << "Number debug nodes: " << addTreeToDebug(lightingArea.center, lightingArea.extend, 0, 0, voxelOctreeAcc.get()) << std::endl;
+//	std::cout << "Number debug nodes: " << addTreeToDebug(lightingArea.center, lightingArea.extend, 0, 0, voxelOctreeAcc.get()) << std::endl;
 
 	Rendering::checkGLError(__FILE__, __LINE__);
 	//DEBUG END
@@ -358,6 +383,18 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	//then propagate the light the first time
 	propagateLight();
 
+	//assign the graph-using-shader and the textureState to the selected node
+	if(!graphShaderAssigned){
+		lightGraphTextureState = new TextureState();
+		lightGraphTextureState->setTextureUnit(0);
+		lightRootNode->addState(lightGraphTextureState.get());
+		graphShaderAssigned = true;
+		lightRootNode->addState(lightGraphShader.get());
+	}
+	//create
+	lightGraphShader->setUniform(Rendering::Uniform("globalLightingSize", (int32_t)nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth()));
+	lightGraphTextureState->setTexture(nodeTextureRendering[curNodeTextureRenderingIndex].get());
+
 	debug.buildDebugLineNode();
 	debug.buildDebugFaceNode();
 	Rendering::checkGLError(__FILE__, __LINE__);
@@ -386,6 +423,9 @@ void LightNodeManager::createLightNodes(MinSG::GeometryNode* node, std::vector<L
 
 void LightNodeManager::mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
 	mapLightNodesToObjectClosest(node, lightNodes);
+	for(unsigned int i = 0; i < lightNodes->size(); i++){
+		(*lightNodes)[i]->id = globalNodeCounter++;
+	}
 }
 
 void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
@@ -636,7 +676,7 @@ void LightNodeManager::mapLightNodesToObjectClosest(MinSG::GeometryNode* node, s
 			}
 		}
 		//set lightNodeIndex to vertex
-		lniAcc->setLightNodeIndex(i, bestIndex);
+		lniAcc->setLightNodeIndex(i, (*lightNodes)[bestIndex]->id);
 	}
 }
 
@@ -1663,15 +1703,15 @@ void LightNodeManager::createNodeTextures(){
 //	nodeTextureCompleteB = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
 
 	//fill the node textures and set the node id's
-	unsigned int curNodeID = 0;
+//	unsigned int curNodeID = 0;
 	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStatic.get());
 //	Util::Reference<Util::PixelAccessor> accR = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStaticR.get());
 //	Util::Reference<Util::PixelAccessor> accG = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStaticG.get());
 //	Util::Reference<Util::PixelAccessor> accB = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStaticB.get());
 	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
 		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
-			unsigned int x = (curNodeID * dataLengthPerNode) % nodeTextureSize;
-			unsigned int y = (curNodeID * dataLengthPerNode) / nodeTextureSize;
+			unsigned int x = (lightNodeMaps[i]->lightNodes[j]->id * dataLengthPerNode) % nodeTextureSize;
+			unsigned int y = (lightNodeMaps[i]->lightNodes[j]->id * dataLengthPerNode) / nodeTextureSize;
 
 ////			accR->writeColor(x, y, Util::Color4f(lightNodeMaps[i]->lightNodes[j]->color.r(), 0, 0, 0));
 ////			accG->writeColor(x, y, Util::Color4f(lightNodeMaps[i]->lightNodes[j]->color.g(), 0, 0, 0));
@@ -1688,8 +1728,8 @@ void LightNodeManager::createNodeTextures(){
 			if(x == 0) y++;
 			acc->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
 
-			lightNodeMaps[i]->lightNodes[j]->id = curNodeID;
-			curNodeID++;
+//			lightNodeMaps[i]->lightNodes[j]->id = curNodeID;
+//			curNodeID++;
 		}
 	}
 
@@ -1697,8 +1737,8 @@ void LightNodeManager::createNodeTextures(){
 
 	//fill with the light nodes, too
 	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
-		unsigned int x = (curNodeID * dataLengthPerNode) % nodeTextureSize;
-		unsigned int y = (curNodeID * dataLengthPerNode) / nodeTextureSize;
+		unsigned int x = (lightNodeLightMaps[i]->light.id * dataLengthPerNode) % nodeTextureSize;
+		unsigned int y = (lightNodeLightMaps[i]->light.id * dataLengthPerNode) / nodeTextureSize;
 
 //		accR->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.r() * lightStrength, 0, 0, 0));
 //		accG->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.g() * lightStrength, 0, 0, 0));
@@ -1718,8 +1758,8 @@ void LightNodeManager::createNodeTextures(){
 		if(x == 0) y++;
 		acc->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.b() * lightStrength, 0, 0, 0));
 
-		lightNodeLightMaps[i]->light.id = curNodeID;
-		curNodeID++;
+//		lightNodeLightMaps[i]->light.id = curNodeID;
+//		curNodeID++;
 	}
 
 	//count the edges
@@ -1781,15 +1821,12 @@ void LightNodeManager::createNodeTextures(){
 			if(nodeX == 0) nodeY++;
 			accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->target->id, 0, 0, 0));
 
-			std::cout << "Writing float1 " << lightNodeMaps[i]->internalLightEdges[j]->weight.x() << std::endl;
 			accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->internalLightEdges[j]->weight.x());
 			weightX = (weightX + 1) % weightEdgeTextureSize;
 			if(weightX == 0) weightY++;
-			std::cout << "Writing float2 " << lightNodeMaps[i]->internalLightEdges[j]->weight.y() << std::endl;
 			accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->internalLightEdges[j]->weight.y());
 			weightX = (weightX + 1) % weightEdgeTextureSize;
 			if(weightX == 0) weightY++;
-			std::cout << "Writing float3 " << lightNodeMaps[i]->internalLightEdges[j]->weight.z() << std::endl;
 			accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeMaps[i]->internalLightEdges[j]->weight.z());
 
 			curEdgeID++;
@@ -1947,8 +1984,10 @@ void LightNodeManager::propagateLight(){
 	renderingContext->popBoundImage(2);
 	renderingContext->popBoundImage(3);
 
+
 	unsigned int counter = 0, counter2 = 0, counter3 = 0;
-	nodeTextureRendering[curNodeTextureRenderingIndex]->downloadGLTexture(*renderingContext);
+//	nodeTextureRendering[curNodeTextureRenderingIndex]->downloadGLTexture(*renderingContext);
+	fillTexture(nodeTextureRendering[curNodeTextureRenderingIndex].get(), Util::Color4f(1, 0, 0, 0));
 	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureRendering[curNodeTextureRenderingIndex].get());
 	for(unsigned int i = 1; i < nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth() * nodeTextureRendering[curNodeTextureRenderingIndex]->getHeight(); i++){
 		unsigned int x = i % nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();

@@ -21,6 +21,8 @@
 #include <MinSG/Core/FrameContext.h>
 #include <MinSG/Core/RenderParam.h>
 #include <MinSG/Core/FrameContext.h>
+#include "MinSG/Core/States/ShaderState.h"
+#include "MinSG/Core/States/TextureState.h"
 #include <Rendering/Mesh/VertexAttributeAccessors.h>
 #include <Util/Graphics/ColorLibrary.h>
 #include <Util/Graphics/PixelAccessor.h>
@@ -197,6 +199,8 @@ public:
 	static const unsigned int VOXEL_OCTREE_TEXTURE_SIZE;		//max = 16384;	size*size = 18874368 if tree completely filled with depth 7
 	static const unsigned int VOXEL_OCTREE_SIZE_PER_NODE;		//must be set to the same value as the shader definition!!!
 
+	static unsigned int globalNodeCounter;			//used to give the nodes unique id's
+
 private:
 	static unsigned int nextPowOf2(unsigned int number);
 	static void getTexCoords(unsigned int index, unsigned int texWidth, Geometry::Vec2i* texCoords);
@@ -276,6 +280,10 @@ private:
 	Util::Reference<Rendering::Shader> voxelOctreeShaderReadTexture;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderReadObject;
 	Util::Reference<Rendering::Shader> propagateLightShader;
+
+	Util::Reference<TextureState> lightGraphTextureState;
+	Util::Reference<ShaderState> lightGraphShader;
+	bool graphShaderAssigned;			//tracks, if the lightGraphShader was already assigned, or not
 
 	LightingArea lightingArea;			//The area, in which the objects are placed for lighting (calculated from the bounding boxes of the objects)
 	Util::Reference<MinSG::Node> lightRootNode;
