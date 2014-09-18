@@ -189,7 +189,9 @@ public:
 	void cleanUp();
 
 	static const float MAX_EDGE_LENGTH;						//maximal edge length between 2 nodes
-	static const float MAX_EDGE_LENGTH_LIGHT;				//maximal edge length between a node an the light node
+	static const float MIN_EDGE_WEIGHT;						//minimal edge weight between 2 nodes
+	static const float MAX_EDGE_LENGTH_LIGHT;				//maximal edge length between a node an a light node
+	static const float MIN_EDGE_WEIGHT_LIGHT;				//minimal edge weight between a node an a light node
 	static const unsigned int VOXEL_OCTREE_DEPTH;			//more depth = more precision = more memory usage
 	static const unsigned int VOXEL_OCTREE_TEXTURE_SIZE;	//max = 16384;	size*size = 18874368 if tree completely filled with depth 7
 	static const unsigned int VOXEL_OCTREE_SIZE_PER_NODE;	//must be set to the same value as the shader definition!!!
@@ -202,7 +204,7 @@ private:
 	static void createLightNodesPerVertexRandom(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float randomVal);
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static bool isVisible(LightNode* source, LightNode* target);
-	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, bool checkVisibility, bool useNormal);
+	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, float minEdgeWeight, bool checkVisibility, bool useNormal);
 
 	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
 	void filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
@@ -246,6 +248,7 @@ private:
 	Util::Reference<Rendering::Texture> voxelOctreeLocksStatic;
 	Util::Reference<Rendering::Texture> atomicCounter;
 
+	unsigned int curNumEdges;
 	Util::Reference<Rendering::Texture> tmpTexSmallest;
 	Util::Reference<Rendering::Texture> tmpTexEdgeSize;
 	Util::Reference<Rendering::Texture> nodeTextureStatic;
