@@ -32,6 +32,7 @@
 #include <MinSG/Core/Nodes/ListNode.h>
 #include <MinSG/Core/Transformations.h>
 #include <Util/IO/FileLocator.h>
+#include <Geometry/Definitions.h>
 
 namespace Rendering {
 const std::string Rendering::LightNodeIndexAttributeAccessor::noAttrErrorMsg("No attribute named '");
@@ -42,19 +43,26 @@ namespace MinSG {
 namespace ThesisPeter {
 
 const Util::StringIdentifier NodeCreaterVisitor::staticNodeIdent = Util::StringIdentifier(NodeAttributeModifier::create("staticNode", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
-const Util::StringIdentifier LightNodeManager::lightNodeIDIdent = Util::StringIdentifier(NodeAttributeModifier::create("lightNodeID", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+const Util::StringIdentifier LightNodeManager::lightNodeIDIdent("lightNodeID");
 DebugObjects LightNodeManager::debug;
 unsigned int NodeCreaterVisitor::nodeIndex = 0;
 
-const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 1;
+#define TP_SHOW_OCTREE
+//#define TP_SHOW_NODES
+#define TP_SHOW_EDGES
+
+const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 4;
+const float LightNodeManager::PERCENT_NODES = 0.01f;
 const float LightNodeManager::MAX_EDGE_LENGTH = 1.0f;
 const float LightNodeManager::MIN_EDGE_WEIGHT = 0.00001f;
 const float LightNodeManager::MAX_EDGE_LENGTH_LIGHT = 4000.0f;
 const float LightNodeManager::MIN_EDGE_WEIGHT_LIGHT = 0.00001f;
-const unsigned int LightNodeManager::VOXEL_OCTREE_DEPTH = 7;
+const unsigned int LightNodeManager::VOXEL_OCTREE_DEPTH = 8;
 const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_SIZE = 2048;
 const unsigned int LightNodeManager::VOXEL_OCTREE_SIZE_PER_NODE = 8;
 unsigned int LightNodeManager::globalNodeCounter = 0;
+bool LightNodeManager::SHOW_EDGES = false;
+bool LightNodeManager::SHOW_OCTREE = false;
 
 #define USE_ATOMIC_COUNTER
 
@@ -291,6 +299,8 @@ unsigned int LightNodeManager::addTreeToDebug(Geometry::Vec3 parentPos, float pa
 
 //here begins the fun
 void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNode, Util::Reference<MinSG::Node> lightRootNode, Rendering::RenderingContext& renderingContext, MinSG::FrameContext& frameContext){
+	std::cout << "start algorithm" << std::endl;
+
 	Rendering::enableGLErrorChecking();
 	//reset some values
 	cleanUp();
@@ -299,16 +309,22 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	fillTexture(atomicCounter.get(), 0);
 	debug.clearDebug();
 
+	std::cout << "initialize data" << std::endl;
+
 	//some needed variables (for rendering etc.)
 	setSceneRootNode(sceneRootNode);
 	setLightRootNode(lightRootNode);
 	setRenderingContext(renderingContext);
 	setFrameContext(frameContext);
 
+	std::cout << "create cameras and octree" << std::endl;
+
 	//create the cameras to render the scene orthogonally from each axis
 	createWorldBBCameras();
     //create the VoxelOctree from static objects
 	buildVoxelOctree(voxelOctreeTextureStatic.get(), atomicCounter.get(), voxelOctreeLocksStatic.get());
+
+	std::cout << "debugging octree" << std::endl;
 
 	//DEBUG to test the texture size!
 	atomicCounter.get()->downloadGLTexture(renderingContext);
@@ -336,28 +352,53 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 //	}
 
 	//draw tree debug
-//	std::cout << "Number debug nodes: " << addTreeToDebug(lightingArea.center, lightingArea.extend, 0, 0, voxelOctreeAcc.get()) << std::endl;
+#ifdef TP_SHOW_OCTREE
+	std::cout << "Number debug nodes: " << addTreeToDebug(lightingArea.center, lightingArea.extend, 0, 0, voxelOctreeAcc.get()) << std::endl;
+#endif //TP_SHOW_OCTREE
 
 	Rendering::checkGLError(__FILE__, __LINE__);
 	//DEBUG END
 
+	std::cout << "create lightNodes" << std::endl;
+
 	createLightNodes();
 
-	//DEBUG to show the nodes
-//	debug.addDebugLine(Geometry::Vec3(0, 0, 0), Geometry::Vec3(0, 3, 0), Util::Color4f(1, 1, 1, 1), Util::Color4f(1, 0, 0, 1));
-//	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
-//		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
-//			Geometry::Vec3 pos = lightNodeMaps[i]->lightNodes[j]->position;
-//			debug.addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() - 0.01, pos.z()));
+	std::cout << "debug lightNodes" << std::endl;
+
+	//DEBUG to read the light id's of the mesh
+//	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
+//		Rendering::Mesh* mesh = lightNodeMaps[i]->geometryNode->getMesh();
+//		Util::Reference<Rendering::LightNodeIndexAttributeAccessor> lniAcc = Rendering::LightNodeIndexAttributeAccessor::create(mesh->openVertexData(), lightNodeIDIdent);
+//		for(unsigned int j = 0; j < mesh->getVertexCount(); ++j){
+//			unsigned int lightNodeID = lniAcc->getLightNodeIndex(j);
+//			std::cout << "LightNodeID of " << j << " is " << lightNodeID << std::endl;
 //		}
 //	}
 	//DEBUG END
+
+
+	//DEBUG to show the nodes
+#ifdef TP_SHOW_NODES
+//	debug.addDebugLine(Geometry::Vec3(0, 0, 0), Geometry::Vec3(0, 3, 0), Util::Color4f(1, 1, 1, 1), Util::Color4f(1, 0, 0, 1));
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
+			Geometry::Vec3 pos = lightNodeMaps[i]->lightNodes[j]->position;
+			debug.addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() - 0.01, pos.z()));
+		}
+	}
+#endif //TP_SHOW_NODES
+	//DEBUG END
+
+	std::cout << "create edges" << std::endl;
 
 	//reset atomicCounter
 	fillTexture(atomicCounter.get(), 0);
 	createLightEdges(atomicCounter.get());
 
+	std::cout << "debug edges" << std::endl;
+
 	//DEBUG to show the edges
+#ifdef TP_SHOW_EDGES
 	//edges from lights
 	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
 		for(unsigned int j = 0; j < lightNodeLightMaps[i]->edges.size(); j++){
@@ -376,16 +417,21 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 			}
 		}
 	}
+#endif //TP_SHOW_EDGES
 	//DEBUG END
+
+	std::cout << "propagate light" << std::endl;
 
 	//first initialize the graph structures on the GPU
 	createNodeTextures();
 	//then propagate the light the first time
 	propagateLight();
 
+	std::cout << "activate lighting" << std::endl;
+
 	//assign the graph-using-shader and the textureState to the selected node
 	if(!graphShaderAssigned){
-		lightGraphTextureState = new TextureState();
+		lightGraphTextureState = new ImageState();
 		lightGraphTextureState->setTextureUnit(0);
 		lightRootNode->addState(lightGraphTextureState.get());
 		graphShaderAssigned = true;
@@ -393,11 +439,23 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	}
 	//create
 	lightGraphShader->setUniform(Rendering::Uniform("globalLightingSize", (int32_t)nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth()));
+	lightGraphShader->setUniform(Rendering::Uniform("lightStrengthFactor", 0.005f / NUMBER_LIGHT_PROPAGATION_CYCLES));
 	lightGraphTextureState->setTexture(nodeTextureRendering[curNodeTextureRenderingIndex].get());
+
+	std::cout << "register events" << std::endl;
+
+	lightRootNode->clearTransformationObservers();
+	lightRootNode->addTransformationObserver(std::bind(&LightNodeManager::onNodeTransformed,this,std::placeholders::_1));
+
+	std::cout << "build debug" << std::endl;
 
 	debug.buildDebugLineNode();
 	debug.buildDebugFaceNode();
+	setShowEdges(SHOW_EDGES);
+	setShowOctree(SHOW_OCTREE);
 	Rendering::checkGLError(__FILE__, __LINE__);
+
+	std::cout << "finish algorithm" << std::endl;
 }
 
 void LightNodeManager::createLightNodes(){
@@ -418,14 +476,14 @@ void LightNodeManager::createLightNodes(){
 }
 
 void LightNodeManager::createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
-	createLightNodesPerVertexPercent(node, lightNodes, 0.01f);
+	createLightNodesPerVertexPercent(node, lightNodes, PERCENT_NODES);
 }
 
 void LightNodeManager::mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
-	mapLightNodesToObjectClosest(node, lightNodes);
 	for(unsigned int i = 0; i < lightNodes->size(); i++){
 		(*lightNodes)[i]->id = globalNodeCounter++;
 	}
+	mapLightNodesToObjectClosest(node, lightNodes);
 }
 
 void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
@@ -456,18 +514,20 @@ void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
 			mapConnection->map1 = lightNodeMaps[lightNodeMapID];
 			mapConnection->map2 = lightNodeMaps[lightNodeMapID2];
 
-			for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
-				for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
-					LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
-					LightNode* target = lightNodeMaps[lightNodeMapID2]->lightNodes[lightNodeTargetID];
-					addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, MIN_EDGE_WEIGHT, true, true);
+			if(isDistanceLess(mapConnection->map1->geometryNode, mapConnection->map2->geometryNode, MAX_EDGE_LENGTH)){
+				for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
+					for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
+						LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
+						LightNode* target = lightNodeMaps[lightNodeMapID2]->lightNodes[lightNodeTargetID];
+						addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, MIN_EDGE_WEIGHT, true, true);
+					}
 				}
-			}
 
-			if(lightNodeMaps[lightNodeMapID]->staticNode == true && lightNodeMaps[lightNodeMapID2]->staticNode == true){
-				lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.push_back(mapConnection);
-			} else {
-				lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
+				if(lightNodeMaps[lightNodeMapID]->staticNode == true && lightNodeMaps[lightNodeMapID2]->staticNode == true){
+					lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.push_back(mapConnection);
+				} else {
+					lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
+				}
 			}
 		}
 
@@ -568,6 +628,21 @@ void LightNodeManager::cleanUp(){
 	lightNodeLightMaps.clear();
 }
 
+void LightNodeManager::setShowEdges(bool showEdges){
+	SHOW_EDGES = showEdges;
+	debug.setLinesShown(showEdges);
+}
+
+void LightNodeManager::setShowOctree(bool showOctree){
+	std::cout << "Show Octree is now " << showOctree << std::endl;
+	SHOW_OCTREE = showOctree;
+	debug.setFacesShown(showOctree);
+}
+
+void LightNodeManager::onNodeTransformed(Node* node){
+	std::cout << "Node Moved!" << std::endl;
+}
+
 unsigned int LightNodeManager::nextPowOf2(unsigned int number){
     --number;
     number |= number >> 1;
@@ -656,17 +731,23 @@ void LightNodeManager::mapLightNodesToObjectClosest(MinSG::GeometryNode* node, s
 	Rendering::VertexDescription description = mesh->getVertexDescription();
 	if(!description.hasAttribute(lightNodeIDIdent)){
 //		description.appendAttribute(lightNodeIDIdent, 1, GL_UNSIGNED_INT);
-		description.appendUnsignedIntAttribute(lightNodeIDIdent, 1);
+//		description.appendUnsignedIntAttribute(lightNodeIDIdent, 1);
+		description.appendFloatAttribute(lightNodeIDIdent, 1);
 		Rendering::MeshVertexData& oldData = mesh->openVertexData();
 		std::unique_ptr<Rendering::MeshVertexData> newData(Rendering::MeshUtils::convertVertices(oldData, description));
 		oldData.swap(*newData);
 	}
 
+	unsigned int mini = 999999, maxi = 0;
 	Util::Reference<Rendering::PositionAttributeAccessor> posAcc = Rendering::PositionAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::POSITION);
 	Util::Reference<Rendering::LightNodeIndexAttributeAccessor> lniAcc = Rendering::LightNodeIndexAttributeAccessor::create(mesh->openVertexData(), lightNodeIDIdent);
 	for(unsigned int i = 0; i < mesh->getVertexCount(); ++i){
 		unsigned int bestIndex = 0;
 		Geometry::Vec3 pos = posAcc->getPosition(i);
+		Geometry::Vec4 pos2 = node->getWorldMatrix() * Geometry::Vec4(pos.x(), pos.y(), pos.z(), 1);
+		pos.setX(pos2.x());
+		pos.setY(pos2.y());
+		pos.setZ(pos2.z());
 		float bestDistance = pos.distanceSquared((*lightNodes)[0]->position);
 		for(unsigned int j = 1; j < lightNodes->size(); j++){
 			float newDist = pos.distanceSquared((*lightNodes)[j]->position);
@@ -676,8 +757,13 @@ void LightNodeManager::mapLightNodesToObjectClosest(MinSG::GeometryNode* node, s
 			}
 		}
 		//set lightNodeIndex to vertex
+		if(mini > (*lightNodes)[bestIndex]->id) mini = (*lightNodes)[bestIndex]->id;
+		if(maxi < (*lightNodes)[bestIndex]->id) maxi = (*lightNodes)[bestIndex]->id;
 		lniAcc->setLightNodeIndex(i, (*lightNodes)[bestIndex]->id);
 	}
+	mesh->openVertexData().markAsChanged();
+
+	std::cout << "min: " << mini << " max: " << maxi << std::endl;
 }
 
 bool LightNodeManager::isVisible(LightNode* source, LightNode* target){
@@ -724,6 +810,15 @@ void LightNodeManager::addLightEdge(LightNode* source, LightNode* target, std::v
 			}
 		}
 	}
+}
+
+bool LightNodeManager::isDistanceLess(MinSG::Node* n1, MinSG::Node* n2, float distance){
+    for(unsigned int i = 0; i < 8; i++){
+		for(unsigned int j = i; j < 8; j++){
+			if(n1->getWorldBB().getCorner((Geometry::corner_t)i).distance(n2->getWorldBB().getCorner((Geometry::corner_t)j)) < distance) return true;
+		}
+    }
+    return false;
 }
 
 void LightNodeManager::filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter){
@@ -1985,32 +2080,32 @@ void LightNodeManager::propagateLight(){
 	renderingContext->popBoundImage(3);
 
 
-	unsigned int counter = 0, counter2 = 0, counter3 = 0;
+//	unsigned int counter = 0, counter2 = 0, counter3 = 0;
 //	nodeTextureRendering[curNodeTextureRenderingIndex]->downloadGLTexture(*renderingContext);
-	fillTexture(nodeTextureRendering[curNodeTextureRenderingIndex].get(), Util::Color4f(1, 0, 0, 0));
-	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureRendering[curNodeTextureRenderingIndex].get());
-	for(unsigned int i = 1; i < nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth() * nodeTextureRendering[curNodeTextureRenderingIndex]->getHeight(); i++){
-		unsigned int x = i % nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
-		unsigned int y = i / nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
-		unsigned int xb = (i-1) % nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
-		unsigned int yb = (i-1) / nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
-
-		uint32_t valueBefore = acc2->readColor4f(xb, yb).r();//readSingleValueByte(xb, yb);
-		uint32_t value = acc2->readColor4f(x, y).r();//readSingleValueByte(x, y);
-		if(valueBefore != value || i % 1000 == 0 || i == 1){
-			std::cout << i << ": " << (unsigned int)value << " but " << (i-1) << ": " << (unsigned int)valueBefore << std::endl;
-			if(counter++ >= 100) break;
-//			if(i >= 10) break;
-		}
-//		if(value == 2){
-//			counter++;
-//		} else if(value == 4){
-//			counter2++;
-//		} else {
-//			counter3++;
+////	fillTexture(nodeTextureRendering[curNodeTextureRenderingIndex].get(), Util::Color4f(1, 0, 0, 0));
+//	Util::Reference<Util::PixelAccessor> acc2 = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureRendering[curNodeTextureRenderingIndex].get());
+//	for(unsigned int i = 1; i < nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth() * nodeTextureRendering[curNodeTextureRenderingIndex]->getHeight(); i++){
+//		unsigned int x = i % nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
+//		unsigned int y = i / nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
+//		unsigned int xb = (i-1) % nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
+//		unsigned int yb = (i-1) / nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth();
+//
+//		uint32_t valueBefore = acc2->readColor4f(xb, yb).r();//readSingleValueByte(xb, yb);
+//		uint32_t value = acc2->readColor4f(x, y).r();//readSingleValueByte(x, y);
+//		if(valueBefore != value || i % 1000 == 0 || i == 1){
+//			std::cout << i << ": " << (unsigned int)value << " but " << (i-1) << ": " << (unsigned int)valueBefore << std::endl;
+//			if(counter++ >= 100) break;
+////			if(i >= 10) break;
 //		}
-	}
-	std::cout << "Counter: " << counter << " Counter2: " << counter2 << " Counter3: " << counter3 << std::endl;
+////		if(value == 2){
+////			counter++;
+////		} else if(value == 4){
+////			counter2++;
+////		} else {
+////			counter3++;
+////		}
+//	}
+//	std::cout << "Counter: " << counter << " Counter2: " << counter2 << " Counter3: " << counter3 << std::endl;
 }
 
 void LightNodeManager::copyTexture(Rendering::Texture *source, Rendering::Texture *target){

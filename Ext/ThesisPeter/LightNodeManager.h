@@ -21,13 +21,13 @@
 #include <MinSG/Core/FrameContext.h>
 #include <MinSG/Core/RenderParam.h>
 #include <MinSG/Core/FrameContext.h>
-#include "MinSG/Core/States/ShaderState.h"
-#include "MinSG/Core/States/TextureState.h"
+#include <MinSG/Core/States/ShaderState.h>
 #include <Rendering/Mesh/VertexAttributeAccessors.h>
 #include <Util/Graphics/ColorLibrary.h>
 #include <Util/Graphics/PixelAccessor.h>
 #include "DebugObjects.h"
 #include "TextureProcessor.h"
+#include "ImageState.h"
 
 namespace Rendering {
 class Mesh;
@@ -36,45 +36,45 @@ class Texture;
 /*! LightNodeIndexAttributeAccessor ---|> VertexAttributeAccessor
 	Abstract accessor for light node indices. */
 class LightNodeIndexAttributeAccessor : public VertexAttributeAccessor {
-	protected:
-		LightNodeIndexAttributeAccessor(MeshVertexData & _vData,const VertexAttribute & _attribute) :
-				VertexAttributeAccessor(_vData,_attribute){}
+protected:
+	LightNodeIndexAttributeAccessor(MeshVertexData & _vData,const VertexAttribute & _attribute) :
+			VertexAttributeAccessor(_vData,_attribute){}
 
-		static const std::string noAttrErrorMsg;
-		static const std::string unimplementedFormatMsg;
+	static const std::string noAttrErrorMsg;
+	static const std::string unimplementedFormatMsg;
 
-		static const VertexAttribute & assertAttribute(MeshVertexData & _vData, const Util::StringIdentifier name) {
-			const VertexAttribute & attr = _vData.getVertexDescription().getAttribute(name);
-			if(attr.empty())
-				throw std::invalid_argument(noAttrErrorMsg + name.toString() + '\'');
-			return attr;
+	static const VertexAttribute & assertAttribute(MeshVertexData & _vData, const Util::StringIdentifier name) {
+		const VertexAttribute & attr = _vData.getVertexDescription().getAttribute(name);
+		if(attr.empty())
+			throw std::invalid_argument(noAttrErrorMsg + name.toString() + '\'');
+		return attr;
+	}
+public:
+	/*! (static factory)
+		Create a LightNodeIndexAttributeAccessor for the given MeshVertexData's attribute having the given name.
+		If no Accessor can be created, an std::invalid_argument exception is thrown. */
+	static Util::Reference<LightNodeIndexAttributeAccessor> create(MeshVertexData & _vData,Util::StringIdentifier name){
+		const VertexAttribute & attr = assertAttribute(_vData, name);
+		if(attr.getNumValues() == 1 /*&& attr.getDataType() == GL_FLOAT*/) {
+			return new LightNodeIndexAttributeAccessor(_vData, attr);
+		} else {
+			throw std::invalid_argument(unimplementedFormatMsg + name.toString() + '\'');
 		}
-	public:
-		/*! (static factory)
-			Create a LightNodeIndexAttributeAccessor for the given MeshVertexData's attribute having the given name.
-			If no Accessor can be created, an std::invalid_argument exception is thrown. */
-		static Util::Reference<LightNodeIndexAttributeAccessor> create(MeshVertexData & _vData,Util::StringIdentifier name){
-			const VertexAttribute & attr = assertAttribute(_vData, name);
-			if(attr.getNumValues() == 1 /*&& attr.getDataType() == GL_FLOAT*/) {
-				return new LightNodeIndexAttributeAccessor(_vData, attr);
-			} else {
-				throw std::invalid_argument(unimplementedFormatMsg + name.toString() + '\'');
-			}
-		}
+	}
 
-		virtual ~LightNodeIndexAttributeAccessor(){}
+	virtual ~LightNodeIndexAttributeAccessor(){}
 
-		const unsigned int getLightNodeIndex(uint32_t index) const {
-			assertRange(index);
-			const unsigned int* v = _ptr<const unsigned int>(index);
-			return *v;
-		}
+	const unsigned int getLightNodeIndex(uint32_t index) const {
+		assertRange(index);
+		const float* v = _ptr<const float>(index);
+		return *v;
+	}
 
-		void setLightNodeIndex(uint32_t index, const unsigned int value){
-			assertRange(index);
-			unsigned int* v = _ptr<unsigned int>(index);
-			*v = value;
-		}
+	void setLightNodeIndex(uint32_t index, const float value){
+		assertRange(index);
+		float* v = _ptr<float>(index);
+		*v = value;
+	}
 };
 }
 
@@ -189,8 +189,11 @@ public:
 	void createLightEdges(Rendering::Texture* atomicCounter);
 	void cleanUpDebug();
 	void cleanUp();
+	void setShowEdges(bool showEdges);
+	void setShowOctree(bool showOctree);
 
 	static const unsigned int NUMBER_LIGHT_PROPAGATION_CYCLES;	//the number of light propagation cycles, which directly corresponds to the number of light "reflection" between objects
+	static const float PERCENT_NODES;							//the percent value for how many nodes shall be taken, also taken for random algorithm
 	static const float MAX_EDGE_LENGTH;							//maximal edge length between 2 nodes
 	static const float MIN_EDGE_WEIGHT;							//minimal edge weight between 2 nodes
 	static const float MAX_EDGE_LENGTH_LIGHT;					//maximal edge length between a node an a light node
@@ -198,8 +201,13 @@ public:
 	static const unsigned int VOXEL_OCTREE_DEPTH;				//more depth = more precision = more memory usage
 	static const unsigned int VOXEL_OCTREE_TEXTURE_SIZE;		//max = 16384;	size*size = 18874368 if tree completely filled with depth 7
 	static const unsigned int VOXEL_OCTREE_SIZE_PER_NODE;		//must be set to the same value as the shader definition!!!
+	static bool SHOW_EDGES;										//if active, edges are being shown
+	static bool SHOW_OCTREE;									//if active, the octree is being shown
 
-	static unsigned int globalNodeCounter;			//used to give the nodes unique id's
+	static unsigned int globalNodeCounter;						//used to give the nodes unique id's
+
+	//tracking objects in the scene
+	void onNodeTransformed(Node* node);
 
 private:
 	static unsigned int nextPowOf2(unsigned int number);
@@ -210,6 +218,7 @@ private:
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static bool isVisible(LightNode* source, LightNode* target);
 	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, float minEdgeWeight, bool checkVisibility, bool useNormal);
+	bool isDistanceLess(MinSG::Node* n1, MinSG::Node* n2, float distance);
 
 	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
 	void filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
@@ -281,7 +290,7 @@ private:
 	Util::Reference<Rendering::Shader> voxelOctreeShaderReadObject;
 	Util::Reference<Rendering::Shader> propagateLightShader;
 
-	Util::Reference<TextureState> lightGraphTextureState;
+	Util::Reference<ImageState> lightGraphTextureState;
 	Util::Reference<ShaderState> lightGraphShader;
 	bool graphShaderAssigned;			//tracks, if the lightGraphShader was already assigned, or not
 

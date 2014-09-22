@@ -236,6 +236,16 @@ void DebugObjects::buildDebugFaceNode(){
 	}
 }
 
+void DebugObjects::setLinesShown(bool showLines){
+	if(showLines) lineNode->activate();
+	else lineNode->deactivate();
+}
+
+void DebugObjects::setFacesShown(bool showFaces){
+	if(showFaces) faceNode->activate();
+	else faceNode->deactivate();
+}
+
 }
 }
 

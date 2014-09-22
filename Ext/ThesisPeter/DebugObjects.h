@@ -56,6 +56,8 @@ public:
 	void clearDebug();
 	void buildDebugLineNode();
 	void buildDebugFaceNode();
+	void setLinesShown(bool showLines);
+	void setFacesShown(bool showFaces);
 private:
 	Util::Reference<MinSG::Node> lineNode;
 	Util::Reference<MinSG::Node> faceNode;
