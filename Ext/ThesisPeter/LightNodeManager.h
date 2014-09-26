@@ -125,6 +125,7 @@ struct LightNodeLightMap {
 	LightNode light;
 	MinSG::LightNode* lightNode;
 	std::vector<LightEdge*> edges;
+	bool staticNode;
 };
 
 struct LightingArea {
@@ -181,12 +182,13 @@ public:
 	void setSceneRootNode(Util::Reference<MinSG::Node> sceneRootNode);
 	void setRenderingContext(Rendering::RenderingContext& renderingContext);
 	void setFrameContext(MinSG::FrameContext& frameContext);
-	unsigned int addTreeToDebug(Geometry::Vec3 parentPos, float parentSize, unsigned int depth, unsigned int curID, Util::PixelAccessor* pixelAccessor);
+	unsigned int addTreeToDebug(Geometry::Vec3 parentPos, float parentSize, unsigned int depth, unsigned int curID, Util::PixelAccessor* pixelAccessor, unsigned int maxDepth);
 	void activateLighting(Util::Reference<MinSG::Node> sceneRootNode, Util::Reference<MinSG::Node> lightRootNode, Rendering::RenderingContext& renderingContext, MinSG::FrameContext& frameContext);
 	void createLightNodes();
 	static void createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static void mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	void createLightEdges(Rendering::Texture* atomicCounter);
+	void createLightEdgesDynamic(Rendering::Texture* atomicCounter);
 	void cleanUpDebug();
 	void cleanUp();
 	void setShowEdges(bool showEdges);
@@ -220,11 +222,11 @@ private:
 	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, float minEdgeWeight, bool checkVisibility, bool useNormal);
 	bool isDistanceLess(MinSG::Node* n1, MinSG::Node* n2, float distance);
 
-	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
-	void filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
+	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* node);
+	void filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* node);
 
-	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
-	void filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter);
+	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, MinSG::Node* node);
+	void filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, MinSG::Node* node);
 	int checkLine(Geometry::Vec3 octreeMin, Geometry::Vec3 octreeMax, Geometry::Vec3 rayOrigin, Geometry::Vec3 rayDirection, Util::Reference<Util::PixelAccessor> octreeAcc);
 	int testIntersection(Geometry::Vec3 t0, Geometry::Vec3 t1, Geometry::Vec3 lineStart, Geometry::Vec3 origLineStart, Geometry::Vec3 lineDir, Util::Reference<Util::PixelAccessor> octreeAcc);
 	void firstNodeRoot(Geometry::Vec3 t0, Geometry::Vec3 t1, Geometry::Vec3 lineStart, FilterEdgeState* nodeStates, int* curDepth, Util::Reference<Util::PixelAccessor> octreeAcc);
@@ -247,9 +249,11 @@ private:
 	void fillTexture(Rendering::Texture *texture, Util::Color4f color);
 	void fillTexture(Rendering::Texture *texture, uint8_t value);
 	void fillTextureFloat(Rendering::Texture *texture, float value);
-	void createWorldBBCameras();
-	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks);
+	void createWorldBBCameras(MinSG::Node* node, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3]);
+	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* renderNode);
 	void renderAllNodes(MinSG::Node* node);
+
+	void removeStaticLightNodeMapConnection(LightNodeMap* lightNodeMap, LightNodeMapConnection* lightNodeMapConnection);
 
 	Rendering::RenderingContext* renderingContext;
 	MinSG::FrameContext* frameContext;
@@ -259,31 +263,20 @@ private:
 	Util::Reference<MinSG::CameraNodeOrtho> sceneEnclosingCameras[3];
 	Util::Reference<Rendering::Texture> tmpTexVoxelOctreeSize;			//used to "render" the octree (at creation) and the edges into the octree (for collision)
 	Util::Reference<Rendering::Texture> voxelOctreeTextureStatic;
+	unsigned int numberStaticOctreeNodes;								//the number of voxelOctreeNodes of the static texture, to assign the atomic counter
 	Util::Reference<Rendering::Texture> voxelOctreeLocksStatic;
 	Util::Reference<Rendering::Texture> atomicCounter;
+	Util::Reference<Rendering::Texture> voxelOctreeTextureComplete;
 
 	unsigned int curNumEdges;
 	unsigned int curNodeTextureRenderingIndex;
 	Util::Reference<Rendering::Texture> tmpTexSmallest;
+	Util::Reference<Rendering::Texture> tmpDepthTexSmallest;
 	Util::Reference<Rendering::Texture> tmpTexEdgeSize;
 	Util::Reference<Rendering::Texture> nodeTextureStatic;
 	Util::Reference<Rendering::Texture> nodeTextureRendering[2];
 	Util::Reference<Rendering::Texture> edgeTextureNodes;
 	Util::Reference<Rendering::Texture> edgeTextureWeights;
-//	Util::Reference<Rendering::Texture> nodeTextureStaticR;
-//	Util::Reference<Rendering::Texture> nodeTextureStaticG;
-//	Util::Reference<Rendering::Texture> nodeTextureStaticB;
-//	Util::Reference<Rendering::Texture> nodeTextureTemporaryR;
-//	Util::Reference<Rendering::Texture> nodeTextureTemporaryG;
-//	Util::Reference<Rendering::Texture> nodeTextureTemporaryB;
-//	Util::Reference<Rendering::Texture> nodeTextureCompleteR;
-//	Util::Reference<Rendering::Texture> nodeTextureCompleteG;
-//	Util::Reference<Rendering::Texture> nodeTextureCompleteB;
-//	Util::Reference<Rendering::Texture> edgeTextureNodesSources;
-//	Util::Reference<Rendering::Texture> edgeTextureNodesTargets;
-//	Util::Reference<Rendering::Texture> edgeTextureWeightsR;
-//	Util::Reference<Rendering::Texture> edgeTextureWeightsG;
-//	Util::Reference<Rendering::Texture> edgeTextureWeightsB;
 
 	Util::Reference<Rendering::Shader> voxelOctreeShaderCreate;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderReadTexture;
@@ -300,6 +293,8 @@ private:
 
 	static const Util::StringIdentifier lightNodeIDIdent;
 	static DebugObjects debug;
+
+	bool needRecreationOfStaticEdges;
 };
 
 }
