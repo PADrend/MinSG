@@ -21,6 +21,7 @@ TextureProcessor::TextureProcessor(){
 	shader = 0;
 	inputTexture = 0;
 	outputTexture = 0;
+	depthTexture = 0;
 
 	width = 0;
 	height = 0;
@@ -50,6 +51,10 @@ void TextureProcessor::setOutputTexture(Rendering::Texture* texture){
 	height = outputTexture->getHeight();
 }
 
+void TextureProcessor::setDepthTexture(Rendering::Texture* texture){
+	this->depthTexture = texture;
+}
+
 void TextureProcessor::begin(){
 	if(outputTexture == 0){
 		std::cout << "No output texture defined!" << std::endl;
@@ -61,8 +66,9 @@ void TextureProcessor::begin(){
 	}
 
 	renderingContext->pushAndSetFBO(fbo.get());
-	fbo.get()->attachColorTexture(*renderingContext, outputTexture, 0);
-	fbo.get()->setDrawBuffers(1);
+	fbo->attachColorTexture(*renderingContext, outputTexture, 0);
+	if(depthTexture != 0) fbo->attachDepthTexture(*renderingContext, depthTexture);
+	fbo->setDrawBuffers(1);
 
 	renderingContext->pushAndSetShader(shader);
 
@@ -79,7 +85,9 @@ void TextureProcessor::end(){
 	renderingContext->popViewport();
 	renderingContext->popScissor();
 
-	fbo.get()->detachColorTexture(*renderingContext, 0);
+	if(depthTexture != 0)
+		fbo->detachDepthTexture(*renderingContext);
+	fbo->detachColorTexture(*renderingContext, 0);
 
 	renderingContext->popShader();
 

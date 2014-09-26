@@ -30,6 +30,7 @@ public:
 	void setShader(Rendering::Shader* shader);
 	void setInputTexture(Rendering::Texture* texture);
 	void setOutputTexture(Rendering::Texture* texture);
+	void setDepthTexture(Rendering::Texture* texture);
 	void begin();
 	void end();
 	void execute();
@@ -38,6 +39,7 @@ private:
 	Rendering::Shader* shader;
 	Rendering::Texture* inputTexture;
 	Rendering::Texture* outputTexture;
+	Rendering::Texture* depthTexture;
 	Util::Reference<Rendering::FBO> fbo;
 	Rendering::RenderingContext* renderingContext;
 
