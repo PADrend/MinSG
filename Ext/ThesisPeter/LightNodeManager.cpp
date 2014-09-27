@@ -485,6 +485,120 @@ void LightNodeManager::mapLightNodesToObject(MinSG::GeometryNode* node, std::vec
 }
 
 void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
+//#ifdef TP_INTERNAL_FILTER_OCTREE
+//	unsigned int internalEdgesOctreeDepth = std::min(VOXEL_OCTREE_DEPTH, (unsigned int)7);
+//	unsigned int ieTextureSize = std::pow(2, internalEdgesOctreeDepth) * 4;
+//	Util::Reference<Rendering::Texture> ieTexSize = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, ieTextureSize, ieTextureSize, 1, Util::TypeConstant::UINT8, 1);
+//	Util::Reference<Rendering::Texture> ieVoxelOctreeTexture = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE, VOXEL_OCTREE_TEXTURE_SIZE, 1, Util::TypeConstant::UINT32, 1);
+//	Util::Reference<Rendering::Texture> ieVoxelOctreeLocks = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, 1, Util::TypeConstant::UINT32, 1);
+//	Util::Reference<MinSG::CameraNodeOrtho> ieCameras[3];
+//	for(unsigned int i = 0; i < 3; i++){
+//		ieCameras[i] = new MinSG::CameraNodeOrtho();
+//	}
+//#endif
+//
+//	//TODO: speed up (e.g. with octree)
+//	for(unsigned int lightNodeMapID = 0; lightNodeMapID < lightNodeMaps.size(); lightNodeMapID++){
+//		//create (possible) edges from the light sources to this node
+//		for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
+//			LightNode* source = &lightNodeLightMaps[lightNodeLightMapID]->light;
+//			for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeTargetID++){
+//				LightNode* target = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeTargetID];
+//				addLightEdge(source, target, &lightNodeLightMaps[lightNodeLightMapID]->edges, MAX_EDGE_LENGTH_LIGHT, MIN_EDGE_WEIGHT_LIGHT, false, false);
+//			}
+//		}
+//
+//		//create (possible) internal edges
+//#ifdef TP_INTERNAL_FILTER_OCTREE
+//		fillTexture(atomicCounter, 0);
+//		fillTexture(ieVoxelOctreeTexture.get(), 0);
+//		fillTexture(ieVoxelOctreeLocks.get(), 0);
+//		createWorldBBCameras(lightNodeMaps[lightNodeMapID]->geometryNode, ieCameras);
+//		buildVoxelOctree(ieVoxelOctreeTexture.get(), atomicCounter, ieVoxelOctreeLocks.get(), ieCameras, internalEdgesOctreeDepth, lightNodeMaps[lightNodeMapID]->geometryNode);
+//#endif
+//		for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
+//			for(unsigned int lightNodeTargetID = lightNodeSourceID + 1; lightNodeTargetID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeTargetID++){
+//				LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
+//				LightNode* target = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeTargetID];
+//				addLightEdge(source, target, &lightNodeMaps[lightNodeMapID]->internalLightEdges, MAX_EDGE_LENGTH, MIN_EDGE_WEIGHT, true, true);
+//			}
+//		}
+//#ifdef TP_INTERNAL_FILTER_OCTREE
+//		filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->internalLightEdges, ieVoxelOctreeTexture.get(), atomicCounter, ieCameras, internalEdgesOctreeDepth, lightNodeMaps[lightNodeMapID]->geometryNode);
+////		ieVoxelOctreeTexture.get()->downloadGLTexture(*renderingContext);
+////		Util::Reference<Util::PixelAccessor> voxelOctreeAcc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *ieVoxelOctreeTexture.get());
+////		addTreeToDebug(lightNodeMaps[lightNodeMapID]->geometryNode->getWorldBB().getCenter(), lightNodeMaps[lightNodeMapID]->geometryNode->getWorldBB().getExtentMax(), 0, 0, voxelOctreeAcc.get(), internalEdgesOctreeDepth);
+//#else
+//		filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->internalLightEdges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+//#endif
+//
+//		//create (possible) external edges to other objects
+//		for(unsigned int lightNodeMapID2 = lightNodeMapID + 1; lightNodeMapID2 < lightNodeMaps.size(); lightNodeMapID2++){
+//			LightNodeMapConnection* mapConnection = new LightNodeMapConnection();
+//			mapConnection->map1 = lightNodeMaps[lightNodeMapID];
+//			mapConnection->map2 = lightNodeMaps[lightNodeMapID2];
+//
+//			if(isDistanceLess(mapConnection->map1->geometryNode, mapConnection->map2->geometryNode, MAX_EDGE_LENGTH)){
+//				for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
+//					for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
+//						LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
+//						LightNode* target = lightNodeMaps[lightNodeMapID2]->lightNodes[lightNodeTargetID];
+//						addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, MIN_EDGE_WEIGHT, true, true);
+//					}
+//				}
+//
+//				if(lightNodeMaps[lightNodeMapID]->staticNode == true && lightNodeMaps[lightNodeMapID2]->staticNode == true){
+//					lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.push_back(mapConnection);
+//				} else {
+//					lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
+//				}
+//			}
+//		}
+//
+//		//filter external edges
+//		for(unsigned int mapConID = 0; mapConID < lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.size(); mapConID++){
+//			if(lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic[mapConID]->edges.size() > 0){
+//				filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic[mapConID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+//			}
+//		}
+//		for(unsigned int mapConID = 0; mapConID < lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.size(); mapConID++){
+//			if(lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic[mapConID]->edges.size() > 0){
+//				filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic[mapConID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+//			}
+//		}
+//	}
+//	//filter the edges from the lights
+//	for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
+//		filterIncorrectEdges(&lightNodeLightMaps[lightNodeLightMapID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+//	}
+
+	createLightEdgesFromLights(atomicCounter);
+	createLightEdgesInternal(atomicCounter);
+	createLightEdgesExternalStatic(atomicCounter);
+	createLightEdgesExternalDynamic(atomicCounter);
+
+	needRecreationOfStaticEdges = false;
+}
+
+void LightNodeManager::createLightEdgesFromLights(Rendering::Texture* atomicCounter){
+	for(unsigned int lightNodeMapID = 0; lightNodeMapID < lightNodeMaps.size(); lightNodeMapID++){
+		//create (possible) edges from the light sources to this node
+		for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
+			LightNode* source = &lightNodeLightMaps[lightNodeLightMapID]->light;
+			for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeTargetID++){
+				LightNode* target = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeTargetID];
+				addLightEdge(source, target, &lightNodeLightMaps[lightNodeLightMapID]->edges, MAX_EDGE_LENGTH_LIGHT, MIN_EDGE_WEIGHT_LIGHT, false, false);
+			}
+		}
+	}
+	//filter the edges from the lights
+	for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
+		filterIncorrectEdges(&lightNodeLightMaps[lightNodeLightMapID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+	}
+	needRecreationOfStaticEdges = false;
+}
+
+void LightNodeManager::createLightEdgesInternal(Rendering::Texture* atomicCounter){
 #ifdef TP_INTERNAL_FILTER_OCTREE
 	unsigned int internalEdgesOctreeDepth = std::min(VOXEL_OCTREE_DEPTH, (unsigned int)7);
 	unsigned int ieTextureSize = std::pow(2, internalEdgesOctreeDepth) * 4;
@@ -499,15 +613,6 @@ void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
 
 	//TODO: speed up (e.g. with octree)
 	for(unsigned int lightNodeMapID = 0; lightNodeMapID < lightNodeMaps.size(); lightNodeMapID++){
-		//create (possible) edges from the light sources to this node
-		for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
-			LightNode* source = &lightNodeLightMaps[lightNodeLightMapID]->light;
-			for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeTargetID++){
-				LightNode* target = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeTargetID];
-				addLightEdge(source, target, &lightNodeLightMaps[lightNodeLightMapID]->edges, MAX_EDGE_LENGTH_LIGHT, MIN_EDGE_WEIGHT_LIGHT, false, false);
-			}
-		}
-
 		//create (possible) internal edges
 #ifdef TP_INTERNAL_FILTER_OCTREE
 		fillTexture(atomicCounter, 0);
@@ -531,83 +636,70 @@ void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
 #else
 		filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->internalLightEdges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
 #endif
-
-		//create (possible) external edges to other objects
-		for(unsigned int lightNodeMapID2 = lightNodeMapID + 1; lightNodeMapID2 < lightNodeMaps.size(); lightNodeMapID2++){
-			LightNodeMapConnection* mapConnection = new LightNodeMapConnection();
-			mapConnection->map1 = lightNodeMaps[lightNodeMapID];
-			mapConnection->map2 = lightNodeMaps[lightNodeMapID2];
-
-			if(isDistanceLess(mapConnection->map1->geometryNode, mapConnection->map2->geometryNode, MAX_EDGE_LENGTH)){
-				for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
-					for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
-						LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
-						LightNode* target = lightNodeMaps[lightNodeMapID2]->lightNodes[lightNodeTargetID];
-						addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, MIN_EDGE_WEIGHT, true, true);
-					}
-				}
-
-				if(lightNodeMaps[lightNodeMapID]->staticNode == true && lightNodeMaps[lightNodeMapID2]->staticNode == true){
-					lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.push_back(mapConnection);
-				} else {
-					lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
-				}
-			}
-		}
-
-		//filter external edges
-		for(unsigned int mapConID = 0; mapConID < lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.size(); mapConID++){
-			if(lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic[mapConID]->edges.size() > 0){
-				filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic[mapConID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
-			}
-		}
-		for(unsigned int mapConID = 0; mapConID < lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.size(); mapConID++){
-			if(lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic[mapConID]->edges.size() > 0){
-				filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic[mapConID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
-			}
-		}
 	}
-	//filter the edges from the lights
-	for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
-		filterIncorrectEdges(&lightNodeLightMaps[lightNodeLightMapID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
-	}
-	needRecreationOfStaticEdges = false;
 }
 
-void LightNodeManager::createLightEdgesDynamic(Rendering::Texture* atomicCounter){
+void LightNodeManager::createLightEdgesExternalStatic(Rendering::Texture* atomicCounter){
 	for(unsigned int lightNodeMapID = 0; lightNodeMapID < lightNodeMaps.size(); lightNodeMapID++){
 		//create (possible) external edges to other objects
 		for(unsigned int lightNodeMapID2 = lightNodeMapID + 1; lightNodeMapID2 < lightNodeMaps.size(); lightNodeMapID2++){
-			LightNodeMapConnection* mapConnection = new LightNodeMapConnection();
-			mapConnection->map1 = lightNodeMaps[lightNodeMapID];
-			mapConnection->map2 = lightNodeMaps[lightNodeMapID2];
+			if(lightNodeMaps[lightNodeMapID]->staticNode == true && lightNodeMaps[lightNodeMapID2]->staticNode == true){
+				LightNodeMapConnection* mapConnection = new LightNodeMapConnection();
+				mapConnection->map1 = lightNodeMaps[lightNodeMapID];
+				mapConnection->map2 = lightNodeMaps[lightNodeMapID2];
 
-			if(isDistanceLess(mapConnection->map1->geometryNode, mapConnection->map2->geometryNode, MAX_EDGE_LENGTH)){
-				for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
-					for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
-						LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
-						LightNode* target = lightNodeMaps[lightNodeMapID2]->lightNodes[lightNodeTargetID];
-						addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, MIN_EDGE_WEIGHT, true, true);
+				if(isDistanceLess(mapConnection->map1->geometryNode, mapConnection->map2->geometryNode, MAX_EDGE_LENGTH)){
+					for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
+						for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
+							LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
+							LightNode* target = lightNodeMaps[lightNodeMapID2]->lightNodes[lightNodeTargetID];
+							addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, MIN_EDGE_WEIGHT, true, true);
+						}
 					}
 				}
-
-				if(lightNodeMaps[lightNodeMapID]->staticNode == true && lightNodeMaps[lightNodeMapID2]->staticNode == true){
-					lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.push_back(mapConnection);
+				if(mapConnection->edges.size() > 0){
+					filterIncorrectEdges(&mapConnection->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+					if(mapConnection->edges.size() > 0){
+						lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.push_back(mapConnection);
+					} else {
+						delete mapConnection;
+					}
 				} else {
-					lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
+					delete mapConnection;
 				}
 			}
 		}
+	}
+}
 
-		//filter external edges
-		for(unsigned int mapConID = 0; mapConID < lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.size(); mapConID++){
-			if(lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic[mapConID]->edges.size() > 0){
-				filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic[mapConID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
-			}
-		}
-		for(unsigned int mapConID = 0; mapConID < lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.size(); mapConID++){
-			if(lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic[mapConID]->edges.size() > 0){
-				filterIncorrectEdges(&lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic[mapConID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+void LightNodeManager::createLightEdgesExternalDynamic(Rendering::Texture* atomicCounter){
+	for(unsigned int lightNodeMapID = 0; lightNodeMapID < lightNodeMaps.size(); lightNodeMapID++){
+		//create (possible) external edges to other objects
+		for(unsigned int lightNodeMapID2 = lightNodeMapID + 1; lightNodeMapID2 < lightNodeMaps.size(); lightNodeMapID2++){
+			if(lightNodeMaps[lightNodeMapID]->staticNode == false || lightNodeMaps[lightNodeMapID2]->staticNode == false){
+				LightNodeMapConnection* mapConnection = new LightNodeMapConnection();
+				mapConnection->map1 = lightNodeMaps[lightNodeMapID];
+				mapConnection->map2 = lightNodeMaps[lightNodeMapID2];
+
+				if(isDistanceLess(mapConnection->map1->geometryNode, mapConnection->map2->geometryNode, MAX_EDGE_LENGTH)){
+					for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
+						for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
+							LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
+							LightNode* target = lightNodeMaps[lightNodeMapID2]->lightNodes[lightNodeTargetID];
+							addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, MIN_EDGE_WEIGHT, true, true);
+						}
+					}
+				}
+				if(mapConnection->edges.size() > 0){
+					filterIncorrectEdges(&mapConnection->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+					if(mapConnection->edges.size() > 0){
+						lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
+					} else {
+						delete mapConnection;
+					}
+				} else {
+					delete mapConnection;
+				}
 			}
 		}
 	}
@@ -656,27 +748,28 @@ void LightNodeManager::cleanUp(){
 				}
 			}
 		}
-		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesDynamic.size(); j++){
-			if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 == lightNodeMaps[i]){
-				if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map2 == 0){
-					delete lightNodeMaps[i]->externalLightEdgesDynamic[j];
-				} else {
-					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
-						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
-					}
-					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 = 0;
-				}
-			} else {
-				if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 == 0){
-					delete lightNodeMaps[i]->externalLightEdgesDynamic[j];
-				} else {
-					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
-						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
-					}
-					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map2 = 0;
-				}
-			}
-		}
+		removeAllDynamicMapConnections();
+//		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesDynamic.size(); j++){
+//			if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 == lightNodeMaps[i]){
+//				if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map2 == 0){
+//					delete lightNodeMaps[i]->externalLightEdgesDynamic[j];
+//				} else {
+//					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
+//						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
+//					}
+//					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 = 0;
+//				}
+//			} else {
+//				if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 == 0){
+//					delete lightNodeMaps[i]->externalLightEdgesDynamic[j];
+//				} else {
+//					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
+//						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
+//					}
+//					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map2 = 0;
+//				}
+//			}
+//		}
 		delete lightNodeMaps[i];
 	}
 	lightNodeMaps.clear();
@@ -2448,6 +2541,32 @@ void LightNodeManager::removeStaticLightNodeMapConnection(LightNodeMap* lightNod
 		if(lightNodeMap->externalLightEdgesStatic[i] == lightNodeMapConnection){
 			lightNodeMap->externalLightEdgesStatic.erase(lightNodeMap->externalLightEdgesStatic.begin()+i);
 			break;
+		}
+	}
+}
+
+void LightNodeManager::removeAllDynamicMapConnections(){
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesDynamic.size(); j++){
+			if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 == lightNodeMaps[i]){
+				if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map2 == 0){
+					delete lightNodeMaps[i]->externalLightEdgesDynamic[j];
+				} else {
+					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
+						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
+					}
+					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 = 0;
+				}
+			} else {
+				if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 == 0){
+					delete lightNodeMaps[i]->externalLightEdgesDynamic[j];
+				} else {
+					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
+						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
+					}
+					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map2 = 0;
+				}
+			}
 		}
 	}
 }

@@ -188,7 +188,10 @@ public:
 	static void createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static void mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	void createLightEdges(Rendering::Texture* atomicCounter);
-	void createLightEdgesDynamic(Rendering::Texture* atomicCounter);
+	void createLightEdgesFromLights(Rendering::Texture* atomicCounter);
+	void createLightEdgesInternal(Rendering::Texture* atomicCounter);
+	void createLightEdgesExternalStatic(Rendering::Texture* atomicCounter);
+	void createLightEdgesExternalDynamic(Rendering::Texture* atomicCounter);
 	void cleanUpDebug();
 	void cleanUp();
 	void setShowEdges(bool showEdges);
@@ -254,6 +257,7 @@ private:
 	void renderAllNodes(MinSG::Node* node);
 
 	void removeStaticLightNodeMapConnection(LightNodeMap* lightNodeMap, LightNodeMapConnection* lightNodeMapConnection);
+	void removeAllDynamicMapConnections();
 
 	Rendering::RenderingContext* renderingContext;
 	MinSG::FrameContext* frameContext;
