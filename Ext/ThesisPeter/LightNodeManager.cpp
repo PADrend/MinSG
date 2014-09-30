@@ -142,7 +142,6 @@ NodeRenderVisitor::status NodeRenderVisitor::leave(MinSG::Node* node){
 
 LightNodeManager::LightNodeManager(){
 	globalNodeCounter = 0;
-	needRecreationOfStaticEdges = true;
 
 	for(unsigned int i = 0; i < 3; i++){
 		sceneEnclosingCameras[i] = new MinSG::CameraNodeOrtho();
@@ -153,7 +152,7 @@ LightNodeManager::LightNodeManager(){
 	tmpTexVoxelOctreeSize = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, tmpTextureSize, tmpTextureSize, 1, Util::TypeConstant::UINT8, 1);
 	voxelOctreeTextureStatic = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE, VOXEL_OCTREE_TEXTURE_SIZE, 1, Util::TypeConstant::UINT32, 1);
 	voxelOctreeTextureComplete = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE, VOXEL_OCTREE_TEXTURE_SIZE, 1, Util::TypeConstant::UINT32, 1);
-	voxelOctreeLocksStatic = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, 1, Util::TypeConstant::UINT32, 1);
+	voxelOctreeLocks = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, VOXEL_OCTREE_TEXTURE_SIZE / VOXEL_OCTREE_SIZE_PER_NODE, 1, Util::TypeConstant::UINT32, 1);
 #ifdef USE_ATOMIC_COUNTER
 	atomicCounter = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_BUFFER, 1, 1, 1, Util::TypeConstant::UINT32, 1);
 #else
@@ -299,7 +298,7 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	//reset some values
 	cleanUp();
 	fillTexture(voxelOctreeTextureStatic.get(), 0);
-	fillTexture(voxelOctreeLocksStatic.get(), 0);
+	fillTexture(voxelOctreeLocks.get(), 0);
 	fillTexture(atomicCounter.get(), 0);
 	debug.clearDebug();
 
@@ -311,13 +310,46 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	setRenderingContext(renderingContext);
 	setFrameContext(frameContext);
 
+	std::cout << "create lightNodes" << std::endl;
+
+	//create the light nodes and map them to the vertices
+	createLightNodes();
+
+	std::cout << "debug lightNodes" << std::endl;
+
+	//DEBUG to read the light id's of the mesh
+//	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
+//		Rendering::Mesh* mesh = lightNodeMaps[i]->geometryNode->getMesh();
+//		Util::Reference<Rendering::LightNodeIndexAttributeAccessor> lniAcc = Rendering::LightNodeIndexAttributeAccessor::create(mesh->openVertexData(), lightNodeIDIdent);
+//		for(unsigned int j = 0; j < mesh->getVertexCount(); ++j){
+//			unsigned int lightNodeID = lniAcc->getLightNodeIndex(j);
+//			std::cout << "LightNodeID of " << j << " is " << lightNodeID << std::endl;
+//		}
+//	}
+	//DEBUG END
+
+
+	//DEBUG to show the nodes
+#ifdef TP_SHOW_NODES
+//	debug.addDebugLine(Geometry::Vec3(0, 0, 0), Geometry::Vec3(0, 3, 0), Util::Color4f(1, 1, 1, 1), Util::Color4f(1, 0, 0, 1));
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
+			Geometry::Vec3 pos = lightNodeMaps[i]->lightNodes[j]->position;
+			debug.addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() - 0.01, pos.z()));
+		}
+	}
+#endif //TP_SHOW_NODES
+	//DEBUG END
+
 	std::cout << "create cameras and octree" << std::endl;
 
 	//create the cameras to render the scene orthogonally from each axis
 	createWorldBBCameras(lightRootNode.get(), sceneEnclosingCameras);
     //create the VoxelOctree from static objects
-	buildVoxelOctree(voxelOctreeTextureStatic.get(), atomicCounter.get(), voxelOctreeLocksStatic.get(), sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+	buildVoxelOctree(voxelOctreeTextureStatic.get(), atomicCounter.get(), voxelOctreeLocks.get(), sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get(), true, false, true);
+	voxelOctreeTextureStatic.get()->downloadGLTexture(renderingContext);
 	copyTexture(voxelOctreeTextureStatic.get(), voxelOctreeTextureComplete.get());
+	buildVoxelOctree(voxelOctreeTextureComplete.get(), atomicCounter.get(), voxelOctreeLocks.get(), sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get(), false, true, true);
 
 	std::cout << "debugging octree" << std::endl;
 
@@ -353,37 +385,6 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 #endif //TP_SHOW_OCTREE
 
 	Rendering::checkGLError(__FILE__, __LINE__);
-	//DEBUG END
-
-	std::cout << "create lightNodes" << std::endl;
-
-	//create the light nodes and map them to the vertices
-	createLightNodes();
-
-	std::cout << "debug lightNodes" << std::endl;
-
-	//DEBUG to read the light id's of the mesh
-//	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
-//		Rendering::Mesh* mesh = lightNodeMaps[i]->geometryNode->getMesh();
-//		Util::Reference<Rendering::LightNodeIndexAttributeAccessor> lniAcc = Rendering::LightNodeIndexAttributeAccessor::create(mesh->openVertexData(), lightNodeIDIdent);
-//		for(unsigned int j = 0; j < mesh->getVertexCount(); ++j){
-//			unsigned int lightNodeID = lniAcc->getLightNodeIndex(j);
-//			std::cout << "LightNodeID of " << j << " is " << lightNodeID << std::endl;
-//		}
-//	}
-	//DEBUG END
-
-
-	//DEBUG to show the nodes
-#ifdef TP_SHOW_NODES
-//	debug.addDebugLine(Geometry::Vec3(0, 0, 0), Geometry::Vec3(0, 3, 0), Util::Color4f(1, 1, 1, 1), Util::Color4f(1, 0, 0, 1));
-	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
-		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
-			Geometry::Vec3 pos = lightNodeMaps[i]->lightNodes[j]->position;
-			debug.addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() - 0.01, pos.z()));
-		}
-	}
-#endif //TP_SHOW_NODES
 	//DEBUG END
 
 	std::cout << "create edges" << std::endl;
@@ -457,6 +458,8 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 }
 
 void LightNodeManager::createLightNodes(){
+	globalNodeCounter = 0;
+
 	NodeCreaterVisitor createNodes;
 	createNodes.nodeIndex = 0;
 	createNodes.lightNodeMaps = &lightNodeMaps;
@@ -576,8 +579,6 @@ void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
 	createLightEdgesInternal(atomicCounter);
 	createLightEdgesExternalStatic(atomicCounter);
 	createLightEdgesExternalDynamic(atomicCounter);
-
-	needRecreationOfStaticEdges = false;
 }
 
 void LightNodeManager::createLightEdgesFromLights(Rendering::Texture* atomicCounter){
@@ -595,7 +596,6 @@ void LightNodeManager::createLightEdgesFromLights(Rendering::Texture* atomicCoun
 	for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
 		filterIncorrectEdges(&lightNodeLightMaps[lightNodeLightMapID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
 	}
-	needRecreationOfStaticEdges = false;
 }
 
 void LightNodeManager::createLightEdgesInternal(Rendering::Texture* atomicCounter){
@@ -619,7 +619,7 @@ void LightNodeManager::createLightEdgesInternal(Rendering::Texture* atomicCounte
 		fillTexture(ieVoxelOctreeTexture.get(), 0);
 		fillTexture(ieVoxelOctreeLocks.get(), 0);
 		createWorldBBCameras(lightNodeMaps[lightNodeMapID]->geometryNode, ieCameras);
-		buildVoxelOctree(ieVoxelOctreeTexture.get(), atomicCounter, ieVoxelOctreeLocks.get(), ieCameras, internalEdgesOctreeDepth, lightNodeMaps[lightNodeMapID]->geometryNode);
+		buildVoxelOctree(ieVoxelOctreeTexture.get(), atomicCounter, ieVoxelOctreeLocks.get(), ieCameras, internalEdgesOctreeDepth, lightNodeMaps[lightNodeMapID]->geometryNode, true, true);
 #endif
 		for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
 			for(unsigned int lightNodeTargetID = lightNodeSourceID + 1; lightNodeTargetID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeTargetID++){
@@ -681,7 +681,9 @@ void LightNodeManager::createLightEdgesExternalDynamic(Rendering::Texture* atomi
 				mapConnection->map1 = lightNodeMaps[lightNodeMapID];
 				mapConnection->map2 = lightNodeMaps[lightNodeMapID2];
 
+//				std::cout << "trying to create dynamic edges" << std::endl;
 				if(isDistanceLess(mapConnection->map1->geometryNode, mapConnection->map2->geometryNode, MAX_EDGE_LENGTH)){
+					std::cout << "trying to create dynamic edges2" << std::endl;
 					for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
 						for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
 							LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
@@ -690,11 +692,15 @@ void LightNodeManager::createLightEdgesExternalDynamic(Rendering::Texture* atomi
 						}
 					}
 				}
+//				std::cout << "trying to create dynamic edges3" << std::endl;
 				if(mapConnection->edges.size() > 0){
-					filterIncorrectEdges(&mapConnection->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
+//					std::cout << "trying to create dynamic edges4" << std::endl;
+					filterIncorrectEdges(&mapConnection->edges, voxelOctreeTextureComplete.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get());
 					if(mapConnection->edges.size() > 0){
+						std::cout << "trying to create dynamic edges5" << std::endl;
 						lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
 					} else {
+						std::cout << "trying to create dynamic edges6" << std::endl;
 						delete mapConnection;
 					}
 				} else {
@@ -723,31 +729,34 @@ void LightNodeManager::cleanUp(){
 		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
             delete lightNodeMaps[i]->lightNodes[j];
 		}
+		lightNodeMaps[i]->lightNodes.clear();
 		for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
             delete lightNodeMaps[i]->internalLightEdges[j];
 		}
+		lightNodeMaps[i]->internalLightEdges.clear();
 		//removing external edges is more difficult, since not every node may delete them, only one
-		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
-			if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == lightNodeMaps[i]){
-				if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map2 == 0){
-					delete lightNodeMaps[i]->externalLightEdgesStatic[j];
-				} else {
-					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
-					}
-					lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 = 0;
-				}
-			} else {
-				if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == 0){
-					delete lightNodeMaps[i]->externalLightEdgesStatic[j];
-				} else {
-					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
-					}
-					lightNodeMaps[i]->externalLightEdgesStatic[j]->map2 = 0;
-				}
-			}
-		}
+//		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+//			if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == lightNodeMaps[i]){
+//				if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map2 == 0){
+//					delete lightNodeMaps[i]->externalLightEdgesStatic[j];
+//				} else {
+//					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+//						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
+//					}
+//					lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 = 0;
+//				}
+//			} else {
+//				if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == 0){
+//					delete lightNodeMaps[i]->externalLightEdgesStatic[j];
+//				} else {
+//					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+//						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
+//					}
+//					lightNodeMaps[i]->externalLightEdgesStatic[j]->map2 = 0;
+//				}
+//			}
+//		}
+		removeAllStaticMapConnections();
 		removeAllDynamicMapConnections();
 //		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesDynamic.size(); j++){
 //			if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 == lightNodeMaps[i]){
@@ -797,36 +806,99 @@ void LightNodeManager::setShowOctree(bool showOctree){
 }
 
 void LightNodeManager::onNodeTransformed(Node* node){
+	debug.clearDebug();
 	std::cout << "Node Moved!" << std::endl;
 	if(node->getTypeId() == MinSG::GeometryNode::getClassId()){
 		//search the corresponding nodeMap
 		for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
 			if(lightNodeMaps[i]->geometryNode == node){
+//				std::cout << "Found node!" << std::endl;
 				if(lightNodeMaps[i]->staticNode){
-					//if static before, remove all static edges (from itself and the other static nodes)
-					for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
-						if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == lightNodeMaps[i]){
-							removeStaticLightNodeMapConnection(lightNodeMaps[i]->externalLightEdgesStatic[j]->map2, lightNodeMaps[i]->externalLightEdgesStatic[j]);
-						} else {
-							removeStaticLightNodeMapConnection(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1, lightNodeMaps[i]->externalLightEdgesStatic[j]);
-						}
-						for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-							delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
-						}
-						lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.clear();
-						delete lightNodeMaps[i]->externalLightEdgesStatic[j];
-					}
-					lightNodeMaps[i]->externalLightEdgesStatic.clear();
+//					//if static before, remove all static edges (from itself and the other static nodes)
+//					for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+//						if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == lightNodeMaps[i]){
+//							removeStaticLightNodeMapConnection(lightNodeMaps[i]->externalLightEdgesStatic[j]->map2, lightNodeMaps[i]->externalLightEdgesStatic[j]);
+//						} else {
+//							removeStaticLightNodeMapConnection(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1, lightNodeMaps[i]->externalLightEdgesStatic[j]);
+//						}
+//						for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+//							delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
+//						}
+//						lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.clear();
+//						delete lightNodeMaps[i]->externalLightEdgesStatic[j];
+//					}
+//					lightNodeMaps[i]->externalLightEdgesStatic.clear();
 
-					//now recreate the static edges
-					needRecreationOfStaticEdges = true;
-
-					//and the dynamic edges have to be recreated, too
-
+					//now recreate the static external edges
+					removeAllStaticMapConnections();
+					std::cout << "resetting static voxelOctree with numberNodes: " << numberStaticOctreeNodes << std::endl;
+					lightNodeMaps[i]->staticNode = false;
+					fillTexture(voxelOctreeTextureStatic.get(), 0);
+					fillTexture(atomicCounter.get(), 0);
+					buildVoxelOctree(voxelOctreeTextureStatic.get(), atomicCounter.get(), voxelOctreeLocks.get(), sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get(), true, false, true);
+					//read it from GPU to be able to copy it
+					voxelOctreeTextureStatic.get()->downloadGLTexture(*renderingContext);
+					//read the atomic counter
+					atomicCounter.get()->downloadGLTexture(*renderingContext);
+					Util::Reference<Util::PixelAccessor> counterAcc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *atomicCounter.get());
+					Util::Color4f numNodes = counterAcc.get()->readColor4f(0, 0);
+					numberStaticOctreeNodes = (unsigned int)numNodes.r();
+					std::cout << "now the number is " << numberStaticOctreeNodes << std::endl;
+					//recreate the static external edges
+					createLightEdgesExternalStatic(atomicCounter.get());
 				} else {
-					//if already dynamic node, only the new edges have to be created
-
+					//set the atomicCounter to the number of static voxelOctreeNodes
+					std::cout << "now the number is " << numberStaticOctreeNodes << std::endl;
+					fillTexture(atomicCounter.get(), numberStaticOctreeNodes);
 				}
+
+				//and the dynamic edges have always to be recreated
+				refreshLightNodeParameters(lightNodeMaps[i]->geometryNode, &lightNodeMaps[i]->lightNodes);
+				copyTexture(voxelOctreeTextureStatic.get(), voxelOctreeTextureComplete.get());
+				buildVoxelOctree(voxelOctreeTextureComplete.get(), atomicCounter.get(), voxelOctreeLocks.get(), sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get(), false, true, true);
+				removeAllDynamicMapConnections();
+				createLightEdgesExternalDynamic(atomicCounter.get());
+				propagateLight();
+
+				std::cout << "number static edges: " << lightNodeMaps[i]->externalLightEdgesStatic.size() << " number dynamic edges: " << lightNodeMaps[i]->externalLightEdgesDynamic.size() << std::endl;
+				if(lightNodeMaps[i]->externalLightEdgesDynamic.size() >= 1) std::cout << "num dynamic edges2: " << lightNodeMaps[i]->externalLightEdgesDynamic[0]->edges.size() << std::endl;
+
+				//draw debug lines
+#ifdef TP_SHOW_EDGES
+				//edges from lights
+				for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
+					for(unsigned int j = 0; j < lightNodeLightMaps[i]->edges.size(); j++){
+//						std::cout << "drawing lightEdges" << std::endl;
+						debug.addDebugLine(lightNodeLightMaps[i]->edges[j]->source->position, lightNodeLightMaps[i]->edges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
+					}
+				}
+				for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+					//internal edges
+					for(unsigned int j = 0; j < lightNodeMaps[i]->internalLightEdges.size(); j++){
+						debug.addDebugLine(lightNodeMaps[i]->internalLightEdges[j]->source->position, lightNodeMaps[i]->internalLightEdges[j]->target->position, Util::Color4f(1, 0.5f, 0, 1), Util::Color4f(0.5f, 1, 0, 1));
+					}
+					//external edges
+					for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+						for(unsigned int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+							debug.addDebugLine(lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->source->position, lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k]->target->position, Util::Color4f(0, 1, 0.5f, 1), Util::Color4f(0, 0.5f, 1, 1));
+						}
+					}
+				}
+#endif //TP_SHOW_EDGES
+
+				//DEBUG to show the voxelOctree!
+				voxelOctreeTextureComplete.get()->downloadGLTexture(*renderingContext);
+				Util::Reference<Util::PixelAccessor> voxelOctreeAcc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *voxelOctreeTextureComplete.get());
+
+				//draw tree debug
+#ifdef TP_SHOW_OCTREE
+				std::cout << "Number debug nodes: " << addTreeToDebug(lightingArea.center, lightingArea.extend, 0, 0, voxelOctreeAcc.get(), VOXEL_OCTREE_DEPTH) << std::endl;
+#endif //TP_SHOW_OCTREE
+				debug.buildDebugLineNode();
+				debug.buildDebugFaceNode();
+				setShowEdges(SHOW_EDGES);
+				setShowOctree(SHOW_OCTREE);
+				//DEBUG END
 				break;
 			}
 		}
@@ -868,6 +940,17 @@ void LightNodeManager::setLightRootNode(Util::Reference<MinSG::Node> rootNode){
 	lightingArea.extend = lightRootNode->getWorldBB().getExtentMax();
 }
 
+void LightNodeManager::refreshLightNodeParameters(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes){
+	LightNode* lightNode;
+	for(unsigned int i = 0; i < lightNodes->size(); i++){
+		lightNode = (*lightNodes)[i];
+		Geometry::Vec4 pos(lightNode->osPosition.x(), lightNode->osPosition.y(), lightNode->osPosition.z(), 1);
+		pos = node->getWorldMatrix() * pos;
+//		std::cout << "pos: " << pos.x() << "x" << pos.y() << "x" << pos.z() << std::endl;
+		lightNode->position = Geometry::Vec3(pos.x(), pos.y(), pos.z());
+	}
+}
+
 void LightNodeManager::createLightNodesPerVertexPercent(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float percentage){
 	Rendering::Mesh* mesh = node->getMesh();
 
@@ -881,8 +964,8 @@ void LightNodeManager::createLightNodesPerVertexPercent(MinSG::GeometryNode* nod
 	for(unsigned int i = 0; i < mesh->getVertexCount(); ++i){
 		if(i % modNum == 0){
 			LightNode* lightNode = new LightNode();
-			lightNode->position = posAcc->getPosition(i);
-			Geometry::Vec4 pos(lightNode->position.x(), lightNode->position.y(), lightNode->position.z(), 1);
+			lightNode->osPosition = posAcc->getPosition(i);
+			Geometry::Vec4 pos(lightNode->osPosition.x(), lightNode->osPosition.y(), lightNode->osPosition.z(), 1);
 			pos = node->getWorldMatrix() * pos;
 			lightNode->position = Geometry::Vec3(pos.x(), pos.y(), pos.z());
 			lightNode->normal = norAcc->getNormal(i);
@@ -906,8 +989,8 @@ void LightNodeManager::createLightNodesPerVertexRandom(MinSG::GeometryNode* node
 		const float rndVal = distribution(engine);
 		if(rndVal <= randomVal){
 			LightNode* lightNode = new LightNode();
-			lightNode->position = posAcc->getPosition(i);
-			Geometry::Vec4 pos(lightNode->position.x(), lightNode->position.y(), lightNode->position.z(), 1);
+			lightNode->osPosition = posAcc->getPosition(i);
+			Geometry::Vec4 pos(lightNode->osPosition.x(), lightNode->osPosition.y(), lightNode->osPosition.z(), 1);
 			pos = node->getWorldMatrix() * pos;
 			lightNode->position = Geometry::Vec3(pos.x(), pos.y(), pos.z());
 			lightNode->normal = norAcc->getNormal(i);
@@ -918,8 +1001,8 @@ void LightNodeManager::createLightNodesPerVertexRandom(MinSG::GeometryNode* node
 
 	if(lightNodes->empty() && mesh->getVertexCount() != 0){
 		LightNode* lightNode = new LightNode();
-		lightNode->position = posAcc->getPosition(0);
-		Geometry::Vec4 pos(lightNode->position.x(), lightNode->position.y(), lightNode->position.z(), 1);
+		lightNode->osPosition = posAcc->getPosition(0);
+		Geometry::Vec4 pos(lightNode->osPosition.x(), lightNode->osPosition.y(), lightNode->osPosition.z(), 1);
 		pos = node->getWorldMatrix() * pos;
 		lightNode->position = Geometry::Vec3(pos.x(), pos.y(), pos.z());
 		lightNode->normal = norAcc->getNormal(0);
@@ -1980,40 +2063,26 @@ void LightNodeManager::createNodeTextures(){
         numNodes += lightNodeMaps[i]->lightNodes.size();
 	}
 
+	std::cout << "Number nodes: " << numNodes << std::endl;
+
+	std::cout << "filling nodes" << std::endl;
+
 	//create the node textures
 	const unsigned int dataLengthPerNode = 3;
 	unsigned int nodeTextureSize = std::ceil(std::sqrt(numNodes * dataLengthPerNode));
 	nodeTextureStatic = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
 	nodeTextureRendering[0] = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
 	nodeTextureRendering[1] = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-//	nodeTextureStaticR = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-//	nodeTextureStaticG = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-//	nodeTextureStaticB = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-//	nodeTextureTemporaryR = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-//	nodeTextureTemporaryG = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-//	nodeTextureTemporaryB = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-//	nodeTextureCompleteR = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-//	nodeTextureCompleteG = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
-//	nodeTextureCompleteB = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, nodeTextureSize, nodeTextureSize, 1, Util::TypeConstant::UINT32, 1);
+
+	std::cout << "filling nodes normal" << std::endl;
 
 	//fill the node textures and set the node id's
-//	unsigned int curNodeID = 0;
 	Util::Reference<Util::PixelAccessor> acc = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStatic.get());
-//	Util::Reference<Util::PixelAccessor> accR = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStaticR.get());
-//	Util::Reference<Util::PixelAccessor> accG = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStaticG.get());
-//	Util::Reference<Util::PixelAccessor> accB = Rendering::TextureUtils::createColorPixelAccessor(*renderingContext, *nodeTextureStaticB.get());
 	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
 		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
 			unsigned int x = (lightNodeMaps[i]->lightNodes[j]->id * dataLengthPerNode) % nodeTextureSize;
 			unsigned int y = (lightNodeMaps[i]->lightNodes[j]->id * dataLengthPerNode) / nodeTextureSize;
 
-////			accR->writeColor(x, y, Util::Color4f(lightNodeMaps[i]->lightNodes[j]->color.r(), 0, 0, 0));
-////			accG->writeColor(x, y, Util::Color4f(lightNodeMaps[i]->lightNodes[j]->color.g(), 0, 0, 0));
-////			accB->writeColor(x, y, Util::Color4f(lightNodeMaps[i]->lightNodes[j]->color.b(), 0, 0, 0));
-//			accR->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
-//			accG->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
-//			accB->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
-
 			acc->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
 			x = (x + 1) % nodeTextureSize;
 			if(x == 0) y++;
@@ -2021,28 +2090,17 @@ void LightNodeManager::createNodeTextures(){
 			x = (x + 1) % nodeTextureSize;
 			if(x == 0) y++;
 			acc->writeColor(x, y, Util::Color4f(0, 0, 0, 0));
-
-//			lightNodeMaps[i]->lightNodes[j]->id = curNodeID;
-//			curNodeID++;
 		}
 	}
 
 	const float lightStrength = 10000000;
 
+	std::cout << "filling nodes with light" << std::endl;
+
 	//fill with the light nodes, too
 	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
 		unsigned int x = (lightNodeLightMaps[i]->light.id * dataLengthPerNode) % nodeTextureSize;
 		unsigned int y = (lightNodeLightMaps[i]->light.id * dataLengthPerNode) / nodeTextureSize;
-
-//		accR->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.r() * lightStrength, 0, 0, 0));
-//		accG->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.g() * lightStrength, 0, 0, 0));
-//		accB->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.b() * lightStrength, 0, 0, 0));
-////		x = (x + 1) % nodeTextureSize;
-////		if(x == 0) y++;
-////		acc->writeSingleValueFloat(x, y, lightNodeLightMaps[i]->light.color.g());
-////		x = (x + 1) % nodeTextureSize;
-////		if(x == 0) y++;
-////		acc->writeSingleValueFloat(x, y, lightNodeLightMaps[i]->light.color.b());
 
 		acc->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.r() * lightStrength, 0, 0, 0));
 		x = (x + 1) % nodeTextureSize;
@@ -2051,9 +2109,6 @@ void LightNodeManager::createNodeTextures(){
 		x = (x + 1) % nodeTextureSize;
 		if(x == 0) y++;
 		acc->writeColor(x, y, Util::Color4f(lightNodeLightMaps[i]->light.color.b() * lightStrength, 0, 0, 0));
-
-//		lightNodeLightMaps[i]->light.id = curNodeID;
-//		curNodeID++;
 	}
 
 	//count the edges
@@ -2071,6 +2126,8 @@ void LightNodeManager::createNodeTextures(){
 		}
 	}
 	curNumEdges = numEdges;
+
+	std::cout << "filling edges" << std::endl;
 
 	//create the edge texture
 	unsigned int nodeDataLengthPerEdge = 2;
@@ -2192,42 +2249,46 @@ void LightNodeManager::createNodeTextures(){
 		}
 	}
 
+	std::cout << "filling edges with light" << std::endl;
+
 	//fill with edges from the lights
 	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
 		for(unsigned int j = 0; j < lightNodeLightMaps[i]->edges.size(); j++){
-				LightNode *source = lightNodeLightMaps[i]->edges[j]->source;
-				LightNode *target = lightNodeLightMaps[i]->edges[j]->target;
+			LightNode *source = lightNodeLightMaps[i]->edges[j]->source;
+			LightNode *target = lightNodeLightMaps[i]->edges[j]->target;
 
-				unsigned int nodeX = (curEdgeID * nodeDataLengthPerEdge) % nodeEdgeTextureSize;
-				unsigned int nodeY = (curEdgeID * nodeDataLengthPerEdge) / nodeEdgeTextureSize;
-				unsigned int weightX = (curEdgeID * weightDataLengthPerEdge) % weightEdgeTextureSize;
-				unsigned int weightY = (curEdgeID * weightDataLengthPerEdge) / weightEdgeTextureSize;
+			unsigned int nodeX = (curEdgeID * nodeDataLengthPerEdge) % nodeEdgeTextureSize;
+			unsigned int nodeY = (curEdgeID * nodeDataLengthPerEdge) / nodeEdgeTextureSize;
+			unsigned int weightX = (curEdgeID * weightDataLengthPerEdge) % weightEdgeTextureSize;
+			unsigned int weightY = (curEdgeID * weightDataLengthPerEdge) / weightEdgeTextureSize;
 
-//				accEdgesSources->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->source->id, 0, 0, 0));
-//				accEdgesTargets->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->target->id, 0, 0, 0));
-//				accEdgesWeightsR->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.x());
-//				accEdgesWeightsG->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.y());
-//				accEdgesWeightsB->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.z());
+//			accEdgesSources->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->source->id, 0, 0, 0));
+//			accEdgesTargets->writeColor(nodeX, nodeY, Util::Color4f(lightNodeMaps[i]->internalLightEdges[j]->target->id, 0, 0, 0));
+//			accEdgesWeightsR->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.x());
+//			accEdgesWeightsG->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.y());
+//			accEdgesWeightsB->writeSingleValueFloat(nodeX, nodeY, lightNodeMaps[i]->internalLightEdges[j]->weight.z());
 
-				accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeLightMaps[i]->edges[j]->source->id, 0, 0, 0));
-				nodeX = (nodeX + 1) % nodeEdgeTextureSize;
-				if(nodeX == 0) nodeY++;
-				accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeLightMaps[i]->edges[j]->target->id, 0, 0, 0));
+			accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeLightMaps[i]->edges[j]->source->id, 0, 0, 0));
+			nodeX = (nodeX + 1) % nodeEdgeTextureSize;
+			if(nodeX == 0) nodeY++;
+			accEdgesNodes->writeColor(nodeX, nodeY, Util::Color4f(lightNodeLightMaps[i]->edges[j]->target->id, 0, 0, 0));
 
-				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeLightMaps[i]->edges[j]->weight.x());
-				weightX = (weightX + 1) % weightEdgeTextureSize;
-				if(weightX == 0) weightY++;
-				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeLightMaps[i]->edges[j]->weight.y());
-				weightX = (weightX + 1) % weightEdgeTextureSize;
-				if(weightX == 0) weightY++;
-				accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeLightMaps[i]->edges[j]->weight.z());
+			accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeLightMaps[i]->edges[j]->weight.x());
+			weightX = (weightX + 1) % weightEdgeTextureSize;
+			if(weightX == 0) weightY++;
+			accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeLightMaps[i]->edges[j]->weight.y());
+			weightX = (weightX + 1) % weightEdgeTextureSize;
+			if(weightX == 0) weightY++;
+			accEdgesWeights->writeSingleValueFloat(weightX, weightY, lightNodeLightMaps[i]->edges[j]->weight.z());
 
-				curEdgeID++;
+			curEdgeID++;
 		}
 	}
 }
 
 void LightNodeManager::propagateLight(){
+	std::cout << "propagating light" << std::endl;
+
 	//copy the light nodes
 	copyTexture(nodeTextureStatic.get(), nodeTextureRendering[0].get());
 	copyTexture(nodeTextureStatic.get(), nodeTextureRendering[1].get());
@@ -2436,8 +2497,9 @@ void LightNodeManager::createWorldBBCameras(MinSG::Node* node, Util::Reference<M
 //	debug.addDebugLineCol2(new Geometry.Vec3(0, 0, 0), new Geometry.Vec3(0, 0, 1), new Util.Color4f(0, 0, 1, 1), new Util.Color4f(0, 0, 1, 1));
 }
 
-void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* renderNode){
+void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* renderNode, bool drawStatic, bool drawDynamic, bool useStartDimensions){
 	renderingContext->pushAndSetBoundImage(0, Rendering::ImageBindParameters(octreeTexture));
+	fillTexture(octreeLocks, 0);
 	renderingContext->pushAndSetBoundImage(1, Rendering::ImageBindParameters(octreeLocks));
 #ifdef USE_ATOMIC_COUNTER
 	renderingContext->pushAndSetAtomicCounterTextureBuffer(0, atomicCounter);
@@ -2445,8 +2507,13 @@ void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rende
 	renderingContext->pushAndSetBoundImage(2, Rendering::ImageBindParameters(atomicCounter));
 #endif // USE_ATOMIC_COUNTER
 
-	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", renderNode->getWorldBB().getCenter()));
-	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", renderNode->getWorldBB().getExtentMax() * 0.25f));
+	if(useStartDimensions){
+		voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", lightingArea.center));
+		voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", lightingArea.extend * 0.25f));
+	} else {
+		voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("rootMidPos", renderNode->getWorldBB().getCenter()));
+		voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("quarterSizeOfRootNode", renderNode->getWorldBB().getExtentMax() * 0.25f));
+	}
 	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("textureWidth", (int32_t)octreeTexture->getWidth()));
 	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("lockTextureWidth", (int32_t)octreeLocks->getWidth()));
 	voxelOctreeShaderCreate.get()->setUniform(*renderingContext, Rendering::Uniform("maxTreeDepth", (int32_t)maxOctreeDepth));
@@ -2473,9 +2540,9 @@ void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rende
 
 		textureProcessor.begin();
 
-		renderingContext->clearDepth(1.0f);
-
-		renderingContext->clearScreen(Util::Color4f(1, 1, 1, 1));
+//		renderingContext->clearDepth(1.0f);
+//
+//		renderingContext->clearScreen(Util::Color4f(1, 1, 1, 1));
 
 //		std::cout << "after clear screen " << i << std::endl;
 
@@ -2483,7 +2550,9 @@ void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rende
 
 //		std::cout << "after cull face " << i << std::endl;
 
-		renderAllNodes(renderNode);
+//		renderAllNodes(renderNode);
+		renderAllNodes(drawStatic, drawDynamic);
+//		renderNodeSingleCall(renderNode);
 
 //		renderingContext->setCullFace(Rendering::CullFaceParameters(Rendering::CullFaceParameters::CULL_BACK));
 //		renderAllNodes(lightRootNode.get());
@@ -2530,10 +2599,27 @@ void LightNodeManager::buildVoxelOctree(Rendering::Texture* octreeTexture, Rende
 #endif // USE_ATOMIC_COUNTER
 }
 
+void LightNodeManager::renderNodeSingleCall(MinSG::Node* node){
+	MinSG::RenderParam renderParam;
+	renderParam.setFlags(MinSG::USE_WORLD_MATRIX | MinSG::FRUSTUM_CULLING);
+	frameContext->displayNode(node, renderParam);
+}
+
 void LightNodeManager::renderAllNodes(MinSG::Node* node){
 	NodeRenderVisitor renderVisitor;
 	renderVisitor.init(frameContext);
 	node->traverse(renderVisitor);
+}
+
+void LightNodeManager::renderAllNodes(bool staticNodes, bool dynamicNodes){
+	MinSG::RenderParam renderParam;
+	renderParam.setFlags(MinSG::USE_WORLD_MATRIX | MinSG::FRUSTUM_CULLING);
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		if((lightNodeMaps[i]->staticNode && staticNodes) || (!lightNodeMaps[i]->staticNode && dynamicNodes)){
+//			lightNodeMaps[i]->geometryNode->display(*frameContext, renderParam);
+			frameContext->displayNode(lightNodeMaps[i]->geometryNode, renderParam);
+		}
+	}
 }
 
 void LightNodeManager::removeStaticLightNodeMapConnection(LightNodeMap* lightNodeMap, LightNodeMapConnection* lightNodeMapConnection){
@@ -2542,6 +2628,33 @@ void LightNodeManager::removeStaticLightNodeMapConnection(LightNodeMap* lightNod
 			lightNodeMap->externalLightEdgesStatic.erase(lightNodeMap->externalLightEdgesStatic.begin()+i);
 			break;
 		}
+	}
+}
+
+void LightNodeManager::removeAllStaticMapConnections(){
+	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
+		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
+			if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == lightNodeMaps[i]){
+				if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map2 == 0){
+					delete lightNodeMaps[i]->externalLightEdgesStatic[j];
+				} else {
+					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
+					}
+					lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 = 0;
+				}
+			} else {
+				if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == 0){
+					delete lightNodeMaps[i]->externalLightEdgesStatic[j];
+				} else {
+					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
+						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
+					}
+					lightNodeMaps[i]->externalLightEdgesStatic[j]->map2 = 0;
+				}
+			}
+		}
+		lightNodeMaps[i]->externalLightEdgesStatic.clear();
 	}
 }
 
@@ -2568,6 +2681,7 @@ void LightNodeManager::removeAllDynamicMapConnections(){
 				}
 			}
 		}
+		lightNodeMaps[i]->externalLightEdgesDynamic.clear();
 	}
 }
 

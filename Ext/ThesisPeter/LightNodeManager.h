@@ -92,6 +92,7 @@ struct FilterEdgeState {
 };
 
 struct LightNode {
+	Geometry::Vec3 osPosition;	//object space position, used for dynamic objects for recalculation of the position
 	Geometry::Vec3 position;
 	Geometry::Vec3 normal;
 	Util::Color4f color;
@@ -218,6 +219,7 @@ private:
 	static unsigned int nextPowOf2(unsigned int number);
 	static void getTexCoords(unsigned int index, unsigned int texWidth, Geometry::Vec2i* texCoords);
 	void setLightRootNode(Util::Reference<MinSG::Node> rootNode);
+	static void refreshLightNodeParameters(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static void createLightNodesPerVertexPercent(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float percentage);
 	static void createLightNodesPerVertexRandom(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float randomVal);
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
@@ -253,10 +255,13 @@ private:
 	void fillTexture(Rendering::Texture *texture, uint8_t value);
 	void fillTextureFloat(Rendering::Texture *texture, float value);
 	void createWorldBBCameras(MinSG::Node* node, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3]);
-	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* renderNode);
+	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* renderNode, bool drawStatic, bool drawDynamic, bool useStartDimensions = false);
+	void renderNodeSingleCall(MinSG::Node* node);
 	void renderAllNodes(MinSG::Node* node);
+	void renderAllNodes(bool staticNodes, bool dynamicNodes);
 
 	void removeStaticLightNodeMapConnection(LightNodeMap* lightNodeMap, LightNodeMapConnection* lightNodeMapConnection);
+	void removeAllStaticMapConnections();
 	void removeAllDynamicMapConnections();
 
 	Rendering::RenderingContext* renderingContext;
@@ -268,7 +273,7 @@ private:
 	Util::Reference<Rendering::Texture> tmpTexVoxelOctreeSize;			//used to "render" the octree (at creation) and the edges into the octree (for collision)
 	Util::Reference<Rendering::Texture> voxelOctreeTextureStatic;
 	unsigned int numberStaticOctreeNodes;								//the number of voxelOctreeNodes of the static texture, to assign the atomic counter
-	Util::Reference<Rendering::Texture> voxelOctreeLocksStatic;
+	Util::Reference<Rendering::Texture> voxelOctreeLocks;
 	Util::Reference<Rendering::Texture> atomicCounter;
 	Util::Reference<Rendering::Texture> voxelOctreeTextureComplete;
 
@@ -297,8 +302,6 @@ private:
 
 	static const Util::StringIdentifier lightNodeIDIdent;
 	static DebugObjects debug;
-
-	bool needRecreationOfStaticEdges;
 };
 
 }
