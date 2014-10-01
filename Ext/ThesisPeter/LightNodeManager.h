@@ -125,7 +125,8 @@ struct LightNodeMap {
 struct LightNodeLightMap {
 	LightNode light;
 	MinSG::LightNode* lightNode;
-	std::vector<LightEdge*> edges;
+	std::vector<LightEdge*> staticEdges;
+	std::vector<LightEdge*> dynamicEdges;
 	bool staticNode;
 };
 
@@ -189,7 +190,9 @@ public:
 	static void createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static void mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	void createLightEdges(Rendering::Texture* atomicCounter);
-	void createLightEdgesFromLights(Rendering::Texture* atomicCounter);
+	void createLightEdgesStaticFromLights(Rendering::Texture* atomicCounter);
+	void createLightEdgesDynamicFromLights(Rendering::Texture* atomicCounter);
+	void createLightEdgesDynamicFromDynamicLights(Rendering::Texture* atomicCounter);
 	void createLightEdgesInternal(Rendering::Texture* atomicCounter);
 	void createLightEdgesExternalStatic(Rendering::Texture* atomicCounter);
 	void createLightEdgesExternalDynamic(Rendering::Texture* atomicCounter);
@@ -210,6 +213,7 @@ public:
 	static bool SHOW_EDGES;										//if active, edges are being shown
 	static bool SHOW_OCTREE;									//if active, the octree is being shown
 	static float LIGHT_STRENGTH;								//used for propagation of the light, start value for light sources
+	static float LIGHT_STRENGTH_FACTOR;							//a factor, which is multiplied with the global illumination to "convert" it from HDR to LDR
 
 	static unsigned int globalNodeCounter;						//used to give the nodes unique id's
 
@@ -221,6 +225,7 @@ private:
 	static void getTexCoords(unsigned int index, unsigned int texWidth, Geometry::Vec2i* texCoords);
 	void setLightRootNode(Util::Reference<MinSG::Node> rootNode);
 	static void refreshLightNodeParameters(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
+	static void refreshLightNodeLightParameters(MinSG::LightNode* node, LightNode* lightNode);
 	static void createLightNodesPerVertexPercent(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float percentage);
 	static void createLightNodesPerVertexRandom(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float randomVal);
 	static void mapLightNodesToObjectClosest(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
@@ -249,6 +254,7 @@ private:
 	unsigned int voxelOctreeTextureSize;
 
 	void createNodeTextures();
+	void createEdgeTextures();
 	void propagateLight();
 
 	void copyTexture(Rendering::Texture *source, Rendering::Texture *target);
@@ -261,6 +267,8 @@ private:
 	void renderAllNodes(MinSG::Node* node);
 	void renderAllNodes(bool staticNodes, bool dynamicNodes);
 
+	void removeAllStaticLightMapConnections();
+	void removeAllDynamicLightMapConnections();
 	void removeStaticLightNodeMapConnection(LightNodeMap* lightNodeMap, LightNodeMapConnection* lightNodeMapConnection);
 	void removeAllStaticMapConnections();
 	void removeAllDynamicMapConnections();
@@ -303,6 +311,8 @@ private:
 
 	static const Util::StringIdentifier lightNodeIDIdent;
 	static DebugObjects debug;
+
+	float globalMaxEdgeWeight, globalMinEdgeWeight;		//just for debugging
 };
 
 }
