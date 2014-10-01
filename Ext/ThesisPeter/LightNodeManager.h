@@ -209,6 +209,7 @@ public:
 	static const unsigned int VOXEL_OCTREE_SIZE_PER_NODE;		//must be set to the same value as the shader definition!!!
 	static bool SHOW_EDGES;										//if active, edges are being shown
 	static bool SHOW_OCTREE;									//if active, the octree is being shown
+	static float LIGHT_STRENGTH;								//used for propagation of the light, start value for light sources
 
 	static unsigned int globalNodeCounter;						//used to give the nodes unique id's
 
@@ -227,8 +228,8 @@ private:
 	void addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, float minEdgeWeight, bool checkVisibility, bool useNormal);
 	bool isDistanceLess(MinSG::Node* n1, MinSG::Node* n2, float distance);
 
-	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* node);
-	void filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* node);
+	void filterIncorrectEdges(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* node, bool useStartDimensions = false);
+	void filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* node, bool useStartDimensions);
 
 	void filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, MinSG::Node* node);
 	void filterIncorrectEdgesAsTextureCPU(std::vector<LightEdge*> *edges, Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, MinSG::Node* node);
@@ -255,7 +256,7 @@ private:
 	void fillTexture(Rendering::Texture *texture, uint8_t value);
 	void fillTextureFloat(Rendering::Texture *texture, float value);
 	void createWorldBBCameras(MinSG::Node* node, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3]);
-	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, Rendering::Texture* octreeLocks, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* renderNode, bool drawStatic, bool drawDynamic, bool useStartDimensions = false);
+	void buildVoxelOctree(Rendering::Texture* octreeTexture, Rendering::Texture* atomicCounter, unsigned int atomicCounterOffset, Rendering::Texture* octreeLocks, Util::Reference<MinSG::CameraNodeOrtho> enclosingCameras[3], unsigned int maxOctreeDepth, MinSG::Node* renderNode, bool drawStatic, bool drawDynamic, bool useStartDimensions = false);
 	void renderNodeSingleCall(MinSG::Node* node);
 	void renderAllNodes(MinSG::Node* node);
 	void renderAllNodes(bool staticNodes, bool dynamicNodes);
