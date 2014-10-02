@@ -47,7 +47,7 @@ const Util::StringIdentifier LightNodeManager::lightNodeIDIdent("lightNodeID");
 DebugObjects LightNodeManager::debug;
 unsigned int NodeCreaterVisitor::nodeIndex = 0;
 
-#define TP_ACTIVATE_DEBUG
+//#define TP_ACTIVATE_DEBUG
 #define TP_SHOW_OCTREE
 #define TP_SHOW_NODES
 #define TP_SHOW_EDGES
@@ -63,8 +63,8 @@ const float LightNodeManager::MIN_EDGE_WEIGHT_LIGHT = 0.00001f;
 const unsigned int LightNodeManager::VOXEL_OCTREE_DEPTH = 7;
 const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_SIZE = 2048;
 const unsigned int LightNodeManager::VOXEL_OCTREE_SIZE_PER_NODE = 8;
-float LightNodeManager::LIGHT_STRENGTH = 2000;
-float LightNodeManager::LIGHT_STRENGTH_FACTOR = 3000.0f;
+float LightNodeManager::LIGHT_STRENGTH = 10000;
+float LightNodeManager::LIGHT_STRENGTH_FACTOR = 15000;
 
 unsigned int LightNodeManager::globalNodeCounter = 0;
 bool LightNodeManager::SHOW_EDGES = false;
@@ -1058,10 +1058,16 @@ void LightNodeManager::refreshLightNodeLightParameters(MinSG::LightNode* node, L
 
 void LightNodeManager::createLightNodesPerVertexPercent(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes, float percentage){
 	Rendering::Mesh* mesh = node->getMesh();
+	bool hasColor = true;
 
 	Util::Reference<Rendering::PositionAttributeAccessor> posAcc = Rendering::PositionAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::POSITION);
 	Util::Reference<Rendering::NormalAttributeAccessor> norAcc = Rendering::NormalAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::NORMAL);
-	Util::Reference<Rendering::ColorAttributeAccessor> colAcc = Rendering::ColorAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::COLOR);
+	Util::Reference<Rendering::ColorAttributeAccessor> colAcc;
+	try {
+		colAcc = Rendering::ColorAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::COLOR);
+	} catch(const std::exception & e) {
+		hasColor = false;
+	}
 
 	unsigned int modNum = (int)(1 / percentage);
 	if(modNum <= 0) modNum = 1;
@@ -1074,7 +1080,8 @@ void LightNodeManager::createLightNodesPerVertexPercent(MinSG::GeometryNode* nod
 			pos = node->getWorldMatrix() * pos;
 			lightNode->position = Geometry::Vec3(pos.x(), pos.y(), pos.z());
 			lightNode->normal = norAcc->getNormal(i);
-			lightNode->color = colAcc->getColor4f(i);
+			if(hasColor) lightNode->color = colAcc->getColor4f(i);
+			else lightNode->color = Util::Color4f(1, 0, 0, 1);
 			lightNodes->push_back(lightNode);
 		}
 	}
