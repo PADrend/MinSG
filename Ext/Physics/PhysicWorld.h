@@ -42,30 +42,6 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		static const char* const SHAPE_TYPE_CONVEX_HULL;
 		static const char* const SHAPE_TYPE_STATIC_TRIANGLE_MESH ;
 		static const char* const SHAPE_TYPE_SPHERE;
-	protected:
-
-		//! (internal) Access methods to physics related node attributes.
-
-		static float getNodeProperty_mass(const Node* node, float defaultValue = 0.0);
-		static void setNodeProperty_mass(Node* node, float value);
-
-		static float getNodeProperty_friction(const Node* node, float defaultValue = 0.5);
-		static void setNodeProperty_friction(Node* node, float value);
-
-		static float getNodeProperty_rollingFriction(const Node* node, float defaultValue = 0);
-		static void setNodeProperty_rollingFriction(Node* node, float value);
-
-		static Util::GenericAttributeMap* getNodeProperty_shapeDescription(const Node* node);
-		static void setNodeProperty_shapeDescription(Node* node, const Util::GenericAttributeMap& desc);
-		static bool hasLocalShapeDescription(const Node* node);
-
-		static Geometry::Vec3 getNodeProperty_localSurfaceVelocity(const Node* node);
-		static void setNodeProperty_localSurfaceVelocity(Node* node, const Geometry::Vec3& value);
-
-		static std::string getNodeProperty_constraintPivot(const Node* node);
-		static void setNodeProperty_constraintPivot(Node* node, const std::string &name);
-
-		static std::vector<Node*> collectNodesWithPhysicsProperties(Node* root);
 
 	public:
 		static PhysicWorld * createBulletWorld();

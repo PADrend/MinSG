@@ -7,6 +7,7 @@
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
 minsg_add_sources(
+	SurfelAnalysis.cpp
 	SurfelGenerator.cpp
 	SurfelRenderer.cpp
 )

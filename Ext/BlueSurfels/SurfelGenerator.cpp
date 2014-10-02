@@ -326,8 +326,12 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 			float f=0.0f;
 			float sum = 0.0f;
 			for(const auto& neighbour : closestNeighbours){
-				f += surfels[ neighbour.surfelId ].normal.dot(normal);
-				sum+=10.0;
+				float v = surfels[ neighbour.surfelId ].normal.dot(normal);
+				if(v>=-0.00001){
+					f += std::abs(v);
+					sum+=1.0;
+					
+				}
 //				if( surfels[ neighbour.index ].normal.dot(normal) > 0.9 )
 			}
 			Util::Color4f c = colorAccessor->getColor4f(vIndex);
