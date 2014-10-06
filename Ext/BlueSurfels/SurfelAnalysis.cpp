@@ -16,6 +16,7 @@
 #include <Geometry/Point.h>
 #include <Geometry/PointOctree.h>
 #include <Geometry/Box.h>
+#include <cstddef>
 
 namespace MinSG{
 namespace BlueSurfels {
