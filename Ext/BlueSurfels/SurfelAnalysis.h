@@ -12,7 +12,7 @@
 #define SURFEL_ANALYSIS_H_
 
 #include <vector>
-#include <cstdint>
+#include <cstddef>
 
 namespace Rendering{
 class Mesh;
