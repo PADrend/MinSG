@@ -12,6 +12,7 @@
 #define SURFEL_ANALYSIS_H_
 
 #include <vector>
+#include <cstdint>
 
 namespace Rendering{
 class Mesh;
@@ -19,7 +20,8 @@ class Mesh;
 namespace MinSG{
 namespace BlueSurfels {
 
-std::vector<float> getProgressiveMinimalVertexDistances(Rendering::Mesh& mesh);
+std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh);
+std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength);
 	
 }
 }

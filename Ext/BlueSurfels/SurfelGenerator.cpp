@@ -130,8 +130,8 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 //	std::vector<size_t> newSurfelIds;
 
 	std::cout << "Overall number:" << surfels.size();
-// Util::Timer t;
-// t.reset();
+ Util::Timer t;
+ t.reset();
 	unsigned int acceptSamples=1;
 	unsigned int samplesPerRound=160;
 	unsigned int round = 1;
@@ -162,16 +162,24 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 			++surfelCount;
 		}
 		// remove worst samples
-		for(size_t i=static_cast<size_t>(sortedSubset.size()*(1.0f-reusalRate));i>0;--i){
-			freeSurfelIds.erase(sortedSubset[i].first);
-		}
-		sortedSubset.clear();
 
+	// removal strategy 1
+//	
+//		for(size_t i=static_cast<size_t>(sortedSubset.size()*(1.0f-reusalRate));i>0;--i){
+//			freeSurfelIds.erase(sortedSubset[i].first);
+//		}
+//	
+//		// removal strategy 2
+//		for(size_t i=std::min(static_cast<size_t>(acceptSamples),sortedSubset.size());i>0;--i)
+//			freeSurfelIds.erase(sortedSubset[i].first);
+		
+		sortedSubset.clear();
+//
 		if( (round%500) == 0){
-			//std::cout << "Round:"<<round<<" #Samples:"<< surfelCount<<" : "<<t.getMilliseconds()<<" ms; samplesPerRound "<<samplesPerRound<<" accept:"<<acceptSamples<<"\n";
+			std::cout << "Round:"<<round<<" #Samples:"<< surfelCount<<" : "<<t.getMilliseconds()<<" ms; samplesPerRound "<<samplesPerRound<<" accept:"<<acceptSamples<<"\n";
 			samplesPerRound = std::max(samplesPerRound*0.5f,20.0f);
 			acceptSamples = std::min( static_cast<unsigned int>(samplesPerRound*0.3), acceptSamples+1);
-// 			t.reset();
+ 			t.reset();
 		}
 		++round;
 	}
