@@ -230,6 +230,7 @@ public:
 	void onNodeTransformed(Node* node);
 
 	void addDynamicObject(Util::Reference<MinSG::Node> node);
+	void addDynamicLight(Util::Reference<MinSG::Node> node);
 
 private:
 	static unsigned int nextPowOf2(unsigned int number);
@@ -341,6 +342,7 @@ private:
 	static bool loadPaths;
 	std::vector<MinSG::PathNode*> pathNodes;
 	std::vector<MinSG::Node*> dynamicObjects;
+	std::vector<MinSG::Node*> dynamicLights;
 	unsigned int frameCounter;
 	bool testActive;
 };

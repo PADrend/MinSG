@@ -57,6 +57,10 @@ unsigned int NodeCreaterVisitor::nodeIndex = 0;
 #define TP_INTERNAL_FILTER_OCTREE			//activate or deactivate the usage of high quality voxelOctrees for internal edges (much better result)
 const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_INTERNAL_SIZE = 2048;
 
+//#define TP_MOVE_CAMERA
+#define TP_MOVE_OBJECTS
+#define TP_MOVE_LIGHTS
+
 //parameters
 const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 4;
 const float LightNodeManager::PERCENT_NODES = 0.001f;
@@ -254,12 +258,15 @@ void LightNodeManager::onRender(){
 
 	//move the camera
 	double timePoint = frameCounter++ / 200.0;
+#ifdef TP_MOVE_CAMERA
 	if(testActive && pathNodes.size() > 0){
 		Geometry::SRT srt = pathNodes[0]->getWorldPosition(timePoint);
 		cameraNode->setWorldTransformation(srt);
 	}
+#endif //TP_MOVE_CAMERA
 
 	//move the objects
+#ifdef TP_MOVE_OBJECTS
 	if(testActive){
 		for(unsigned int i = 0; i < dynamicObjects.size(); i++){
 			if(pathNodes.size() > i + 1){
@@ -276,6 +283,20 @@ void LightNodeManager::onRender(){
 			}
 		}
 	}
+#endif //TP_MOVE_OBJECTS
+
+#ifdef TP_MOVE_LIGHTS
+	//move the lights
+	if(testActive){
+		for(unsigned int i = 0; i < dynamicLights.size(); i++){
+			if(pathNodes.size() > i + 1){
+				Geometry::SRT srt = pathNodes[i + 1]->getWorldPosition(timePoint);
+				srt.translate(srt.getDirVector() * -1.0);
+				dynamicLights[i]->setWorldTransformation(srt);
+			}
+		}
+	}
+#endif //TP_MOVE_LIGHTS
 }
 
 void LightNodeManager::setCameraNode(Util::Reference<MinSG::Node> cameraNode){
@@ -1016,6 +1037,10 @@ void LightNodeManager::refreshDebugging(){
 
 void LightNodeManager::addDynamicObject(Util::Reference<MinSG::Node> node){
 	dynamicObjects.push_back(node.get());
+}
+
+void LightNodeManager::addDynamicLight(Util::Reference<MinSG::Node> node){
+	dynamicLights.push_back(node.get());
 }
 
 void LightNodeManager::onNodeTransformed(Node* node){
