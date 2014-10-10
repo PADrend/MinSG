@@ -25,6 +25,7 @@
 #include <Rendering/Mesh/VertexAttributeAccessors.h>
 #include <Util/Graphics/ColorLibrary.h>
 #include <Util/Graphics/PixelAccessor.h>
+#include <Util/Timer.h>
 #include "DebugObjects.h"
 #include "TextureProcessor.h"
 #include "ImageState.h"
@@ -345,6 +346,9 @@ private:
 	std::vector<MinSG::Node*> dynamicLights;
 	unsigned int frameCounter;
 	bool testActive;
+
+	Util::Timer timer;
+	double lastTime, tmpTime, tmpTime2;
 };
 
 }
