@@ -82,6 +82,7 @@ namespace MinSG {
 class Node;
 class GeometryNode;
 class LightNode;
+class PathNode;
 
 namespace ThesisPeter {
 
@@ -94,6 +95,7 @@ struct FilterEdgeState {
 struct LightNode {
 	Geometry::Vec3 osPosition;	//object space position, used for dynamic objects for recalculation of the position
 	Geometry::Vec3 position;
+	Geometry::Vec3 osNormal;	//object space normal, used for dynamic objects for recalculation of the positions
 	Geometry::Vec3 normal;
 	Util::Color4f color;
 	unsigned int id;			//used to identify the position inside the texture on GPU
@@ -154,7 +156,8 @@ public:
 	static unsigned int nodeIndex;
 	std::vector<LightNodeMap*>* lightNodeMaps;
 	std::vector<LightNodeLightMap*>* lightNodeLightMaps;
-	bool useGeometryNodes, useLightNodes;
+	std::vector<MinSG::PathNode*>* pathNodes;
+	bool useGeometryNodes, useLightNodes, loadPaths;
 
 private:
 	static const Util::StringIdentifier staticNodeIdent;
@@ -181,11 +184,14 @@ public:
 	LightNodeManager();
 	virtual ~LightNodeManager();
 	void test(MinSG::FrameContext& frameContext, Util::Reference<MinSG::Node> sceneRootNode);
+	void startTesting();
+	void onRender();
+	void setCameraNode(Util::Reference<MinSG::Node> cameraNode);
 	void setSceneRootNode(Util::Reference<MinSG::Node> sceneRootNode);
 	void setRenderingContext(Rendering::RenderingContext& renderingContext);
 	void setFrameContext(MinSG::FrameContext& frameContext);
 	unsigned int addTreeToDebug(Geometry::Vec3 parentPos, float parentSize, unsigned int depth, unsigned int curID, Util::PixelAccessor* pixelAccessor, unsigned int maxDepth);
-	void activateLighting(Util::Reference<MinSG::Node> sceneRootNode, Util::Reference<MinSG::Node> lightRootNode, Rendering::RenderingContext& renderingContext, MinSG::FrameContext& frameContext);
+	void activateLighting(Util::Reference<MinSG::Node> sceneRootNode, Util::Reference<MinSG::Node> lightRootNode, Rendering::RenderingContext& renderingContext, MinSG::FrameContext& frameContext, Util::Reference<MinSG::Node> cameraNode);
 	void createLightNodes();
 	static void createLightNodes(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
 	static void mapLightNodesToObject(MinSG::GeometryNode* node, std::vector<LightNode*>* lightNodes);
@@ -214,11 +220,16 @@ public:
 	static bool SHOW_OCTREE;									//if active, the octree is being shown
 	static float LIGHT_STRENGTH;								//used for propagation of the light, start value for light sources
 	static float LIGHT_STRENGTH_FACTOR;							//a factor, which is multiplied with the global illumination to "convert" it from HDR to LDR
+	static float NODE_MAPPING_DISTANCE_FACTOR;					//a factor used for taking the normal of a surface into account, if the distance is not too big
+	static float NODE_POSITION_OFFSET;							//an offset, that pushes the light nodes along their normal, to be more on the edge inside the voxelOctreeCell
+	static const unsigned int VOXEL_OCTREE_TEXTURE_INTERNAL_SIZE;	//max = 16384;	size*size = 18874368 if tree completely filled with depth 7
 
 	static unsigned int globalNodeCounter;						//used to give the nodes unique id's
 
 	//tracking objects in the scene
 	void onNodeTransformed(Node* node);
+
+	void addDynamicObject(Util::Reference<MinSG::Node> node);
 
 private:
 	static unsigned int nextPowOf2(unsigned int number);
@@ -273,6 +284,12 @@ private:
 	void removeAllStaticMapConnections();
 	void removeAllDynamicMapConnections();
 
+	void objectSwitchFromStaticToDynamic();
+	void objectSwitchFromDynamicToDynamic();
+	void lightSwitchFromStaticToDynamic();
+	void lightSwitchFromDynamicToDynamic();
+	void refreshDebugging();
+
 	Rendering::RenderingContext* renderingContext;
 	MinSG::FrameContext* frameContext;
 	std::vector<LightNodeLightMap*> lightNodeLightMaps;
@@ -308,11 +325,24 @@ private:
 	LightingArea lightingArea;			//The area, in which the objects are placed for lighting (calculated from the bounding boxes of the objects)
 	Util::Reference<MinSG::Node> lightRootNode;
 	Util::Reference<MinSG::Node> sceneRootNode;
+	Util::Reference<MinSG::Node> cameraNode;
 
 	static const Util::StringIdentifier lightNodeIDIdent;
 	static DebugObjects debug;
 
 	float globalMaxEdgeWeight, globalMinEdgeWeight;		//just for debugging
+
+	//for the rendering loop
+	static bool dynamicObjectChanged;
+	static bool staticObjectChanged;
+	static bool dynamicLightChanged;
+	static bool staticLightChanged;
+
+	static bool loadPaths;
+	std::vector<MinSG::PathNode*> pathNodes;
+	std::vector<MinSG::Node*> dynamicObjects;
+	unsigned int frameCounter;
+	bool testActive;
 };
 
 }
