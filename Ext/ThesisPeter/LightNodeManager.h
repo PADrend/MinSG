@@ -186,6 +186,8 @@ public:
 	virtual ~LightNodeManager();
 	void test(MinSG::FrameContext& frameContext, Util::Reference<MinSG::Node> sceneRootNode);
 	void startTesting();
+	void stopTesting();
+	void resumeTesting();
 	void onRender();
 	void setCameraNode(Util::Reference<MinSG::Node> cameraNode);
 	void setSceneRootNode(Util::Reference<MinSG::Node> sceneRootNode);
@@ -268,6 +270,9 @@ private:
 
 	void createNodeTextures();
 	void createEdgeTextures();
+	void createEdgeTexturesInternal();
+	void createEdgeTexturesExternalStatic();
+	void createEdgeTexturesExternalDynamic();
 	void propagateLight();
 
 	void copyTexture(Rendering::Texture *source, Rendering::Texture *target);
@@ -305,15 +310,25 @@ private:
 	Util::Reference<Rendering::Texture> atomicCounter;
 	Util::Reference<Rendering::Texture> voxelOctreeTextureComplete;
 
-	unsigned int curNumEdges;
+	static unsigned int NODE_DATA_LENGTH_PER_EDGE;
+	static unsigned int WEIGHT_DATA_LENGTH_PER_EDGE;
+	unsigned int curNumEdgesInternal;
+	unsigned int curNumEdgesExternalStatic;
+	unsigned int curNumEdgesExternalDynamic;
 	unsigned int curNodeTextureRenderingIndex;
 	Util::Reference<Rendering::Texture> tmpTexSmallest;
 	Util::Reference<Rendering::Texture> tmpDepthTexSmallest;
-	Util::Reference<Rendering::Texture> tmpTexEdgeSize;
+	Util::Reference<Rendering::Texture> tmpTexEdgeSizeInternal;
+	Util::Reference<Rendering::Texture> edgeTextureNodesInternal;
+	Util::Reference<Rendering::Texture> edgeTextureWeightsInternal;
+	Util::Reference<Rendering::Texture> tmpTexEdgeSizeExternalStatic;
+	Util::Reference<Rendering::Texture> edgeTextureNodesExternalStatic;
+	Util::Reference<Rendering::Texture> edgeTextureWeightsExternalStatic;
+	Util::Reference<Rendering::Texture> tmpTexEdgeSizeExternalDynamic;
+	Util::Reference<Rendering::Texture> edgeTextureNodesExternalDynamic;
+	Util::Reference<Rendering::Texture> edgeTextureWeightsExternalDynamic;
 	Util::Reference<Rendering::Texture> nodeTextureStatic;
 	Util::Reference<Rendering::Texture> nodeTextureRendering[2];
-	Util::Reference<Rendering::Texture> edgeTextureNodes;
-	Util::Reference<Rendering::Texture> edgeTextureWeights;
 
 	Util::Reference<Rendering::Shader> voxelOctreeShaderCreate;
 	Util::Reference<Rendering::Shader> voxelOctreeShaderReadTexture;
