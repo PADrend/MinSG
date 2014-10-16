@@ -13,7 +13,6 @@
 #ifndef SYNCBUFFER_H_
 #define SYNCBUFFER_H_
 
-#include <iostream>
 #include <streambuf>
 
 namespace D3Fact {

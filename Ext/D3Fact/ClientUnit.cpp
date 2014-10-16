@@ -30,6 +30,7 @@
 #include "ClientUnit.h"
 
 #include <cstdint>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <sstream>

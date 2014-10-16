@@ -15,6 +15,7 @@
 #include <Util/IO/FileName.h>
 #include <Util/References.h>
 
+#include <iosfwd>
 #include <unordered_map>
 
 namespace Util {
