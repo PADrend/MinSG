@@ -15,13 +15,8 @@
 #include <Util/IO/FileName.h>
 #include <Util/References.h>
 
+#include <mutex>
 #include <unordered_map>
-
-namespace Util {
-namespace Concurrency {
-class Mutex;
-}
-}
 
 namespace D3Fact {
 
@@ -71,7 +66,7 @@ private:
 	class ResourceMessageHandler;
 
 	std::unordered_multimap<uint32_t, ResourceHandle *> openHandles;
-	Util::Concurrency::Mutex * handlesMutex;
+	std::mutex handlesMutex;
 
 	Util::Reference<ResourceMessageHandler> msgHandler;
 

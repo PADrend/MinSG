@@ -11,10 +11,6 @@
 #include <Util/Macros.h>
 #include <Util/Utils.h>
 #include <Util/Network/NetworkTCP.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Lock.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Thread.h>
 #include <Util/GenericAttribute.h>
 
 #include "ClientUnit.h"
@@ -23,6 +19,7 @@
 #include "TCPHandler.h"
 
 #include <cstdint>
+#include <thread>
 #include <vector>
 
 #define PROTOCOL_VERSION 3
@@ -37,17 +34,20 @@ using namespace D3Fact;
 using namespace Util;
 using namespace Util::Network;
 
-TCPHandler::TCPHandler(ClientUnit* client_) : Concurrency::UserThread(), client(client_), connected(false) {
+TCPHandler::TCPHandler(ClientUnit* client_) : client(client_), connected(false) {
 }
 
 TCPHandler::~TCPHandler() {
 	close();
 }
 
+void TCPHandler::start() {
+	thread = std::thread(std::bind(&TCPHandler::run, this));
+}
+
 void TCPHandler::close() {
 	connected = false;
-	if(isActive())
-		join();
+	thread.join();
 }
 
 
@@ -60,7 +60,7 @@ void TCPHandler::run() {
 
 	{
 		// There should always be only one connection at a time waiting for an init-ack-message
-		auto lock = Concurrency::createLock(*client->connectMutex);
+		std::lock_guard<std::mutex> lock(client->connectMutex);
 
 		// send init message
 		// | length (4 Bytes) | protocol version (1 Byte) | client id (4 Bytes) | udp port (4 Bytes) | client type (1 Byte)

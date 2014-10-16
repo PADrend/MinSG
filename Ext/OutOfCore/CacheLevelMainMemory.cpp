@@ -17,12 +17,10 @@
 #include <Rendering/Mesh/MeshIndexData.h>
 #include <Rendering/Mesh/MeshVertexData.h>
 #include <Rendering/Mesh/VertexDescription.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Lock.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Semaphore.h>
-#include <Util/Concurrency/Thread.h>
+#include <condition_variable>
+#include <mutex>
 #include <stdexcept>
+#include <thread>
 #include <utility>
 
 namespace MinSG {
@@ -30,17 +28,17 @@ namespace OutOfCore {
 
 CacheLevelMainMemory::CacheLevelMainMemory(uint64_t cacheSize, CacheContext & cacheContext) :
 	CacheLevel(cacheSize, cacheContext), 
-	threadMutex(Util::Concurrency::createMutex()), threadSemaphore(Util::Concurrency::createSemaphore()),
-	thread(Util::Concurrency::createThread()), active(false) {
+	threadMutex(), threadSemaphore(),
+	thread(), active(false) {
 }
 
 CacheLevelMainMemory::~CacheLevelMainMemory() {
 	{
-		auto lock = Util::Concurrency::createLock(*threadMutex);
+		std::lock_guard<std::mutex> lock(threadMutex);
 		active = false;
 	}
-	threadSemaphore->post();
-	thread->join();
+	threadSemaphore.notify_all();
+	thread.join();
 }
 
 void * CacheLevelMainMemory::threadRun(void * data) {
@@ -52,7 +50,7 @@ void * CacheLevelMainMemory::threadRun(void * data) {
 		}
 		bool workDone = false;
 		{
-			auto lock = Util::Concurrency::createLock(*level->threadMutex);
+			std::lock_guard<std::mutex> lock(level->threadMutex);
 			if(!level->active) {
 				break;
 			}
@@ -82,7 +80,8 @@ void * CacheLevelMainMemory::threadRun(void * data) {
 			}
 		}
 		if(!workDone) {
-			level->threadSemaphore->wait();
+			std::unique_lock<std::mutex> lock(level->threadMutex);
+			level->threadSemaphore.wait(lock);
 		}
 	}
 	return nullptr;
@@ -143,16 +142,14 @@ void CacheLevelMainMemory::doVerify() const {
 #endif /* MINSG_EXT_OUTOFCORE_DEBUG */
 
 void CacheLevelMainMemory::doWork() {
-	if(threadSemaphore->getValue() == 0) {
-		threadSemaphore->post();
-	}
+	threadSemaphore.notify_all();
 }
 
 void CacheLevelMainMemory::init() {
-	auto lock = Util::Concurrency::createLock(*threadMutex);
+	std::lock_guard<std::mutex> lock(threadMutex);
 	if(!active) {
 		active = true;
-		thread->start(&CacheLevelMainMemory::threadRun, this);
+		thread = std::thread(std::bind(&CacheLevelMainMemory::threadRun, this));
 	}
 }
 

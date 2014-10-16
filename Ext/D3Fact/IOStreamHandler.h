@@ -26,13 +26,6 @@ enum StreamMessage_t {
 	STREAM_ERROR = 203
 };
 
-namespace Util {
-namespace Concurrency {
-class Thread;
-class Mutex;
-}
-}
-
 namespace D3Fact {
 
 class Session;
@@ -60,7 +53,7 @@ private:
 	Util::Reference<Session> session;
 	std::map<int32_t, SyncBuffer*> instreams;
 	std::map<int32_t, OutStreamer*> outstreams;
-	Util::Concurrency::Mutex* mutex;
+	std::mutex mutex;
 };
 
 } /* namespace D3Fact */

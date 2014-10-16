@@ -10,9 +10,6 @@
 
 #include <limits>
 
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Lock.h>
 #include <Util/Macros.h>
 
 #include "MessageDispatcher.h"
@@ -29,8 +26,8 @@ using namespace Util;
 
 Session::Session(int32_t sessionId_, ClientUnit* client_) :
 		sessionId(sessionId_), closed(false), client(client_),
-		receivedMSGID(std::numeric_limits<int64_t>::min()), sendMSGID(std::numeric_limits<int64_t>::min()), dispatcher(new MessageDispatcher(this)) {
-	receivedMutex = Concurrency::createMutex();
+		receivedMSGID(std::numeric_limits<int64_t>::min()), sendMSGID(std::numeric_limits<int64_t>::min()), dispatcher(new MessageDispatcher(this)),
+		receivedMutex() {
 }
 
 Session::~Session() {
@@ -45,12 +42,12 @@ Message* Session::createMessage(int32_t type, size_t /*bodySize*//*=0*/, int pro
 }
 
 bool Session::hasReceivedMSG() {
-	auto receivedLock = Concurrency::createLock(*receivedMutex);
+	std::lock_guard<std::mutex> lock(receivedMutex);
 	return !receivedQueue.empty() && receivedQueue.top()->getOrder() <= receivedMSGID+1;
 }
 
 Message* Session::receiveMSG() {
-	auto receivedLock = Concurrency::createLock(*receivedMutex);
+	std::lock_guard<std::mutex> lock(receivedMutex);
 	if(receivedQueue.empty() || receivedQueue.top()->getOrder() > receivedMSGID+1)
 		return nullptr;
 	Message* msg = receivedQueue.top();
@@ -62,7 +59,7 @@ Message* Session::receiveMSG() {
 }
 
 void Session::received(Message* msg_) {
-	auto receivedLock = Concurrency::createLock(*receivedMutex);
+	std::lock_guard<std::mutex> lock(receivedMutex);
 	if(msg_->getType() > 0 && (msg_->getProtocol() == Message::TCP || msg_->getOrder() >= receivedMSGID)) {
 		receivedQueue.push(msg_);
 	} else {
@@ -84,7 +81,7 @@ void Session::close() {
 	if(closed)
 		return;
 	{
-		auto receivedLock = Concurrency::createLock(*receivedMutex);
+		std::lock_guard<std::mutex> lock(receivedMutex);
 		if(client.isNotNull())
 			client->closeSession(this);
 		closed = true;

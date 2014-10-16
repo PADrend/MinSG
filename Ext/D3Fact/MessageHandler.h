@@ -12,17 +12,12 @@
 #define MESSAGEHANDLER_H_
 
 #include <deque>
+#include <mutex>
 
 #include <Util/TypeNameMacro.h>
 #include <Util/References.h>
 #include <Util/ReferenceCounter.h>
 #include <Util/AttributeProvider.h>
-
-namespace Util {
-namespace Concurrency {
-class Mutex;
-}
-}
 
 namespace D3Fact {
 
@@ -51,7 +46,7 @@ protected:
 	virtual void handleMessage(Message* msg) = 0;
 private:
 	Mode_t mode;
-	Util::Concurrency::Mutex* queueMutex;
+	std::mutex queueMutex;
 	std::deque<Message*> msgQueue;
 	WorkerThread* worker;
 };

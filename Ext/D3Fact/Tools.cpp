@@ -12,11 +12,6 @@
 #include <Util/Macros.h>
 #include <Util/Network/NetworkTCP.h>
 #include <Util/Network/NetworkUDP.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Semaphore.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Lock.h>
-#include <Util/Concurrency/UserThread.h>
 #include <Util/Utils.h>
 #include <Util/Macros.h>
 #include <Util/IO/FileUtils.h>
@@ -25,11 +20,15 @@
 #include "Message.h"
 #include "Tools.h"
 
-#include <random>
+#include <condition_variable>
 #include <ctime>
-#include <zlib.h>
-#include <tuple>
 #include <deque>
+#include <mutex>
+#include <random>
+#include <thread>
+#include <tuple>
+
+#include <zlib.h>
 
 using namespace Util;
 
@@ -37,91 +36,49 @@ namespace D3Fact {
 
 const uint32_t Tools::TIMEOUT = 2000;
 
-// bad workaround for semaphores with timeout
-class SemTimeout : public Util::Concurrency::UserThread {
-public:
-	SemTimeout(Util::Concurrency::Semaphore* sem_, uint32_t ms) : Util::Concurrency::UserThread(),
-	sem(sem_), mutex(Util::Concurrency::createMutex()), time(ms), timeout(false), aborted(false) {start();}
-
-	~SemTimeout() {
-		delete mutex;
-	}
-
-	bool isTimeout() { return timeout; }
-	void abort() {
-		auto lock = Util::Concurrency::createLock(*mutex);
-		aborted = true;
-	}
-
-private:
-	Util::Concurrency::Semaphore* sem;
-	Util::Concurrency::Mutex* mutex;
-	uint32_t time;
-	bool timeout;
-	bool aborted;
-
-	void run() override {
-		uint32_t timer = 0;
-		while(timer < time) {
-			// I hate this, but i have no idea how to do it otherwise
-			Util::Utils::sleep(1);
-			++timer;
-			{
-				auto lock = Util::Concurrency::createLock(*mutex);
-				if(aborted)
-					break;
-			}
-		}
-
-		auto lock = Util::Concurrency::createLock(*mutex);
-		if(timer >= time && !aborted) {
-			timeout = true;
-			sem->post();
-		}
-	}
-};
-
-class FileCopier : public Util::Concurrency::UserThread {
+class FileCopier {
 private:
 	bool closed;
-	Util::Concurrency::Semaphore* sem;
-	Util::Concurrency::Mutex* mutex;
+	std::condition_variable cv;
+	std::mutex cvMutex;
+	std::mutex mutex;
 	typedef std::tuple<std::string, std::string, Tools::asyncCopyCallback_t> QueueEntry_t;
 	std::deque<QueueEntry_t> queue;
+	std::thread thread;
 public:
-	FileCopier() : Util::Concurrency::UserThread(), closed(false),
-	sem(Util::Concurrency::createSemaphore()), mutex(Util::Concurrency::createMutex()) {start();}
+	FileCopier() : closed(false),
+	cv(), cvMutex(), mutex(), thread(std::bind(&FileCopier::run, this)) {
+	}
 
 	~FileCopier() {
 		close();
-		join();
-		delete sem;
-		delete mutex;
+		thread.join();
 	}
 	void close() {
-		sem->post();
+		cv.notify_all();
 		closed = true;
 	}
 
 	void enqueue(const std::string& src, const std::string& dest, const Tools::asyncCopyCallback_t& callback) {
-		auto lock = Util::Concurrency::createLock(*mutex);
+		std::lock_guard<std::mutex> lock(mutex);
 		auto entry = std::make_tuple(src, dest, callback);
 		queue.push_back(entry);
-		sem->post();
+		cv.notify_all();
 	}
 
-	void run() override {
+	void run() {
 		while(!closed) {
-			sem->wait();
+			std::unique_lock<std::mutex> cvLock(cvMutex);
+			cv.wait(cvLock);
 			bool empty = false;
 			{
-				auto lock = Util::Concurrency::createLock(*mutex);
+				std::lock_guard<std::mutex> lock(mutex);
 				empty = queue.empty();
 			}
 			if(!empty) {
 				QueueEntry_t entry;
 				{
-					auto lock = Util::Concurrency::createLock(*mutex);
+					std::lock_guard<std::mutex> lock(mutex);
 					entry = queue.front();
 					queue.pop_front();
 				}
@@ -308,17 +265,6 @@ bool Tools::sendUDPMSG(Network::UDPNetworkSocket* socket, Message* msg) {
 		std::copy(body.begin() + off, body.begin() + off + bodyLength, data.begin() + OFFSET_UDP_BODY);
 	}
 	return socket->sendData(data.data(), data.size()) > 0;
-}
-
-bool Tools::timedWait(Util::Concurrency::Semaphore* sem, uint32_t timeout) {
-	if(sem->tryWait()) {
-		return true;
-	}
-	SemTimeout to(sem, timeout);
-	sem->wait();
-	to.abort();
-	to.join();
-	return !to.isTimeout();
 }
 
 bool Tools::asyncCopy(const std::string& src, const std::string& dest, const asyncCopyCallback_t& callback) {

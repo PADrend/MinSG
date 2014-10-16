@@ -13,13 +13,11 @@
 #ifndef LP_H
 #define LP_H
 
+#include <condition_variable>
+#include <mutex>
+#include <thread>
 #include <vector>
 
-#include <Util/Concurrency/UserThread.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Lock.h>
-#include <Util/Concurrency/Semaphore.h>
-#include <Util/Concurrency/Mutex.h>
 #include <Util/Macros.h>
 
 COMPILER_WARN_PUSH
@@ -30,7 +28,7 @@ COMPILER_WARN_POP
 namespace MinSG
 {
 
-class LP : public Util::Concurrency::UserThread
+class LP
 {
 
 public:
@@ -40,18 +38,18 @@ public:
 	~LP();
 
 	bool isStopped() {
-		auto lock = Util::Concurrency::createLock(* mutex );
+		std::lock_guard<std::mutex> lock(mutex);
 		return stopped;
 	}
 
 	bool hasResult() {
-		auto lock = Util::Concurrency::createLock(* mutex );
+		std::lock_guard<std::mutex> lock(mutex);
 		return resultComputed;
 	}
 
 	std::vector<int> getResult();
 
-	virtual void run() override;
+	void run();
 
 private:
 
@@ -63,8 +61,9 @@ private:
 	volatile bool resultComputed;
 	volatile bool stopped;
 
-	Util::Concurrency::Mutex * mutex;
-	Util::Concurrency::Semaphore * changed;
+	std::mutex mutex;
+	std::condition_variable changed;
+	std::thread thread;
 
 	void printMatrix();
 	void printResult();

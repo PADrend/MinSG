@@ -8,78 +8,73 @@
 */
 #ifdef MINSG_EXT_D3FACT
 
-#include <Util/Concurrency/UserThread.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Semaphore.h>
-#include <Util/Concurrency/Lock.h>
-
 #include "Message.h"
 #include "MessageHandler.h"
 
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
+#include <thread>
 
 using namespace D3Fact;
 using namespace Util;
-using namespace Util::Concurrency;
 
 namespace D3Fact {
-class WorkerThread : public UserThread {
+class WorkerThread {
 public:
 	WorkerThread(MessageHandler* handler_);
-	virtual ~WorkerThread();
+	~WorkerThread();
 	void wake();
 	void close();
 protected:
-	void run() override;
+	void run();
 	bool closed;
-	Semaphore* wakeMutex;
+	std::mutex wakeMutex;
+	std::condition_variable wakeCV;
 	MessageHandler* handler;
+	std::thread thread;
 };
 }
 
-WorkerThread::WorkerThread(MessageHandler* handler_) : UserThread(), closed(false), handler(handler_) {
-	wakeMutex = Concurrency::createSemaphore();
-	start();
+WorkerThread::WorkerThread(MessageHandler* handler_) : closed(false), wakeMutex(), wakeCV(), handler(handler_),
+	thread(std::bind(&WorkerThread::run, this)) {
 }
 
 WorkerThread::~WorkerThread() {
 	close();
-	join();
-	delete wakeMutex;
+	thread.join();
 }
 
 void WorkerThread::wake() {
-	wakeMutex->post();
+	wakeCV.notify_all();
 }
 
 void WorkerThread::close() {
 	closed = true;
-	wakeMutex->post();
+	wakeCV.notify_all();
 }
 
 void WorkerThread::run() {
 	while(!closed){
-		wakeMutex->wait();
+		std::unique_lock<std::mutex> lock(wakeMutex);
+		wakeCV.wait(lock);
 		handler->handleMessages();
 	}
 }
 
 // -----------------------------------------------------
 
-MessageHandler::MessageHandler(Mode_t mode_) : ReferenceCounter_t(), Util::AttributeProvider(), mode(mode_) {
-	queueMutex = Concurrency::createMutex();
+MessageHandler::MessageHandler(Mode_t mode_) : ReferenceCounter_t(), Util::AttributeProvider(), mode(mode_), queueMutex() {
 	worker = mode == ASYNC ? new WorkerThread(this) : nullptr;
 }
 
 MessageHandler::~MessageHandler() {
 	delete worker;
-	delete queueMutex;
 }
 
 void MessageHandler::addMessage(Message* msg) {
 	{
-		auto lock = Util::Concurrency::createLock(*queueMutex);
+		std::lock_guard<std::mutex> lock(queueMutex);
 		msgQueue.push_back(msg);
 	}
 	if(mode == ASYNC)
@@ -96,7 +91,7 @@ void MessageHandler::handleMessages() {
 }
 
 Message* MessageHandler::nextMessage() {
-	auto lock = Util::Concurrency::createLock(*queueMutex);
+	std::lock_guard<std::mutex> lock(queueMutex);
 	Message* msg = nullptr;
 	if(!msgQueue.empty()) {
 		msg = msgQueue.front();

@@ -25,9 +25,6 @@ namespace Network {
 class TCPConnection;
 class UDPNetworkSocket;
 }
-namespace Concurrency {
-class Semaphore;
-}
 }
 
 namespace D3Fact {
@@ -206,8 +203,6 @@ public:
 	static bool sendUDPMSG(Util::Network::UDPNetworkSocket* socket, Message* msg);
 
 	// utils
-
-	static bool timedWait(Util::Concurrency::Semaphore* sem, uint32_t timeout=Tools::TIMEOUT);
 
 	typedef std::function<void(const std::string& src, const std::string& dest, bool success)> asyncCopyCallback_t;
 	static bool asyncCopy(const std::string& src, const std::string& dest, const asyncCopyCallback_t& callback);
