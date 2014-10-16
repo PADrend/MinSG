@@ -16,7 +16,7 @@
 
 #include <Util/References.h>
 
-#include <iostream>
+#include <iosfwd>
 #include <map>
 
 enum StreamMessage_t {

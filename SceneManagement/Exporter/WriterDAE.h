@@ -14,7 +14,7 @@
 #include <Util/StringIdentifier.h>
 
 #include <map>
-#include <ostream>
+#include <iosfwd>
 #include <cstdint>
 #include <string>
 

@@ -12,8 +12,6 @@
 #ifndef MINSG_LOADERCOLLADA_LOADERCOLLADA_H
 #define MINSG_LOADERCOLLADA_LOADERCOLLADA_H
 
-#include <iostream>
-
 namespace Util {
 class FileName;
 class GenericAttributeMap;

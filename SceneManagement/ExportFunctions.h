@@ -13,7 +13,7 @@
 
 #include <Util/IO/FileName.h>
 #include <deque>
-#include <ostream>
+#include <iosfwd>
 
 namespace MinSG {
 class Node;

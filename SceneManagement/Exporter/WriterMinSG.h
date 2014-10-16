@@ -11,7 +11,7 @@
 #ifndef MINSG_SCENEWRITER_H
 #define MINSG_SCENEWRITER_H
 
-#include <ostream>
+#include <iosfwd>
 
 namespace Util {
 class GenericAttributeMap;

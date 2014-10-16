@@ -15,8 +15,7 @@
 
 #include <array>
 #include <cstdint>
-#include <istream>
-#include <ostream>
+#include <iosfwd>
 #include <vector>
 
 namespace Util {
