@@ -183,15 +183,19 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 	}
 
 	try{
+		std::vector<Util::Reference<MinSG::State>> activeStates;
+		
 		// - enable states
 		if(hasStates() && !(rp.getFlag(NO_STATES))) {
 			for(auto & stateEntry : *states) {
 				const State::stateResult_t result = stateEntry.first->enableState(context, this, rp);
 				if(result == State::STATE_OK) {
 					stateEntry.second = true;
+					activeStates.push_back( stateEntry.first );
 				} else if(result == State::STATE_SKIPPED) {
 					stateEntry.second = false;
 				} else if(result == State::STATE_SKIP_OTHER_STATES) {
+					activeStates.push_back( stateEntry.first );
 					stateEntry.second = true;
 					break;
 				} else if(result == State::STATE_SKIP_RENDERING) {
@@ -211,16 +215,22 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 			doDisplay(context,rp);
 		}
 
-		// - disable states
-		if(hasStates()&& !(rp.getFlag(NO_STATES))) {
-			for (auto it=states->rbegin();it!=states->rend();++it) {
-				// Only disable the state if it was enabled successfully before.
-				if(it->second) {
-					it->second = false;
-					it->first->disableState(context,this,rp);
-				}
+		if(!activeStates.empty()){
+			for (auto it=activeStates.rbegin(); it!=activeStates.rend(); ++it) {
+				(*it)->disableState(context,this,rp);
 			}
 		}
+//		// - disable states
+//		if(hasStates()&& !(rp.getFlag(NO_STATES))) {
+//			for (auto it=states->rbegin();it!=states->rend();++it) {
+//				// Only disable the state if it was enabled successfully before.
+//				if(it->second) {
+//					it->second = false;
+//					
+//					it->first->disableState(context,this,rp);
+//				}
+//			}
+//		}
 
 		// - revert transformations
 		if (matrixMustBePopped ){
