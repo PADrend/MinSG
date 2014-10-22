@@ -48,9 +48,9 @@ Node::Node(const Node & source) :
 
 	// do not copy any attributes; these have to be handled by the cloning or instancing routine
 	
-	if (source.hasRelTransformationSRT()){
+	if(source.hasRelTransformationSRT()){
 		setRelTransformation(source.getRelTransformationSRT());
-	}else if (source.hasRelTransformation()) {
+	}else if(source.hasRelTransformation()) {
 		setRelTransformation(source.getRelTransformationMatrix());
 	}
 
@@ -165,17 +165,16 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 	if(!isActive() || !testRenderingLayer(rp.getRenderingLayers()))
 		return;
 
-	bool skipRendering=false;
 	bool matrixMustBePopped=false;
 
 	// - apply transformations
-	if( (rp.getFlag(USE_WORLD_MATRIX))>0 && getWorldTransformationMatrixPtr()!=nullptr ){
+	if( (rp.getFlag(USE_WORLD_MATRIX))>0 && getWorldTransformationMatrixPtr() ){
 		matrixMustBePopped = true;
 		context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
 		context.getRenderingContext().multMatrix_modelToCamera(*getWorldTransformationMatrixPtr());
 	}else{
-		const Geometry::Matrix4x4 * m=getRelTransformationMatrixPtr();
-		if (m) {
+		const Geometry::Matrix4x4 * m = getRelTransformationMatrixPtr();
+		if(m) {
 			matrixMustBePopped = true;
 			context.getRenderingContext().pushMatrix_modelToCamera();
 			context.getRenderingContext().multMatrix_modelToCamera(*m);
@@ -183,19 +182,17 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 	}
 
 	try{
-		std::vector<Util::Reference<MinSG::State>> activeStates;
 		
 		// - enable states
 		if(hasStates() && !(rp.getFlag(NO_STATES))) {
+			bool skipRendering = false;
 			for(auto & stateEntry : *states) {
 				const State::stateResult_t result = stateEntry.first->enableState(context, this, rp);
 				if(result == State::STATE_OK) {
 					stateEntry.second = true;
-					activeStates.push_back( stateEntry.first );
 				} else if(result == State::STATE_SKIPPED) {
 					stateEntry.second = false;
 				} else if(result == State::STATE_SKIP_OTHER_STATES) {
-					activeStates.push_back( stateEntry.first );
 					stateEntry.second = true;
 					break;
 				} else if(result == State::STATE_SKIP_RENDERING) {
@@ -205,53 +202,46 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 					break;
 				}
 			}
-		}
 
-		// - perform rendering of the node itself
-		if(!skipRendering){
-			if(rp.getFlag(SHOW_COORD_SYSTEM)) {
-				Rendering::drawCoordSys(context.getRenderingContext(), hasParent()?1.0f:10000.0f);
+			// - perform rendering of the node itself
+			if(!skipRendering){
+				if(rp.getFlag(SHOW_COORD_SYSTEM))
+					Rendering::drawCoordSys(context.getRenderingContext(), hasParent()?1.0f:10000.0f);
+				doDisplay(context,rp);
+			}			
+			if(states){ // re-check; it could happen that another state messed with the state list (don't do this if possible!)
+				for( int i = static_cast<int>(states->size())-1; i>=0&&states; --i){ // don't use iterator here (too unstable...)
+					auto& stateEntry = (*states)[i];
+					if( stateEntry.second ){ // state was enabled...
+						stateEntry.second = false;
+						stateEntry.first->disableState(context,this,rp);
+					}
+				}
 			}
+		}else{
+			if(rp.getFlag(SHOW_COORD_SYSTEM))
+				Rendering::drawCoordSys(context.getRenderingContext(), hasParent()?1.0f:10000.0f);
 			doDisplay(context,rp);
 		}
 
-		if(!activeStates.empty()){
-			for (auto it=activeStates.rbegin(); it!=activeStates.rend(); ++it) {
-				(*it)->disableState(context,this,rp);
-			}
-		}
-//		// - disable states
-//		if(hasStates()&& !(rp.getFlag(NO_STATES))) {
-//			for (auto it=states->rbegin();it!=states->rend();++it) {
-//				// Only disable the state if it was enabled successfully before.
-//				if(it->second) {
-//					it->second = false;
-//					
-//					it->first->disableState(context,this,rp);
-//				}
-//			}
-//		}
-
 		// - revert transformations
-		if (matrixMustBePopped ){
+		if( matrixMustBePopped )
 			context.getRenderingContext().popMatrix_modelToCamera();
-		}
-	}catch(...){ // if something went wrong, return to consistent state
+
+	}catch(...){ // if something went wrong, try to return to a consistent state
 		// - disable states
-		if(hasStates()&& !(rp.getFlag(NO_STATES))) {
-			for (auto it=states->rbegin();it!=states->rend();++it) {
-				// Only disable the state if it was enabled successfully before.
-				if(it->second) {
-					it->second = false;
-					it->first->disableState(context,this,rp);
+		if(states){ // re-check; it could happen that another state messed with the state list (don't do this if possible!)
+			for( int i = static_cast<int>(states->size())-1; i>=0&&states; --i){ // don't use iterator here (too unstable...)
+				auto& stateEntry = (*states)[i];
+				if( stateEntry.second ){ // state was enabled...
+					stateEntry.second = false;
+					stateEntry.first->disableState(context,this,rp);
 				}
 			}
 		}
 		// - revert transformations
-		if (matrixMustBePopped ){
+		if( matrixMustBePopped )
 			context.getRenderingContext().popMatrix_modelToCamera();
-		}
-
 		throw;
 	}
 }
