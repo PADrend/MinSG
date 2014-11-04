@@ -9,6 +9,8 @@
 */
 #ifdef MINSG_EXT_LOADERCOLLADA
 
+#include <iostream>
+
 #include "LoaderCOLLADA.h"
 #include "Writer.h"
 #include "../../SceneManagement/SceneDescription.h"
