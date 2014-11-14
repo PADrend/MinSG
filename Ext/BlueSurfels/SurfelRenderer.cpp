@@ -34,7 +34,7 @@ namespace BlueSurfels {
 
 		
 SurfelRenderer::SurfelRenderer() : NodeRendererState(FrameContext::DEFAULT_CHANNEL),
-		minSideLength(100.0f),maxSideLength(200.0f),countFactor(2.0f),sizeFactor(2.0f),projectionScale(1.0){
+		minSideLength(100.0f),maxSideLength(200.0f),countFactor(2.0f),sizeFactor(2.0f),maxSurfelSize(4.0),projectionScale(1.0){
 }
 SurfelRenderer::~SurfelRenderer() {}
 
@@ -70,8 +70,13 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext & context, Node * no
 
 	Rendering::Mesh& surfelMesh = *surfelAttribute->get();
 	
-	const auto& worldBB = node->getWorldBB();
-	const float approxProjectedSideLength = projectionScale * worldBB.getDiameter() / (worldBB.getCenter()-cameraOrigin).length();
+	
+	const Geometry::Rect projection = context.getProjectedRect(node);
+	const float approxProjectedSideLength =  std::sqrt(projection.getHeight() * projection.getWidth());
+
+//	const auto& worldBB = node->getWorldBB();
+//	const float approxProjectedSideLength = projectionScale * worldBB.getDiameter() / (worldBB.getCenter()-cameraOrigin).length();
+	
 	if(approxProjectedSideLength > maxSideLength)
 		return NodeRendererResult::PASS_ON;
 
@@ -84,7 +89,7 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext & context, Node * no
 	uint32_t surfelCount = std::min(	surfelMesh.isUsingIndexData() ?  surfelMesh.getIndexCount() : surfelMesh.getVertexCount(),
 										static_cast<uint32_t>(approxProjectedArea * countFactor) + 1);
 										
-	float surfelSize = sizeFactor * approxProjectedArea / surfelCount;
+	float surfelSize = std::min(sizeFactor * approxProjectedArea / surfelCount,maxSurfelSize);
 
 	bool handled = true;
 	if(approxProjectedSideLength > minSideLength && minSideLength<maxSideLength){

@@ -41,7 +41,7 @@ class SurfelRenderer : public NodeRendererState{
 		
 		SurfelRenderer* clone()const	{	return new SurfelRenderer(*this);	}
 	private:
-		float minSideLength,maxSideLength,countFactor,sizeFactor;
+		float minSideLength,maxSideLength,countFactor,sizeFactor,maxSurfelSize;
 		float projectionScale;
 		Geometry::Vec3 cameraOrigin;
 };
