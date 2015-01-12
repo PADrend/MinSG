@@ -9,6 +9,7 @@
 minsg_add_sources(
 	CHCppRenderer.cpp
 	HOMRenderer.cpp
+	NaiveOccRenderer
 	OccludeeRenderer.cpp
 	OcclusionCullingStatistics.cpp
 	OccRenderer.cpp
