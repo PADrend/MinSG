@@ -8,6 +8,7 @@
 #
 minsg_add_sources(
 	CHCppRenderer.cpp
+	CHCRenderer.cpp
 	HOMRenderer.cpp
 	NaiveOccRenderer
 	OccludeeRenderer.cpp
