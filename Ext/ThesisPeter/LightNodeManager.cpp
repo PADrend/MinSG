@@ -35,6 +35,9 @@
 #include <Util/IO/FileLocator.h>
 #include <Geometry/Definitions.h>
 #include <MinSG/Core/Behaviours/AbstractBehaviour.h>
+#include <Util/IO/FileUtils.h>
+
+#include <fstream>
 
 namespace Rendering {
 const std::string Rendering::LightNodeIndexAttributeAccessor::noAttrErrorMsg("No attribute named '");
@@ -51,34 +54,37 @@ unsigned int NodeCreaterVisitor::nodeIndex = 0;
 
 //#define TP_ACTIVATE_DEBUG					//activate or deactivate all debugging drawing (costs much performance!)
 #define TP_SHOW_OCTREE						//activate or deactivate debugging drawing of the voxelOctree
-//#define TP_SHOW_NODES						//activate or deactivate debugging drawing of the lightNodes
+#define TP_SHOW_NODES						//activate or deactivate debugging drawing of the lightNodes
 #define TP_SHOW_EDGES						//activate or deactivate debugging drawing of the lightEdges
 //#define TP_SHOW_MAPPING					//activate or deactivate debugging drawing of vertex to lightNode Mapping
 #define TP_INTERNAL_FILTER_OCTREE			//activate or deactivate the usage of high quality voxelOctrees for internal edges (much better result)
 const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_INTERNAL_SIZE = 2048;
 
 //#define TP_MOVE_CAMERA
-#define TP_MOVE_OBJECTS
-#define TP_MOVE_LIGHTS
+//#define TP_MOVE_OBJECTS
+//#define TP_MOVE_LIGHTS
 
 #define TP_MEASURE_TIMINGS
 #define TP_SHOW_TIMINGS
 
 //parameters
-const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 4;
-const float LightNodeManager::PERCENT_NODES = 0.1f;
-const float LightNodeManager::MAX_EDGE_LENGTH = 2.0f;
-const float LightNodeManager::MIN_EDGE_WEIGHT = 0.00001f;
+const float LightNodeManager::PERCENT_NODES = 0.03f;
+const float LightNodeManager::MAX_EDGE_LENGTH = 4.0f;
 const float LightNodeManager::MAX_EDGE_LENGTH_LIGHT = 20.0f;
-const float LightNodeManager::MIN_EDGE_WEIGHT_LIGHT = 0.00001f;
 const unsigned int LightNodeManager::VOXEL_OCTREE_DEPTH = 7;
-const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_SIZE = 2048;
-const unsigned int LightNodeManager::VOXEL_OCTREE_SIZE_PER_NODE = 8;
+const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 4;
+
+const float LightNodeManager::MIN_EDGE_WEIGHT = 0.00001f;
+const float LightNodeManager::MIN_EDGE_WEIGHT_LIGHT = 0.00001f;
+const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_SIZE = 4096;
+
 float LightNodeManager::LIGHT_STRENGTH = 14000;
-float LightNodeManager::LIGHT_STRENGTH_FACTOR = 15000;
+float LightNodeManager::LIGHT_STRENGTH_FACTOR = 100;
 float LightNodeManager::NODE_MAPPING_DISTANCE_FACTOR = 2;
 float LightNodeManager::NODE_POSITION_OFFSET = 0.2f;
 
+//internal only
+const unsigned int LightNodeManager::VOXEL_OCTREE_SIZE_PER_NODE = 8;
 unsigned int LightNodeManager::globalNodeCounter = 0;
 bool LightNodeManager::SHOW_EDGES = false;
 bool LightNodeManager::SHOW_OCTREE = false;
@@ -173,6 +179,9 @@ LightNodeManager::LightNodeManager(){
 	globalMinEdgeWeight = 99999;
 	globalMaxEdgeWeight = -99999;
 	testActive = false;
+	logFile = 0;
+	logFile2 = 0;
+	logFile3 = 0;
 
 	for(unsigned int i = 0; i < 3; i++){
 		sceneEnclosingCameras[i] = new MinSG::CameraNodeOrtho();
@@ -220,6 +229,18 @@ LightNodeManager::~LightNodeManager(){
 	cleanUpDebug();
 #endif
 	cleanUp();
+	if(logFile != 0){
+		logFile->close();
+		delete logFile;
+	}
+	if(logFile2 != 0){
+		logFile2->close();
+		delete logFile2;
+	}
+	if(logFile3 != 0){
+		logFile3->close();
+		delete logFile3;
+	}
 }
 
 void LightNodeManager::test(MinSG::FrameContext& frameContext, Util::Reference<MinSG::Node> sceneRootNode){
@@ -234,14 +255,56 @@ void LightNodeManager::test(MinSG::FrameContext& frameContext, Util::Reference<M
 
 void LightNodeManager::startTesting(){
 	frameCounter = 0;
+	timePoint = 0;
+	minTime = 999999999;
+	maxTime = 0;
+	sumTime = 0;
+	dynamicEdgesMin = 999999999;
+	dynamicEdgesMax = 0;
+	dynamicEdgesFilteredMin = 999999999;
+	dynamicEdgesFilteredMax = 0;
+
+//	Util::FileName fileName("TP_Log.csv");
+////	if(Util::FileUtils::isFile(fileName)) Util::FileUtils::remove(fileName);
+//	std::string header = "Freeing;Voxeloctree;ExternalEdgeCreation;StaticLightUpdates;DynamicLightUpdates;PushingEdgesToGPU;PropagateLight\n";
+//	std::vector<uint8_t> data(header.begin(), header.end());
+//	Util::FileUtils::saveFile(fileName, data, true);
+
+	logFile = new std::ofstream("TP_Log.csv", std::ios::out | std::ios::trunc);
+	*logFile << "Freeing;Voxeloctree;ExternalEdgeCreation;StaticLightUpdates;DynamicLightUpdates;PushingEdgesToGPU;PropagateLight" << std::endl;
+	logFile2 = new std::ofstream("TP_Log2.csv", std::ios::out | std::ios::trunc);
+	*logFile2 << "Times;Frames" << std::endl;
+	logFile3 = new std::ofstream("TP_Log3.csv", std::ios::out | std::ios::trunc);
+	*logFile3 << "CreatedEdges;AfterFiltering" << std::endl;
+
 	testActive = true;
 }
 
 void LightNodeManager::stopTesting(){
+	std::cout << "Times: Min: " << minTime << " Max: " << maxTime << " Sum: " << sumTime << " Frames: " << frameCounter << " fpsMin: " << (1 / minTime) << " fpsMax: " << (1 / maxTime) << " fpsAvg: " << (1 / (sumTime / frameCounter)) << std::endl;
+	std::cout << "Edges: Min: " << dynamicEdgesMin << " Max: " << dynamicEdgesMax << " filteredMin: " << dynamicEdgesFilteredMin << " filteredMax: " << dynamicEdgesFilteredMax << std::endl;
+
+	if(logFile != 0){
+		logFile->close();
+		delete logFile;
+		logFile = 0;
+	}
+	if(logFile2 != 0){
+		logFile2->close();
+		delete logFile2;
+		logFile2 = 0;
+	}
+	if(logFile3 != 0){
+		logFile3->close();
+		delete logFile3;
+		logFile3 = 0;
+	}
+
 	testActive = false;
 }
 
 void LightNodeManager::resumeTesting(){
+	logFile = new std::ofstream("TP_Log.csv", std::ios::out | std::ios::app);
 	testActive = true;
 }
 
@@ -277,7 +340,9 @@ void LightNodeManager::onRender(){
 	}
 
 	//move the camera
-	double timePoint = frameCounter++ / 60.0;
+	if(testActive){
+		timePoint = frameCounter++ / 60.0;
+	}
 #ifdef TP_MOVE_CAMERA
 	if(testActive && pathNodes.size() > 0){
 		Geometry::SRT srt = pathNodes[0]->getWorldPosition(timePoint);
@@ -301,11 +366,11 @@ void LightNodeManager::onRender(){
 				Geometry::SRT srt = pathNodes[i + 1]->getWorldPosition(timePoint);
 				//fixing rotation and translation from waypoints to objects
 				Geometry::Matrix3f rot = srt.getRotation();
-				Geometry::Angle angle90 = Geometry::Angle::deg(-90);
-				Geometry::Angle angle180 = Geometry::Angle::deg(180);
-				Geometry::Matrix3f rot2 = Geometry::Matrix3f::createRotation(angle90, Geometry::Vec3(1, 0, 0));
+//				Geometry::Angle angle90 = Geometry::Angle::deg(-90);
+				Geometry::Angle angle180 = Geometry::Angle::deg(90);
+//				Geometry::Matrix3f rot2 = Geometry::Matrix3f::createRotation(angle90, Geometry::Vec3(1, 0, 0));
 				Geometry::Matrix3f rot3 = Geometry::Matrix3f::createRotation(angle180, Geometry::Vec3(0, 1, 0));
-				srt.setRotation(rot * rot3 * rot2);
+				srt.setRotation(rot * rot3);
 				srt.translate(Geometry::Vec3(0, -0.5f, 0));
 				dynamicObjects[i]->setWorldTransformation(srt);
 			}
@@ -327,7 +392,7 @@ void LightNodeManager::onRender(){
 		for(unsigned int i = 0; i < dynamicLights.size(); i++){
 			if(pathNodes.size() > i + 1){
 				Geometry::SRT srt = pathNodes[i + 1]->getWorldPosition(timePoint);
-				srt.translate(srt.getDirVector() * -2.2);	//to move the light in front of the dynamic object
+				srt.translate(srt.getDirVector() * -2.8);	//to move the light in front of the dynamic object
 				dynamicLights[i]->setWorldTransformation(srt);
 			}
 		}
@@ -345,15 +410,21 @@ void LightNodeManager::onRender(){
 #ifdef TP_MEASURE_TIMINGS
 #ifdef TP_SHOW_TIMINGS
 	if(testActive){
-		std::cout << "Moving took: " << timeMoveCamera << " sec (cam) " << timeMoveObjects << " sec (obj) " << timeMoveLights << " sec (light)!" << std::endl;
+//		std::cout << "Moving took: " << timeMoveCamera << " sec (cam) " << timeMoveObjects << " sec (obj) " << timeMoveLights << " sec (light)!" << std::endl;
 	}
 #endif //TP_SHOW_TIMINGS
 	if(testActive || dynamicObjectChanged || dynamicLightChanged){
 		timer.stop();
 		tmpTime = timer.getSeconds();
-		std::cout << "Updating took " << tmpTime << " sec, which could give " << 1.0 / tmpTime << " fps!" << std::endl;
+		double fps = 1.0 / tmpTime;
+//		std::cout << "Updating took " << tmpTime << " sec, which could give " << fps << " fps!" << std::endl;
+		if(logFile2 != 0) *logFile2 << frameCounter << ";" << tmpTime << ";" << fps << std::endl;
+		minTime = std::min(minTime, tmpTime);
+		maxTime = std::max(maxTime, tmpTime);
+		sumTime += tmpTime;
 	}
 #endif //TP_MEASURE_TIMINGS
+	if(testActive && timePoint >= 60) stopTesting();
 }
 
 void LightNodeManager::setCameraNode(Util::Reference<MinSG::Node> cameraNode){
@@ -405,8 +476,9 @@ unsigned int LightNodeManager::addTreeToDebug(Geometry::Vec3 parentPos, float pa
 	unsigned int counter = 1;
 
 	if(depth < maxDepth){
-		boxColor = Util::Color4f(1, 1, 1, 1);
-		boxColor2 = Util::Color4f(0, 0, 1, 1);
+		boxColor = Util::Color4f(1, 1, 1, 0.1f/depth);
+		boxColor2 = Util::Color4f(0, 0, 1, 0.1f/depth);
+//		debug.addDebugBox(parentPos, parentSize, boxColor, boxColor2);
 		for(unsigned int i = 0; i < 8; i++){
 			unsigned int x = (curID * VOXEL_OCTREE_SIZE_PER_NODE + i) % pixelAccessor->getWidth();
 			unsigned int y = (curID * VOXEL_OCTREE_SIZE_PER_NODE + i) / pixelAccessor->getWidth();
@@ -514,7 +586,7 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	for(unsigned int i = 0; i < lightNodeMaps.size(); i++){
 		for(unsigned int j = 0; j < lightNodeMaps[i]->lightNodes.size(); j++){
 			Geometry::Vec3 pos = lightNodeMaps[i]->lightNodes[j]->position;
-			debug.addDebugLine(pos, Geometry::Vec3(pos.x(), pos.y() - 0.01, pos.z()));
+			debug.addDebugLine(pos, pos + lightNodeMaps[i]->lightNodes[j]->normal * 0.1);
 		}
 	}
 #endif //TP_SHOW_NODES
@@ -654,7 +726,7 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 	}
 	//create
 	lightGraphShader->setUniform(Rendering::Uniform("globalLightingSize", (int32_t)nodeTextureRendering[curNodeTextureRenderingIndex]->getWidth()));
-	lightGraphShader->setUniform(Rendering::Uniform("lightStrengthFactor", LIGHT_STRENGTH_FACTOR * NUMBER_LIGHT_PROPAGATION_CYCLES * PERCENT_NODES));
+	lightGraphShader->setUniform(Rendering::Uniform("lightStrengthFactor", LIGHT_STRENGTH_FACTOR * NUMBER_LIGHT_PROPAGATION_CYCLES));
 	lightGraphTextureState->setTexture(nodeTextureRendering[curNodeTextureRenderingIndex].get());
 
 //	std::cout << "register events" << std::endl;
@@ -670,6 +742,8 @@ void LightNodeManager::activateLighting(Util::Reference<MinSG::Node> sceneRootNo
 #endif //TP_SHOW_TIMINGS
 	std::cout << "Preprocessing took " << tmpTime << " sec!" << std::endl;
 #endif //TP_MEASURE_TIMINGS
+
+//	debug.addDebugBoxLines(Geometry::Vec3(0, 0, 0), Geometry::Vec3(MAX_EDGE_LENGTH, MAX_EDGE_LENGTH, MAX_EDGE_LENGTH));
 
 #ifdef TP_ACTIVATE_DEBUG
 //	std::cout << "build debug" << std::endl;
@@ -728,20 +802,6 @@ void LightNodeManager::createLightEdges(Rendering::Texture* atomicCounter){
 }
 
 void LightNodeManager::createLightEdgesStaticFromLights(Rendering::Texture* atomicCounter){
-//	for(unsigned int lightNodeMapID = 0; lightNodeMapID < lightNodeMaps.size(); lightNodeMapID++){
-//		//create (possible) edges from the light sources to this node
-//		for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
-//			LightNode* source = &lightNodeLightMaps[lightNodeLightMapID]->light;
-//			for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeTargetID++){
-//				LightNode* target = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeTargetID];
-//				addLightEdge(source, target, &lightNodeLightMaps[lightNodeLightMapID]->edges, MAX_EDGE_LENGTH_LIGHT, MIN_EDGE_WEIGHT_LIGHT, false, false);
-//			}
-//		}
-//	}
-//	//filter the edges from the lights
-//	for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
-//		filterIncorrectEdges(&lightNodeLightMaps[lightNodeLightMapID]->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get(), true);
-//	}
 	//create (possible) edges from the static light sources to the static nodes
 	for(unsigned int lightNodeLightMapID = 0; lightNodeLightMapID < lightNodeLightMaps.size(); lightNodeLightMapID++){
 		if(lightNodeLightMaps[lightNodeLightMapID]->staticNode){
@@ -895,6 +955,7 @@ void LightNodeManager::createLightEdgesExternalStatic(Rendering::Texture* atomic
 					filterIncorrectEdges(&mapConnection->edges, voxelOctreeTextureStatic.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get(), true);
 					if(mapConnection->edges.size() > 0){
 						lightNodeMaps[lightNodeMapID]->externalLightEdgesStatic.push_back(mapConnection);
+						lightNodeMaps[lightNodeMapID2]->externalLightEdgesStatic.push_back(mapConnection);
 					} else {
 						delete mapConnection;
 					}
@@ -907,6 +968,7 @@ void LightNodeManager::createLightEdgesExternalStatic(Rendering::Texture* atomic
 }
 
 void LightNodeManager::createLightEdgesExternalDynamic(Rendering::Texture* atomicCounter){
+	unsigned int counter1 = 0, counter2 = 0;
 	for(unsigned int lightNodeMapID = 0; lightNodeMapID < lightNodeMaps.size(); lightNodeMapID++){
 		//create (possible) external edges to other objects
 		for(unsigned int lightNodeMapID2 = lightNodeMapID + 1; lightNodeMapID2 < lightNodeMaps.size(); lightNodeMapID2++){
@@ -917,12 +979,13 @@ void LightNodeManager::createLightEdgesExternalDynamic(Rendering::Texture* atomi
 
 //				std::cout << "trying to create dynamic edges" << std::endl;
 				if(isDistanceLess(mapConnection->map1->geometryNode, mapConnection->map2->geometryNode, MAX_EDGE_LENGTH)){
-					std::cout << "trying to create dynamic edges2" << std::endl;
+//					std::cout << "trying to create dynamic edges2" << std::endl;
 					for(unsigned int lightNodeSourceID = 0; lightNodeSourceID < lightNodeMaps[lightNodeMapID]->lightNodes.size(); lightNodeSourceID++){
 						for(unsigned int lightNodeTargetID = 0; lightNodeTargetID < lightNodeMaps[lightNodeMapID2]->lightNodes.size(); lightNodeTargetID++){
 							LightNode* source = lightNodeMaps[lightNodeMapID]->lightNodes[lightNodeSourceID];
 							LightNode* target = lightNodeMaps[lightNodeMapID2]->lightNodes[lightNodeTargetID];
 							addLightEdge(source, target, &mapConnection->edges, MAX_EDGE_LENGTH, MIN_EDGE_WEIGHT, true, true);
+							counter1 += mapConnection->edges.size();
 						}
 					}
 				}
@@ -931,10 +994,12 @@ void LightNodeManager::createLightEdgesExternalDynamic(Rendering::Texture* atomi
 //					std::cout << "trying to create dynamic edges4" << std::endl;
 					filterIncorrectEdges(&mapConnection->edges, voxelOctreeTextureComplete.get(), atomicCounter, sceneEnclosingCameras, VOXEL_OCTREE_DEPTH, lightRootNode.get(), true);
 					if(mapConnection->edges.size() > 0){
-						std::cout << "trying to create dynamic edges5" << std::endl;
+//						std::cout << "trying to create dynamic edges5" << std::endl;
 						lightNodeMaps[lightNodeMapID]->externalLightEdgesDynamic.push_back(mapConnection);
+						lightNodeMaps[lightNodeMapID2]->externalLightEdgesDynamic.push_back(mapConnection);
+						counter2 += mapConnection->edges.size();
 					} else {
-						std::cout << "trying to create dynamic edges6" << std::endl;
+//						std::cout << "trying to create dynamic edges6" << std::endl;
 						delete mapConnection;
 					}
 				} else {
@@ -943,6 +1008,16 @@ void LightNodeManager::createLightEdgesExternalDynamic(Rendering::Texture* atomi
 			}
 		}
 	}
+//	std::cout << "Dynamic edges: " << counter1 << " (" << counter2 << ")" << std::endl;
+	if(counter1 > 0){
+		dynamicEdgesMin = std::min(dynamicEdgesMin, counter1);
+		dynamicEdgesMax = std::max(dynamicEdgesMax, counter1);
+	}
+	if(counter2 > 0){
+		dynamicEdgesFilteredMin = std::min(dynamicEdgesFilteredMin, counter2);
+		dynamicEdgesFilteredMax = std::max(dynamicEdgesFilteredMax, counter2);
+	}
+	if(logFile3 != 0) *logFile3 << frameCounter << ";" << counter1 << ";" << counter2 << std::endl;
 }
 
 void LightNodeManager::cleanUpDebug(){
@@ -953,13 +1028,6 @@ void LightNodeManager::cleanUpDebug(){
 }
 
 void LightNodeManager::cleanUp(){
-//	for(unsigned int i = 0; i < 3; i++){
-//		if(sceneEnclosingCameras[i] != 0){
-//			delete sceneEnclosingCameras[i];
-//			sceneEnclosingCameras[i] = 0;
-//		}
-//	}
-
 	removeAllStaticMapConnections();
 	removeAllDynamicMapConnections();
 
@@ -972,49 +1040,6 @@ void LightNodeManager::cleanUp(){
             delete lightNodeMaps[i]->internalLightEdges[j];
 		}
 		lightNodeMaps[i]->internalLightEdges.clear();
-		//removing external edges is more difficult, since not every node may delete them, only one
-//		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesStatic.size(); j++){
-//			if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == lightNodeMaps[i]){
-//				if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map2 == 0){
-//					delete lightNodeMaps[i]->externalLightEdgesStatic[j];
-//				} else {
-//					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-//						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
-//					}
-//					lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 = 0;
-//				}
-//			} else {
-//				if(lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 == 0){
-//					delete lightNodeMaps[i]->externalLightEdgesStatic[j];
-//				} else {
-//					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
-//						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
-//					}
-//					lightNodeMaps[i]->externalLightEdgesStatic[j]->map2 = 0;
-//				}
-//			}
-//		}
-//		for(unsigned int j = 0; j < lightNodeMaps[i]->externalLightEdgesDynamic.size(); j++){
-//			if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 == lightNodeMaps[i]){
-//				if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map2 == 0){
-//					delete lightNodeMaps[i]->externalLightEdgesDynamic[j];
-//				} else {
-//					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
-//						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
-//					}
-//					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 = 0;
-//				}
-//			} else {
-//				if(lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 == 0){
-//					delete lightNodeMaps[i]->externalLightEdgesDynamic[j];
-//				} else {
-//					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
-//						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
-//					}
-//					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map2 = 0;
-//				}
-//			}
-//		}
 		delete lightNodeMaps[i];
 	}
 	lightNodeMaps.clear();
@@ -1023,10 +1048,6 @@ void LightNodeManager::cleanUp(){
 	removeAllStaticLightMapConnections();
 	removeAllDynamicLightMapConnections();
 	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
-//		for(unsigned int j = 0; j < lightNodeLightMaps[i]->edges.size(); j++){
-//			delete lightNodeLightMaps[i]->edges[j];
-//		}
-//		lightNodeLightMaps[i]->edges.clear();
 		delete lightNodeLightMaps[i];
 	}
 	lightNodeLightMaps.clear();
@@ -1040,6 +1061,10 @@ void LightNodeManager::setShowEdges(bool showEdges){
 void LightNodeManager::setShowOctree(bool showOctree){
 	SHOW_OCTREE = showOctree;
 	debug.setFacesShown(showOctree);
+}
+
+void LightNodeManager::setLightStrengthFactor(float lightStrenthFactor){
+	lightGraphShader->setUniform(Rendering::Uniform("lightStrengthFactor", lightStrenthFactor * NUMBER_LIGHT_PROPAGATION_CYCLES));
 }
 
 void LightNodeManager::objectSwitchFromStaticToDynamic(){
@@ -1096,7 +1121,8 @@ void LightNodeManager::objectSwitchFromStaticToDynamic(){
 #ifdef TP_SHOW_TIMINGS
 	tmpTime = timer.getSeconds();
 	timeEdgeGPU = tmpTime - lastTime;
-	std::cout << "Static Times [sec]: free: " << timeFree << " oct: " << timeVoxel << " ext: " << timeExt << " lig: " << timeLig << " edgeGPU: " << timeEdgeGPU << std::endl;
+//	std::cout << "Static Times [sec]: free: " << timeFree << " oct: " << timeVoxel << " ext: " << timeExt << " lig: " << timeLig << " edgeGPU: " << timeEdgeGPU << std::endl;
+	if(logFile != 0) *logFile << frameCounter << ";" << timeFree << ";" << timeVoxel << ";" << timeExt << ";" << timeLig << ";;" << timeEdgeGPU << ";" << std::endl;
 	lastTime = tmpTime;
 #endif //TP_SHOW_TIMINGS
 #endif //TP_MEASURE_TIMINGS
@@ -1165,7 +1191,8 @@ void LightNodeManager::objectSwitchFromDynamicToDynamic(){
 #ifdef TP_SHOW_TIMINGS
 	tmpTime = timer.getSeconds();
 	timeProp = tmpTime - lastTime;
-	std::cout << "Dynamic Times [sec]: free: " << timeFree << " oct: " << timeVoxel << " ext: " << timeExt << " lig1: " << timeLig1 << " lig2: " << timeLig2 << " edgeGPU: " << timeEdgeGPU << " prop: " << timeProp << std::endl;
+//	std::cout << "Dynamic Times [sec]: free: " << timeFree << " oct: " << timeVoxel << " ext: " << timeExt << " lig1: " << timeLig1 << " lig2: " << timeLig2 << " edgeGPU: " << timeEdgeGPU << " prop: " << timeProp << std::endl;
+	if(logFile != 0) *logFile << frameCounter << ";" << timeFree << ";" << timeVoxel << ";" << timeExt << ";" << timeLig1 << ";" << timeLig2 << ";" << timeEdgeGPU << ";" << timeProp << std::endl;
 	lastTime = tmpTime;
 #endif //TP_SHOW_TIMINGS
 #endif //TP_MEASURE_TIMINGS
@@ -1205,7 +1232,8 @@ void LightNodeManager::lightSwitchFromStaticToDynamic(){
 #ifdef TP_SHOW_TIMINGS
 	tmpTime = timer.getSeconds();
 	timeEdgeGPU = tmpTime - lastTime;
-	std::cout << "StaticLight Times [sec]: free: " << timeFree << " lig1: " << timeLig1 << " lig2: " << timeLig2 << " edgeGPU: " << timeEdgeGPU << std::endl;
+//	std::cout << "StaticLight Times [sec]: free: " << timeFree << " lig1: " << timeLig1 << " lig2: " << timeLig2 << " edgeGPU: " << timeEdgeGPU << std::endl;
+	if(logFile != 0) *logFile << frameCounter << ";" << timeFree << ";;;" << timeLig1 << ";" << timeLig2 << ";" << timeEdgeGPU << ";" << std::endl;
 	lastTime = tmpTime;
 #endif //TP_SHOW_TIMINGS
 #endif //TP_MEASURE_TIMINGS
@@ -1245,7 +1273,8 @@ void LightNodeManager::lightSwitchFromDynamicToDynamic(){
 #ifdef TP_SHOW_TIMINGS
 	tmpTime = timer.getSeconds();
 	timeProp = tmpTime - lastTime;
-	std::cout << "DynamicLight Times [sec]: free: " << timeFree << " lig: " << timeLig << " edgeGPU: " << timeEdgeGPU << " prop: " << timeProp << std::endl;
+//	std::cout << "DynamicLight Times [sec]: free: " << timeFree << " lig: " << timeLig << " edgeGPU: " << timeEdgeGPU << " prop: " << timeProp << std::endl;
+	if(logFile != 0) *logFile << frameCounter << ";" << timeFree << ";;;;" << timeLig << ";" << timeEdgeGPU << ";" << timeProp << std::endl;
 	lastTime = tmpTime;
 #endif //TP_SHOW_TIMINGS
 #endif //TP_MEASURE_TIMINGS
@@ -1583,14 +1612,14 @@ bool LightNodeManager::isVisible(LightNode* source, LightNode* target){
 void LightNodeManager::addLightEdge(LightNode* source, LightNode* target, std::vector<LightEdge*>* lightEdges, float maxEdgeLength, float minEdgeWeight, bool checkVisibility, bool useNormal){
 	//take maximum edge length into account
 	float distance = source->position.distance(target->position) + 1;		//+1, since we want to have a function from f(0)=1: f(x) = 1 / (x + 1)^2
-	if(distance <= maxEdgeLength + 1){
+	if((useNormal && distance <= maxEdgeLength + 1) || (!useNormal && distance <= maxEdgeLength * 5 * source->color.r() + 1)){		//to enhance the light range from strong lights
 		if((checkVisibility && isVisible(source, target)) || (!checkVisibility)){
 			LightEdge* lightEdge = new LightEdge();
 			lightEdge->source = source;
 			lightEdge->target = target;
 			if(useNormal){
 				float dotN = std::max(-source->normal.dot(target->normal), 0.0f);										//taking normal into account
-				float distanceDecrease = 1.0f / (distance * distance);													//quadratic decrease of light
+				float distanceDecrease = 0.5f / (distance * distance);													//quadratic decrease of light
 				lightEdge->weight.setX(dotN * distanceDecrease * std::min(source->color.getR(), target->color.getR()));	//taking color into account
 				lightEdge->weight.setY(dotN * distanceDecrease * std::min(source->color.getG(), target->color.getG()));	//taking color into account
 				lightEdge->weight.setZ(dotN * distanceDecrease * std::min(source->color.getB(), target->color.getB()));	//taking color into account
@@ -1818,9 +1847,12 @@ void LightNodeManager::filterIncorrectEdgesAsObjects(std::vector<LightEdge*> *ed
 
 //		std::cout << "got a " << (int)value << " at " << i << std::endl;
 		if(value == 0) filteredEdges.push_back((*edges)[i]);
+		else {
+			delete (*edges)[i];
 #ifdef TP_ACTIVATE_DEBUG
-//		else debug.addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
+//			debug.addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
 #endif //TP_ACTIVATE_DEBUG
+		}
 
 //		x = (x + 1) % outputTextureSize;
 //		if(x == 0) y++;
@@ -2021,9 +2053,12 @@ void LightNodeManager::filterIncorrectEdgesAsTexture(std::vector<LightEdge*> *ed
 		uint8_t value = accOut.get()->readSingleValueByte(x, y);
 
 		if(value == 0) filteredEdges.push_back((*edges)[i]);
+		else {
+			delete (*edges)[i];
 #ifdef TP_ACTIVATE_DEBUG
-		else debug.addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
+			debug.addDebugLine((*edges)[i]->source->position, (*edges)[i]->target->position, Util::Color4f(0.5f, 0.5f, 1, 1), Util::Color4f(0, 0, 1, 1));
 #endif //TP_ACTIVATE_DEBUG
+		}
 
 //		x = (x + 1) % outputTextureSize;
 //		if(x == 0) y++;
@@ -2857,6 +2892,9 @@ void LightNodeManager::createEdgeTextures(){
 	createEdgeTexturesInternal();
 	createEdgeTexturesExternalStatic();
 	createEdgeTexturesExternalDynamic();
+
+	std::cout << "Num Edges: intern: " << curNumEdgesInternal << " extStat: " << curNumEdgesExternalStatic << " extDyn: " << curNumEdgesExternalDynamic << " sum: " << curNumEdgesInternal + curNumEdgesExternalStatic + curNumEdgesExternalDynamic << std::endl;
+
 //	//count the edges
 //	unsigned int numEdges = 0;
 //	for(unsigned int i = 0; i < lightNodeLightMaps.size(); i++){
@@ -3416,6 +3454,7 @@ void LightNodeManager::removeAllStaticMapConnections(){
 					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
 						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
 					}
+					lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.clear();
 					lightNodeMaps[i]->externalLightEdgesStatic[j]->map1 = 0;
 				}
 			} else {
@@ -3425,6 +3464,7 @@ void LightNodeManager::removeAllStaticMapConnections(){
 					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.size(); k++){
 						delete lightNodeMaps[i]->externalLightEdgesStatic[j]->edges[k];
 					}
+					lightNodeMaps[i]->externalLightEdgesStatic[j]->edges.clear();
 					lightNodeMaps[i]->externalLightEdgesStatic[j]->map2 = 0;
 				}
 			}
@@ -3443,6 +3483,7 @@ void LightNodeManager::removeAllDynamicMapConnections(){
 					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
 						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
 					}
+					lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.clear();
 					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map1 = 0;
 				}
 			} else {
@@ -3452,6 +3493,7 @@ void LightNodeManager::removeAllDynamicMapConnections(){
 					for(int k = 0; k < lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.size(); k++){
 						delete lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges[k];
 					}
+					lightNodeMaps[i]->externalLightEdgesDynamic[j]->edges.clear();
 					lightNodeMaps[i]->externalLightEdgesDynamic[j]->map2 = 0;
 				}
 			}

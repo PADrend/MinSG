@@ -229,6 +229,8 @@ public:
 
 	static unsigned int globalNodeCounter;						//used to give the nodes unique id's
 
+	void setLightStrengthFactor(float lightStrenthFactor);
+
 	//tracking objects in the scene
 	void onNodeTransformed(Node* node);
 
@@ -360,10 +362,15 @@ private:
 	std::vector<MinSG::Node*> dynamicObjects;
 	std::vector<MinSG::Node*> dynamicLights;
 	unsigned int frameCounter;
+	double timePoint;
 	bool testActive;
 
 	Util::Timer timer;
-	double lastTime, tmpTime, tmpTime2;
+	double lastTime, tmpTime;
+	double minTime, maxTime, sumTime;
+	unsigned int dynamicEdgesMin, dynamicEdgesMax, dynamicEdgesFilteredMin, dynamicEdgesFilteredMax;
+
+	std::ofstream* logFile, *logFile2, *logFile3;
 };
 
 }
