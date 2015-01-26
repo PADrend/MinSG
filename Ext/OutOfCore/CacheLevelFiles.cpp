@@ -18,55 +18,55 @@
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/MeshDataStrategy.h>
 #include <Rendering/Mesh/VertexDescription.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Lock.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Semaphore.h>
-#include <Util/Concurrency/Thread.h>
 #include <Util/IO/FileName.h>
 #include <Util/IO/FileUtils.h>
 #include <Util/IO/TemporaryDirectory.h>
 #include <Util/References.h>
 #include <Util/StringUtils.h>
 #include <Util/Utils.h>
+#include <condition_variable>
+#include <mutex>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 namespace MinSG {
 namespace OutOfCore {
 
 CacheLevelFiles::CacheLevelFiles(uint64_t cacheSize, CacheContext & cacheContext) :
 	CacheLevel(cacheSize, cacheContext),
-	threadMutex(Util::Concurrency::createMutex()), threadSemaphore(Util::Concurrency::createSemaphore()),
-	thread(Util::Concurrency::createThread()), active(false),
+	threadMutex(), threadSemaphore(),
+	thread(), active(false),
 	cacheDir("MinSG_OutOfCore"),
-	internalMutex(Util::Concurrency::createMutex()),
+	internalMutex(),
 	locations(), cacheObjectsToSave() {
 }
 
 CacheLevelFiles::~CacheLevelFiles() {
 	{
-		auto lock = Util::Concurrency::createLock(*threadMutex);
+		std::lock_guard<std::mutex> lock(threadMutex);
 		active = false;
 	}
-	threadSemaphore->post();
-	thread->join();
+	threadSemaphore.notify_all();
+	thread.join();
 }
 
 void * CacheLevelFiles::threadRun(void * data) {
 	CacheLevelFiles * level = static_cast<CacheLevelFiles *>(data);
 	while(true) {
-		level->threadSemaphore->wait();
-
 		{
-			auto lock = Util::Concurrency::createLock(*level->threadMutex);
+			std::unique_lock<std::mutex> lock(level->threadMutex);
+			level->threadSemaphore.wait(lock);
+		}
+		{
+			std::lock_guard<std::mutex> lock(level->threadMutex);
 			if(!level->active) {
 				break;
 			}
 		}
 
 		{
-			auto lock = Util::Concurrency::createLock(*level->internalMutex);
+			std::lock_guard<std::mutex> lock(level->internalMutex);
 			if(level->cacheObjectsToSave.empty()) {
 				throw std::logic_error("Semaphore value does not reflect internal data structure's size.");
 			}
@@ -85,18 +85,18 @@ void * CacheLevelFiles::threadRun(void * data) {
 }
 
 void CacheLevelFiles::doAddCacheObject(CacheObject * object) {
-	auto lock = Util::Concurrency::createLock(*internalMutex);
+	std::lock_guard<std::mutex> lock(internalMutex);
 	Util::Reference<Rendering::Mesh> meshClone = getContext().getContent(object)->clone();
 	meshClone->setDataStrategy(Rendering::SimpleMeshDataStrategy::getPureLocalStrategy());
 	const bool inserted = cacheObjectsToSave.insert(std::make_pair(object, std::move(meshClone))).second;
 	if(!inserted) {
 		throw std::logic_error("Cache object is already being saved.");
 	}
-	threadSemaphore->post();
+	threadSemaphore.notify_all();
 }
 
 void CacheLevelFiles::doRemoveCacheObject(CacheObject * object) {
-	auto lock = Util::Concurrency::createLock(*internalMutex);
+	std::lock_guard<std::mutex> lock(internalMutex);
 	// Check if the cache object is already saved.
 	const auto savedObject = locations.find(object);
 	if(savedObject != locations.cend()) {
@@ -112,7 +112,7 @@ void CacheLevelFiles::doRemoveCacheObject(CacheObject * object) {
 
 bool CacheLevelFiles::doLoadCacheObject(CacheObject * object) {
 	{
-		auto lock = Util::Concurrency::createLock(*internalMutex);
+		std::lock_guard<std::mutex> lock(internalMutex);
 		// Check if the cache object is already saved.
 		const auto savedObject = locations.find(object);
 		if(savedObject != locations.cend()) {
@@ -148,7 +148,7 @@ bool CacheLevelFiles::doLoadCacheObject(CacheObject * object) {
 }
 
 uint64_t CacheLevelFiles::getCacheObjectSize(CacheObject * object) const {
-	auto lock = Util::Concurrency::createLock(*internalMutex);
+	std::lock_guard<std::mutex> lock(internalMutex);
 	// Check if the cache object is already saved.
 	const auto savedObject = locations.find(object);
 	if(savedObject != locations.cend()) {
@@ -167,7 +167,7 @@ uint64_t CacheLevelFiles::getCacheObjectSize(CacheObject * object) const {
 
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
 void CacheLevelFiles::doVerify() const {
-	auto lock = Util::Concurrency::createLock(*internalMutex);
+	std::lock_guard<std::mutex> lock(internalMutex);
 	for(const auto & objectToSave : cacheObjectsToSave) {
 		// Check that no cache object from cacheObjectsToSave is inside locations
 		if(locations.count(objectToSave.first) > 0) {
@@ -192,10 +192,10 @@ void CacheLevelFiles::doVerify() const {
 #endif /* MINSG_EXT_OUTOFCORE_DEBUG */
 
 void CacheLevelFiles::init() {
-	auto lock = Util::Concurrency::createLock(*threadMutex);
+	std::lock_guard<std::mutex> lock(threadMutex);
 	if(!active) {
 		active = true;
-		thread->start(&CacheLevelFiles::threadRun, this);
+		thread = std::thread(std::bind(&CacheLevelFiles::threadRun, this));
 	}
 }
 

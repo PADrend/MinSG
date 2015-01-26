@@ -13,6 +13,7 @@
 #ifndef SYNCBUFFER_H_
 #define SYNCBUFFER_H_
 
+#include <memory>
 #include <streambuf>
 
 namespace D3Fact {
@@ -38,7 +39,7 @@ private:
 	std::streamsize xsputn( const char_type* s, std::streamsize count ) override;
 
 	class pimpl;
-	pimpl* impl;
+	std::unique_ptr<pimpl> impl;
 };
 
 } /* namespace D3Fact */

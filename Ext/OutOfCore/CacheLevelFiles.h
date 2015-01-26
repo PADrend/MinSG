@@ -14,21 +14,17 @@
 
 #include "CacheLevel.h"
 #include <Util/IO/TemporaryDirectory.h>
+#include <condition_variable>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
+#include <thread>
 #include <utility>
 #include <vector>
 
 namespace Rendering {
 class Mesh;
-}
-namespace Util {
-namespace Concurrency {
-class Mutex;
-class Semaphore;
-class Thread;
-}
 }
 namespace MinSG {
 namespace OutOfCore {
@@ -42,13 +38,13 @@ namespace OutOfCore {
 class CacheLevelFiles : public CacheLevel {
 	private:
 		//! Guard for @a thread and @a active
-		std::unique_ptr<Util::Concurrency::Mutex> threadMutex;
+		std::mutex threadMutex;
 
 		//! Semaphore used to put the worker thread to sleep when there is no work to do.
-		std::unique_ptr<Util::Concurrency::Semaphore> threadSemaphore;
+		std::condition_variable threadSemaphore;
 
 		//! Parallel thread of execution that is for writing cache objects to disk.
-		std::unique_ptr<Util::Concurrency::Thread> thread;
+		std::thread thread;
 
 		//! Status of the cache level's thread.
 		bool active;
@@ -60,7 +56,7 @@ class CacheLevelFiles : public CacheLevel {
 		const Util::TemporaryDirectory cacheDir;
 
 		//! Guard for @a locations and @a cacheObjectsToSave
-		std::unique_ptr<Util::Concurrency::Mutex> internalMutex;
+		mutable std::mutex internalMutex;
 
 		//! Mapping from cache objects to their locations.
 		std::unordered_map<CacheObject *, std::pair<Util::FileName, uint32_t>> locations;

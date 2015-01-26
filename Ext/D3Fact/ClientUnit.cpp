@@ -12,9 +12,6 @@
 #include <Util/Macros.h>
 #include <Util/Network/NetworkTCP.h>
 #include <Util/Network/NetworkUDP.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Lock.h>
 #include <Util/GenericAttribute.h>
 #include <Util/IO/FileName.h>
 #include <Util/IO/FileUtils.h>
@@ -53,23 +50,17 @@ using namespace Util::Network;
 const long kEVENT_CONNECTED = Tools::crc32("EVENT_CONNECTED");
 
 ClientUnit::ClientUnit(const std::string & remoteHost_, uint16_t remoteTCP_, uint16_t remoteUDP_, uint8_t maxConnections_, uint32_t msgTimeout_) :
-		clientId(0), connected(false), maxConnections(maxConnections_), msgTimeout(msgTimeout_), udpHandler(nullptr) {
+		sessionMutex(), sendMutex(), connectMutex(),
+		clientId(0), connected(false), maxConnections(maxConnections_), msgTimeout(msgTimeout_), udpHandler(nullptr),
+		eventMutex() {
 	remoteTCP = IPv4Address::resolveHost(remoteHost_, remoteTCP_);
 	remoteUDP = IPv4Address::resolveHost(remoteHost_, remoteUDP_);
-	sendMutex = Concurrency::createMutex();
-	sessionMutex = Concurrency::createMutex();
-	eventMutex = Concurrency::createMutex();
-	connectMutex = Concurrency::createMutex();
 	tempDir = new Util::TemporaryDirectory("D3Fact");
 }
 
 ClientUnit::~ClientUnit() {
 	close();
-	delete sendMutex;
-	delete sessionMutex;
 	delete udpHandler;
-	delete connectMutex;
-	delete eventMutex;
 }
 
 bool ClientUnit::connect() {
@@ -81,8 +72,7 @@ bool ClientUnit::connect() {
 	}
 
 	for(auto & elem : tcpPool) {
-		if(!(elem)->start())
-			WARN("Could not start TCPHandler.");
+		elem->start();
 	}
 
 	UDPNetworkSocket* socket = createUDPNetworkSocket(0, MAX_UDP_PACKET_SIZE);
@@ -91,9 +81,7 @@ bool ClientUnit::connect() {
 	} else {
 		socket->addTarget(remoteUDP);
 		udpHandler = new UDPHandler(socket, this);
-		if(!udpHandler->start()) {
-			WARN("UDP Handler could not be started.");
-		}
+		udpHandler->start();
 	}
 
 	return true;
@@ -106,7 +94,7 @@ int32_t ClientUnit::startSession() {
 		return 0;
 	}
 	int32_t sessionId = 0;
-	auto sessionLock = Concurrency::createLock(*sessionMutex);
+	std::lock_guard<std::mutex> sessionLock(sessionMutex);
 
 	while(sessionId == 0 || sessionMap.count(sessionId) > 0 || openSessionRequests.count(sessionId) > 0 ) {
 		sessionId = Tools::generateId();
@@ -122,7 +110,7 @@ int32_t ClientUnit::startSession() {
 }
 
 Session * ClientUnit::getSession(int32_t sessionId_) {
-	auto sessionLock = Concurrency::createLock(*sessionMutex);
+	std::lock_guard<std::mutex> sessionLock(sessionMutex);
 	if(sessionMap.count(sessionId_)>0) {
 		return sessionMap[sessionId_].get();
 	} else {
@@ -132,7 +120,7 @@ Session * ClientUnit::getSession(int32_t sessionId_) {
 
 void ClientUnit::closeSession(Session * session_) {
 	std::cout << "closing session " << session_->getSessionId() << "...";
-	auto sessionLock = Concurrency::createLock(*sessionMutex);
+	std::lock_guard<std::mutex> sessionLock(sessionMutex);
 	if(session_ && sessionMap.count(session_->getSessionId())>0) {
 		std::vector<uint8_t> body(sizeof(int32_t));
 		Tools::putIntBig(body, 0, session_->getSessionId());
@@ -146,7 +134,7 @@ void ClientUnit::closeSession(Session * session_) {
 void ClientUnit::dispatchMessages(uint32_t maxWorkload/*=0xffffffff*/, bool async/*=false*/) {
 	std::deque<Util::Reference<Session> > sessions;
 	{
-		auto sessionLock = Concurrency::createLock(*sessionMutex);
+		std::lock_guard<std::mutex> sessionLock(sessionMutex);
 		for(auto session : sessionMap) {
 			sessions.push_back(session.second);
 		}
@@ -161,7 +149,7 @@ void ClientUnit::distributeReceivedMSG(Message * msg_) {
 	if(sessionId == 0) {
 		handleSession0Messages(msg_);
 	} else {
-		auto sessionLock = Concurrency::createLock(*sessionMutex);
+		std::lock_guard<std::mutex> sessionLock(sessionMutex);
 		if(sessionMap.count(sessionId) > 0) {
 			Reference<Session> session = sessionMap[sessionId];
 			session->received(msg_);
@@ -176,7 +164,7 @@ void ClientUnit::distributeReceivedMSG(Message * msg_) {
 
 void ClientUnit::handleSession0Messages(Message * msg_) {
 	FAIL_IF(msg_->getSession() != 0);
-	auto sessionLock = Concurrency::createLock(*sessionMutex);
+	std::lock_guard<std::mutex> sessionLock(sessionMutex);
 	const std::vector<uint8_t> & body = msg_->getBody();
 	int32_t sessionId = Tools::getInt(body, 0);
 	std::cout << "Reveived session 0 message " << sessionId << " " << msg_->getType() << "...";
@@ -223,7 +211,7 @@ void ClientUnit::handleSession0Messages(Message * msg_) {
 }
 
 void ClientUnit::asyncSend(Message * msg_) {
-	auto lock = Concurrency::createLock(*sendMutex);
+	std::lock_guard<std::mutex> lock(sendMutex);
 	if(msg_->getProtocol() == Message::TCP) {
 		sendTCP.push_back(msg_);
 	} else if(msg_->getProtocol() == Message::UDP) {
@@ -232,7 +220,7 @@ void ClientUnit::asyncSend(Message * msg_) {
 }
 
 Message* ClientUnit::getNextTCPMSG() {
-	auto lock = Concurrency::createLock(*sendMutex);
+	std::lock_guard<std::mutex> lock(sendMutex);
 	if(sendTCP.empty())
 		return nullptr;
 	Message* msg = sendTCP.front();
@@ -242,12 +230,12 @@ Message* ClientUnit::getNextTCPMSG() {
 
 void ClientUnit::close() {
 	{
-		auto lock = Concurrency::createLock(*sendMutex);
+		std::lock_guard<std::mutex> lock(sendMutex);
 		sendTCP.clear();
 	}
 	postEvent(createEvent(EVENT_DISCONNECTED, 0));
 	// FIXME: Might result in deadlock
-	//auto sessionLock = Concurrency::createLock(*sessionMutex);
+	//std::lock_guard<std::mutex> sessionLock(sessionMutex);
 	openSessionRequests.clear();
 	for(auto ses : sessionMap) {
 		ses.second->close();
@@ -285,7 +273,7 @@ const Util::FileName & ClientUnit::getTempPath() const {
 }
 
 Util::GenericAttribute* ClientUnit::pollEvent() {
-	auto lock = Concurrency::createLock(*eventMutex);
+	std::lock_guard<std::mutex> lock(eventMutex);
 	if(eventQueue.empty())
 		return nullptr;
 	Util::GenericAttribute* event = eventQueue.front();
@@ -294,7 +282,7 @@ Util::GenericAttribute* ClientUnit::pollEvent() {
 }
 
 void ClientUnit::postEvent(Util::GenericAttribute* event) {
-	auto lock = Concurrency::createLock(*eventMutex);
+	std::lock_guard<std::mutex> lock(eventMutex);
 	eventQueue.push_back(event);
 }
 
@@ -306,7 +294,7 @@ Util::GenericAttributeMap* ClientUnit::createEvent(const std::string& eventId, i
 }
 
 bool ClientUnit::setClientId(int32_t id) {
-	auto lock = Concurrency::createLock(*sendMutex);
+	std::lock_guard<std::mutex> lock(sendMutex);
 	if(clientId == 0) {
 		clientId = id;
 		connected = true;

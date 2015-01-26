@@ -7,39 +7,31 @@
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
 #include "EventHandler.h"
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Mutex.h>
-using namespace MinSG;
+
+namespace MinSG {
 
 /**
  * [ctor]
  */
-EventHandler::EventHandler() {
-	lock = Util::Concurrency::createMutex();
+EventHandler::EventHandler() : mutex() {
 }
 /**
  * [dtor]
  */
-EventHandler::~EventHandler() {
-	delete lock;
-}
+EventHandler::~EventHandler() = default;
 /**
  *
  */
 bool EventHandler::process(const Util::UI::Event & e) {
-	lock->lock();
-	if (processJoyEvent(e) || processMouseEvent(e) || processKeyEvent(e)) {
-		lock->unlock();
-		return true;
-	}
-	lock->unlock();
-	return false;
+	std::lock_guard<std::mutex> lock(mutex);
+	return (processJoyEvent(e) || processMouseEvent(e) || processKeyEvent(e));
 }
 /**
  *
  */
 void EventHandler::execute() {
-	lock->lock();
+	std::lock_guard<std::mutex> lock(mutex);
 	doExecute();
-	lock->unlock();
+}
+
 }

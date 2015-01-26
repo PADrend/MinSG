@@ -11,24 +11,26 @@
 #ifndef TCPHANDLER_H_
 #define TCPHANDLER_H_
 
-#include <Util/Concurrency/UserThread.h>
+#include <thread>
 
 namespace D3Fact {
 
 class ClientUnit;
 
-class TCPHandler : public Util::Concurrency::UserThread {
+class TCPHandler {
 public:
 	TCPHandler(ClientUnit* client_);
-	virtual ~TCPHandler();
+	~TCPHandler();
 
+	void start();
 	void close();
 	bool isConnected() { return connected; }
 private:
 	ClientUnit* client;
 	bool connected;
+	std::thread thread;
 
-	void run() override;
+	void run();
 };
 
 }

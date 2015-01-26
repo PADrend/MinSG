@@ -11,15 +11,12 @@
 #ifndef UDPHANDLER_H_
 #define UDPHANDLER_H_
 
-#include <Util/Concurrency/UserThread.h>
+#include <mutex>
+#include <thread>
 
 namespace Util {
 namespace Network {
 class UDPNetworkSocket;
-}
-namespace Concurrency {
-class Thread;
-class Mutex;
 }
 }
 
@@ -28,25 +25,28 @@ namespace D3Fact {
 class ClientUnit;
 class Message;
 
-class UDPHandler : public Util::Concurrency::UserThread {
+class UDPHandler {
 public:
 	UDPHandler(Util::Network::UDPNetworkSocket* socket_, ClientUnit* client_);
-	virtual ~UDPHandler();
+	~UDPHandler();
 
+	void start();
 	void close();
 
 	void sendMSG(Message* msg_);
 private:
 	Util::Network::UDPNetworkSocket* socket;
 	ClientUnit* client;
-	Util::Concurrency::Mutex* sendMutex;
+	std::mutex sendMutex;
 
 	std::deque<Message* > sendQueue;
+
+	std::thread thread;
 
 	bool isMsgAvailable();
 	Message* getNextMsg();
 
-	void run() override;
+	void run();
 };
 
 }

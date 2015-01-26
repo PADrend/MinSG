@@ -17,15 +17,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <stdexcept>
 #include <vector>
 
-namespace Util {
-namespace Concurrency {
-class Mutex;
-}
-}
 namespace MinSG {
 namespace OutOfCore {
 class CacheContext;
@@ -43,7 +39,7 @@ class CacheLevel {
 		static cacheLevelId_t levelCount;
 
 		//! Guard for @a memoryUsed and @a numCacheObjects
-		std::unique_ptr<Util::Concurrency::Mutex> containerMutex;
+		mutable std::mutex containerMutex;
 
 		//! Overall cache size in bytes.
 		const uint64_t memoryOverall;

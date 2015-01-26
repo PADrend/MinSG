@@ -12,11 +12,12 @@
 #define CLIENTUNIT_H_
 
 #include <cstdint>
+#include <deque>
+#include <map>
+#include <mutex>
+#include <set>
 #include <string>
 #include <vector>
-#include <map>
-#include <set>
-#include <deque>
 
 #include <Util/TypeNameMacro.h>
 #include <Util/Network/Network.h>
@@ -30,9 +31,6 @@ class TemporaryDirectory;
 class FileName;
 namespace Network {
 class TCPConnection;
-}
-namespace Concurrency {
-class Mutex;
 }
 }
 
@@ -77,9 +75,9 @@ private:
 	friend class TCPHandler;
 	friend class UDPHandler;
 
-	Util::Concurrency::Mutex* sessionMutex;
-	Util::Concurrency::Mutex* sendMutex;
-	Util::Concurrency::Mutex* connectMutex;
+	std::mutex sessionMutex;
+	std::mutex sendMutex;
+	std::mutex connectMutex;
 
 	int32_t clientId;
 	bool connected;
@@ -97,7 +95,7 @@ private:
 	std::set<int32_t> openSessionRequests;
 
 	std::deque<Util::GenericAttribute*> eventQueue;
-	Util::Concurrency::Mutex* eventMutex;
+	std::mutex eventMutex;
 
 	Util::Reference< Util::TemporaryDirectory > tempDir;
 
