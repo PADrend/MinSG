@@ -229,8 +229,7 @@ StreamedSurfelGenerator::~StreamedSurfelGenerator() = default;
 StreamedSurfelGenerator::StreamedSurfelGenerator(const StreamedSurfelGenerator& other)
 		: SurfelGenerator(other), timeLimit_ms(other.timeLimit_ms), state(new State(*other.state.get())){}
 
-StreamedSurfelGenerator::StreamedSurfelGenerator(StreamedSurfelGenerator&& other) = default;
-
+StreamedSurfelGenerator::StreamedSurfelGenerator(StreamedSurfelGenerator &&) = default;
 
 void StreamedSurfelGenerator::begin(Util::PixelAccessor& pos, Util::PixelAccessor& normal, Util::PixelAccessor& color, Util::PixelAccessor& size) {
 	state.reset(new State);
