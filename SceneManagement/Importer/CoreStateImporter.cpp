@@ -458,7 +458,7 @@ static bool importCullFaceState(ImportContext & ctxt, const std::string & stateT
 		state->changeParameters().disable();
 	} else {
 		WARN("createCullFace: Invalid mode.");
-		return nullptr;
+		return false;
 	}
 
 	ImporterTools::finalizeState(ctxt, state, d);
