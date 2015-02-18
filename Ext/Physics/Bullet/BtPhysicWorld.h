@@ -13,24 +13,31 @@
 
 #ifndef BTPHYSICWORLD_H
 #define BTPHYSICWORLD_H
-#include "Helper.h"
-#include "BtPhysicObject.h"
-#include "../PhysicWorld.h"
-#include <Util/References.h>
-#include <Util/Utils.h>
 
+#include <Util/Macros.h>
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-W#warnings)
 COMPILER_WARN_OFF_GCC(-Wswitch-default)
-COMPILER_WARN_OFF_GCC(-Wunused-parameter)
-COMPILER_WARN_OFF_GCC(-Wunused-variable)
 COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
 COMPILER_WARN_OFF_GCC(-Wshadow)
 COMPILER_WARN_OFF_GCC(-Wold-style-cast)
 COMPILER_WARN_OFF_GCC(-Wcast-qual)
+COMPILER_WARN_OFF_GCC(-Wunused)
+COMPILER_WARN_OFF_GCC(-Wunused-parameter)
+COMPILER_WARN_OFF_GCC(-Wunused-variable)
 #include <LinearMath/btConvexHullComputer.h>
 #include <btBulletDynamicsCommon.h>
+#if (BT_BULLET_VERSION == 282) and !defined(BULLET_WARNING_PATCH)
+#define BULLET_WARNING_PATCH
+inline int _suppressUnusedVariableWarning(){  return btInfinityMask;} // on mingw, -Wunused-variable does not work here.
+#endif
 COMPILER_WARN_POP
+
+
+#include "Helper.h"
+#include "BtPhysicObject.h"
+#include "../PhysicWorld.h"
+#include <Util/References.h>
 
 namespace MinSG {
 class GroupNode;
@@ -50,7 +57,6 @@ class BtPhysicWorld: public PhysicWorld{
 		btAlignedObjectArray<btCollisionShape*>	collisionShapes;
 
 		void onNodeTransformed(Node * node);
-		void onNodeAdded(Node * node);
 		btRigidBody * createRigidBody(BtPhysicObject& physObj,ShapeContainer* shape);
 		void initCollisionCallbacks(BtPhysicObject& physObj);
 
@@ -72,7 +78,6 @@ class BtPhysicWorld: public PhysicWorld{
 
 
 		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
-		void updateConstraintPivot(Node* node, const std::string &name) override;
 
 		//debug!!!!
 		void renderPhysicWorld(Rendering::RenderingContext& rctxt) override;

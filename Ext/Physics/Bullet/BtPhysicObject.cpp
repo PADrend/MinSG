@@ -14,17 +14,25 @@
 #include "BtPhysicObject.h"
 #include "Helper.h"
 #include<algorithm>
+
+#include <Util/Macros.h>
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-W#warnings)
 COMPILER_WARN_OFF_GCC(-Wswitch-default)
-COMPILER_WARN_OFF_GCC(-Wunused-parameter)
 COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
 COMPILER_WARN_OFF_GCC(-Wshadow)
 COMPILER_WARN_OFF_GCC(-Wold-style-cast)
 COMPILER_WARN_OFF_GCC(-Wcast-qual)
+COMPILER_WARN_OFF_GCC(-Wunused)
+COMPILER_WARN_OFF_GCC(-Wunused-parameter)
 COMPILER_WARN_OFF_GCC(-Wunused-variable)
 #include <btBulletDynamicsCommon.h>
+#if (BT_BULLET_VERSION == 282) and !defined(BULLET_WARNING_PATCH)
+#define BULLET_WARNING_PATCH
+inline int _suppressUnusedVariableWarning(){  return btInfinityMask;} // on mingw, -Wunused-variable does not work here.
+#endif
 COMPILER_WARN_POP
+
 
 namespace MinSG {
 namespace Physics {

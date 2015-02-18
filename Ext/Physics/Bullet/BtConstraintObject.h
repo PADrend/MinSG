@@ -27,9 +27,9 @@ namespace MinSG {
 
 namespace Physics {
 class BtConstraintObject : public Util::ReferenceCounter<BtConstraintObject>{
-    Node* nodeA;
-    Node* nodeB;
-    std::unique_ptr<btTypedConstraint> constraint;
+		Node* nodeA;
+		Node* nodeB;
+		std::unique_ptr<btTypedConstraint> constraint;
     public:
 
         //! create a new physic object

@@ -2,7 +2,7 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2013,2015 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -36,22 +36,25 @@
 #include <Rendering/MeshUtils/LocalMeshDataHolder.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 
-#include <Util/Macros.h>
 #include <Util/Utils.h>
 #include <iostream>
 
-
+#include <Util/Macros.h>
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-W#warnings)
 COMPILER_WARN_OFF_GCC(-Wswitch-default)
-COMPILER_WARN_OFF_GCC(-Wunused-parameter)
+COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
 COMPILER_WARN_OFF_GCC(-Wshadow)
 COMPILER_WARN_OFF_GCC(-Wold-style-cast)
 COMPILER_WARN_OFF_GCC(-Wcast-qual)
-COMPILER_WARN_OFF_GCC(-Wunused-variable)
+COMPILER_WARN_OFF_GCC(-Wunused)
 COMPILER_WARN_OFF_GCC(-Wunused-parameter)
-COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
+COMPILER_WARN_OFF_GCC(-Wunused-variable)
 #include <LinearMath/btConvexHullComputer.h>
+#if (BT_BULLET_VERSION == 282) and !defined(BULLET_WARNING_PATCH)
+#define BULLET_WARNING_PATCH
+inline int _suppressUnusedVariableWarning(){  return btInfinityMask;} // on mingw, -Wunused-variable does not work here.
+#endif
 COMPILER_WARN_POP
 
 using Geometry::Box;
@@ -152,12 +155,12 @@ btCollisionShape* creatStaticTriangleMeshShape(Node* node){
 	return (new btBvhTriangleMeshShape(meshInterface, true, true));
 }
 
-static ShapeContainer* createShape(Node* node, Util::GenericAttributeMap* description, const Geometry::Vec3& localCenterOfMass){
+static ShapeContainer* createShape(Node* node, Util::GenericAttributeMap* shapeDescription, const Geometry::Vec3& localCenterOfMass){
 	btCollisionShape* btShape = nullptr;
-	if(!description){
+	if(!shapeDescription){
 		btShape = createDynamicBoxShape(node, localCenterOfMass);
 	}else{
-		const std::string type = description->getString(PhysicWorld::SHAPE_TYPE);
+		const std::string type = shapeDescription->getString(PhysicWorld::SHAPE_TYPE);
 		std::cout<<type<<"\n";
 		if(type == PhysicWorld::SHAPE_TYPE_BOX)
 			btShape = createDynamicBoxShape(node, localCenterOfMass);
@@ -168,7 +171,7 @@ static ShapeContainer* createShape(Node* node, Util::GenericAttributeMap* descri
 		else if(type == PhysicWorld::SHAPE_TYPE_SPHERE)
 			btShape = createDynamicSphereShape(node, localCenterOfMass);
 		else{
-			std::cerr << "Shape description: "<<description->toString()<<"\n";
+			std::cerr << "shapeDescription: "<<shapeDescription->toString()<<"\n";
 			throw std::logic_error("Invalid shape type");
 		}
 	}
@@ -180,11 +183,8 @@ static ShapeContainer* createShape(Node* node, Util::GenericAttributeMap* descri
 btRigidBody * BtPhysicWorld::createRigidBody(BtPhysicObject& physObj, ShapeContainer* shape){
 	Node * node = physObj.getNode();
 
-//	const float mass = PhysicWorld::getNodeProperty_mass(node);
     const float mass = 1;
-//	const float friction = PhysicWorld::getNodeProperty_friction(node);
 	const float friction = 0;
-//	const float rollingFriction = PhysicWorld::getNodeProperty_rollingFriction(node);
 	const float rollingFriction = 0;
 
 	btVector3 localInertia(0,0,0);
@@ -296,7 +296,6 @@ void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 // physicObject attribute
 
 static const Util::StringIdentifier ATTR_PHYSICS_OBJECT(  NodeAttributeModifier::create( "btPhysicObject", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
-//static const Util::StringIdentifier ATTR_PHYSICS_SHAPE_DESC(  NodeAttributeModifier::create( "PhysicShapeDescription", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 
 
 static BtPhysicObject* getPhysicObject(Node* node){
@@ -381,7 +380,7 @@ void BtPhysicWorld::createGroundPlane(const Geometry::Plane& plane ){
 	}
 }
 
-void BtPhysicWorld::addNodeToPhyiscWorld(Node* node, Util::GenericAttributeMap * description){
+void BtPhysicWorld::addNodeToPhyiscWorld(Node* node, Util::GenericAttributeMap * shapeDescription){
 	BtPhysicObject *physObj = new BtPhysicObject(node);
 	physObj->setCenterOfMass((node->getBB()).getCenter());
 	attachPhysicsObject(node, physObj);
@@ -394,12 +393,12 @@ void BtPhysicWorld::addNodeToPhyiscWorld(Node* node, Util::GenericAttributeMap *
 ////		dynamicsWorld->addRigidBody(body);
 ////		initCollisionCallbacks(*physObj);
 ////	}else{
-		ShapeContainer *shape = createShape(node, description, physObj->getCenterOfMass() );
+		ShapeContainer *shape = createShape(node, shapeDescription, physObj->getCenterOfMass() );
 		btRigidBody * body = createRigidBody(*physObj, shape);
 		physObj->setBodyAndShape(body,shape);
 		dynamicsWorld->addRigidBody(body);
 		initCollisionCallbacks(*physObj);
-		// if the node has no local shape description, store the shape at the prototype (where it can be used for further instances)
+		// if the node has no local shape shapeDescription, store the shape at the prototype (where it can be used for further instances)
 //		if(node->isInstance() && !PhysicWorld::hasLocalShapeDescription(node) && PhysicWorld::hasLocalShapeDescription(node->getPrototype())){
 //			attachShapeAttribute(node->getPrototype(),shape);
 //		}else{ // otherwise, store shape at the node (where it can be used for clones)
@@ -461,7 +460,8 @@ void BtPhysicWorld::initNodeObserver(Node * rootNode){
 	rootNode->clearTransformationObservers();
 	rootNode->addTransformationObserver(std::bind(&BtPhysicWorld::onNodeTransformed,this,std::placeholders::_1));
 
-	rootNode->addNodeAddedObserver(std::bind(&BtPhysicWorld::onNodeAdded,this,std::placeholders::_1));
+//	//! Add all objects with physical properties to the world
+//	rootNode->addNodeAddedObserver(std::bind(&BtPhysicWorld::onNodeAdded,this,std::placeholders::_1));
 
 
 	// search and remove all objects physics objects
@@ -469,16 +469,7 @@ void BtPhysicWorld::initNodeObserver(Node * rootNode){
 		for(auto & node : collectNodesWithPhyicsObject(root))
 			removeNode(node);
 	});
-	onNodeAdded(rootNode);
-}
-
-//! Add all objects with physical properties to the world
-void BtPhysicWorld::onNodeAdded(Node * root){
-//	for(auto & node : PhysicWorld::collectNodesWithPhysicsProperties(root)){
-//		auto physObj = getPhysicObject(node);
-////		if(!physObj)
-////			addNodeToPhyiscWorld(node);
-//	}
+//	onNodeAdded(rootNode);
 }
 
 
@@ -506,7 +497,6 @@ void BtPhysicWorld::setGravity(const Geometry::Vec3&  gravity){
 }
 
 void BtPhysicWorld::updateMass(Node* node, float mass){
-	//setNodeProperty_mass(node,mass);
 	BtPhysicObject *physObj = getPhysicObject(node);
 	if(physObj){
 		btRigidBody* body = physObj->getRigidBody();
@@ -519,12 +509,10 @@ void BtPhysicWorld::updateMass(Node* node, float mass){
 
 		dynamicsWorld->addRigidBody(body);  // re-add the body
 		body->activate(true);
-		std::cout<<"Mass updated";
 	}
 }
 
 void BtPhysicWorld::updateFriction(Node* node, float fric){
-//	setNodeProperty_friction(node,fric);
 	BtPhysicObject *physObj = getPhysicObject(node);
 	if(physObj){
 		btRigidBody* body = physObj->getRigidBody();
@@ -534,7 +522,6 @@ void BtPhysicWorld::updateFriction(Node* node, float fric){
 }
 
 void BtPhysicWorld::updateRollingFriction(Node* node, float rollfric){
-//	setNodeProperty_rollingFriction(node,rollfric);
 	BtPhysicObject *physObj = getPhysicObject(node);
 	if(physObj){
 		btRigidBody* body = physObj->getRigidBody();
@@ -543,20 +530,18 @@ void BtPhysicWorld::updateRollingFriction(Node* node, float rollfric){
 	}
 }
 
-void BtPhysicWorld::updateShape(Node* node,  Util::GenericAttributeMap * description){
-	if(!description){
+void BtPhysicWorld::updateShape(Node* node,  Util::GenericAttributeMap * shapeDescription){
+	if(!shapeDescription){
 		WARN("BtPhysicWorld::updateShape: no shape description!");
 		return;
 	}
-//	setNodeProperty_shapeDescription(node,*description);
-
 	BtPhysicObject* physObj = getPhysicObject(node);
 	if(physObj){
 		auto oldBody = physObj->getRigidBody();
 		dynamicsWorld->removeRigidBody(oldBody);
 		delete oldBody->getMotionState();
 
-		auto shape = createShape(node, description, physObj->getCenterOfMass() );
+		auto shape = createShape(node, shapeDescription, physObj->getCenterOfMass() );
 		physObj->setBodyAndShape( createRigidBody(*physObj, shape), shape );
 		dynamicsWorld->addRigidBody(physObj->getRigidBody());
 //		attachShapeAttribute(node, shape);
@@ -571,7 +556,6 @@ void BtPhysicWorld::updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3&
 		initCollisionCallbacks(*physObj);
 }
 
-//Debug!!!!!!!!!!!!!!!!
 void BtPhysicWorld::renderPhysicWorld(Rendering::RenderingContext& rctxt){
 	MyDebugDraw *db = new MyDebugDraw(rctxt);
 	db->setDebugMode(  btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints);
@@ -625,11 +609,6 @@ void BtPhysicWorld::applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometr
         p->setDbgDrawSize(5);
         dynamicsWorld->addConstraint(p, true);
     }
-}
-
-void BtPhysicWorld::updateConstraintPivot(Node* node, const std::string &name){
-//    setNodeProperty_constraintPivot(node,name);
-
 }
 
 void BtPhysicWorld::removeConstraints(Node* node){

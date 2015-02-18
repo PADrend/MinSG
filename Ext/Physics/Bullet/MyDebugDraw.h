@@ -11,20 +11,26 @@
 
 #include "Helper.h"
 
+#include <Rendering/RenderingContext/RenderingContext.h>
+#include <Util/Graphics/ColorLibrary.h>
+#include <Rendering/Draw.h>
+
+#include<Util/Macros.h>
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-W#warnings)
 COMPILER_WARN_OFF_GCC(-Wswitch-default)
+COMPILER_WARN_OFF_GCC(-Wunused-variable)
 COMPILER_WARN_OFF_GCC(-Wunused-parameter)
 COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
 COMPILER_WARN_OFF_GCC(-Wshadow)
 COMPILER_WARN_OFF_GCC(-Wold-style-cast)
 #include <btBulletDynamicsCommon.h>
+#if (BT_BULLET_VERSION == 282) and !defined(BULLET_WARNING_PATCH)
+#define BULLET_WARNING_PATCH
+inline int _suppressUnusedVariableWarning(){  return btInfinityMask;} // on mingw, -Wunused-variable does not work here.
+#endif
 COMPILER_WARN_POP
 
-#include <Rendering/RenderingContext/RenderingContext.h>
-#include <Util/Graphics/ColorLibrary.h>
-
-#include <Rendering/Draw.h>
 namespace MinSG {
     class Node;
 namespace Physics {
@@ -44,9 +50,11 @@ class MyDebugDraw : public btIDebugDraw{
 			return debugMode;
 		}
 
-//		void drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color, const btVector3& toColor)override{
-		void drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color )override{
-			Rendering::drawVector(renderingContext, toVec3(from), toVec3(to), Util::Color4f(color.getX(),color.getY(),color.getZ(),1.0));
+		void drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color)override{
+			Rendering::drawVector(renderingContext, toVec3(from), toVec3(to), toColor4f(color));
+		}
+		void drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color1,const btVector3 &color2 )override{
+			Rendering::drawVector(renderingContext, toVec3(from), toVec3(to), toColor4f(color1), toColor4f(color2));
 		}
 //		void drawContactPoint (const btVector3 &PointOnB, const btVector3 &normalOnB, btScalar distance, int lifeTime, const btVector3 &color)override{}
 		void drawContactPoint (const btVector3 &, const btVector3 &, btScalar , int , const btVector3 &)override{}

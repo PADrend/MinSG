@@ -16,11 +16,13 @@
 #include <Geometry/Vec3.h>
 #include <Geometry/Vec4.h>
 #include <Util/Macros.h>
+#include <Util/Graphics/Color.h>
 
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-W#warnings)
 COMPILER_WARN_OFF_GCC(-Wunused-variable)
 COMPILER_WARN_OFF_GCC(-Wswitch-default)
+COMPILER_WARN_OFF_GCC(-Wunused-variable)
 COMPILER_WARN_OFF_GCC(-Wunused-parameter)
 COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
 COMPILER_WARN_OFF_GCC(-Wshadow)
@@ -29,6 +31,10 @@ COMPILER_WARN_OFF_GCC(-Wcast-qual)
 #include <LinearMath/btMatrix3x3.h>
 #include <LinearMath/btVector3.h>
 #include <LinearMath/btTransform.h>
+#if (BT_BULLET_VERSION == 282) and !defined(BULLET_WARNING_PATCH)
+#define BULLET_WARNING_PATCH
+inline int _suppressUnusedVariableWarning(){  return btInfinityMask;} // on mingw, -Wunused-variable does not work here.
+#endif
 COMPILER_WARN_POP
 
 namespace MinSG {
@@ -71,6 +77,9 @@ Geometry::SRT toSRT(const btTransform& t){
 	return Geometry::SRT(toVec3(t.getOrigin()), toMatrix3x3(t.getBasis()),1.0);
 }
 
+Util::Color4f toColor4f(const btVector3& btv){
+	return Util::Color4f(btv.getX(),btv.getY(),btv.getZ(),1.0f);
+}
 
 }
 
