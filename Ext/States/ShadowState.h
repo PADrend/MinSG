@@ -67,6 +67,8 @@ class ShadowState : public State {
 			return texMatrix;
 		}
 
+		uint16_t getTextureSize() const { return texSize; }
+
 	private:
 		//! Texture matrix for shadow projection.
 		Geometry::Matrix4x4f texMatrix;
