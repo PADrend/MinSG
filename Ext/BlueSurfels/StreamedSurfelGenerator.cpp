@@ -32,7 +32,14 @@
 
 namespace MinSG {
 namespace BlueSurfels {
-	
+
+std::vector<size_t> extractRandomSurfelIds(StreamedSurfelGenerator::State* state,uint32_t num );
+void guessSizes(StreamedSurfelGenerator::State* state);
+void addRandomPoint(StreamedSurfelGenerator::State* state);
+void addFurthestPoint(StreamedSurfelGenerator::State* state);
+void addInitialPoint(StreamedSurfelGenerator::State* state);
+void calculateBB(StreamedSurfelGenerator::State* state);
+
 enum InternalState {
 	Initial, Processing, Finished
 };
