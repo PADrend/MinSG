@@ -25,6 +25,9 @@ typedef _Vec3<float> Vec3;
 template<typename T_> class _SRT;
 typedef _SRT<float> SRT;
 }
+namespace Util{
+class Color4f;
+}
 
 namespace MinSG {
 namespace Physics{
@@ -37,6 +40,7 @@ Geometry::Vec3 toVec3(const btVector3& btv);
 Geometry::Matrix3x3 toMatrix3x3(const btMatrix3x3& btm);
 Geometry::SRT toSRT(const btTransform& t);
 
+Util::Color4f toColor4f(const btVector3& btv);
 }
 }
 

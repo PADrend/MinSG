@@ -12,7 +12,6 @@
 #include "Server.h"
 #include "../../Core/Nodes/Node.h"
 #include "../../SceneManagement/SceneManager.h"
-#include <Util/Concurrency/UserThread.h>
 #include <Util/Utils.h>
 #include <memory>
 

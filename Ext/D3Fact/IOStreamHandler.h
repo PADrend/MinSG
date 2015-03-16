@@ -16,7 +16,7 @@
 
 #include <Util/References.h>
 
-#include <iostream>
+#include <iosfwd>
 #include <map>
 
 enum StreamMessage_t {
@@ -25,13 +25,6 @@ enum StreamMessage_t {
 	STREAM_TAIL = 202,
 	STREAM_ERROR = 203
 };
-
-namespace Util {
-namespace Concurrency {
-class Thread;
-class Mutex;
-}
-}
 
 namespace D3Fact {
 
@@ -60,7 +53,7 @@ private:
 	Util::Reference<Session> session;
 	std::map<int32_t, SyncBuffer*> instreams;
 	std::map<int32_t, OutStreamer*> outstreams;
-	Util::Concurrency::Mutex* mutex;
+	std::mutex mutex;
 };
 
 } /* namespace D3Fact */

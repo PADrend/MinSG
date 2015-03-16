@@ -16,7 +16,7 @@
 #include <Util/ReferenceCounter.h>
 #include <Util/References.h>
 
-#include <iostream>
+#include <iosfwd>
 
 namespace D3Fact {
 

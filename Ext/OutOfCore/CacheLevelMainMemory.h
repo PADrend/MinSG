@@ -13,17 +13,13 @@
 #define OUTOFCORE_CACHELEVELMAINMEMORY_H_
 
 #include "CacheLevel.h"
+#include <condition_variable>
 #include <cstdint>
 #include <memory>
+#include <mutex>
+#include <thread>
 #include <vector>
 
-namespace Util {
-namespace Concurrency {
-class Mutex;
-class Semaphore;
-class Thread;
-}
-}
 namespace MinSG {
 namespace OutOfCore {
 
@@ -36,14 +32,13 @@ namespace OutOfCore {
 class CacheLevelMainMemory : public CacheLevel {
 	private:
 		//! Guard for @a thread and @a active
-		std::unique_ptr<Util::Concurrency::Mutex> threadMutex;
+		std::mutex threadMutex;
 
 		//! Semaphore used to put the worker thread to sleep when there is no work to do.
-		std::unique_ptr<Util::Concurrency::Semaphore> threadSemaphore;
+		std::condition_variable threadSemaphore;
 
 		//! Parallel thread of execution that is used to load cache objects from lower cache levels.
-		std::unique_ptr<Util::Concurrency::Thread> thread;
-		
+		std::thread thread;
 
 		//! Status of the cache level's thread.
 		bool active;

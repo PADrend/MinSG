@@ -115,9 +115,9 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 			rightAngle = std::max(rightAngle, horizontalAngle);
 		}
 		if(camSpacePoint.getY() < 0.0f) {
-			bottomAngle = std::max(bottomAngle, verticalAngle);
+			topAngle = std::max(bottomAngle, verticalAngle);
 		} else {
-			topAngle = std::min(topAngle, verticalAngle);
+			bottomAngle = std::min(topAngle, verticalAngle);
 		}
 	}
 

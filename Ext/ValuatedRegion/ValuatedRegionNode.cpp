@@ -334,10 +334,11 @@ void ValuatedRegionNode::drawColorBox(FrameContext & context) {
 		}
 		Rendering::drawBox(context.getRenderingContext(), box, additionalData->colors.front());
 	} else if (numColors == 6) {
-		region.resizeRel(0.9);
-		const float dispX = region.getExtentX() * 0.05f;
-		const float dispY = region.getExtentY() * 0.05f;
-		const float dispZ = region.getExtentZ() * 0.05f;
+		Geometry::Box box(region);
+		box.resizeRel(0.9);
+		const float dispX = box.getExtentX() * 0.05f;
+		const float dispY = box.getExtentY() * 0.05f;
+		const float dispZ = box.getExtentZ() * 0.05f;
 
 		/*
 		 *     6---------7           /---------|
@@ -352,14 +353,14 @@ void ValuatedRegionNode::drawColorBox(FrameContext & context) {
 		 */
 
 		const Geometry::Vec3f corners[8] = {
-			Geometry::Vec3f(region.getMinX(), region.getMinY(), region.getMinZ()),     // (0)
-			Geometry::Vec3f(region.getMaxX(), region.getMinY(), region.getMinZ()),     // (1)
-			Geometry::Vec3f(region.getMinX(), region.getMaxY(), region.getMinZ()),     // (2)
-			Geometry::Vec3f(region.getMaxX(), region.getMaxY(), region.getMinZ()),     // (3)
-			Geometry::Vec3f(region.getMinX(), region.getMinY(), region.getMaxZ()),     // (4)
-			Geometry::Vec3f(region.getMaxX(), region.getMinY(), region.getMaxZ()),     // (5)
-			Geometry::Vec3f(region.getMinX(), region.getMaxY(), region.getMaxZ()),     // (6)
-			Geometry::Vec3f(region.getMaxX(), region.getMaxY(), region.getMaxZ())      // (7)
+			Geometry::Vec3f(box.getMinX(), box.getMinY(), box.getMinZ()),     // (0)
+			Geometry::Vec3f(box.getMaxX(), box.getMinY(), box.getMinZ()),     // (1)
+			Geometry::Vec3f(box.getMinX(), box.getMaxY(), box.getMinZ()),     // (2)
+			Geometry::Vec3f(box.getMaxX(), box.getMaxY(), box.getMinZ()),     // (3)
+			Geometry::Vec3f(box.getMinX(), box.getMinY(), box.getMaxZ()),     // (4)
+			Geometry::Vec3f(box.getMaxX(), box.getMinY(), box.getMaxZ()),     // (5)
+			Geometry::Vec3f(box.getMinX(), box.getMaxY(), box.getMaxZ()),     // (6)
+			Geometry::Vec3f(box.getMaxX(), box.getMaxY(), box.getMaxZ())      // (7)
 		};
 		static const unsigned char index[] = {
 			0, 2, 6, 4,     // (left)

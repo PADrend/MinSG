@@ -21,12 +21,6 @@
 #include <set>
 #include <stdexcept>
 
-namespace Util {
-namespace Concurrency {
-class Mutex;
-class Thread;
-}
-}
 namespace MinSG {
 namespace OutOfCore {
 

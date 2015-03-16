@@ -12,9 +12,6 @@
 #include <sstream>
 
 #include <Util/Macros.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Lock.h>
 
 #include "Message.h"
 #include "Session.h"
@@ -27,25 +24,22 @@ using namespace D3Fact;
 using namespace Util;
 
 MessageDispatcher::MessageDispatcher(Session* session_) : session(session_),
-		mutex(Util::Concurrency::createMutex()), sessionMutex(Util::Concurrency::createMutex()) {
+		mutex(), sessionMutex() {
 }
 
-MessageDispatcher::~MessageDispatcher() {
-	delete mutex;
-	delete sessionMutex;
-}
+MessageDispatcher::~MessageDispatcher() = default;
 
 void MessageDispatcher::dispatch(uint32_t maxWorkload/*=0xffffffff*/, bool async/*=false*/) {
 
 	{
-		auto lockSession = Util::Concurrency::createLock(*sessionMutex);
+		std::lock_guard<std::mutex> lockSession(sessionMutex);
 		if(session.isNull())
 			return;
 
 		for(uint32_t i=0; i<maxWorkload && session->hasReceivedMSG(); ++i) {
 			Message* msg = session->receiveMSG();
 			if(msg) {
-				auto lock = Util::Concurrency::createLock(*mutex);
+				std::lock_guard<std::mutex> lock(mutex);
 				if(handler.count(0)>0) {
 					handler[0]->addMessage(msg);
 				}
@@ -66,7 +60,7 @@ void MessageDispatcher::dispatch(uint32_t maxWorkload/*=0xffffffff*/, bool async
 
 	std::deque<Util::Reference<MessageHandler> > tmp;
 	{
-		auto lock = Util::Concurrency::createLock(*mutex);
+		std::lock_guard<std::mutex> lock(mutex);
 		for(auto it : handler) {
 			if(it.second->getMode() == MessageHandler::SYNC) {
 				tmp.push_back(it.second);
@@ -79,8 +73,8 @@ void MessageDispatcher::dispatch(uint32_t maxWorkload/*=0xffffffff*/, bool async
 }
 
 void MessageDispatcher::registerHandler(MessageHandler* msgHandler, int32_t type) {
-	auto lockSession = Util::Concurrency::createLock(*sessionMutex);
-	auto lock = Util::Concurrency::createLock(*mutex);
+	std::lock_guard<std::mutex> lockSession(sessionMutex);
+	std::lock_guard<std::mutex> lock(mutex);
 	if(handler.count(type)>0) {
 		std::stringstream ss;
 		ss << "Message handler for type '" << type << "' is already registered for session '" << session->getSessionId() << "'.";
@@ -91,25 +85,25 @@ void MessageDispatcher::registerHandler(MessageHandler* msgHandler, int32_t type
 }
 
 void MessageDispatcher::unregisterHandler(int32_t type) {
-	auto lock = Util::Concurrency::createLock(*mutex);
+	std::lock_guard<std::mutex> lock(mutex);
 	handler.erase(type);
 }
 
 MessageHandler* D3Fact::MessageDispatcher::getHandler(int32_t type) {
-	auto lock = Util::Concurrency::createLock(*mutex);
+	std::lock_guard<std::mutex> lock(mutex);
 	if(handler.count(type) == 0)
 		return nullptr;
 	return handler[type].get();
 }
 
 bool MessageDispatcher::hasHandler(int32_t type) {
-	auto lock = Util::Concurrency::createLock(*mutex);
+	std::lock_guard<std::mutex> lock(mutex);
 	return handler.count(type) > 0;
 }
 
 void MessageDispatcher::dispose() {
-	auto lockSession = Util::Concurrency::createLock(*sessionMutex);
-	auto lock = Util::Concurrency::createLock(*mutex);
+	std::lock_guard<std::mutex> lockSession(sessionMutex);
+	std::lock_guard<std::mutex> lock(mutex);
 	handler.clear();
 	session.detachAndDecrease();
 }

@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+#include <unordered_map>
 #include <Geometry/Vec3.h>
 #include <Util/References.h>
 #include <Util/Graphics/Color.h>
@@ -34,8 +35,9 @@ namespace BlueSurfels {
 
 class SurfelGenerator{
 		uint32_t maxAbsSurfels;
-		float reusalRate;
-
+		mutable std::unordered_map<std::string,float> benchmarkResults;
+		bool benchmarkingEnabled;
+		
 	public:
 		
 		struct Surfel{
@@ -57,11 +59,12 @@ class SurfelGenerator{
 		};
 		
 		
-		SurfelGenerator() : maxAbsSurfels(10000),reusalRate(0.6){}
+		SurfelGenerator() : maxAbsSurfels(10000),benchmarkingEnabled(false){}
 		uint32_t getMaxAbsSurfels()const			{	return maxAbsSurfels;	}
-		float getReusalRate()const				{	return reusalRate;	}
 		void setMaxAbsSurfels(uint32_t i)			{	maxAbsSurfels = i;	}
-		void setReusalRate(float f)				{	reusalRate = f;	}
+		void setBenchmarkingEnabled(bool b)			{	benchmarkingEnabled = b;	}
+		const std::unordered_map<std::string,float>& getBenchmarkResults()const	{	return benchmarkResults;	}
+		void clearBenchmarkResults()const			{	benchmarkResults.clear();	}
 	
 		
 		std::vector<Surfel> extractSurfelsFromTextures(	

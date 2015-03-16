@@ -9,23 +9,18 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 
 #include "LP.h"
-#include <list>
 #include <iostream>
+#include <list>
+#include <mutex>
+#include <thread>
 
 namespace MinSG {
-
-using Util::Concurrency::createMutex;
-using Util::Concurrency::createSemaphore;
-using Util::Concurrency::Lock;
-using Util::Concurrency::Semaphore;
-using Util::Concurrency::Mutex;
 
 static int __WINAPI abortfunction(lprec * /*lp*/, void * lp) {
 	return reinterpret_cast<LP *>(lp)->isStopped();
 }
 
 LP::LP(uint32_t _nodeCount, uint32_t _algoCount, float * _errors, float * _times, double _targetTime) :
-			UserThread(),
 			lp(nullptr),
 			nodeCount(_nodeCount),
 			algoCount(_algoCount),
@@ -33,7 +28,7 @@ LP::LP(uint32_t _nodeCount, uint32_t _algoCount, float * _errors, float * _times
 			result(nullptr),
 			resultComputed(false),
 			stopped(false),
-			mutex(createMutex())
+			mutex()
 	{
 	result = new REAL[1 + (nodeCount + 1) + algoCount * nodeCount ]; // 1 + #rows + #cols
 	REAL * times = new REAL[1 + nodeCount * algoCount];
@@ -80,7 +75,7 @@ LP::LP(uint32_t _nodeCount, uint32_t _algoCount, float * _errors, float * _times
 
 	printMatrix();
 
-	start();
+	thread = std::thread(std::bind(&LP::run, this));
 }
 
 void LP::printMatrix() {
@@ -117,13 +112,12 @@ void LP::printResult() {
 }
 
 LP::~LP() {
-	if(isActive())
-		join();
+	thread.join();
 	delete_lp(lp);
 }
 
 std::vector<int> LP::getResult() {
-	auto lock = Util::Concurrency::createLock(*mutex);
+	std::lock_guard<std::mutex> lock(mutex);
 	std::vector<int> ret;
 	ret.reserve(nodeCount);
 	printResult();
@@ -149,7 +143,7 @@ std::vector<int> LP::getResult() {
 void LP::run() {
 
 	{
-		auto lock = Util::Concurrency::createLock(*mutex);
+		std::lock_guard<std::mutex> lock(mutex);
 
 		set_rh(lp, nodeCount + 1, targetTime);
 	}
@@ -157,7 +151,7 @@ void LP::run() {
 	solve(lp);
 
 	{
-		auto lock = Util::Concurrency::createLock(*mutex);
+		std::lock_guard<std::mutex> lock(mutex);
 		get_primal_solution(lp, result);
 		resultComputed = true;
 	}

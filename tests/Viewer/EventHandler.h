@@ -9,10 +9,9 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
+#include <mutex>
+
 namespace Util {
-namespace Concurrency {
-class Mutex;
-}
 namespace UI {
 union Event;
 }
@@ -38,7 +37,7 @@ namespace MinSG {
             virtual void doExecute() =0;
 
         private:
-			Util::Concurrency::Mutex * lock;
+			std::mutex mutex;
     };
 }
 

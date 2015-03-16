@@ -11,11 +11,9 @@
 #include "CacheLevel.h"
 #include "CacheContext.h"
 #include "Definitions.h"
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Lock.h>
-#include <Util/Concurrency/Mutex.h>
 #include <Util/Timer.h>
 #include <functional>
+#include <mutex>
 #include <utility>
 
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
@@ -28,7 +26,7 @@ namespace OutOfCore {
 cacheLevelId_t CacheLevel::levelCount = 0;
 
 CacheLevel::CacheLevel(uint64_t cacheSize, CacheContext & cacheContext) :
-	containerMutex(Util::Concurrency::createMutex()),
+	containerMutex(),
 	memoryOverall(cacheSize), memoryUsed(0), numCacheObjects(0),
 	upper(nullptr), lower(nullptr), context(cacheContext),
 	lastWorkDuration(0.0), levelId(levelCount++) {
@@ -49,12 +47,12 @@ void CacheLevel::removeUnimportantCacheObjects(uint64_t maximumMemory) {
 }
 
 uint64_t CacheLevel::getUsedMemory() const {
-	auto lock = Util::Concurrency::createLock(*containerMutex);
+	std::lock_guard<std::mutex> containerLock(containerMutex);
 	return memoryUsed;
 }
 
 void CacheLevel::addCacheObject(CacheObject * object) {
-	auto containerLock = Util::Concurrency::createLock(*containerMutex);
+	std::lock_guard<std::mutex> containerLock(containerMutex);
 	context.addObjectToLevel(object, *this);
 	doAddCacheObject(object);
 	memoryUsed += getCacheObjectSize(object);
@@ -62,7 +60,7 @@ void CacheLevel::addCacheObject(CacheObject * object) {
 }
 
 void CacheLevel::removeCacheObject(CacheObject * object) {
-	auto containerLock = Util::Concurrency::createLock(*containerMutex);
+	std::lock_guard<std::mutex> containerLock(containerMutex);
 	--numCacheObjects;
 	memoryUsed -= getCacheObjectSize(object);
 	doRemoveCacheObject(object);
@@ -74,16 +72,16 @@ bool CacheLevel::loadCacheObject(CacheObject * object) {
 }
 
 std::size_t CacheLevel::getNumObjects() const {
-	auto containerLock = Util::Concurrency::createLock(*containerMutex);
+	std::lock_guard<std::mutex> containerLock(containerMutex);
 	return numCacheObjects;
 }
 
 void CacheLevel::lockContainer() const {
-	containerMutex->lock();
+	containerMutex.lock();
 }
 
 void CacheLevel::unlockContainer() const {
-	containerMutex->unlock();
+	containerMutex.unlock();
 }
 
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
@@ -92,7 +90,7 @@ void CacheLevel::verify() const {
 		throw std::logic_error("Cache level is overfilled.");
 	}
 
-	auto containerLock = Util::Concurrency::createLock(*containerMutex);
+	std::lock_guard<std::mutex> containerLock(containerMutex);
 	if(numCacheObjects != context.getObjectsInLevel(*this).size()) {
 		throw std::logic_error("Internal cache object counter is invalid.");
 	}

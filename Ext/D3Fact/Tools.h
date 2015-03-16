@@ -12,7 +12,7 @@
 #define TOOLS_H_
 
 #include <cstdint>
-#include <iostream>
+#include <iosfwd>
 #include <string>
 #include <vector>
 #include <limits>
@@ -24,9 +24,6 @@ namespace Util {
 namespace Network {
 class TCPConnection;
 class UDPNetworkSocket;
-}
-namespace Concurrency {
-class Semaphore;
 }
 }
 
@@ -206,8 +203,6 @@ public:
 	static bool sendUDPMSG(Util::Network::UDPNetworkSocket* socket, Message* msg);
 
 	// utils
-
-	static bool timedWait(Util::Concurrency::Semaphore* sem, uint32_t timeout=Tools::TIMEOUT);
 
 	typedef std::function<void(const std::string& src, const std::string& dest, bool success)> asyncCopyCallback_t;
 	static bool asyncCopy(const std::string& src, const std::string& dest, const asyncCopyCallback_t& callback);

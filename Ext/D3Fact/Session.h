@@ -12,17 +12,12 @@
 #define SESSION_H_
 
 #include <cstdint>
+#include <mutex>
 #include <queue>
 
 #include <Util/TypeNameMacro.h>
 #include <Util/ReferenceCounter.h>
 #include <Util/References.h>
-
-namespace Util {
-namespace Concurrency {
-class Mutex;
-}
-}
 
 namespace D3Fact {
 
@@ -65,7 +60,7 @@ private:
 	int64_t sendMSGID;
 	Util::Reference<MessageDispatcher> dispatcher;
 
-	Util::Concurrency::Mutex* receivedMutex;
+	std::mutex receivedMutex;
 	std::priority_queue<Message*, std::vector<Message*>, pcomp<Message> > receivedQueue;
 };
 

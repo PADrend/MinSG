@@ -12,10 +12,8 @@
 #include "CacheLevel.h"
 #include "CacheObject.h"
 #include <Rendering/Mesh/Mesh.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Lock.h>
-#include <Util/Concurrency/Mutex.h>
 #include <functional>
+#include <mutex>
 
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
 #include "CacheObjectPriority.h"
@@ -36,12 +34,12 @@ static std::ostream & operator<<(std::ostream & stream, const CacheObjectPriorit
 #endif /* MINSG_EXT_OUTOFCORE_DEBUG */
 
 CacheContext::CacheContext() :
-		cacheObjectsMutex(Util::Concurrency::createMutex()),
+		cacheObjectsMutex(),
 		sortedCacheObjects(), sortedCacheObjectsBuffer(),
 		containersSameBegin(0), 
 		updatedCacheObjects(), additionalCacheObjects(0),
 		firstMissingCache(), lastContainedCache(),
-		contentMutex(Util::Concurrency::createMutex()) {
+		contentMutex() {
 	firstMissingCache.fill(0);
 	lastContainedCache.fill(0);
 }
@@ -49,7 +47,7 @@ CacheContext::CacheContext() :
 CacheContext::~CacheContext() = default;
 
 void CacheContext::addObject(CacheObject * object) {
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
 	assert(object->updated);
 #endif /* MINSG_EXT_OUTOFCORE_DEBUG */
@@ -60,7 +58,7 @@ void CacheContext::addObject(CacheObject * object) {
 }
 
 void CacheContext::removeObject(CacheObject * object) {
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 	if(object->updated) {
 		updatedCacheObjects.erase(std::remove(updatedCacheObjects.begin(), updatedCacheObjects.end(), object),
 								  updatedCacheObjects.end());
@@ -76,7 +74,7 @@ void CacheContext::onEndFrame(const std::vector<CacheLevel *> & levels) {
 	for(const auto & level : levels) {
 		level->lockContainer();
 	}
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 	if(updatedCacheObjects.empty()) {
 		for(const auto & level : levels) {
 			level->unlockContainer();
@@ -220,7 +218,7 @@ void CacheContext::onEndFrame(const std::vector<CacheLevel *> & levels) {
 }
 
 uint16_t CacheContext::updateUserPriority(CacheObject * object, uint16_t userPriority) {
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 
 	const CacheObjectPriority oldPriority = object->getPriority();
 	if (oldPriority.getUserPriority() == userPriority) {
@@ -240,7 +238,7 @@ uint16_t CacheContext::updateUserPriority(CacheObject * object, uint16_t userPri
 }
 
 void CacheContext::updateFrameNumber(CacheObject * object, uint32_t frameNumber) {
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 
 	CacheObjectPriority newPriority(object->getPriority());
 	if (newPriority.getUsageFrameNumber() == frameNumber) {
@@ -292,7 +290,7 @@ CacheContext::rev_object_pos_t CacheContext::getLastContained(const CacheLevel &
 
 CacheObject * CacheContext::getMostImportantMissingObject(const CacheLevel & level) {
 	level.lockContainer();
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 	const auto firstMissingObj = getFirstMissing(level);
 	level.unlockContainer();
 	if(firstMissingObj == sortedCacheObjects.cend()) {
@@ -303,8 +301,8 @@ CacheObject * CacheContext::getMostImportantMissingObject(const CacheLevel & lev
 
 CacheObject * CacheContext::getLeastImportantStoredObject(const CacheLevel & level) {
 	level.lockContainer();
-	auto contentLock = Util::Concurrency::createLock(*contentMutex);
-	auto cacheObjectsLock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> contentLock(contentMutex);
+	std::lock_guard<std::mutex> cacheObjectsLock(cacheObjectsMutex);
 	const auto levelId = level.getLevelId();
 	CacheObject * result = nullptr;
 	while(result == nullptr) {
@@ -326,7 +324,7 @@ CacheObject * CacheContext::getLeastImportantStoredObject(const CacheLevel & lev
 
 bool CacheContext::isTargetStateReached(const CacheLevel & level) const {
 	level.lockContainer();
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 
 	const auto firstMissingPos = std::distance(sortedCacheObjects.cbegin(), getFirstMissing(level));
 	const auto lastContainedPos = std::distance(sortedCacheObjects.cbegin(), getLastContained(level).base());
@@ -336,17 +334,17 @@ bool CacheContext::isTargetStateReached(const CacheLevel & level) const {
 }
 
 Rendering::Mesh * CacheContext::getContent(CacheObject * object) {
-	auto lock = Util::Concurrency::createLock(*contentMutex);
+	std::lock_guard<std::mutex> lock(contentMutex);
 	return object->getContent();
 }
 
 const Rendering::Mesh * CacheContext::getContent(CacheObject * object) const {
-	auto lock = Util::Concurrency::createLock(*contentMutex);
+	std::lock_guard<std::mutex> lock(contentMutex);
 	return object->getContent();
 }
 
 void CacheContext::setContent(CacheObject * object, Rendering::Mesh * newContent) {
-	auto lock = Util::Concurrency::createLock(*contentMutex);
+	std::lock_guard<std::mutex> lock(contentMutex);
 	
 	Rendering::Mesh * content = object->getContent();
 	
@@ -358,16 +356,16 @@ void CacheContext::setContent(CacheObject * object, Rendering::Mesh * newContent
 }
 
 void CacheContext::lockContentMutex() {
-	contentMutex->lock();
+	contentMutex.lock();
 }
 
 void CacheContext::unlockContentMutex() {
-	contentMutex->unlock();
+	contentMutex.unlock();
 }
 
 void CacheContext::addObjectToLevel(CacheObject * object, const CacheLevel & level) {
 	{
-		auto lock = Util::Concurrency::createLock(*contentMutex);
+		std::lock_guard<std::mutex> lock(contentMutex);
 		const auto levelId = level.getLevelId();
 		if(levelId != 0 && object->getHighestLevelStored() == levelId) {
 			throw std::logic_error("Cache object is already stored in the given cache level.");
@@ -385,7 +383,7 @@ void CacheContext::addObjectToLevel(CacheObject * object, const CacheLevel & lev
 // void afterRequestedObjectAdded(const CacheLevel & level, CacheObject * object) {
 	const auto levelId = level.getLevelId();
 	if(levelId != 0) {
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 	auto firstMissingObj = std::next(sortedCacheObjects.cbegin(), firstMissingCache[levelId]);
 	// When pointing still to the same cache object, the cache can be used.
 	if(object == *firstMissingObj) {
@@ -415,7 +413,7 @@ void CacheContext::addObjectToLevel(CacheObject * object, const CacheLevel & lev
 
 void CacheContext::removeObjectFromLevel(CacheObject * object, const CacheLevel & level) {
 	{
-		auto lock = Util::Concurrency::createLock(*contentMutex);
+		std::lock_guard<std::mutex> lock(contentMutex);
 		const auto levelId = level.getLevelId();
 		if(object->getHighestLevelStored() > levelId) {
 			throw std::logic_error("Cache object is still stored in an upper cache level.");
@@ -429,7 +427,7 @@ void CacheContext::removeObjectFromLevel(CacheObject * object, const CacheLevel 
 	
 	
 	const auto levelId = level.getLevelId();
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 
 	auto lastContainedObj = std::next(sortedCacheObjects.crbegin(), lastContainedCache[levelId]);
 	// When pointing still to the same cache object, the cache can be used.
@@ -458,7 +456,7 @@ void CacheContext::removeObjectFromLevel(CacheObject * object, const CacheLevel 
 }
 
 bool CacheContext::isObjectStoredInLevel(const CacheObject * object, const CacheLevel & level) const {
-	auto lock = Util::Concurrency::createLock(*contentMutex);
+	std::lock_guard<std::mutex> lock(contentMutex);
 	return object->isContainedIn(level.getLevelId());
 }
 
@@ -467,7 +465,7 @@ std::vector<CacheObject *> CacheContext::getObjectsInLevel(const CacheLevel & le
 	const auto levelId = level.getLevelId();
 	const auto levelContains = std::bind(&CacheObject::isContainedIn, std::placeholders::_1, levelId);
 	std::vector<CacheObject *> objectsInLevel;
-	auto lock = Util::Concurrency::createLock(*cacheObjectsMutex);
+	std::lock_guard<std::mutex> lock(cacheObjectsMutex);
 	std::copy_if(sortedCacheObjects.cbegin(), sortedCacheObjects.cend(), std::back_inserter(objectsInLevel), levelContains);
 	return objectsInLevel;
 }

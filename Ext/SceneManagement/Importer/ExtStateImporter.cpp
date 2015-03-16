@@ -19,6 +19,7 @@
 #include "../../../Core/Nodes/GroupNode.h"
 #include "../../../Core/Nodes/ListNode.h"
 #include "../../../Core/Nodes/Node.h"
+#include "../../../Core/Nodes/LightNode.h"
 
 #include "../../OcclusionCulling/OccRenderer.h"
 #include "../../OcclusionCulling/CHCppRenderer.h"
@@ -27,6 +28,7 @@
 #include "../../States/ProjSizeFilterState.h"
 #include "../../States/SkyboxState.h"
 #include "../../States/LODRenderer.h"
+#include "../../States/ShadowState.h"
 
 #ifdef MINSG_EXT_COLORCUBES
 #include "../../ColorCubes/ColorCubeRenderer.h"
@@ -254,6 +256,18 @@ static bool importSkyboxState(ImportContext & ctxt, const std::string & stateTyp
 	return true;
 }
 
+static bool importShadowState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_SHADOW_STATE) // check parent != nullptr is done by SceneManager
+		return false;
+
+	auto state = new ShadowState(d.getUInt(Consts::ATTR_SHADOW_TEXTURE_SIZE));
+	state->setLight(dynamic_cast<LightNode*>(ctxt.sceneManager.getRegisteredNode(d.getString(Consts::ATTR_SHADOW_LIGHT_NODE))));
+
+	ImporterTools::finalizeState(ctxt, state, d);
+	parent->addState(state);
+	return true;
+}
+
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
 static bool importSkeletalHardwareRendererState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_SKEL_SKELETALHARDWARERENDERERSTATE &&
@@ -355,6 +369,7 @@ void initExtStateImporter() {
 	ImporterTools::registerStateImporter(&importMirrorState);
 	ImporterTools::registerStateImporter(&importProjSizeFilterState);
 	ImporterTools::registerStateImporter(&importSkyboxState);
+	ImporterTools::registerStateImporter(&importShadowState);
 
 #ifdef MINSG_EXT_BLUE_SURFELS
 	ImporterTools::registerStateImporter(&importSurfelRenderer);

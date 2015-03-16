@@ -17,30 +17,32 @@
 #include "Utils/StreamManipulators.h"
 
 #include <Util/Macros.h>
-#include <Util/Concurrency/Thread.h>
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/UserThread.h>
-#include <Util/Concurrency/Lock.h>
-#include <Util/Concurrency/Mutex.h>
 #include <Util/References.h>
 
 #include <sstream>
+#include <thread>
 
 #define READ_BUFFER_SIZE 4096
 
 namespace D3Fact {
 
-class IOStreamHandler::OutStreamer : public Util::Concurrency::UserThread {
+class IOStreamHandler::OutStreamer {
 public:
-	OutStreamer(IOStreamHandler* handler_, std::istream* stream_, uint32_t streamId_) : Util::Concurrency::UserThread(),
-		handler(handler_), stream(stream_), streamId(streamId_) {start();}
+	OutStreamer(IOStreamHandler* handler_, std::istream* stream_, uint32_t streamId_) :
+		handler(handler_), stream(stream_), streamId(streamId_),
+		thread(std::bind(&IOStreamHandler::OutStreamer::run, this)) {
+	}
 
+	void join() {
+		thread.join();
+	}
 private:
-	void run() override;
+	void run();
 
 	Util::WeakPointer<IOStreamHandler> handler;
 	std::istream* stream;
 	uint32_t streamId;
+	std::thread thread;
 };
 
 void IOStreamHandler::OutStreamer::run() {
@@ -78,31 +80,30 @@ void IOStreamHandler::OutStreamer::run() {
 }
 
 IOStreamHandler::IOStreamHandler(Session* session_) :
-	MessageHandler(ASYNC), session(session_), instreams(), mutex(Util::Concurrency::createMutex()) {
+	MessageHandler(ASYNC), session(session_), instreams(), mutex() {
 }
 
 IOStreamHandler::~IOStreamHandler() {
 	{
-		auto lock = Util::Concurrency::createLock(*mutex);
+		std::lock_guard<std::mutex> lock(mutex);
 		for(auto & in : instreams)
 			delete in.second;
 		instreams.clear();
 	}
 	for(auto & out : outstreams)
 		delete out.second;
-	delete mutex;
 }
 
 std::istream* IOStreamHandler::request(int32_t streamId) {
 	auto buf = new SyncBuffer();
 	auto stream = new std::iostream(buf);
-	auto lock = Util::Concurrency::createLock(*mutex);
+	std::lock_guard<std::mutex> lock(mutex);
 	instreams[streamId] = buf;
 	return stream;
 }
 
 void IOStreamHandler::cancelStream(int32_t streamId) {
-	auto lock = Util::Concurrency::createLock(*mutex);
+	std::lock_guard<std::mutex> lock(mutex);
 	if(instreams.count(streamId)>0) {
 		instreams[streamId]->close();
 //		instreams.erase(streamId);
@@ -135,7 +136,7 @@ void IOStreamHandler::handleMessage(Message* msg) {
 
 	int32_t streamId = Tools::getInt(msg->getBody(), 0);
 
-	auto lock = Util::Concurrency::createLock(*mutex);
+	std::lock_guard<std::mutex> lock(mutex);
 	if(instreams.count(streamId)==0) {
 		std::stringstream ss;
 		ss << "There is no stream request for stream '" << streamId << "'.";

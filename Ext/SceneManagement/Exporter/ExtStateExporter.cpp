@@ -12,6 +12,8 @@
 
 #include "../ExtConsts.h"
 
+#include "../../../Core/Nodes/LightNode.h"
+
 #include "../../../SceneManagement/SceneDescription.h"
 #include "../../../SceneManagement/SceneManager.h"
 #include "../../../SceneManagement/Exporter/ExporterTools.h"
@@ -22,6 +24,7 @@
 #include "../../States/MirrorState.h"
 #include "../../States/ProjSizeFilterState.h"
 #include "../../States/LODRenderer.h"
+#include "../../States/ShadowState.h"
 
 #ifdef MINSG_EXT_BLUE_SURFELS
 #include "../../BlueSurfels/SurfelRenderer.h"
@@ -90,6 +93,13 @@ static void describeProjSizeFilterState(ExporterContext &,DescriptionMap & desc,
 	desc.setValue(Consts::ATTR_PSFS_SOURCE_CHANNEL, Util::GenericAttribute::createString(psfs->getSourceChannel().toString()));
 	desc.setValue(Consts::ATTR_PSFS_TARGET_CHANNEL, Util::GenericAttribute::createString(psfs->getTargetChannel().toString()));
 	desc.setValue(Consts::ATTR_PSFS_FORCE_CLOSED_NODES, Util::GenericAttribute::createBool(psfs->isForceClosed()));
+}
+
+static void describeShadowState(ExporterContext & ctx,DescriptionMap & desc,State * state) {
+	auto ss = dynamic_cast<ShadowState *>(state);
+	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SHADOW_STATE);
+	desc.setValue(Consts::ATTR_SHADOW_LIGHT_NODE, Util::GenericAttribute::createString(ctx.sceneManager.getNodeId(ss->getLight()).toString()));
+	desc.setValue(Consts::ATTR_SHADOW_TEXTURE_SIZE, Util::GenericAttribute::createNumber<uint16_t>(ss->getTextureSize()));
 }
 
 #ifdef MINSG_EXT_BLUE_SURFELS
@@ -179,6 +189,7 @@ void initExtStateExporter() {
 	ExporterTools::registerStateExporter(MirrorState::getClassId(),&describeMirrorState);
 	ExporterTools::registerStateExporter(ProjSizeFilterState::getClassId(),&describeProjSizeFilterState);
 	ExporterTools::registerStateExporter(MinSG::LODRenderer::getClassId(),&describeLODRenderer);
+	ExporterTools::registerStateExporter(ShadowState::getClassId(),&describeShadowState);
 
 #ifdef MINSG_EXT_BLUE_SURFELS
 	ExporterTools::registerStateExporter(BlueSurfels::SurfelRenderer::getClassId(),&describeSurfelRenderer);

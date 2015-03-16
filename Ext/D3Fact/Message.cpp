@@ -8,15 +8,11 @@
 */
 #ifdef MINSG_EXT_D3FACT
 
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Semaphore.h>
-#include <Util/Concurrency/Lock.h>
-
 #include "Message.h"
 
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <vector>
 #include <iostream>
 
@@ -26,9 +22,9 @@ using namespace Util;
 
 std::deque< Message* > Message::CACHE = std::deque< Message* >();
 
-static Concurrency::Mutex & getCacheMutex() {
-	static std::unique_ptr<Concurrency::Mutex> mutex(Concurrency::createMutex());
-	return *mutex;
+static std::mutex & getCacheMutex() {
+	static std::mutex mutex;
+	return mutex;
 }
 
 Message::Message() : clientID(0), sessionID(0), orderID(0), type(0), body(), off(0), len(0), protocol(TCP), disposed(false) {}
@@ -92,12 +88,12 @@ void Message::dispose() {
 	if(disposed)
 		return;
 	disposed=true;
-	auto lock = Util::Concurrency::createLock(getCacheMutex());
+	std::lock_guard<std::mutex> lock(getCacheMutex());
 	CACHE.push_back(this);
 }
 
 Message* Message::get() {
-	auto lock = Util::Concurrency::createLock(getCacheMutex());
+	std::lock_guard<std::mutex> lock(getCacheMutex());
 	if(CACHE.empty())
 		return new Message();
 	Message* msg = CACHE.front();

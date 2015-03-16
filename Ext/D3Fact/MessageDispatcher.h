@@ -13,16 +13,11 @@
 
 #include <cstdint>
 #include <map>
+#include <mutex>
 
 #include <Util/TypeNameMacro.h>
 #include <Util/References.h>
 #include <Util/ReferenceCounter.h>
-
-namespace Util {
-namespace Concurrency {
-class Mutex;
-}
-}
 
 namespace D3Fact {
 
@@ -49,8 +44,8 @@ public:
 	void dispose();
 private:
 	Util::Reference<Session> session;
-	Util::Concurrency::Mutex* mutex;
-	Util::Concurrency::Mutex* sessionMutex;
+	std::mutex mutex;
+	std::mutex sessionMutex;
 
 	typedef std::map<int32_t, Util::Reference<MessageHandler> > HandlerMap_t;
 	HandlerMap_t handler;

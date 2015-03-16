@@ -14,15 +14,11 @@
 #include "Definitions.h"
 #include <array>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace Rendering {
 class Mesh;
-}
-namespace Util {
-namespace Concurrency {
-class Mutex;
-}
 }
 namespace MinSG {
 namespace OutOfCore {
@@ -44,7 +40,7 @@ class CacheObjectPriority;
 class CacheContext {
 	private:
 		//! Guard for @a sortedCacheObjects and @a updatedCacheObjects
-		std::unique_ptr<Util::Concurrency::Mutex> cacheObjectsMutex;
+		mutable std::mutex cacheObjectsMutex;
 
 		typedef std::vector<CacheObject *> container_t;
 		typedef std::vector<CacheObject *>::const_iterator object_pos_t;
@@ -107,7 +103,7 @@ class CacheContext {
 		mutable std::array<std::ptrdiff_t, maxNumCacheLevels> lastContainedCache;
 
 		//! Guard for the content of cache objects
-		std::unique_ptr<Util::Concurrency::Mutex> contentMutex;
+		mutable std::mutex contentMutex;
 
 		/**
 		 * Get the first missing cache object for the given cache level.

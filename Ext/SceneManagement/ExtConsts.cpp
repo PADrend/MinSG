@@ -162,6 +162,13 @@ const Util::StringIdentifier ATTR_VALREGION_HEIGHT("height");
 const Util::StringIdentifier ATTR_VALREGION_VALUE("value");
 const Util::StringIdentifier ATTR_VALREGION_VALUE_TYPE("valueType");
 
+// ---------------------------------------------------------------------------
+// Shadow state
+cStr_t STATE_TYPE_SHADOW_STATE = "shadow";
+const Util::StringIdentifier ATTR_SHADOW_TEXTURE_SIZE("texture_size");
+const Util::StringIdentifier ATTR_SHADOW_LIGHT_NODE("light_node");
+
+
 }
 }
 }

@@ -169,7 +169,7 @@ static bool importGeometryNode(ImportContext & ctxt, const std::string & nodeTyp
 
 			if(node == nullptr) {
 				WARN("Loading the mesh failed.");
-				return nullptr;
+				return false;
 			}
 
 			// if the mesh registry is used and the node is an ordanary GeometryNode, store the mesh in the registry

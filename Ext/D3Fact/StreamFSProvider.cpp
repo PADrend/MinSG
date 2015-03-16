@@ -19,10 +19,6 @@
 #include "IOStreamHandler.h"
 #include "Utils/StreamManipulators.h"
 
-#include <Util/Concurrency/Concurrency.h>
-#include <Util/Concurrency/Mutex.h>
-#include <Util/Concurrency/Semaphore.h>
-#include <Util/Concurrency/Lock.h>
 #include <Util/IO/FileName.h>
 #include <Util/IO/FileUtils.h>
 #include <Util/Macros.h>
@@ -33,13 +29,15 @@
 #include <Util/StringIdentifier.h>
 #include <Util/Utils.h>
 
-#include <memory>
-#include <vector>
-#include <map>
-#include <iostream>
-#include <sstream>
 #include <algorithm>
+#include <condition_variable>
+#include <iostream>
 #include <iterator>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <sstream>
+#include <vector>
 
 #define READ_BUFFER_SIZE 4096
 #define NETWORK_TIMEOUT 5000
@@ -107,7 +105,7 @@ public:
 	explicit ResourceHandle(std::string uri_, int32_t clientId_, int32_t sessionId_, int32_t streamId_)
 		: uri(std::move(uri_)), clientId(clientId_), sessionId(sessionId_),
 		  streamId(streamId_), tempStore(), dataWritten(false), resolved(UNRESOLVED), streamStatus(STREAM_READY),
-		  waitResolve(Util::Concurrency::createSemaphore()), waitStream(Util::Concurrency::createSemaphore()),
+		  mutexResolve(), waitResolve(), mutexStream(), waitStream(),
 		  type(0), resExists(false), mimetype(""), size(-1), timestamp(0), readable(false), writable(false), children(),
 		  handler(nullptr) {}
 	ResourceHandle(const ResourceHandle &) = delete;
@@ -115,10 +113,7 @@ public:
 	ResourceHandle & operator=(const ResourceHandle &) = delete;
 	ResourceHandle & operator=(ResourceHandle &&) = delete;
 
-	~ResourceHandle() {
-		delete waitResolve;
-		delete waitStream;
-	}
+	~ResourceHandle() = default;
 
 	status_t readFile(std::vector<uint8_t> & data);
 	status_t writeFile(const std::vector<uint8_t> & data, bool overwrite);
@@ -164,8 +159,10 @@ public:
 	resolved_status_t resolved;
 	stream_status_t streamStatus;
 
-	Util::Concurrency::Semaphore* waitResolve;
-	Util::Concurrency::Semaphore* waitStream;
+	std::mutex mutexResolve;
+	std::condition_variable waitResolve;
+	std::mutex mutexStream;
+	std::condition_variable waitStream;
 
 	int8_t type;
 	bool resExists;
@@ -268,7 +265,8 @@ std::unique_ptr<std::istream> StreamFSProvider::ResourceHandle::openForReading()
 	session->send(msg);
 
 	// wait for ACK
-	if(!Tools::timedWait(waitStream)) {
+	std::unique_lock<std::mutex> lockStream(mutexStream);
+	if(std::cv_status::timeout == waitStream.wait_for(lockStream, std::chrono::milliseconds(Tools::TIMEOUT))) {
 		handler->cancelStream(streamId);
 		std::stringstream ss;
 		ss << "Network timeout while opening stream for reading (streamId=" << streamId ;
@@ -320,7 +318,8 @@ std::unique_ptr<std::ostream> StreamFSProvider::ResourceHandle::openForWriting()
 	session->send(msg);
 
 	// wait for ACK
-	if(!Tools::timedWait(waitStream)) {
+	std::unique_lock<std::mutex> lockStream(mutexStream);
+	if(std::cv_status::timeout == waitStream.wait_for(lockStream, std::chrono::milliseconds(Tools::TIMEOUT))) {
 		std::stringstream ss;
 		ss << "Network timeout while opening stream for writing (streamId=" << streamId ;
 		ss << ", uri=" << uri << ", session=" << session->getSessionId() << ")." ;
@@ -371,7 +370,8 @@ StreamFSProvider::ResourceHandle::resolved_status_t StreamFSProvider::ResourceHa
 	}
 
 	if(resolved == PENDING && wait) {
-		if(!Tools::timedWait(waitResolve, NETWORK_TIMEOUT)) {
+		std::unique_lock<std::mutex> lockResolve(mutexResolve);
+		if(std::cv_status::timeout == waitResolve.wait_for(lockResolve, std::chrono::milliseconds(NETWORK_TIMEOUT))) {
 			std::stringstream ss;
 			ss << "Network timeout while resolving resource: " << uri;
 			WARN(ss.str());
@@ -393,7 +393,7 @@ void StreamFSProvider::ResourceMessageHandler::handleMessage(Message* msg) {
 
 		{
 			//std::cout << "resolved " << uri << std::endl;
-			auto lock = Util::Concurrency::createLock(*provider->handlesMutex);
+			std::lock_guard<std::mutex> (provider->handlesMutex);
 			auto range = provider->openHandles.equal_range(uriId.getValue());
 			for(auto it = range.first; it != range.second; ++it) {
 				if(it->second->sessionId == msg->getSession()) {
@@ -401,7 +401,7 @@ void StreamFSProvider::ResourceMessageHandler::handleMessage(Message* msg) {
 					it->second->parseProperties(properties);
 					if(it->second->resolved == ResourceHandle::PENDING)
 						it->second->resolved = ResourceHandle::OK;
-					it->second->waitResolve->post();
+					it->second->waitResolve.notify_one();
 				}
 			}
 		}
@@ -412,12 +412,12 @@ void StreamFSProvider::ResourceMessageHandler::handleMessage(Message* msg) {
 		Util::StringIdentifier uriId(uri);
 
 		{
-			auto lock = Util::Concurrency::createLock(*provider->handlesMutex);
+			std::lock_guard<std::mutex> (provider->handlesMutex);
 			auto range = provider->openHandles.equal_range(uriId.getValue());
 			for(auto it = range.first; it != range.second; ++it) {
 				if(it->second->sessionId == msg->getSession()) {
 					it->second->resolved = ResourceHandle::UNRESOLVED;
-					it->second->waitResolve->post();
+					it->second->waitResolve.notify_one();
 				}
 			}
 		}
@@ -426,11 +426,11 @@ void StreamFSProvider::ResourceMessageHandler::handleMessage(Message* msg) {
 
 		{
 			//std::cout << "stream opened (" << streamId << ")" << std::endl;
-			auto lock = Util::Concurrency::createLock(*provider->handlesMutex);
+			std::lock_guard<std::mutex> (provider->handlesMutex);
 			for(auto it : provider->openHandles) {
 				if(it.second->sessionId == msg->getSession() && it.second->streamId == streamId) {
 					it.second->streamStatus = ResourceHandle::STREAM_READY;
-					it.second->waitStream->post();
+					it.second->waitStream.notify_one();
 				}
 			}
 		}
@@ -440,12 +440,12 @@ void StreamFSProvider::ResourceMessageHandler::handleMessage(Message* msg) {
 		WARN(err);
 
 		{
-			auto lock = Util::Concurrency::createLock(*provider->handlesMutex);
+			std::lock_guard<std::mutex> (provider->handlesMutex);
 			for(auto it : provider->openHandles) {
 				if(it.second->sessionId == msg->getSession() && it.second->streamId == streamId) {
 					it.second->handler->cancelStream(streamId);
 					it.second->streamStatus = ResourceHandle::STREAM_FAILED;
-					it.second->waitStream->post();
+					it.second->waitStream.notify_one();
 				}
 			}
 		}
@@ -498,12 +498,10 @@ bool StreamFSProvider::init() {
 }
 
 StreamFSProvider::StreamFSProvider() :
-		AbstractFSProvider(), openHandles(), handlesMutex(Util::Concurrency::createMutex()), msgHandler(new ResourceMessageHandler(this)) {
+		AbstractFSProvider(), openHandles(), handlesMutex(), msgHandler(new ResourceMessageHandler(this)) {
 }
 
-StreamFSProvider::~StreamFSProvider() {
-	delete handlesMutex;
-}
+StreamFSProvider::~StreamFSProvider() = default;
 
 bool StreamFSProvider::exists(const Util::FileName& filename) {
 	ResourceHandle* handle = getStreamHandle(filename);
@@ -584,7 +582,7 @@ StreamFSProvider::ResourceHandle* StreamFSProvider::getStreamHandle(const Util::
 	Util::StringIdentifier uriId(resourcePath);
 
 	{
-		auto lock = Util::Concurrency::createLock(*handlesMutex);
+		std::lock_guard<std::mutex> lock(handlesMutex);
 		auto range = openHandles.equal_range(uriId.getValue());
 		for(auto it = range.first; it != range.second; ++it) {
 			if(it->second->clientId == clientId && it->second->sessionId == sessionId && it->second->streamId == streamId)
@@ -627,7 +625,7 @@ StreamFSProvider::ResourceHandle* StreamFSProvider::getStreamHandle(const Util::
 	//handle->resolve(false);
 
 	{
-		auto lock = Util::Concurrency::createLock(*handlesMutex);
+		std::lock_guard<std::mutex> lock(handlesMutex);
 		openHandles.insert(std::make_pair(uriId.getValue(), handle));
 	}
 
@@ -635,7 +633,7 @@ StreamFSProvider::ResourceHandle* StreamFSProvider::getStreamHandle(const Util::
 }
 
 void StreamFSProvider::flush() {
-	auto lock = Util::Concurrency::createLock(*handlesMutex);
+	std::lock_guard<std::mutex> lock(handlesMutex);
 	for(auto & openHandle : openHandles) {
 		delete openHandle.second;
 	}
