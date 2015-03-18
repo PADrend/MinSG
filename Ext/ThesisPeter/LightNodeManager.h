@@ -6,7 +6,6 @@
 	You should have received a copy of the MPL along with this library; see the
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#define MINSG_EXT_THESISPETER
 #ifdef MINSG_EXT_THESISPETER
 
 #ifndef MINSG_THESISPETER_LIGHTNODEMANAGER_H_
