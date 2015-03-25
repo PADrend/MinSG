@@ -6,7 +6,6 @@
 	You should have received a copy of the MPL along with this library; see the
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#define MINSG_EXT_THESISPETER
 #ifdef MINSG_EXT_THESISPETER
 
 #include "TextureProcessor.h"
@@ -56,11 +55,11 @@ void TextureProcessor::setDepthTexture(Rendering::Texture* texture){
 }
 
 void TextureProcessor::begin(){
-	if(outputTexture == 0){
+	if(outputTexture == nullptr){
 		std::cout << "No output texture defined!" << std::endl;
 		return;
 	}
-	if(renderingContext == 0){
+	if(renderingContext == nullptr){
 		std::cout << "No rendering context defined!" << std::endl;
 		return;
 	}
@@ -78,14 +77,14 @@ void TextureProcessor::begin(){
 }
 
 void TextureProcessor::end(){
-	if(renderingContext == 0){
+	if(renderingContext == nullptr){
 		std::cout << "No rendering context defined!" << std::endl;
 		return;
 	}
 	renderingContext->popViewport();
 	renderingContext->popScissor();
 
-	if(depthTexture != 0)
+	if(depthTexture != nullptr)
 		fbo->detachDepthTexture(*renderingContext);
 	fbo->detachColorTexture(*renderingContext, 0);
 

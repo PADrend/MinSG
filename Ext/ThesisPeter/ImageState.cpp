@@ -7,7 +7,6 @@
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-#define MINSG_EXT_THESISPETER
 #ifdef MINSG_EXT_THESISPETER
 
 #include "ImageState.h"

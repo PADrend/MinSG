@@ -6,7 +6,6 @@
 	You should have received a copy of the MPL along with this library; see the
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
-#define MINSG_EXT_THESISPETER
 #ifdef MINSG_EXT_THESISPETER
 
 #include "LightNodeManager.h"
@@ -69,19 +68,19 @@ const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_INTERNAL_SIZE = 2048;
 
 //parameters
 const float LightNodeManager::PERCENT_NODES = 0.03f;
-const float LightNodeManager::MAX_EDGE_LENGTH = 4.0f;
-const float LightNodeManager::MAX_EDGE_LENGTH_LIGHT = 20.0f;
+const float LightNodeManager::MAX_EDGE_LENGTH = 0.8f;
+const float LightNodeManager::MAX_EDGE_LENGTH_LIGHT = 5.0f;
 const unsigned int LightNodeManager::VOXEL_OCTREE_DEPTH = 7;
-const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 4;
+const unsigned int LightNodeManager::NUMBER_LIGHT_PROPAGATION_CYCLES = 7;
 
 const float LightNodeManager::MIN_EDGE_WEIGHT = 0.00001f;
 const float LightNodeManager::MIN_EDGE_WEIGHT_LIGHT = 0.00001f;
-const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_SIZE = 4096;
+const unsigned int LightNodeManager::VOXEL_OCTREE_TEXTURE_SIZE = 2048;
 
-float LightNodeManager::LIGHT_STRENGTH = 14000;
+float LightNodeManager::LIGHT_STRENGTH = 24000;
 float LightNodeManager::LIGHT_STRENGTH_FACTOR = 100;
 float LightNodeManager::NODE_MAPPING_DISTANCE_FACTOR = 2;
-float LightNodeManager::NODE_POSITION_OFFSET = 0.2f;
+float LightNodeManager::NODE_POSITION_OFFSET = 0.02f;
 
 //internal only
 const unsigned int LightNodeManager::VOXEL_OCTREE_SIZE_PER_NODE = 8;
@@ -1335,11 +1334,11 @@ void LightNodeManager::refreshDebugging(){
 }
 
 void LightNodeManager::addDynamicObject(Util::Reference<MinSG::Node> node){
-	dynamicObjects.push_back(node.get());
+	if(node.isNotNull()) dynamicObjects.push_back(node.get());
 }
 
 void LightNodeManager::addDynamicLight(Util::Reference<MinSG::Node> node){
-	dynamicLights.push_back(node.get());
+	if(node.isNotNull()) dynamicLights.push_back(node.get());
 }
 
 void LightNodeManager::onNodeTransformed(Node* node){
