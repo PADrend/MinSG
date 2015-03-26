@@ -182,7 +182,7 @@ class LightNodeManager {
 	PROVIDES_TYPE_NAME(LightNodeManager)
 public:
 	LightNodeManager();
-	virtual ~LightNodeManager();
+	~LightNodeManager();
 	void test(MinSG::FrameContext& frameContext, Util::Reference<MinSG::Node> sceneRootNode);
 	void startTesting();
 	void stopTesting();
