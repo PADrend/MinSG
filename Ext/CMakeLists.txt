@@ -3,7 +3,7 @@
 # Copyright (C) 2013 Benjamin Eikel <benjamin@eikel.org>
 #
 # This library is subject to the terms of the Mozilla Public License, v. 2.0.
-# You should have received a copy of the MPL along with this library; see the 
+# You should have received a copy of the MPL along with this library; see the
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
 add_subdirectory(AdaptiveGlobalVisibilitySampling)
@@ -31,6 +31,7 @@ add_subdirectory(SkeletalAnimation)
 add_subdirectory(States)
 add_subdirectory(SVS)
 add_subdirectory(ThesisJonas)
+add_subdirectory(ThesisPeter)
 add_subdirectory(ThesisSascha)
 add_subdirectory(Tools)
 add_subdirectory(TreeBuilder)
