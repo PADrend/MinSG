@@ -49,7 +49,7 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		PhysicWorld() = default;
 		virtual ~PhysicWorld(){};
 		virtual void stepSimulation(float time) = 0;
-		virtual void addNodeToPhyiscWorld(Node *node, Util::Reference<CollisionShape> shape)= 0;
+		virtual void applyProperties(Node& node)= 0;
 		virtual void cleanupWorld() = 0;
 		virtual void initNodeObserver(Node * rootNode)=0;
 		virtual void createGroundPlane(const Geometry::Plane& plane ) = 0;

@@ -64,7 +64,7 @@ class BtPhysicWorld: public PhysicWorld{
 		BtPhysicWorld();
 		virtual ~BtPhysicWorld() = default;
 		void stepSimulation(float time) override;
-		void addNodeToPhyiscWorld(Node *node, Util::Reference<CollisionShape> description)override;
+		void applyProperties(Node& node)override;
 		void removeNode(Node *node)override;
 		void initNodeObserver(Node * rootNode)override;
 		void cleanupWorld() override;

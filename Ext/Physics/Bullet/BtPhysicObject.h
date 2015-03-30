@@ -32,28 +32,43 @@ namespace Physics {
 
 class BtPhysicObject : public PhysicObject{
         Util::Reference<Node> node;
-        Util::Reference<CollisionShape> shape;	// keep a reference as long as the body exists
+        Util::Reference<BtCollisionShape> shape;	// keep a reference as long as the body exists
         std::unique_ptr<btRigidBody> body;
         std::vector<Util::Reference<BtConstraintObject>> constraints;
         Geometry::Vec3 centerOfMass;
+		float mass, friction, rollingFriction;
     public:
 
+    
         //! create a new physic object
-        BtPhysicObject(Node * _node): node(_node){}
+        BtPhysicObject(Node * _node): node(_node),mass(1.0),friction(0),rollingFriction(0){}
         BtPhysicObject(const BtPhysicObject&) = delete;
         BtPhysicObject(BtPhysicObject&&) = default;
 		virtual ~BtPhysicObject();
 
-        const Geometry::Vec3& getCenterOfMass()const	{	return centerOfMass;	}
         Node* getNode()const override					{	return node.get();	}
+
+        const Geometry::Vec3& getCenterOfMass()const	{	return centerOfMass;	}
+        void setCenterOfMass(const Geometry::Vec3& v)	{	centerOfMass = v;	}
+
         btRigidBody* getRigidBody()const				{	return body.get();	}
-//        CollisionShape* getShape()const					{	return shape.get();	}
+        void setBody(btRigidBody* _body)				{	body.reset(_body);	}
+
+        BtCollisionShape* getShape()const				{	return shape.get();	}
+		void setShape(Util::Reference<CollisionShape> _shape);
+        
+        float getMass()const							{	return mass;	}
+        void setMass(float f)							{	mass = f;	}
+
+        float getFriction()const						{	return friction;	}
+        void setFriction(float f)						{	friction = f;	}
+
+        float getRollingFriction()const					{	return rollingFriction;	}
+        void setRollingFriction(float f)				{	rollingFriction = f;	}
 
         const std::vector<Util::Reference<BtConstraintObject>>& getConstraints() const { return constraints; }
         void removeConstraint(BtConstraintObject& constraint);
 
-        void setCenterOfMass(const Geometry::Vec3& v)	{	centerOfMass = v;	}
-        void setBodyAndShape(btRigidBody* _body, Util::Reference<CollisionShape> _shape);
 		void addConstraintObject(BtConstraintObject& constraint) { constraints.emplace_back(&constraint); }
 
 		typedef std::function<bool (btManifoldPoint& cp, BtPhysicObject* obj0, BtPhysicObject* obj1)> contactListener_t;

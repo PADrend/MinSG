@@ -2,7 +2,7 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2013,2015 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2015 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -209,6 +209,9 @@ namespace Physics {
 
 
 void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
+	if(!physObj.getRigidBody())
+		return;
+	
 	bool enableCallback = false;
 
 	// surface velocity
@@ -313,9 +316,15 @@ static std::vector<Node*> collectNodesWithPhyicsObject(Node* root){
 	return nodes;
 }
 
-static void attachPhysicsObject(Node* node, BtPhysicObject * physObj ){
-	node->setAttribute(ATTR_PHYSICS_OBJECT, new Util::ReferenceAttribute<BtPhysicObject>(physObj));
+static BtPhysicObject& accessPhysicsObject(Node& node){
+	Util::ReferenceAttribute<BtPhysicObject> * poa = dynamic_cast<Util::ReferenceAttribute<BtPhysicObject> *>(node.getAttribute(ATTR_PHYSICS_OBJECT));
+	if(!poa){
+		poa = new Util::ReferenceAttribute<BtPhysicObject>(new BtPhysicObject(&node));
+		node.setAttribute(ATTR_PHYSICS_OBJECT, poa);
+	}
+	return *poa->get();
 }
+
 
 static void removePhysicsObject(Node* node){
 	node->unsetAttribute(ATTR_PHYSICS_OBJECT);
@@ -384,12 +393,64 @@ void BtPhysicWorld::createGroundPlane(const Geometry::Plane& plane ){
 	}
 }
 
-void BtPhysicWorld::addNodeToPhyiscWorld(Node* node, Util::Reference<CollisionShape> shape){
-	BtPhysicObject *physObj = new BtPhysicObject(node);
-	physObj->setCenterOfMass((node->getBB()).getCenter());
-//	physObj->setCenterOfMass( Geometry::Vec3(0,0,0) );
-	attachPhysicsObject(node, physObj);
-	updateShape(node,shape);
+void BtPhysicWorld::applyProperties(Node& node){
+	BtPhysicObject& physObj = accessPhysicsObject(node);
+	physObj.setCenterOfMass((node.getBB()).getCenter()); // to allow a custom center of mass, this calculation must be made optional.
+
+	btVector3 linearVelocity(0,0,0);
+	btVector3 angularVelocity(0,0,0);
+
+	auto oldBody = physObj.getRigidBody();
+	if(oldBody){
+		linearVelocity = oldBody->getLinearVelocity();
+		angularVelocity = oldBody->getAngularVelocity();
+		dynamicsWorld->removeRigidBody(oldBody);
+		delete oldBody->getMotionState();
+//		delete oldBody; // ????
+	}
+
+	auto* btShapeContainer = physObj.getShape();
+	if(btShapeContainer){
+		auto* btShape = btShapeContainer->getShape();
+		if(!physObj.getCenterOfMass().isZero()){ // add additional translation proxy shape
+			auto proxyShape = new btCompoundShape;
+			btTransform transformation;
+			transformation.setIdentity();
+			transformation.setOrigin(toBtVector3( -physObj.getCenterOfMass() ));
+			proxyShape->addChildShape( transformation,  btShape );
+			btShape = proxyShape;
+			std::cout << "Correct center of mass "<<std::endl;
+		}
+
+		const float mass = physObj.getMass();
+		const float friction = physObj.getFriction();
+		const float rollingFriction = physObj.getRollingFriction();
+
+		btVector3 localInertia(0,0,0);
+		btShape->calculateLocalInertia(mass,localInertia);
+
+		auto worldSRT =  node.getWorldTransformationSRT();
+		worldSRT.translate( Transformations::localDirToWorldDir(node,physObj.getCenterOfMass() ) );
+
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,
+														new MotionState(*this, physObj, toBtTransform( worldSRT )),
+														btShape,localInertia);
+		rbInfo.m_friction = friction;
+		rbInfo.m_rollingFriction = rollingFriction;
+		btRigidBody* body = new btRigidBody(rbInfo);
+		body->setUserPointer(&physObj);
+
+		physObj.setBody( body );
+		dynamicsWorld->addRigidBody( body );
+		initCollisionCallbacks(physObj);
+		body->setLinearVelocity(linearVelocity); // restore prior movement
+		body->setAngularVelocity(angularVelocity);
+	}else{
+		std::cout << "no shape!";
+	}
+	
+
+
 
 //	ShapeContainer * shape = findShapeAttribute(node);
 ////	if(shape){
@@ -484,12 +545,13 @@ void BtPhysicWorld::onNodeTransformed(Node * node){
 		BtPhysicObject *physObj = getPhysicObject(node);
 		if(physObj){
 			btRigidBody* body = physObj->getRigidBody();
+			if(body){
+				auto worldSRT =  node->getWorldTransformationSRT();
+				worldSRT.translate( Transformations::localDirToWorldDir(*node,physObj->getCenterOfMass() ) );
 
-			auto worldSRT =  node->getWorldTransformationSRT();
-			worldSRT.translate( Transformations::localDirToWorldDir(*node,physObj->getCenterOfMass() ) );
-
-			body->setWorldTransform( toBtTransform( worldSRT ));
-			body->activate(true);
+				body->setWorldTransform( toBtTransform( worldSRT ));
+				body->activate(true);
+			}
 		}
 	}
 }
@@ -503,98 +565,48 @@ void BtPhysicWorld::setGravity(const Geometry::Vec3&  gravity){
 }
 
 void BtPhysicWorld::updateMass(Node* node, float mass){
-	BtPhysicObject *physObj = getPhysicObject(node);
-	if(physObj){
-		btRigidBody* body = physObj->getRigidBody();
-		dynamicsWorld->removeRigidBody(body); // remove the body; mass should be changed for removed bodies only.
+	accessPhysicsObject(*node).setMass(mass);
+//	accessPhysicsObject(*node).setMass( mass );
+	
+//
+//	btRigidBody* body = physObj.getRigidBody();
+//	dynamicsWorld->removeRigidBody(body); // remove the body; mass should be changed for removed bodies only.
+//
+//	btVector3 localInertia(0,0,0);
+//	body->getCollisionShape()->calculateLocalInertia(mass,localInertia);
+//	body->setMassProps(mass, localInertia); // \note the static collision flag seems to be set implicitly here...
+//	body->updateInertiaTensor();
+//
+//	dynamicsWorld->addRigidBody(body);  // re-add the body
+//	body->activate(true);
 
-		btVector3 localInertia(0,0,0);
-		body->getCollisionShape()->calculateLocalInertia(mass,localInertia);
-		body->setMassProps(mass, localInertia); // \note the static collision flag seems to be set implicitly here...
-		body->updateInertiaTensor();
-
-		dynamicsWorld->addRigidBody(body);  // re-add the body
-		body->activate(true);
-	}
 }
 
 void BtPhysicWorld::updateFriction(Node* node, float fric){
-	BtPhysicObject *physObj = getPhysicObject(node);
-	if(physObj){
-		btRigidBody* body = physObj->getRigidBody();
-		body->setFriction(fric);
-		body->activate(true);
-	}
+	accessPhysicsObject(*node).setFriction(fric);
+//	BtPhysicObject& physObj = accessPhysicsObject(*node);
+//	btRigidBody* body = physObj.getRigidBody();
+//	body->setFriction(fric);
+//	body->activate(true);
+
 }
 
 void BtPhysicWorld::updateRollingFriction(Node* node, float rollfric){
-	BtPhysicObject *physObj = getPhysicObject(node);
-	if(physObj){
-		btRigidBody* body = physObj->getRigidBody();
-		body->setRollingFriction(rollfric);
-		body->activate(true);
-	}
+	accessPhysicsObject(*node).setRollingFriction(rollfric);
+//	BtPhysicObject& physObj = accessPhysicsObject(*node);
+//	btRigidBody* body = physObj.getRigidBody();
+//	body->setRollingFriction(rollfric);
+//	body->activate(true);
 }
 
 void BtPhysicWorld::updateShape(Node* node,  Util::Reference<CollisionShape> shape){
-
-	BtPhysicObject* physObj = getPhysicObject(node);
-	if(physObj){
-		auto oldBody = physObj->getRigidBody();
-		if(oldBody){
-			dynamicsWorld->removeRigidBody(oldBody);
-			delete oldBody->getMotionState();
-		}
-
-		// create rigid body
-		btRigidBody* body;
-		{
-			
-			BtCollisionShape* btShapeContainer = dynamic_cast<BtCollisionShape*>(shape.get());
-			if(!btShapeContainer)
-				throw std::runtime_error("createRigidBody: Invalid Shape.");
-			
-			auto btShape = btShapeContainer->getShape();
-			if(!physObj->getCenterOfMass().isZero()){ // add additional translation proxy shape
-				auto proxyShape = new btCompoundShape;
-				btTransform transformation;
-				transformation.setIdentity();
-				transformation.setOrigin(toBtVector3( -physObj->getCenterOfMass() ));
-				proxyShape->addChildShape( transformation,  btShape );
-				btShape = proxyShape;
-				std::cout << "Correct center of mass "<<std::endl;
-			}
-
-			const float mass = 1; // arbitrary initial values \todo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			const float friction = 0;
-			const float rollingFriction = 0;
-
-			btVector3 localInertia(0,0,0);
-			btShape->calculateLocalInertia(mass,localInertia);
-
-			auto worldSRT =  node->getWorldTransformationSRT();
-			worldSRT.translate( Transformations::localDirToWorldDir(*node,physObj->getCenterOfMass() ) );
-
-			btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,
-															new MotionState(*this, *physObj, toBtTransform( worldSRT )),
-															btShape,localInertia);
-			rbInfo.m_friction = friction;
-			rbInfo.m_rollingFriction = rollingFriction;
-			body = new btRigidBody(rbInfo);
-			body->setUserPointer(physObj);
-		}
-		
-		physObj->setBodyAndShape( body, shape );
-		dynamicsWorld->addRigidBody( body );
-		initCollisionCallbacks(*physObj);
-	}
+	accessPhysicsObject(*node).setShape(shape);
 }
 
 void BtPhysicWorld::updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localSurfaceVelocity){
 //	setNodeProperty_localSurfaceVelocity(node,localSurfaceVelocity);
-	BtPhysicObject* physObj = getPhysicObject(node);
-	if(physObj)
-		initCollisionCallbacks(*physObj);
+	BtPhysicObject& physObj = accessPhysicsObject(*node);
+	initCollisionCallbacks(physObj);
 }
 
 void BtPhysicWorld::renderPhysicWorld(Rendering::RenderingContext& rctxt){
