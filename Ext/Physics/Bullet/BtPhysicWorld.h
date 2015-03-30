@@ -43,7 +43,7 @@ namespace MinSG {
 class GroupNode;
 namespace Physics {
 
-class ShapeContainer;
+class BtCollisionShape;
 
 //! BtPhysicWorld---------|>PhysicWorld
 class BtPhysicWorld: public PhysicWorld{
@@ -57,14 +57,14 @@ class BtPhysicWorld: public PhysicWorld{
 		btAlignedObjectArray<btCollisionShape*>	collisionShapes;
 
 		void onNodeTransformed(Node * node);
-		btRigidBody * createRigidBody(BtPhysicObject& physObj,ShapeContainer* shape);
+		btRigidBody * createRigidBody(BtPhysicObject& physObj,Util::Reference<CollisionShape> shape);
 		void initCollisionCallbacks(BtPhysicObject& physObj);
 
 	public:
 		BtPhysicWorld();
 		virtual ~BtPhysicWorld() = default;
 		void stepSimulation(float time) override;
-		void addNodeToPhyiscWorld(Node *node, Util::GenericAttributeMap * description)override;
+		void addNodeToPhyiscWorld(Node *node, Util::Reference<CollisionShape> description)override;
 		void removeNode(Node *node)override;
 		void initNodeObserver(Node * rootNode)override;
 		void cleanupWorld() override;
@@ -74,8 +74,9 @@ class BtPhysicWorld: public PhysicWorld{
 		void updateMass(Node* node, float mass) override;
 		void updateFriction(Node* _node, float fric) override;
 		void updateRollingFriction(Node* _node, float rollfric) override;
-		void updateShape(Node* node, Util::GenericAttributeMap * description) override;
-
+		void updateShape(Node* node, Util::Reference<CollisionShape> shape) override;
+		
+		Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb)override;
 
 		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
 

@@ -14,16 +14,16 @@
 #ifndef PHYSICWORLD_H
 #define PHYSICWORLD_H
 
-#include"PhysicObject.h"
+#include "PhysicObject.h"
 #include <Util/ReferenceCounter.h>
-#include <Util/GenericAttribute.h>
-#include <Util/StringIdentifier.h>
 
 namespace Geometry {
 template<typename T_>class _Plane;
 typedef _Plane<float> Plane;
 template<typename T_> class _Vec3;
 typedef _Vec3<float> Vec3;
+template<typename T_> class _Box;
+typedef _Box<float> Box;
 }
 namespace Rendering {
 class RenderingContext;
@@ -31,16 +31,17 @@ class RenderingContext;
 namespace MinSG {
 class Node;
 namespace Physics {
-//typedef const char * const cStr_t;
+
+class CollisionShape;
 
 class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 	public:
-		//---------------Description keys-------------------
-		static const Util::StringIdentifier SHAPE_TYPE;
-		static const char* const SHAPE_TYPE_BOX;
-		static const char* const SHAPE_TYPE_CONVEX_HULL;
-		static const char* const SHAPE_TYPE_STATIC_TRIANGLE_MESH ;
-		static const char* const SHAPE_TYPE_SPHERE;
+//		//---------------Description keys-------------------
+//		static const Util::StringIdentifier SHAPE_TYPE;
+//		static const char* const SHAPE_TYPE_BOX;
+//		static const char* const SHAPE_TYPE_CONVEX_HULL;
+//		static const char* const SHAPE_TYPE_STATIC_TRIANGLE_MESH ;
+//		static const char* const SHAPE_TYPE_SPHERE;
 
 		static PhysicWorld * createBulletWorld();
 
@@ -48,7 +49,7 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		PhysicWorld() = default;
 		virtual ~PhysicWorld(){};
 		virtual void stepSimulation(float time) = 0;
-		virtual void addNodeToPhyiscWorld(Node *node,  Util::GenericAttributeMap * shapeDescription)= 0;
+		virtual void addNodeToPhyiscWorld(Node *node, Util::Reference<CollisionShape> shape)= 0;
 		virtual void cleanupWorld() = 0;
 		virtual void initNodeObserver(Node * rootNode)=0;
 		virtual void createGroundPlane(const Geometry::Plane& plane ) = 0;
@@ -57,11 +58,13 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual const Geometry::Vec3 getGravity()=0;
 
 		virtual void updateMass(Node* node, float mass) = 0;
-		virtual void updateShape(Node* node, Util::GenericAttributeMap * shapeDescription)= 0;
+		virtual void updateShape(Node* node, Util::Reference<CollisionShape> shape)= 0;
 		virtual void updateFriction(Node* node, float fric) = 0;
 		virtual void updateRollingFriction(Node* node, float rollfric) = 0;
 		virtual void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) = 0;
 
+		virtual Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb) = 0;
+		
 		//Debug!!!!!!!
 		virtual void renderPhysicWorld(Rendering::RenderingContext&) = 0;
 

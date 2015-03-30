@@ -44,6 +44,13 @@ void BtPhysicObject::removeConstraint(BtConstraintObject& constraint){
     if(it!=constraints.end())
         constraints.erase(it);
 }
+void BtPhysicObject::setBodyAndShape(btRigidBody* _body, Util::Reference<CollisionShape> _shape)	{
+	body.reset(_body);
+	if(_shape&&!dynamic_cast<BtCollisionShape*>(_shape.get()))
+		throw std::runtime_error("setBodyAndShape: Invalid Shape type.");
+	shape = _shape.get();
+}
+
 
 }
 }

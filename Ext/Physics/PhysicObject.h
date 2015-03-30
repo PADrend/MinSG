@@ -16,8 +16,6 @@
 
 #include <Util/ReferenceCounter.h>
 
-template<typename T_> class _Vec3;
-typedef _Vec3<float> Vec3;
 namespace MinSG {
 class Node;
 namespace Physics {

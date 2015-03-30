@@ -16,7 +16,7 @@
 #include "BtConstraintObject.h"
 #include "Helper.h"
 #include "MotionState.h"
-#include "ShapeContainer.h"
+#include "BtCollisionShape.h"
 #include "../PhysicObject.h"
 //debug
 #include "MyDebugDraw.h"
@@ -63,145 +63,149 @@ using namespace Util;
 namespace MinSG {
 namespace Physics {
 
+//
+//
+//// ----------------------------------------------------
+//// static helpers
+//static btCollisionShape* createConvexHullShape(Node* node,const Geometry::Vec3 & centerOfMass);
+//static btCollisionShape* createDynamicBoxShape(Node* node, const Geometry::Vec3 & centerOfMass);
+//static btCollisionShape* createDynamicSphereShape(Node* node,const Geometry::Vec3 & centerOfMass);
+//static btCollisionShape* creatStaticTriangleMeshShape(Node* node);
+//
+////! (static,internal)
+//btCollisionShape* createConvexHullShape(Node* node,const Geometry::Vec3 & centerOfMass){
+//	const float s = node->getRelScaling();
+//	auto geometryNode = dynamic_cast<GeometryNode *>(node);
+//	if(!geometryNode && !geometryNode->getMesh())
+//		throw std::logic_error("PhysicWorld::createConvexHullShape: No Mesh!");
+//	Rendering::Mesh* mesh = geometryNode->getMesh();
+//	Rendering::MeshVertexData& vertexData = mesh->openVertexData();
+//	const uint32_t vertexCount = mesh->getVertexCount();
+//	btAlignedObjectArray<btVector3> vertices2;
+//	Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::POSITION));
+//
+//	for(uint32_t i = 0; i < vertexCount; i ++) {
+//		const Geometry::Vec3 a( (positionAccessor->getPosition(i)-centerOfMass)*s );
+//		vertices2.push_back(btVector3(a.x(),a.y(),a.z()));
+//	}
+//	static_assert(sizeof(int)==sizeof(uint32_t),"assertion failed!");
+//	btConvexHullComputer hullComputer;
+//	hullComputer.compute(&vertices2[0].getX(), sizeof(btVector3), vertices2.size(),0.0,0);
+//
+//	btConvexHullShape* chs = new btConvexHullShape;
+//	for(int i=0;i< hullComputer.vertices.size();++i){
+//		chs->addPoint(hullComputer.vertices[i]);
+//	}
+//	return chs;
+//}
+//
+////! (static,internal)
+//btCollisionShape* createDynamicBoxShape(Node* node,const Geometry::Vec3 & centerOfMass){
+//	const float s = node->getRelScaling();
+//	const Geometry::Box bb = node->getBB();
+//	auto shape = new btCompoundShape;
+//	btTransform startTransform;
+//	startTransform.setIdentity();
+//	startTransform.setOrigin(toBtVector3(centerOfMass-bb.getCenter() ));
+//	shape->addChildShape( startTransform,  (new btBoxShape(btVector3(bb.getExtentX()*0.5*s,bb.getExtentY()*0.5*s,bb.getExtentZ()*0.5*s))) );
+//	return shape;
+//}
+////! (static,internal)
+//btCollisionShape* createDynamicSphereShape(Node* node,const Geometry::Vec3 & centerOfMass){
+//	const float s = node->getRelScaling();
+//	const Geometry::Box bb = node->getBB();
+//	auto shape = new btCompoundShape;
+//	btTransform startTransform;
+//	startTransform.setIdentity();
+//	startTransform.setOrigin(toBtVector3(centerOfMass-bb.getCenter() ));
+//	shape->addChildShape( startTransform,  new btSphereShape(bb.getExtentX()*0.5*s) );
+//	return shape;
+//}
+//
+////! (static,internal)
+//btCollisionShape* creatStaticTriangleMeshShape(Node* node){
+//	const float s = node->getRelScaling();
+//	auto geometryNode = dynamic_cast<GeometryNode *>(node);
+//	if(!geometryNode && !geometryNode->getMesh())
+//		throw std::logic_error("PhysicWorld::creatStaticTriangleMeshShape: No Mesh!");
+//	Rendering::Mesh* mesh = geometryNode->getMesh();
+//	const Rendering::MeshIndexData & indices = mesh->openIndexData();
+//	const uint32_t indexCount = mesh->getIndexCount();
+//	Rendering::MeshVertexData & vertexData = mesh->openVertexData();
+//	const uint32_t vertexCount = mesh->getVertexCount();
+//	Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::POSITION));
+//	std::vector<btScalar> vertexPos;
+//	vertexPos.reserve(vertexCount*3);
+//	for(uint32_t i = 0; i < vertexCount; i ++) {
+//		const Geometry::Vec3 a( positionAccessor->getPosition(i)*s );
+//		vertexPos.push_back(a.getX());
+//		vertexPos.push_back(a.getY());
+//		vertexPos.push_back(a.getZ());
+//	}
+//	static_assert(sizeof(int)==sizeof(uint32_t),"assertion failed!");
+//	btTriangleIndexVertexArray * meshInterface
+//		= new btTriangleIndexVertexArray(
+//			indexCount / 3,
+//			const_cast<int *>(reinterpret_cast<const int *>(indices.data())),
+//			3 * sizeof(int),
+//			vertexCount,
+//			vertexPos.data(),
+//			3 * sizeof(btScalar)
+//		);
+//	return (new btBvhTriangleMeshShape(meshInterface, true, true));
+//}
+//
+//static ShapeContainer* createShape(Node* node, Util::GenericAttributeMap* shapeDescription, const Geometry::Vec3& localCenterOfMass){
+//	btCollisionShape* btShape = nullptr;
+//	if(!shapeDescription){
+//		btShape = createDynamicBoxShape(node, localCenterOfMass);
+//	}else{
+//		const std::string type = shapeDescription->getString(PhysicWorld::SHAPE_TYPE);
+//		std::cout<<type<<"\n";
+//		if(type == PhysicWorld::SHAPE_TYPE_BOX)
+//			btShape = createDynamicBoxShape(node, localCenterOfMass);
+//		else if(type == PhysicWorld::SHAPE_TYPE_CONVEX_HULL)
+//			btShape = createConvexHullShape(node, localCenterOfMass);
+//		else if(type == PhysicWorld::SHAPE_TYPE_STATIC_TRIANGLE_MESH)
+//			btShape = creatStaticTriangleMeshShape(node);
+//		else if(type == PhysicWorld::SHAPE_TYPE_SPHERE)
+//			btShape = createDynamicSphereShape(node, localCenterOfMass);
+//		else{
+//			std::cerr << "shapeDescription: "<<shapeDescription->toString()<<"\n";
+//			throw std::logic_error("Invalid shape type");
+//		}
+//	}
+//	return new ShapeContainer(btShape);
+//}
 
 
-// ----------------------------------------------------
-// static helpers
-static btCollisionShape* createConvexHullShape(Node* node,const Geometry::Vec3 & centerOfMass);
-static btCollisionShape* createDynamicBoxShape(Node* node, const Geometry::Vec3 & centerOfMass);
-static btCollisionShape* createDynamicSphereShape(Node* node,const Geometry::Vec3 & centerOfMass);
-static btCollisionShape* creatStaticTriangleMeshShape(Node* node);
-
-//! (static,internal)
-btCollisionShape* createConvexHullShape(Node* node,const Geometry::Vec3 & centerOfMass){
-	const float s = node->getRelScaling();
-	auto geometryNode = dynamic_cast<GeometryNode *>(node);
-	if(!geometryNode && !geometryNode->getMesh())
-		throw std::logic_error("PhysicWorld::createConvexHullShape: No Mesh!");
-	Rendering::Mesh* mesh = geometryNode->getMesh();
-	Rendering::MeshVertexData& vertexData = mesh->openVertexData();
-	const uint32_t vertexCount = mesh->getVertexCount();
-	btAlignedObjectArray<btVector3> vertices2;
-	Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::POSITION));
-
-	for(uint32_t i = 0; i < vertexCount; i ++) {
-		const Geometry::Vec3 a( (positionAccessor->getPosition(i)-centerOfMass)*s );
-		vertices2.push_back(btVector3(a.x(),a.y(),a.z()));
-	}
-	static_assert(sizeof(int)==sizeof(uint32_t),"assertion failed!");
-	btConvexHullComputer hullComputer;
-	hullComputer.compute(&vertices2[0].getX(), sizeof(btVector3), vertices2.size(),0.0,0);
-
-	btConvexHullShape* chs = new btConvexHullShape;
-	for(int i=0;i< hullComputer.vertices.size();++i){
-		chs->addPoint(hullComputer.vertices[i]);
-	}
-	return chs;
-}
-
-//! (static,internal)
-btCollisionShape* createDynamicBoxShape(Node* node,const Geometry::Vec3 & centerOfMass){
-	const float s = node->getRelScaling();
-	const Geometry::Box bb = node->getBB();
-	auto shape = new btCompoundShape;
-	btTransform startTransform;
-	startTransform.setIdentity();
-	startTransform.setOrigin(toBtVector3(centerOfMass-bb.getCenter() ));
-	shape->addChildShape( startTransform,  (new btBoxShape(btVector3(bb.getExtentX()*0.5*s,bb.getExtentY()*0.5*s,bb.getExtentZ()*0.5*s))) );
-	return shape;
-}
-//! (static,internal)
-btCollisionShape* createDynamicSphereShape(Node* node,const Geometry::Vec3 & centerOfMass){
-	const float s = node->getRelScaling();
-	const Geometry::Box bb = node->getBB();
-	auto shape = new btCompoundShape;
-	btTransform startTransform;
-	startTransform.setIdentity();
-	startTransform.setOrigin(toBtVector3(centerOfMass-bb.getCenter() ));
-	shape->addChildShape( startTransform,  new btSphereShape(bb.getExtentX()*0.5*s) );
-	return shape;
-}
-
-//! (static,internal)
-btCollisionShape* creatStaticTriangleMeshShape(Node* node){
-	const float s = node->getRelScaling();
-	auto geometryNode = dynamic_cast<GeometryNode *>(node);
-	if(!geometryNode && !geometryNode->getMesh())
-		throw std::logic_error("PhysicWorld::creatStaticTriangleMeshShape: No Mesh!");
-	Rendering::Mesh* mesh = geometryNode->getMesh();
-	const Rendering::MeshIndexData & indices = mesh->openIndexData();
-	const uint32_t indexCount = mesh->getIndexCount();
-	Rendering::MeshVertexData & vertexData = mesh->openVertexData();
-	const uint32_t vertexCount = mesh->getVertexCount();
-	Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::POSITION));
-	std::vector<btScalar> vertexPos;
-	vertexPos.reserve(vertexCount*3);
-	for(uint32_t i = 0; i < vertexCount; i ++) {
-		const Geometry::Vec3 a( positionAccessor->getPosition(i)*s );
-		vertexPos.push_back(a.getX());
-		vertexPos.push_back(a.getY());
-		vertexPos.push_back(a.getZ());
-	}
-	static_assert(sizeof(int)==sizeof(uint32_t),"assertion failed!");
-	btTriangleIndexVertexArray * meshInterface
-		= new btTriangleIndexVertexArray(
-			indexCount / 3,
-			const_cast<int *>(reinterpret_cast<const int *>(indices.data())),
-			3 * sizeof(int),
-			vertexCount,
-			vertexPos.data(),
-			3 * sizeof(btScalar)
-		);
-	return (new btBvhTriangleMeshShape(meshInterface, true, true));
-}
-
-static ShapeContainer* createShape(Node* node, Util::GenericAttributeMap* shapeDescription, const Geometry::Vec3& localCenterOfMass){
-	btCollisionShape* btShape = nullptr;
-	if(!shapeDescription){
-		btShape = createDynamicBoxShape(node, localCenterOfMass);
-	}else{
-		const std::string type = shapeDescription->getString(PhysicWorld::SHAPE_TYPE);
-		std::cout<<type<<"\n";
-		if(type == PhysicWorld::SHAPE_TYPE_BOX)
-			btShape = createDynamicBoxShape(node, localCenterOfMass);
-		else if(type == PhysicWorld::SHAPE_TYPE_CONVEX_HULL)
-			btShape = createConvexHullShape(node, localCenterOfMass);
-		else if(type == PhysicWorld::SHAPE_TYPE_STATIC_TRIANGLE_MESH)
-			btShape = creatStaticTriangleMeshShape(node);
-		else if(type == PhysicWorld::SHAPE_TYPE_SPHERE)
-			btShape = createDynamicSphereShape(node, localCenterOfMass);
-		else{
-			std::cerr << "shapeDescription: "<<shapeDescription->toString()<<"\n";
-			throw std::logic_error("Invalid shape type");
-		}
-	}
-	return new ShapeContainer(btShape);
-}
-
-
-//! (internal) create a rigid body based on the attributes set in node
-btRigidBody * BtPhysicWorld::createRigidBody(BtPhysicObject& physObj, ShapeContainer* shape){
-	Node * node = physObj.getNode();
-
-    const float mass = 1;
-	const float friction = 0;
-	const float rollingFriction = 0;
-
-	btVector3 localInertia(0,0,0);
-	shape->getShape()->calculateLocalInertia(mass,localInertia);
-
-	auto worldSRT =  node->getWorldTransformationSRT();
-	worldSRT.translate( Transformations::localDirToWorldDir(*node,physObj.getCenterOfMass() ) );
-
-	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,
-													new MotionState(*this,physObj, toBtTransform( worldSRT )),
-													shape->getShape(),localInertia);
-	rbInfo.m_friction = friction;
-	rbInfo.m_rollingFriction = rollingFriction;
-	btRigidBody* body = new btRigidBody(rbInfo);
-	body->setUserPointer(&physObj);
-	return body;
-}
+////! (internal) create a rigid body based on the attributes set in node
+//btRigidBody * BtPhysicWorld::createRigidBody(BtPhysicObject& physObj, Util::Reference<CollisionShape> shape){
+//	BtCollisionShape* btShape = dynamic_cast<BtCollisionShape*>(shape.get());
+//	if(!btShape)
+//		throw std::runtime_error("createRigidBody: Invalid Shape.");
+//		
+//	Node * node = physObj.getNode();
+//
+//    const float mass = 1;
+//	const float friction = 0;
+//	const float rollingFriction = 0;
+//
+//	btVector3 localInertia(0,0,0);
+//	btShape->getShape()->calculateLocalInertia(mass,localInertia);
+//
+//	auto worldSRT =  node->getWorldTransformationSRT();
+//	worldSRT.translate( Transformations::localDirToWorldDir(*node,physObj.getCenterOfMass() ) );
+//
+//	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,
+//													new MotionState(*this,physObj, toBtTransform( worldSRT )),
+//													btShape->getShape(),localInertia);
+//	rbInfo.m_friction = friction;
+//	rbInfo.m_rollingFriction = rollingFriction;
+//	btRigidBody* body = new btRigidBody(rbInfo);
+//	body->setUserPointer(&physObj);
+//	return body;
+//}
 
 
 void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
@@ -380,10 +384,12 @@ void BtPhysicWorld::createGroundPlane(const Geometry::Plane& plane ){
 	}
 }
 
-void BtPhysicWorld::addNodeToPhyiscWorld(Node* node, Util::GenericAttributeMap * shapeDescription){
+void BtPhysicWorld::addNodeToPhyiscWorld(Node* node, Util::Reference<CollisionShape> shape){
 	BtPhysicObject *physObj = new BtPhysicObject(node);
 	physObj->setCenterOfMass((node->getBB()).getCenter());
+//	physObj->setCenterOfMass( Geometry::Vec3(0,0,0) );
 	attachPhysicsObject(node, physObj);
+	updateShape(node,shape);
 
 //	ShapeContainer * shape = findShapeAttribute(node);
 ////	if(shape){
@@ -393,11 +399,11 @@ void BtPhysicWorld::addNodeToPhyiscWorld(Node* node, Util::GenericAttributeMap *
 ////		dynamicsWorld->addRigidBody(body);
 ////		initCollisionCallbacks(*physObj);
 ////	}else{
-		ShapeContainer *shape = createShape(node, shapeDescription, physObj->getCenterOfMass() );
-		btRigidBody * body = createRigidBody(*physObj, shape);
-		physObj->setBodyAndShape(body,shape);
-		dynamicsWorld->addRigidBody(body);
-		initCollisionCallbacks(*physObj);
+//		ShapeContainer *shape = createShape(node, shapeDescription, physObj->getCenterOfMass() );
+//		btRigidBody * body = createRigidBody(*physObj, shape);
+//		physObj->setBodyAndShape(body,shape);
+//		dynamicsWorld->addRigidBody(body);
+//		initCollisionCallbacks(*physObj);
 		// if the node has no local shape shapeDescription, store the shape at the prototype (where it can be used for further instances)
 //		if(node->isInstance() && !PhysicWorld::hasLocalShapeDescription(node) && PhysicWorld::hasLocalShapeDescription(node->getPrototype())){
 //			attachShapeAttribute(node->getPrototype(),shape);
@@ -530,21 +536,56 @@ void BtPhysicWorld::updateRollingFriction(Node* node, float rollfric){
 	}
 }
 
-void BtPhysicWorld::updateShape(Node* node,  Util::GenericAttributeMap * shapeDescription){
-	if(!shapeDescription){
-		WARN("BtPhysicWorld::updateShape: no shape description!");
-		return;
-	}
+void BtPhysicWorld::updateShape(Node* node,  Util::Reference<CollisionShape> shape){
+
 	BtPhysicObject* physObj = getPhysicObject(node);
 	if(physObj){
 		auto oldBody = physObj->getRigidBody();
-		dynamicsWorld->removeRigidBody(oldBody);
-		delete oldBody->getMotionState();
+		if(oldBody){
+			dynamicsWorld->removeRigidBody(oldBody);
+			delete oldBody->getMotionState();
+		}
 
-		auto shape = createShape(node, shapeDescription, physObj->getCenterOfMass() );
-		physObj->setBodyAndShape( createRigidBody(*physObj, shape), shape );
-		dynamicsWorld->addRigidBody(physObj->getRigidBody());
-//		attachShapeAttribute(node, shape);
+		// create rigid body
+		btRigidBody* body;
+		{
+			
+			BtCollisionShape* btShapeContainer = dynamic_cast<BtCollisionShape*>(shape.get());
+			if(!btShapeContainer)
+				throw std::runtime_error("createRigidBody: Invalid Shape.");
+			
+			auto btShape = btShapeContainer->getShape();
+			if(!physObj->getCenterOfMass().isZero()){ // add additional translation proxy shape
+				auto proxyShape = new btCompoundShape;
+				btTransform transformation;
+				transformation.setIdentity();
+				transformation.setOrigin(toBtVector3( -physObj->getCenterOfMass() ));
+				proxyShape->addChildShape( transformation,  btShape );
+				btShape = proxyShape;
+				std::cout << "Correct center of mass "<<std::endl;
+			}
+
+			const float mass = 1; // arbitrary initial values \todo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			const float friction = 0;
+			const float rollingFriction = 0;
+
+			btVector3 localInertia(0,0,0);
+			btShape->calculateLocalInertia(mass,localInertia);
+
+			auto worldSRT =  node->getWorldTransformationSRT();
+			worldSRT.translate( Transformations::localDirToWorldDir(*node,physObj->getCenterOfMass() ) );
+
+			btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,
+															new MotionState(*this, *physObj, toBtTransform( worldSRT )),
+															btShape,localInertia);
+			rbInfo.m_friction = friction;
+			rbInfo.m_rollingFriction = rollingFriction;
+			body = new btRigidBody(rbInfo);
+			body->setUserPointer(physObj);
+		}
+		
+		physObj->setBodyAndShape( body, shape );
+		dynamicsWorld->addRigidBody( body );
 		initCollisionCallbacks(*physObj);
 	}
 }
@@ -634,6 +675,17 @@ void BtPhysicWorld::removeConstraintBetweenNodes(Node* nodeA,Node* nodeB){
             break;
        }
     }
+}
+// --------- Collision shape factories
+
+
+Util::Reference<CollisionShape> BtPhysicWorld::createShape_AABB(const Geometry::Box& aabb){
+	auto shape = new btCompoundShape;
+	btTransform transformation;
+	transformation.setIdentity();
+	transformation.setOrigin(toBtVector3( aabb.getCenter() ));
+	shape->addChildShape( transformation,  new btBoxShape(btVector3(aabb.getExtentX()*0.5,aabb.getExtentY()*0.5,aabb.getExtentZ()*0.5)) );
+	return new BtCollisionShape(shape);
 }
 
 }

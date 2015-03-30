@@ -16,7 +16,7 @@
 
 #include "../PhysicObject.h"
 #include "BtConstraintObject.h"
-#include "ShapeContainer.h"
+#include "BtCollisionShape.h"
 #include "../../../Core/Nodes/Node.h"
 #include <Util/References.h>
 #include <functional>
@@ -32,7 +32,7 @@ namespace Physics {
 
 class BtPhysicObject : public PhysicObject{
         Util::Reference<Node> node;
-        Util::Reference<ShapeContainer> shape;	// keep a reference as long as the body exists
+        Util::Reference<CollisionShape> shape;	// keep a reference as long as the body exists
         std::unique_ptr<btRigidBody> body;
         std::vector<Util::Reference<BtConstraintObject>> constraints;
         Geometry::Vec3 centerOfMass;
@@ -47,18 +47,14 @@ class BtPhysicObject : public PhysicObject{
         const Geometry::Vec3& getCenterOfMass()const	{	return centerOfMass;	}
         Node* getNode()const override					{	return node.get();	}
         btRigidBody* getRigidBody()const				{	return body.get();	}
-        ShapeContainer* getShape()const					{	return shape.get();	}
+//        CollisionShape* getShape()const					{	return shape.get();	}
 
         const std::vector<Util::Reference<BtConstraintObject>>& getConstraints() const { return constraints; }
         void removeConstraint(BtConstraintObject& constraint);
 
         void setCenterOfMass(const Geometry::Vec3& v)	{	centerOfMass = v;	}
-        void setBodyAndShape(btRigidBody* _body,ShapeContainer* _shape)	{
-        	body.reset(_body);
-			shape = _shape;
-		}
+        void setBodyAndShape(btRigidBody* _body, Util::Reference<CollisionShape> _shape);
 		void addConstraintObject(BtConstraintObject& constraint) { constraints.emplace_back(&constraint); }
-
 
 		typedef std::function<bool (btManifoldPoint& cp, BtPhysicObject* obj0, BtPhysicObject* obj1)> contactListener_t;
 		contactListener_t contactListener;

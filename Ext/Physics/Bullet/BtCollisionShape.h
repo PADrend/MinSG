@@ -2,7 +2,7 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2015 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -14,7 +14,7 @@
 #ifndef BTSHAPECONTAINER_H
 #define BTSHAPECONTAINER_H
 
-#include <Util/References.h>
+#include "../CollisionShape.h"
 #include <memory>
 
 class btCollisionShape;
@@ -23,13 +23,13 @@ namespace MinSG {
 
 namespace Physics {
 
-class ShapeContainer : public Util::ReferenceCounter<ShapeContainer>{
+class BtCollisionShape : public CollisionShape{
         std::unique_ptr<btCollisionShape> shape;
     public:
-        ShapeContainer(btCollisionShape* _shape ) : Util::ReferenceCounter<ShapeContainer>(), shape(_shape){}
-        ShapeContainer(const ShapeContainer&) = delete;
-        ShapeContainer(ShapeContainer&&) = delete;
-        ~ShapeContainer() = default;
+        BtCollisionShape(btCollisionShape* _shape) : CollisionShape(), shape(_shape){}
+        BtCollisionShape(const BtCollisionShape&) = delete;
+        BtCollisionShape(BtCollisionShape&&) = delete;
+        virtual ~BtCollisionShape(){};
         btCollisionShape* getShape()const { return shape.get();  }
 };
 
