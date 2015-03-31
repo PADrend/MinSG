@@ -77,10 +77,10 @@ class BtPhysicWorld: public PhysicWorld{
 		void setShape(Node& node, Util::Reference<CollisionShape> shape) override;
 		
 		Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb)override;
-
+		Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere&)override;
+		Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes)override;
+		
 		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
-
-		//debug!!!!
 		void renderPhysicWorld(Rendering::RenderingContext& rctxt) override;
 		void applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA) override;
 		virtual void applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir ) override;

@@ -33,6 +33,16 @@ class BtCollisionShape : public CollisionShape{
         btCollisionShape* getShape()const { return shape.get();  }
 };
 
+// used to keep references to the contained shapes
+class BtCombinedCollisionShape : public BtCollisionShape{
+		std::vector<Util::Reference<CollisionShape>> children;
+	public:
+        BtCombinedCollisionShape(btCollisionShape* _shape,std::vector<Util::Reference<CollisionShape>> _children ) : 
+        	BtCollisionShape(_shape), children(std::move(_children)){}
+        virtual ~BtCombinedCollisionShape(){};
+	
+};
+
 }
 }
 

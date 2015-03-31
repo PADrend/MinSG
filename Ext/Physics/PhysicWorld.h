@@ -16,6 +16,7 @@
 
 #include "PhysicObject.h"
 #include <Util/ReferenceCounter.h>
+#include <vector>
 
 namespace Geometry {
 template<typename T_>class _Plane;
@@ -24,6 +25,10 @@ template<typename T_> class _Vec3;
 typedef _Vec3<float> Vec3;
 template<typename T_> class _Box;
 typedef _Box<float> Box;
+template<typename T_> class _Sphere;
+typedef _Sphere<float> Sphere;
+template<typename T_> class _SRT;
+typedef _SRT<float> SRT;
 }
 namespace Rendering {
 class RenderingContext;
@@ -64,6 +69,8 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) = 0;
 
 		virtual Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb) = 0;
+		virtual Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere&) = 0;
+		virtual Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes) = 0;
 		
 		//Debug!!!!!!!
 		virtual void renderPhysicWorld(Rendering::RenderingContext&) = 0;
