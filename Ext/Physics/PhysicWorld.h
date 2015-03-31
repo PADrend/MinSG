@@ -2,7 +2,7 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2015 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -41,40 +41,41 @@ class CollisionShape;
 
 class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 	public:
-//		//---------------Description keys-------------------
-//		static const Util::StringIdentifier SHAPE_TYPE;
-//		static const char* const SHAPE_TYPE_BOX;
-//		static const char* const SHAPE_TYPE_CONVEX_HULL;
-//		static const char* const SHAPE_TYPE_STATIC_TRIANGLE_MESH ;
-//		static const char* const SHAPE_TYPE_SPHERE;
-
 		static PhysicWorld * createBulletWorld();
 
 		//! create a new physic world
 		PhysicWorld() = default;
 		virtual ~PhysicWorld(){};
-		virtual void stepSimulation(float time) = 0;
-		virtual void applyProperties(Node& node)= 0;
+		
+		// simulation
 		virtual void cleanupWorld() = 0;
-		virtual void initNodeObserver(Node * rootNode)=0;
-		virtual void createGroundPlane(const Geometry::Plane& plane ) = 0;
-		virtual void removeNode(Node *node) = 0;
-		virtual void setGravity(const Geometry::Vec3& gravity)=0;
-		virtual const Geometry::Vec3 getGravity()=0;
+		virtual void stepSimulation(float time) = 0;
+		virtual void renderPhysicWorld(Rendering::RenderingContext&) = 0;
 
+		// world setup
+		virtual void initNodeObserver(Node * rootNode) = 0;
+		virtual void createGroundPlane(const Geometry::Plane& plane ) = 0;
+		virtual void setGravity(const Geometry::Vec3& gravity) = 0;
+		virtual const Geometry::Vec3 getGravity() = 0;
+		
+		// physics object properties
+		//!	\note for a changed property to take effect, applyProperties has to be called!
+		virtual void applyProperties(Node& node) = 0;
+		virtual void markAsKinematicObject(Node& node, bool b) = 0;
+		virtual void removeNode(Node* node) = 0;
 		virtual void setMass(Node& node, float mass) = 0;
 		virtual void setShape(Node& node, Util::Reference<CollisionShape> shape) = 0;
 		virtual void setFriction(Node& node, float fric) = 0;
 		virtual void setRollingFriction(Node& node, float rollfric) = 0;
 		virtual void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) = 0;
-
+		
+		// collision shapes
 		virtual Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb) = 0;
 		virtual Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere&) = 0;
 		virtual Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes) = 0;
 		
-		//Debug!!!!!!!
-		virtual void renderPhysicWorld(Rendering::RenderingContext&) = 0;
 
+		// constraints
 		virtual void applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA)= 0;
 		virtual void applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir )= 0;
 		virtual void removeConstraints(Node* node)=0;

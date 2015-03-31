@@ -2,7 +2,7 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2015 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -31,43 +31,46 @@ namespace MinSG {
 namespace Physics {
 
 class BtPhysicObject : public PhysicObject{
-        Util::Reference<Node> node;
-        Util::Reference<BtCollisionShape> shape;	// keep a reference as long as the body exists
-        std::unique_ptr<btRigidBody> body;
-        std::vector<Util::Reference<BtConstraintObject>> constraints;
-        Geometry::Vec3 centerOfMass;
+		Util::Reference<Node> node;
+		Util::Reference<BtCollisionShape> shape;	// keep a reference as long as the body exists
+		std::unique_ptr<btRigidBody> body;
+		std::vector<Util::Reference<BtConstraintObject>> constraints;
+		Geometry::Vec3 centerOfMass;
 		float mass, friction, rollingFriction;
-    public:
+		bool kinematicObjectMarker;
+	public:
 
-    
-        //! create a new physic object
-        BtPhysicObject(Node * _node): node(_node),mass(1.0),friction(0),rollingFriction(0){}
-        BtPhysicObject(const BtPhysicObject&) = delete;
-        BtPhysicObject(BtPhysicObject&&) = default;
+		//! create a new physic object
+		BtPhysicObject(Node * _node): node(_node),mass(1.0),friction(0),rollingFriction(0),kinematicObjectMarker(false){}
+		BtPhysicObject(const BtPhysicObject&) = delete;
+		BtPhysicObject(BtPhysicObject&&) = default;
 		virtual ~BtPhysicObject();
 
-        Node* getNode()const override					{	return node.get();	}
+		Node* getNode()const override					{	return node.get();	}
 
-        const Geometry::Vec3& getCenterOfMass()const	{	return centerOfMass;	}
-        void setCenterOfMass(const Geometry::Vec3& v)	{	centerOfMass = v;	}
+		const Geometry::Vec3& getCenterOfMass()const	{	return centerOfMass;	}
+		void setCenterOfMass(const Geometry::Vec3& v)	{	centerOfMass = v;	}
 
-        btRigidBody* getRigidBody()const				{	return body.get();	}
-        void setBody(btRigidBody* _body)				{	body.reset(_body);	}
+		bool getKinematicObjectMarker()const			{	return kinematicObjectMarker;	}
+		void setKinematicObjectMarker(bool b)			{	kinematicObjectMarker = b;	}
 
-        BtCollisionShape* getShape()const				{	return shape.get();	}
+		btRigidBody* getRigidBody()const				{	return body.get();	}
+		void setBody(btRigidBody* _body)				{	body.reset(_body);	}
+
+		BtCollisionShape* getShape()const				{	return shape.get();	}
 		void setShape(Util::Reference<CollisionShape> _shape);
-        
-        float getMass()const							{	return mass;	}
-        void setMass(float f)							{	mass = f;	}
+		
+		float getMass()const							{	return mass;	}
+		void setMass(float f)							{	mass = f;	}
 
-        float getFriction()const						{	return friction;	}
-        void setFriction(float f)						{	friction = f;	}
+		float getFriction()const						{	return friction;	}
+		void setFriction(float f)						{	friction = f;	}
 
-        float getRollingFriction()const					{	return rollingFriction;	}
-        void setRollingFriction(float f)				{	rollingFriction = f;	}
+		float getRollingFriction()const					{	return rollingFriction;	}
+		void setRollingFriction(float f)				{	rollingFriction = f;	}
 
-        const std::vector<Util::Reference<BtConstraintObject>>& getConstraints() const { return constraints; }
-        void removeConstraint(BtConstraintObject& constraint);
+		const std::vector<Util::Reference<BtConstraintObject>>& getConstraints() const { return constraints; }
+		void removeConstraint(BtConstraintObject& constraint);
 
 		void addConstraintObject(BtConstraintObject& constraint) { constraints.emplace_back(&constraint); }
 

@@ -2,7 +2,7 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2015 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -46,8 +46,7 @@ namespace Physics {
 class BtCollisionShape;
 
 //! BtPhysicWorld---------|>PhysicWorld
-class BtPhysicWorld: public PhysicWorld{
-	private:
+class BtPhysicWorld : public PhysicWorld{
 		bool simulationIsActive;
 		btBroadphaseInterface* broadphase;
 		btDefaultCollisionConfiguration* collisionConfiguration;
@@ -63,36 +62,42 @@ class BtPhysicWorld: public PhysicWorld{
 	public:
 		BtPhysicWorld();
 		virtual ~BtPhysicWorld() = default;
-		void stepSimulation(float time) override;
-		void applyProperties(Node& node)override;
-		void removeNode(Node *node)override;
-		void initNodeObserver(Node * rootNode)override;
+		
+		// simulation
 		void cleanupWorld() override;
+		void stepSimulation(float time) override;
+		void renderPhysicWorld(Rendering::RenderingContext& rctxt) override;
+		
+		// world setup
+		void initNodeObserver(Node * rootNode)override;
 		void createGroundPlane(const Geometry::Plane& plane ) override;
 		void setGravity(const Geometry::Vec3& gravity)override;
 		const Geometry::Vec3 getGravity()override;
+		
+		// physics objects
+		void applyProperties(Node& node)override;
+		void markAsKinematicObject(Node& node, bool b)override;
+		void removeNode(Node *node)override;
 		void setMass(Node& node, float mass) override;
 		void setFriction(Node& _node, float fric) override;
 		void setRollingFriction(Node& _node, float rollfric) override;
 		void setShape(Node& node, Util::Reference<CollisionShape> shape) override;
+		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
 		
+		// collision shapes
 		Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb)override;
 		Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere&)override;
 		Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes)override;
-		
-		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
-		void renderPhysicWorld(Rendering::RenderingContext& rctxt) override;
+
+		// constraints		
 		void applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA) override;
-		virtual void applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir ) override;
+		void applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir ) override;
 		void removeConstraints(Node* node) override;
-		virtual void removeConstraintBetweenNodes(Node* nodeA,Node* nodeB)override;
+		void removeConstraintBetweenNodes(Node* nodeA,Node* nodeB)override;
 
 };
 }
 }
-
-
-
 
 #endif /* BTPHYSICWORLD_H */
 

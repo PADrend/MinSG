@@ -1,7 +1,7 @@
 /*
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
-	Copyright (C) 2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2013-2015 Claudius Jähn <claudius@uni-paderborn.de>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -19,8 +19,8 @@ namespace MinSG {
 namespace Physics {
 
 void MotionState::setWorldTransform(const btTransform &worldTrans) {
-    Node* node = physObj.getNode();
-    if(!node){
+	Node* node = physObj.getNode();
+	if(!node){
 		return; // silently return before we set a node( should not happen!)
 	}else if(node->isDestroyed()){
 		world.removeNode(node);
@@ -32,18 +32,21 @@ void MotionState::setWorldTransform(const btTransform &worldTrans) {
 		node->setRelTransformation(relSRT);
 	}
 }
+void MotionState::getWorldTransform(btTransform &worldTrans) const{
+	if(physObj.getKinematicObjectMarker()){
+		Node* node = physObj.getNode();
+		if(node){
+			auto worldSRT =  node->getWorldTransformationSRT();
+			worldSRT.translate( Transformations::localDirToWorldDir(*node,physObj.getCenterOfMass() ) );
+			worldTrans = toBtTransform( worldSRT );
+		}
+	}else{
+		worldTrans = initialPos;
+	}
+}
 
 }
 }
-
-
-
-
-
-
-
-
-
 
 
 #endif // MINSG_EXT_PHYSICS

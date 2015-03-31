@@ -273,7 +273,8 @@ void BtPhysicWorld::applyProperties(Node& node){
 	auto* btShapeContainer = physObj.getShape();
 	if(btShapeContainer){
 		auto* btShape = btShapeContainer->getShape();
-		if(!physObj.getCenterOfMass().isZero()){ // add additional translation proxy shape
+		// add additional translation proxy shape
+		if(!physObj.getCenterOfMass().isZero()){ 
 			auto proxyShape = new btCompoundShape;
 			btTransform transformation;
 			transformation.setIdentity();
@@ -283,6 +284,7 @@ void BtPhysicWorld::applyProperties(Node& node){
 			std::cout << "Correct center of mass "<<std::endl;
 		}
 
+		// create body
 		const float mass = physObj.getMass();
 		const float friction = physObj.getFriction();
 		const float rollingFriction = physObj.getRollingFriction();
@@ -301,10 +303,19 @@ void BtPhysicWorld::applyProperties(Node& node){
 		btRigidBody* body = new btRigidBody(rbInfo);
 		body->setUserPointer(&physObj);
 
+		// init kinematic bodies
+		if(physObj.getKinematicObjectMarker()){
+			body->setCollisionFlags( body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT );
+			body->setActivationState(DISABLE_DEACTIVATION);
+		}
+
+		// finalize
 		physObj.setBody( body );
 		dynamicsWorld->addRigidBody( body );
+		
 		initCollisionCallbacks(physObj);
-		body->setLinearVelocity(linearVelocity); // restore prior movement
+		// restore prior movement
+		body->setLinearVelocity(linearVelocity); 
 		body->setAngularVelocity(angularVelocity);
 	}else{
 		std::cout << "no shape!";
@@ -322,6 +333,7 @@ void BtPhysicWorld::removeNode(Node* node){
 		std::cout<<"Node is removed!\n";
 	}
 }
+
 
 void BtPhysicWorld::cleanupWorld(){
 	//cleanup in the reverse order of creation/initialization
@@ -388,6 +400,10 @@ void BtPhysicWorld::onNodeTransformed(Node * node){
 			}
 		}
 	}
+}
+
+void BtPhysicWorld::markAsKinematicObject(Node& node, bool b){
+	accessPhysicsObject(node).setKinematicObjectMarker(b);
 }
 
 const Geometry::Vec3 BtPhysicWorld::getGravity(){

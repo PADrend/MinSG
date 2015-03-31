@@ -1,7 +1,7 @@
 /*
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
-	Copyright (C) 2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2013-2015 Claudius Jähn <claudius@uni-paderborn.de>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -34,7 +34,7 @@ inline int _suppressUnusedVariableWarning(){  return btInfinityMask;} // on ming
 COMPILER_WARN_POP
 
 namespace MinSG {
-    class Node;
+	class Node;
 namespace Physics {
 class BtPhysicWorld;
 
@@ -44,22 +44,18 @@ class MotionState: public btMotionState{
 		BtPhysicObject& physObj;
 		const btTransform initialPos;
 
-    public:
-        //! create a new MotionState
-        MotionState(BtPhysicWorld& _world, BtPhysicObject& _physObj, const btTransform& _initialpos):
+	public:
+		//! create a new MotionState
+		MotionState(BtPhysicWorld& _world, BtPhysicObject& _physObj, const btTransform& _initialpos):
 			world(_world), physObj(_physObj), initialPos(_initialpos){}
 
-        virtual ~MotionState(){}
+		virtual ~MotionState(){}
 
-        void getWorldTransform(btTransform &worldTrans) const override{
-			worldTrans = initialPos;
-        }
-        void setWorldTransform(const btTransform &worldTrans) override;
+		void getWorldTransform(btTransform &worldTrans) const override;
+		void setWorldTransform(const btTransform &worldTrans) override;
 };
 }
 }
-
-
 
 
 #endif /* PHYSICMOTIONSTATE_H */
