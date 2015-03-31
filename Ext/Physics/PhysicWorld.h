@@ -57,10 +57,10 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual void setGravity(const Geometry::Vec3& gravity)=0;
 		virtual const Geometry::Vec3 getGravity()=0;
 
-		virtual void updateMass(Node* node, float mass) = 0;
-		virtual void updateShape(Node* node, Util::Reference<CollisionShape> shape)= 0;
-		virtual void updateFriction(Node* node, float fric) = 0;
-		virtual void updateRollingFriction(Node* node, float rollfric) = 0;
+		virtual void setMass(Node& node, float mass) = 0;
+		virtual void setShape(Node& node, Util::Reference<CollisionShape> shape) = 0;
+		virtual void setFriction(Node& node, float fric) = 0;
+		virtual void setRollingFriction(Node& node, float rollfric) = 0;
 		virtual void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) = 0;
 
 		virtual Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb) = 0;

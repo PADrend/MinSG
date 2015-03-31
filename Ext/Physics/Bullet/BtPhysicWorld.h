@@ -71,10 +71,10 @@ class BtPhysicWorld: public PhysicWorld{
 		void createGroundPlane(const Geometry::Plane& plane ) override;
 		void setGravity(const Geometry::Vec3& gravity)override;
 		const Geometry::Vec3 getGravity()override;
-		void updateMass(Node* node, float mass) override;
-		void updateFriction(Node* _node, float fric) override;
-		void updateRollingFriction(Node* _node, float rollfric) override;
-		void updateShape(Node* node, Util::Reference<CollisionShape> shape) override;
+		void setMass(Node& node, float mass) override;
+		void setFriction(Node& _node, float fric) override;
+		void setRollingFriction(Node& _node, float rollfric) override;
+		void setShape(Node& node, Util::Reference<CollisionShape> shape) override;
 		
 		Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb)override;
 

@@ -393,6 +393,9 @@ void BtPhysicWorld::createGroundPlane(const Geometry::Plane& plane ){
 	}
 }
 
+/*! Every time the properties are applied, the old body is destroyed and a new one is created. 
+	When some properties change, the old body could just be updated -- this would be more
+	complex and produce more special cases. */
 void BtPhysicWorld::applyProperties(Node& node){
 	BtPhysicObject& physObj = accessPhysicsObject(node);
 	physObj.setCenterOfMass((node.getBB()).getCenter()); // to allow a custom center of mass, this calculation must be made optional.
@@ -448,33 +451,6 @@ void BtPhysicWorld::applyProperties(Node& node){
 	}else{
 		std::cout << "no shape!";
 	}
-	
-
-
-
-//	ShapeContainer * shape = findShapeAttribute(node);
-////	if(shape){
-////		std::cout << "Shape re-used!\n";
-////		btRigidBody *body = createRigidBody(*physObj,shape);
-////		physObj->setBodyAndShape(body,shape);
-////		dynamicsWorld->addRigidBody(body);
-////		initCollisionCallbacks(*physObj);
-////	}else{
-//		ShapeContainer *shape = createShape(node, shapeDescription, physObj->getCenterOfMass() );
-//		btRigidBody * body = createRigidBody(*physObj, shape);
-//		physObj->setBodyAndShape(body,shape);
-//		dynamicsWorld->addRigidBody(body);
-//		initCollisionCallbacks(*physObj);
-		// if the node has no local shape shapeDescription, store the shape at the prototype (where it can be used for further instances)
-//		if(node->isInstance() && !PhysicWorld::hasLocalShapeDescription(node) && PhysicWorld::hasLocalShapeDescription(node->getPrototype())){
-//			attachShapeAttribute(node->getPrototype(),shape);
-//		}else{ // otherwise, store shape at the node (where it can be used for clones)
-//			attachShapeAttribute(node,shape);
-//		}
-
-//	}
-	// make sure the mass is set even if it has the default value. This is needed to detect physical nodes.
-//	PhysicWorld::setNodeProperty_mass(node,PhysicWorld::getNodeProperty_mass(node));
 }
 void BtPhysicWorld::removeNode(Node* node){
 	BtPhysicObject *physObj = getPhysicObject(node);
@@ -564,43 +540,20 @@ void BtPhysicWorld::setGravity(const Geometry::Vec3&  gravity){
 	dynamicsWorld->setGravity(toBtVector3(gravity));
 }
 
-void BtPhysicWorld::updateMass(Node* node, float mass){
-	accessPhysicsObject(*node).setMass(mass);
-//	accessPhysicsObject(*node).setMass( mass );
-	
-//
-//	btRigidBody* body = physObj.getRigidBody();
-//	dynamicsWorld->removeRigidBody(body); // remove the body; mass should be changed for removed bodies only.
-//
-//	btVector3 localInertia(0,0,0);
-//	body->getCollisionShape()->calculateLocalInertia(mass,localInertia);
-//	body->setMassProps(mass, localInertia); // \note the static collision flag seems to be set implicitly here...
-//	body->updateInertiaTensor();
-//
-//	dynamicsWorld->addRigidBody(body);  // re-add the body
-//	body->activate(true);
-
+void BtPhysicWorld::setMass(Node& node, float mass){
+	accessPhysicsObject(node).setMass(mass);
 }
 
-void BtPhysicWorld::updateFriction(Node* node, float fric){
-	accessPhysicsObject(*node).setFriction(fric);
-//	BtPhysicObject& physObj = accessPhysicsObject(*node);
-//	btRigidBody* body = physObj.getRigidBody();
-//	body->setFriction(fric);
-//	body->activate(true);
-
+void BtPhysicWorld::setFriction(Node& node, float fric){
+	accessPhysicsObject(node).setFriction(fric);
 }
 
-void BtPhysicWorld::updateRollingFriction(Node* node, float rollfric){
-	accessPhysicsObject(*node).setRollingFriction(rollfric);
-//	BtPhysicObject& physObj = accessPhysicsObject(*node);
-//	btRigidBody* body = physObj.getRigidBody();
-//	body->setRollingFriction(rollfric);
-//	body->activate(true);
+void BtPhysicWorld::setRollingFriction(Node& node, float rollfric){
+	accessPhysicsObject(node).setRollingFriction(rollfric);
 }
 
-void BtPhysicWorld::updateShape(Node* node,  Util::Reference<CollisionShape> shape){
-	accessPhysicsObject(*node).setShape(shape);
+void BtPhysicWorld::setShape(Node& node,  Util::Reference<CollisionShape> shape){
+	accessPhysicsObject(node).setShape(shape);
 }
 
 void BtPhysicWorld::updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localSurfaceVelocity){
