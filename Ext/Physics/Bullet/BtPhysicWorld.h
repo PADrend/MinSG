@@ -63,6 +63,7 @@ class BtPhysicWorld : public PhysicWorld{
 
 		std::vector<btRigidBody *> bodiesToRemove;
 		std::vector<btTypedConstraint *> constraintsToRemove;
+		std::set<Util::Reference<Node>> nodesToUpdate;
 	public:
 		BtPhysicWorld();
 		virtual ~BtPhysicWorld() = default;
@@ -79,7 +80,9 @@ class BtPhysicWorld : public PhysicWorld{
 		const Geometry::Vec3 getGravity()override;
 		
 		// physics objects
-		void applyProperties(Node& node)override;
+	private:
+		void applyProperties(Node& node);
+	public:
 		void markAsKinematicObject(Node& node, bool b)override;
 		void removeNode(Node *node)override;
 		void setMass(Node& node, float mass) override;

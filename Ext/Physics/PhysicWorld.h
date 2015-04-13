@@ -58,8 +58,6 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual const Geometry::Vec3 getGravity() = 0;
 		
 		// physics object properties
-		//!	\note for a changed property to take effect, applyProperties has to be called!
-		virtual void applyProperties(Node& node) = 0;
 		virtual void markAsKinematicObject(Node& node, bool b) = 0;
 		virtual void removeNode(Node* node) = 0;
 		virtual void setMass(Node& node, float mass) = 0;

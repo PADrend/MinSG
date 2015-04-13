@@ -426,6 +426,16 @@ void BtPhysicWorld::cleanupWorld(){
 void BtPhysicWorld::stepSimulation(float time){
 	if(dynamicsWorld){//step the simulation
 
+//		std::cout << "<";
+		while(!nodesToUpdate.empty()){
+			Node& node = *nodesToUpdate.begin()->get();
+			if(!node.isDestroyed())
+				applyProperties( node );
+			nodesToUpdate.erase(nodesToUpdate.begin());
+//			std::cout << ".";
+		}
+//			std::cout << "|";
+
 		// cleanup
 		for(auto* btConstraint : constraintsToRemove){
 			dynamicsWorld->removeConstraint(btConstraint);
@@ -438,10 +448,12 @@ void BtPhysicWorld::stepSimulation(float time){
 			delete btBody;
 		}
 		bodiesToRemove.clear();
+//std::cout << "|";
 
 		simulationIsActive = true;
 		dynamicsWorld->stepSimulation(time,10);
 		simulationIsActive = false;
+//std::cout << ">";
 	}
 }
 
@@ -488,6 +500,7 @@ void BtPhysicWorld::onNodeTransformed(Node * node){
 
 void BtPhysicWorld::markAsKinematicObject(Node& node, bool b){
 	accessPhysicsObject(node).setKinematicObjectMarker(b);
+	nodesToUpdate.insert(&node);
 }
 
 const Geometry::Vec3 BtPhysicWorld::getGravity(){
@@ -500,24 +513,29 @@ void BtPhysicWorld::setGravity(const Geometry::Vec3&  gravity){
 
 void BtPhysicWorld::setMass(Node& node, float mass){
 	accessPhysicsObject(node).setMass(mass);
+	nodesToUpdate.insert(&node);	
 }
 
 void BtPhysicWorld::setFriction(Node& node, float fric){
 	accessPhysicsObject(node).setFriction(fric);
+	nodesToUpdate.insert(&node);
 }
 
 void BtPhysicWorld::setRollingFriction(Node& node, float rollfric){
 	accessPhysicsObject(node).setRollingFriction(rollfric);
+	nodesToUpdate.insert(&node);
 }
 
 void BtPhysicWorld::setShape(Node& node,  Util::Reference<CollisionShape> shape){
 	accessPhysicsObject(node).setShape(shape);
+	nodesToUpdate.insert(&node);
 }
 
 void BtPhysicWorld::updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localSurfaceVelocity){
 //	setNodeProperty_localSurfaceVelocity(node,localSurfaceVelocity);
 	BtPhysicObject& physObj = accessPhysicsObject(*node);
 	initCollisionCallbacks(physObj);
+	nodesToUpdate.insert(node);
 }
 
 void BtPhysicWorld::renderPhysicWorld(Rendering::RenderingContext& rctxt){
@@ -536,12 +554,16 @@ void BtPhysicWorld::addConstraint_p2p(Node& nodeA, Node& nodeB, const Geometry::
     
 	accessPhysicsObject(nodeA).addConstraintObject( *constraint.get() );
 	accessPhysicsObject(nodeB).addConstraintObject( *constraint.get() );
+	nodesToUpdate.insert(&nodeA);
 }
 
 void BtPhysicWorld::addConstraint_hinge(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dirLocalA){
     Util::Reference<BtConstraintObject> constraint = BtConstraintObject::createHinge(nodeA,nodeB,pivotLocalA,dirLocalA);
 	accessPhysicsObject(nodeA).addConstraintObject( *constraint.get() );
 	accessPhysicsObject(nodeB).addConstraintObject( *constraint.get() );
+
+	
+	nodesToUpdate.insert(&nodeA);
 
 //   const auto worldPivot = Transformations::localPosToWorldPos(*nodeA, pivotLocalA);
 //
