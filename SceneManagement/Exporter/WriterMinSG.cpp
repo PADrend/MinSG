@@ -39,10 +39,20 @@ static void convertDescriptionToXML(std::ostream & out,const DescriptionMap & d,
 		attributes.emplace_back(key,mapEntry.second->toString());
 	}
 	std::sort(attributes.begin(),attributes.end());
+	
+	static const std::deque<std::pair<const std::string,std::string>> findReplace={
+		{	"\"",	"&quot;"	},
+		{ 	"'", 	"&apos;" 	},
+		{	"<",	"&lt;"		},
+		{	">",	"&gt;"		},
+		{	"&",	"&amp;"		},
+		{	"\n",	"&#10;"		},
+		{	"\t",	"&#9;"		}
+	};
+
 	for(const auto & a : attributes)
-		out << " "<<a.first<<"=\""<<StringUtils::replaceAll(a.second,  "\"","&quot;")<<"\"";
-	
-	
+		out << " "<<a.first<<"=\""<<StringUtils::replaceMultiple(a.second, findReplace,-1)<<"\"";
+
 	const DescriptionArray * children = dynamic_cast<DescriptionArray *>(d.getValue(Consts::CHILDREN));
 	const GenericAttribute * dataBlock = d.getValue(Consts::DATA_BLOCK);
 	if( dataBlock || (children && !children->empty()) ) {
