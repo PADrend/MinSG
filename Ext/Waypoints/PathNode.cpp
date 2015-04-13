@@ -139,7 +139,7 @@ Geometry::SRT PathNode::getPosition(AbstractBehaviour::timestamp_t time)const {
 }
 
 Geometry::SRT PathNode::getWorldPosition(AbstractBehaviour::timestamp_t time) {
-	return getWorldTransformationMatrix()._toSRT() * getPosition(time);
+	return getWorldTransformationMatrix().toSRT() * getPosition(time);
 }
 
 void PathNode::updateWaypoint(Waypoint * wp,AbstractBehaviour::timestamp_t newTime){

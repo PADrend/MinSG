@@ -48,7 +48,7 @@ void SRTPose::init(std::deque<double> _values, std::deque<double> _timeline, std
     maxPoseCount = 0;
     
     if(getBindetJoint() != nullptr && keyframes.size() > 0) 
-        getBindetJoint()->setRelTransformation(keyframes[0]._toSRT());
+        getBindetJoint()->setRelTransformation(keyframes[0].toSRT());
     
     setValues(_values, _timeline, _interpolationTypes);
 }
@@ -69,7 +69,7 @@ void SRTPose::setValues(std::deque<Geometry::Matrix4x4> _values, std::deque<doub
         return;
     
     for(const auto keyframe : keyframes) {
-        animationData.emplace_back(keyframe._toSRT());
+        animationData.emplace_back(keyframe.toSRT());
     }
 }
 
@@ -122,7 +122,7 @@ void SRTPose::addValue(Geometry::Matrix4x4 _value, double _time, uint32_t _inter
     timeline[i] = _time;
     interpolationTypes[i] = _interpolationType;
     keyframes[i] = _value;
-    Geometry::SRT _srt = keyframes[i]._toSRT();
+    Geometry::SRT _srt = keyframes[i].toSRT();
     animationData[i] = _srt;
 }
 

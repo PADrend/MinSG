@@ -36,7 +36,7 @@ State::stateResult_t EnvironmentState::doEnableState(FrameContext & context, Nod
 	if (!environment.isNull()) {
 
 		// extract rotation of the camera
-		Geometry::SRT camRotationSrt = context.getRenderingContext().getMatrix_worldToCamera()._toSRT();
+		Geometry::SRT camRotationSrt = context.getRenderingContext().getMatrix_worldToCamera().toSRT();
 		camRotationSrt.setTranslation(Geometry::Vec3(0,0,0));
 		camRotationSrt.setScale(1.0);
 
