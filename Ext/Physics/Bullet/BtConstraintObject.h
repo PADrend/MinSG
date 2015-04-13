@@ -27,20 +27,42 @@ namespace MinSG {
 
 namespace Physics {
 class BtConstraintObject : public Util::ReferenceCounter<BtConstraintObject>{
-		Node* nodeA;
-		Node* nodeB;
-		std::unique_ptr<btTypedConstraint> constraint;
-    public:
-
+	public:
+		enum type_t{
+			TYPE_P2P,
+			TYPE_HINGE
+		};
+	private:
+		type_t type;
+		Util::Reference<Node> nodeA, nodeB;
+		Geometry::Vec3 posA,dirA;
+        btTypedConstraint* constraint;
+	
         //! create a new physic object
-        BtConstraintObject(Node * _nodeA, Node * _nodeB, btTypedConstraint * _constraint):nodeA(_nodeA), nodeB(_nodeB), constraint(_constraint){}
+        BtConstraintObject(type_t t,Node & _nodeA, Node & _nodeB,const Geometry::Vec3& _posA):
+				type(t),nodeA(&_nodeA), nodeB(&_nodeB),posA(_posA),constraint(nullptr){}
+        BtConstraintObject(type_t t,Node & _nodeA, Node & _nodeB,const Geometry::Vec3& _posA,const Geometry::Vec3& _dirA):
+				type(t),nodeA(&_nodeA), nodeB(&_nodeB),posA(_posA),dirA(_dirA),constraint(nullptr){}
         BtConstraintObject(const BtConstraintObject&) = delete;
         BtConstraintObject(BtConstraintObject&&) = delete;
-		virtual ~BtConstraintObject();
+		
+    public:
+		static Util::Reference<BtConstraintObject> createP2P(Node& _nodeA,Node& _nodeB, const Geometry::Vec3& posA){
+			return new BtConstraintObject(TYPE_P2P,_nodeA,_nodeB,posA);
+		}
+		static Util::Reference<BtConstraintObject> createHinge(Node& _nodeA,Node& _nodeB, const Geometry::Vec3& posA,const Geometry::Vec3& dirA){
+			return new BtConstraintObject(TYPE_P2P,_nodeA,_nodeB,posA,dirA);
+		}
+		
+		~BtConstraintObject();
 
-		Node* getNodeA()const 					{	return nodeA;	}
-		Node* getNodeB()const 					{	return nodeB;	}
-		btTypedConstraint* getConstraint()		{	return constraint.get();	}
+		Node& getNodeA()const 						{	return *nodeA.get();	}
+		Node& getNodeB()const 						{	return *nodeB.get();	}
+		btTypedConstraint* getBtConstraint()const	{	return constraint;	}
+		void setBtConstraint(btTypedConstraint* c)	{	constraint = c;	}
+		const Geometry::Vec3& getPosA()const		{	return posA;	}
+		const Geometry::Vec3& getDirA()const		{	return dirA;	}
+		type_t getType()const						{	return type;	}
 
 };
 }

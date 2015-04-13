@@ -39,6 +39,8 @@ COMPILER_WARN_POP
 #include "../PhysicWorld.h"
 #include <Util/References.h>
 
+class btConstraint;
+
 namespace MinSG {
 class GroupNode;
 namespace Physics {
@@ -59,6 +61,8 @@ class BtPhysicWorld : public PhysicWorld{
 		btRigidBody * createRigidBody(BtPhysicObject& physObj,Util::Reference<CollisionShape> shape);
 		void initCollisionCallbacks(BtPhysicObject& physObj);
 
+		std::vector<btRigidBody *> bodiesToRemove;
+		std::vector<btTypedConstraint *> constraintsToRemove;
 	public:
 		BtPhysicWorld();
 		virtual ~BtPhysicWorld() = default;
@@ -90,10 +94,10 @@ class BtPhysicWorld : public PhysicWorld{
 		Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes)override;
 
 		// constraints		
-		void applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA) override;
-		void applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir ) override;
-		void removeConstraints(Node* node) override;
-		void removeConstraintBetweenNodes(Node* nodeA,Node* nodeB)override;
+		void addConstraint_p2p(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA) override;
+		void addConstraint_hinge(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dirLocalA) override;
+		void removeConstraints(Node& node) override;
+		void removeConstraintBetweenNodes(Node& nodeA,Node& nodeB)override;
 
 };
 }

@@ -32,7 +32,7 @@ namespace Physics {
 class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 		Util::Reference<Node> node;
 		Util::Reference<BtCollisionShape> shape;	// keep a reference as long as the body exists
-		std::unique_ptr<btRigidBody> body;
+		btRigidBody* body;
 		std::vector<Util::Reference<BtConstraintObject>> constraints;
 		Geometry::Vec3 centerOfMass;
 		float mass, friction, rollingFriction;
@@ -40,7 +40,7 @@ class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 	public:
 
 		//! create a new physic object
-		BtPhysicObject(Node * _node): node(_node),mass(1.0),friction(0),rollingFriction(0),kinematicObjectMarker(false){}
+		BtPhysicObject(Node * _node): node(_node),body(nullptr),mass(1.0),friction(0),rollingFriction(0),kinematicObjectMarker(false){}
 		BtPhysicObject(const BtPhysicObject&) = delete;
 		BtPhysicObject(BtPhysicObject&&) = default;
 		~BtPhysicObject();
@@ -53,8 +53,8 @@ class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 		bool getKinematicObjectMarker()const			{	return kinematicObjectMarker;	}
 		void setKinematicObjectMarker(bool b)			{	kinematicObjectMarker = b;	}
 
-		btRigidBody* getRigidBody()const				{	return body.get();	}
-		void setBody(btRigidBody* _body)				{	body.reset(_body);	}
+		btRigidBody* getRigidBody()const				{	return body;	}
+		void setBody(btRigidBody* _body)				{	body = _body;	}
 
 		BtCollisionShape* getShape()const				{	return shape.get();	}
 		void setShape(Util::Reference<CollisionShape> _shape);
@@ -70,6 +70,7 @@ class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 
 		const std::vector<Util::Reference<BtConstraintObject>>& getConstraints() const { return constraints; }
 		void removeConstraint(BtConstraintObject& constraint);
+		void clearConstraints()							{	constraints.clear();	}
 
 		void addConstraintObject(BtConstraintObject& constraint) { constraints.emplace_back(&constraint); }
 

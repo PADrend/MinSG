@@ -75,10 +75,10 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		
 
 		// constraints
-		virtual void applyP2PConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA)= 0;
-		virtual void applyHingeConstraint(Node* nodeA, Node* nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir )= 0;
-		virtual void removeConstraints(Node* node)=0;
-		virtual void removeConstraintBetweenNodes(Node* nodeA,Node* nodeB)=0;
+		virtual void addConstraint_p2p(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA)= 0;
+		virtual void addConstraint_hinge(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir )= 0;
+		virtual void removeConstraints(Node& node)=0;
+		virtual void removeConstraintBetweenNodes(Node& nodeA,Node& nodeB)=0;
 };
 
 
