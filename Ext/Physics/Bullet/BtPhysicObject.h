@@ -14,7 +14,6 @@
 #ifndef BTPHYSICOBJECT_H
 #define BTPHYSICOBJECT_H
 
-#include "../PhysicObject.h"
 #include "BtConstraintObject.h"
 #include "BtCollisionShape.h"
 #include "../../../Core/Nodes/Node.h"
@@ -30,7 +29,7 @@ namespace MinSG {
 
 namespace Physics {
 
-class BtPhysicObject : public PhysicObject{
+class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 		Util::Reference<Node> node;
 		Util::Reference<BtCollisionShape> shape;	// keep a reference as long as the body exists
 		std::unique_ptr<btRigidBody> body;
@@ -44,9 +43,9 @@ class BtPhysicObject : public PhysicObject{
 		BtPhysicObject(Node * _node): node(_node),mass(1.0),friction(0),rollingFriction(0),kinematicObjectMarker(false){}
 		BtPhysicObject(const BtPhysicObject&) = delete;
 		BtPhysicObject(BtPhysicObject&&) = default;
-		virtual ~BtPhysicObject();
+		~BtPhysicObject();
 
-		Node* getNode()const override					{	return node.get();	}
+		Node* getNode()const							{	return node.get();	}
 
 		const Geometry::Vec3& getCenterOfMass()const	{	return centerOfMass;	}
 		void setCenterOfMass(const Geometry::Vec3& v)	{	centerOfMass = v;	}

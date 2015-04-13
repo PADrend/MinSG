@@ -14,7 +14,6 @@
 #ifndef PHYSICWORLD_H
 #define PHYSICWORLD_H
 
-#include "PhysicObject.h"
 #include <Util/ReferenceCounter.h>
 #include <vector>
 

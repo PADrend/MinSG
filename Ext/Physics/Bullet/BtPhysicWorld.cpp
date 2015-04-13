@@ -17,7 +17,7 @@
 #include "Helper.h"
 #include "MotionState.h"
 #include "BtCollisionShape.h"
-#include "../PhysicObject.h"
+
 //debug
 #include "MyDebugDraw.h"
 #include "../../../Core/Nodes/Node.h"
