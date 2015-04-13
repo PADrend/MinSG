@@ -89,6 +89,8 @@ class BtPhysicWorld : public PhysicWorld{
 		void setFriction(Node& _node, float fric) override;
 		void setRollingFriction(Node& _node, float rollfric) override;
 		void setShape(Node& node, Util::Reference<CollisionShape> shape) override;
+		void setLinearDamping(Node& node, float) override;
+		void setAngularDamping(Node& node, float) override;
 		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
 		
 		// collision shapes

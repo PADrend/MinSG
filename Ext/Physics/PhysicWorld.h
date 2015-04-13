@@ -64,6 +64,8 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual void setShape(Node& node, Util::Reference<CollisionShape> shape) = 0;
 		virtual void setFriction(Node& node, float fric) = 0;
 		virtual void setRollingFriction(Node& node, float rollfric) = 0;
+		virtual void setLinearDamping(Node& node, float) = 0;
+		virtual void setAngularDamping(Node& node, float) = 0;
 		virtual void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) = 0;
 		
 		// interaction

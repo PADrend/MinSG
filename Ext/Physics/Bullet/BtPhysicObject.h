@@ -35,12 +35,13 @@ class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 		btRigidBody* body;
 		std::vector<Util::Reference<BtConstraintObject>> constraints;
 		Geometry::Vec3 centerOfMass;
-		float mass, friction, rollingFriction;
+		float mass, friction, rollingFriction,linearDamping,angularDamping;
 		bool kinematicObjectMarker;
 	public:
 
 		//! create a new physic object
-		BtPhysicObject(Node * _node): node(_node),body(nullptr),mass(1.0),friction(0),rollingFriction(0),kinematicObjectMarker(false){}
+		BtPhysicObject(Node * _node): node(_node),body(nullptr),mass(1.0),friction(0),rollingFriction(0),linearDamping(0),angularDamping(0),
+				kinematicObjectMarker(false){}
 		BtPhysicObject(const BtPhysicObject&) = delete;
 		BtPhysicObject(BtPhysicObject&&) = default;
 		~BtPhysicObject();
@@ -64,6 +65,12 @@ class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 
 		float getFriction()const						{	return friction;	}
 		void setFriction(float f)						{	friction = f;	}
+
+		float getAngularDamping()const					{	return angularDamping;	}
+		void setAngularDamping(float f)					{	angularDamping = f;	}
+
+		float getLinearDamping()const					{	return linearDamping;	}
+		void setLinearDamping(float f)					{	linearDamping = f;	}
 
 		float getRollingFriction()const					{	return rollingFriction;	}
 		void setRollingFriction(float f)				{	rollingFriction = f;	}

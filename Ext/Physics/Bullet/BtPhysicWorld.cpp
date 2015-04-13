@@ -297,9 +297,7 @@ void BtPhysicWorld::applyProperties(Node& node){
 
 		// create body
 		const float mass = physObj.getMass();
-		const float friction = physObj.getFriction();
-		const float rollingFriction = physObj.getRollingFriction();
-
+	
 		btVector3 localInertia(0,0,0);
 		btShape->calculateLocalInertia(mass,localInertia);
 
@@ -309,8 +307,10 @@ void BtPhysicWorld::applyProperties(Node& node){
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,
 														new MotionState(*this, physObj, toBtTransform( worldSRT )),
 														btShape,localInertia);
-		rbInfo.m_friction = friction;
-		rbInfo.m_rollingFriction = rollingFriction;
+		rbInfo.m_friction = physObj.getFriction();
+		rbInfo.m_rollingFriction = physObj.getRollingFriction();
+		rbInfo.m_linearDamping = physObj.getLinearDamping();
+		rbInfo.m_angularDamping = physObj.getAngularDamping();
 		btRigidBody* body = new btRigidBody(rbInfo);
 		body->setUserPointer(&physObj);
 
@@ -531,6 +531,15 @@ void BtPhysicWorld::setRollingFriction(Node& node, float rollfric){
 
 void BtPhysicWorld::setShape(Node& node,  Util::Reference<CollisionShape> shape){
 	accessPhysicsObject(node).setShape(shape);
+	nodesToUpdate.insert(&node);
+}
+
+void BtPhysicWorld::setLinearDamping(Node& node, float f){
+	accessPhysicsObject(node).setLinearDamping(f);
+	nodesToUpdate.insert(&node);
+}
+void BtPhysicWorld::setAngularDamping(Node& node, float f){
+	accessPhysicsObject(node).setAngularDamping(f);
 	nodesToUpdate.insert(&node);
 }
 
