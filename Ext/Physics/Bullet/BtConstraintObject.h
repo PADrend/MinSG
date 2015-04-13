@@ -35,23 +35,23 @@ class BtConstraintObject : public Util::ReferenceCounter<BtConstraintObject>{
 	private:
 		type_t type;
 		Util::Reference<Node> nodeA, nodeB;
-		Geometry::Vec3 posA,dirA;
-        btTypedConstraint* constraint;
+		Geometry::Vec3 posA,dirA,posB,dirB;
+		btTypedConstraint* constraint;
 	
-        //! create a new physic object
-        BtConstraintObject(type_t t,Node & _nodeA, Node & _nodeB,const Geometry::Vec3& _posA):
-				type(t),nodeA(&_nodeA), nodeB(&_nodeB),posA(_posA),constraint(nullptr){}
-        BtConstraintObject(type_t t,Node & _nodeA, Node & _nodeB,const Geometry::Vec3& _posA,const Geometry::Vec3& _dirA):
-				type(t),nodeA(&_nodeA), nodeB(&_nodeB),posA(_posA),dirA(_dirA),constraint(nullptr){}
-        BtConstraintObject(const BtConstraintObject&) = delete;
-        BtConstraintObject(BtConstraintObject&&) = delete;
+		//! create a new physic object
+		BtConstraintObject(type_t t,Node & _nodeA,const Geometry::Vec3& _posA, Node & _nodeB,const Geometry::Vec3& _posB):
+				type(t),nodeA(&_nodeA), nodeB(&_nodeB),posA(_posA),posB(_posB),constraint(nullptr){}
+		BtConstraintObject(type_t t,Node & _nodeA,const Geometry::Vec3& _posA,const Geometry::Vec3& _dirA, Node & _nodeB,const Geometry::Vec3& _posB,const Geometry::Vec3& _dirB):
+				type(t),nodeA(&_nodeA), nodeB(&_nodeB),posA(_posA),dirA(_dirA),posB(_posB),dirB(_dirB),constraint(nullptr){}
+		BtConstraintObject(const BtConstraintObject&) = delete;
+		BtConstraintObject(BtConstraintObject&&) = delete;
 		
-    public:
-		static Util::Reference<BtConstraintObject> createP2P(Node& _nodeA,Node& _nodeB, const Geometry::Vec3& posA){
-			return new BtConstraintObject(TYPE_P2P,_nodeA,_nodeB,posA);
+	public:
+		static Util::Reference<BtConstraintObject> createP2P(Node& _nodeA, const Geometry::Vec3& _posA,Node& _nodeB, const Geometry::Vec3& _posB){
+			return new BtConstraintObject(TYPE_P2P,_nodeA,_posA,_nodeB,_posB);
 		}
-		static Util::Reference<BtConstraintObject> createHinge(Node& _nodeA,Node& _nodeB, const Geometry::Vec3& posA,const Geometry::Vec3& dirA){
-			return new BtConstraintObject(TYPE_P2P,_nodeA,_nodeB,posA,dirA);
+		static Util::Reference<BtConstraintObject> createHinge(Node & _nodeA,const Geometry::Vec3& _posA,const Geometry::Vec3& _dirA, Node & _nodeB,const Geometry::Vec3& _posB,const Geometry::Vec3& _dirB){
+			return new BtConstraintObject(TYPE_P2P,_nodeA,_posA,_dirA,_nodeB,_posB,_dirB);
 		}
 		
 		~BtConstraintObject();
@@ -62,6 +62,8 @@ class BtConstraintObject : public Util::ReferenceCounter<BtConstraintObject>{
 		void setBtConstraint(btTypedConstraint* c)	{	constraint = c;	}
 		const Geometry::Vec3& getPosA()const		{	return posA;	}
 		const Geometry::Vec3& getDirA()const		{	return dirA;	}
+		const Geometry::Vec3& getPosB()const		{	return posB;	}
+		const Geometry::Vec3& getDirB()const		{	return dirB;	}
 		type_t getType()const						{	return type;	}
 
 };

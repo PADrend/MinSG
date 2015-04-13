@@ -252,7 +252,7 @@ void BtPhysicWorld::createGroundPlane(const Geometry::Plane& plane ){
 }
 
 static Geometry::Vec3 worldPosToLocalBodyPos(const BtPhysicObject& physObj,const Geometry::Vec3 & worldPos){
-    return (Transformations::worldPosToLocalPos(*physObj.getNode(),worldPos) - physObj.getCenterOfMass()) * physObj.getNode()->getRelScaling();
+	return (Transformations::worldPosToLocalPos(*physObj.getNode(),worldPos) - physObj.getCenterOfMass()) * physObj.getNode()->getRelScaling();
 }
 
 /*! Every time the properties are applied, the old body is destroyed and a new one is created. 
@@ -334,14 +334,17 @@ void BtPhysicWorld::applyProperties(Node& node){
 			if(!otherBody) // add constraint when second body is available
 				continue;
 
-			const Geometry::Vec3 worldAnchor = Transformations::localPosToWorldPos(constraint->getNodeA(), constraint->getPosA());
+			const Geometry::Vec3 worldAnchorA = Transformations::localPosToWorldPos(constraint->getNodeA(), constraint->getPosA());
+			const Geometry::Vec3 worldAnchorB = Transformations::localPosToWorldPos(constraint->getNodeB(), constraint->getPosB());
 				
 			btTypedConstraint* p = new btPoint2PointConstraint(*body, *otherBody, 
-																toBtVector3(worldPosToLocalBodyPos(physObj,worldAnchor)),  
-																toBtVector3(worldPosToLocalBodyPos(otherPhysObj,worldAnchor)));
+																toBtVector3(worldPosToLocalBodyPos(physObj,		&constraint->getNodeA()==&node ? worldAnchorA : worldAnchorB)),
+																toBtVector3(worldPosToLocalBodyPos(otherPhysObj,&constraint->getNodeA()==&node ? worldAnchorB : worldAnchorA)));
 //			constraint->setBtConstraint(p);
 
 			std::cout<<"Physics: p2p created: "<<body<<" <->"<<otherBody<< std::endl;
+			std::cout<<	(&constraint->getNodeA()==&node ? constraint->getPosA() : constraint->getPosB())<<" <->"<<
+						(&constraint->getNodeA()!=&node ? constraint->getPosA() : constraint->getPosB())<< std::endl;
 //        BtConstraintObject* cObj = new BtConstraintObject(nodeA, nodeB, p);
 //        physObjA->addConstraintObject(*cObj);
 //        physObjB->addConstraintObject(*cObj);
@@ -426,34 +429,34 @@ void BtPhysicWorld::cleanupWorld(){
 void BtPhysicWorld::stepSimulation(float time){
 	if(dynamicsWorld){//step the simulation
 
-//		std::cout << "<";
+		std::cout << "<";
 		while(!nodesToUpdate.empty()){
 			Node& node = *nodesToUpdate.begin()->get();
 			if(!node.isDestroyed())
 				applyProperties( node );
 			nodesToUpdate.erase(nodesToUpdate.begin());
-//			std::cout << ".";
+			std::cout << ".";
 		}
-//			std::cout << "|";
+			std::cout << "|";
 
 		// cleanup
 		for(auto* btConstraint : constraintsToRemove){
 			dynamicsWorld->removeConstraint(btConstraint);
-			delete btConstraint;
+//			delete btConstraint;
 		}
 		constraintsToRemove.clear();
 		for(auto* btBody : bodiesToRemove){
 			dynamicsWorld->removeRigidBody(btBody);
 			delete btBody->getMotionState();
-			delete btBody;
+//			delete btBody;
 		}
 		bodiesToRemove.clear();
-//std::cout << "|";
+std::cout << "|";
 
 		simulationIsActive = true;
 		dynamicsWorld->stepSimulation(time,10);
 		simulationIsActive = false;
-//std::cout << ">";
+std::cout << ">";
 	}
 }
 
@@ -549,16 +552,16 @@ void BtPhysicWorld::renderPhysicWorld(Rendering::RenderingContext& rctxt){
 // ------------------------
 // constraints
 
-void BtPhysicWorld::addConstraint_p2p(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA ){    
-    Util::Reference<BtConstraintObject> constraint = BtConstraintObject::createP2P(nodeA,nodeB,pivotLocalA);
-    
+void BtPhysicWorld::addConstraint_p2p(Node& nodeA, const Geometry::Vec3& pivotLocalA, Node& nodeB,const Geometry::Vec3& pivotLocalB ){    
+	Util::Reference<BtConstraintObject> constraint = BtConstraintObject::createP2P(nodeA,pivotLocalA,nodeB,pivotLocalB);
+	
 	accessPhysicsObject(nodeA).addConstraintObject( *constraint.get() );
 	accessPhysicsObject(nodeB).addConstraintObject( *constraint.get() );
 	nodesToUpdate.insert(&nodeA);
 }
 
-void BtPhysicWorld::addConstraint_hinge(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dirLocalA){
-    Util::Reference<BtConstraintObject> constraint = BtConstraintObject::createHinge(nodeA,nodeB,pivotLocalA,dirLocalA);
+void BtPhysicWorld::addConstraint_hinge(Node& nodeA, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dirLocalA,Node& nodeB, const Geometry::Vec3& pivotLocalB, const Geometry::Vec3& dirLocalB){
+	Util::Reference<BtConstraintObject> constraint = BtConstraintObject::createHinge(nodeA,pivotLocalA,dirLocalA,nodeB,pivotLocalB,dirLocalB);
 	accessPhysicsObject(nodeA).addConstraintObject( *constraint.get() );
 	accessPhysicsObject(nodeB).addConstraintObject( *constraint.get() );
 
@@ -615,6 +618,26 @@ void BtPhysicWorld::removeConstraintBetweenNodes(Node& nodeA,Node& nodeB){
 		}
 	}
 }
+// --------- Interaction
+
+void BtPhysicWorld::setLinearVelocity(Node& node,const Geometry::Vec3& v){
+	BtPhysicObject *physObj = getPhysicObject(&node);
+	if(physObj){
+		btRigidBody* body = physObj->getRigidBody();
+		if(body)
+			body->setLinearVelocity(toBtVector3(v)); 
+	}
+}
+void BtPhysicWorld::setAngularVelocity(Node& node,const Geometry::Vec3&v){
+	BtPhysicObject *physObj = getPhysicObject(&node);
+	if(physObj){
+		btRigidBody* body = physObj->getRigidBody();
+		if(body)
+			body->setAngularVelocity(toBtVector3(v)); 
+	}
+}
+
+		
 // --------- Collision shape factories
 
 Util::Reference<CollisionShape> BtPhysicWorld::createShape_AABB(const Geometry::Box& aabb){

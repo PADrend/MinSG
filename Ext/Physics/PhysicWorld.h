@@ -66,6 +66,10 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual void setRollingFriction(Node& node, float rollfric) = 0;
 		virtual void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) = 0;
 		
+		// interaction
+		virtual void setLinearVelocity(Node& node,const Geometry::Vec3&) = 0;
+		virtual void setAngularVelocity(Node& node,const Geometry::Vec3&) = 0;
+		
 		// collision shapes
 		virtual Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb) = 0;
 		virtual Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere&) = 0;
@@ -73,8 +77,8 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		
 
 		// constraints
-		virtual void addConstraint_p2p(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA)= 0;
-		virtual void addConstraint_hinge(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dir )= 0;
+		virtual void addConstraint_p2p(Node& nodeA, const Geometry::Vec3& pivotLocalA, Node& nodeB,const Geometry::Vec3& pivotLocalB)= 0;
+		virtual void addConstraint_hinge(Node& nodeA, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dirLocalA,Node& nodeB, const Geometry::Vec3& pivotLocalB, const Geometry::Vec3& dirLocalB)= 0;
 		virtual void removeConstraints(Node& node)=0;
 		virtual void removeConstraintBetweenNodes(Node& nodeA,Node& nodeB)=0;
 };

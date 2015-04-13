@@ -97,10 +97,14 @@ class BtPhysicWorld : public PhysicWorld{
 		Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes)override;
 
 		// constraints		
-		void addConstraint_p2p(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA) override;
-		void addConstraint_hinge(Node& nodeA, Node& nodeB, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dirLocalA) override;
+		void addConstraint_p2p(Node& nodeA, const Geometry::Vec3& pivotLocalA, Node& nodeB,const Geometry::Vec3& pivotLocalB) override;
+		void addConstraint_hinge(Node& nodeA, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dirLocalA,Node& nodeB, const Geometry::Vec3& pivotLocalB, const Geometry::Vec3& dirLocalB) override;
 		void removeConstraints(Node& node) override;
 		void removeConstraintBetweenNodes(Node& nodeA,Node& nodeB)override;
+
+		// interaction
+		void setLinearVelocity(Node& node,const Geometry::Vec3&) override;
+		void setAngularVelocity(Node& node,const Geometry::Vec3&) override;
 
 };
 }
