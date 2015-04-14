@@ -51,7 +51,7 @@ class BtConstraintObject : public Util::ReferenceCounter<BtConstraintObject>{
 			return new BtConstraintObject(TYPE_P2P,_nodeA,_posA,_nodeB,_posB);
 		}
 		static Util::Reference<BtConstraintObject> createHinge(Node & _nodeA,const Geometry::Vec3& _posA,const Geometry::Vec3& _dirA, Node & _nodeB,const Geometry::Vec3& _posB,const Geometry::Vec3& _dirB){
-			return new BtConstraintObject(TYPE_P2P,_nodeA,_posA,_dirA,_nodeB,_posB,_dirB);
+			return new BtConstraintObject(TYPE_HINGE,_nodeA,_posA,_dirA,_nodeB,_posB,_dirB);
 		}
 		
 		~BtConstraintObject();
