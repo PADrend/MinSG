@@ -429,34 +429,34 @@ void BtPhysicWorld::cleanupWorld(){
 void BtPhysicWorld::stepSimulation(float time){
 	if(dynamicsWorld){//step the simulation
 
-		std::cout << "<";
+//		std::cout << "<";
 		while(!nodesToUpdate.empty()){
 			Node& node = *nodesToUpdate.begin()->get();
 			if(!node.isDestroyed())
 				applyProperties( node );
 			nodesToUpdate.erase(nodesToUpdate.begin());
-			std::cout << ".";
+//			std::cout << ".";
 		}
-			std::cout << "|";
+//			std::cout << "|";
 
 		// cleanup
 		for(auto* btConstraint : constraintsToRemove){
 			dynamicsWorld->removeConstraint(btConstraint);
-//			delete btConstraint;
+//			delete btConstraint;	//! Ugly hack to prevent crashes
 		}
 		constraintsToRemove.clear();
 		for(auto* btBody : bodiesToRemove){
 			dynamicsWorld->removeRigidBody(btBody);
 			delete btBody->getMotionState();
-//			delete btBody;
+//			delete btBody;			//! Ugly hack to prevent crashes
 		}
 		bodiesToRemove.clear();
-std::cout << "|";
+//std::cout << "|";
 
 		simulationIsActive = true;
 		dynamicsWorld->stepSimulation(time,10);
 		simulationIsActive = false;
-std::cout << ">";
+//std::cout << ">";
 	}
 }
 
