@@ -194,6 +194,11 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 			octree.insert(OctreeEntry(vId,v.pos));
 			++surfelCount;
 		}
+
+		// remove one (bad) surfel to prevent using duplicate surfels even if the requested number of surfels is too large.
+		if(!sortedSubset.empty())
+			sortedSubset.pop_back();
+
 		// put back unused samples
 		for(const auto& entry : sortedSubset)
 			freeSurfelIds.emplace_back( entry.first );
@@ -204,6 +209,7 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 //		for(size_t i=static_cast<size_t>(sortedSubset.size()*(1.0f-reusalRate));i>0;--i){
 //			freeSurfelIds.erase(sortedSubset[i].first);
 //		}
+
 		sortedSubset.clear();
 		if( (round%500) == 0){
 			std::cout << "Round:"<<round<<" #Samples:"<< surfelCount<<" : "<<tRound.getMilliseconds()<<" ms; samplesPerRound "<<samplesPerRound<<" accept:"<<acceptSamples<<"\n";
