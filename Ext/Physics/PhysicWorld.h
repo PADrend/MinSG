@@ -4,6 +4,7 @@
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
 	Copyright (C) 2009-2015 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
+	Copyright (C) 2015 Sascha Brandt <myeti@mail.upb.de>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -15,7 +16,11 @@
 #define PHYSICWORLD_H
 
 #include <Util/ReferenceCounter.h>
+#include <Util/StringIdentifier.h>
+#include <Util/Factory/LambdaFactory.h>
 #include <vector>
+
+#include "CollisionShape.h"
 
 namespace Geometry {
 template<typename T_>class _Plane;
@@ -35,8 +40,6 @@ class RenderingContext;
 namespace MinSG {
 class Node;
 namespace Physics {
-
-class CollisionShape;
 
 class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 	public:
@@ -73,10 +76,19 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual void setAngularVelocity(Node& node,const Geometry::Vec3&) = 0;
 		
 		// collision shapes
-		virtual Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb) = 0;
-		virtual Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere&) = 0;
-		virtual Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes) = 0;
+		static const Util::StringIdentifier SHAPE_AABB;
+		static const Util::StringIdentifier SHAPE_SPHERE;
+		static const Util::StringIdentifier SHAPE_COMPOSED;
+	protected:
+		Util::LambdaFactory<CollisionShape*, Util::StringIdentifier> shapeFactory;
+	public:
+		template<typename ...Args>
+		Util::Reference<CollisionShape> createShape(const Util::StringIdentifier& id, Args... args) { return shapeFactory.create(id, args...);	}
 		
+		Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb);
+		Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere& s);
+		Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes);
+
 
 		// constraints
 		virtual void addConstraint_p2p(Node& nodeA, const Geometry::Vec3& pivotLocalA, Node& nodeB,const Geometry::Vec3& pivotLocalB)= 0;

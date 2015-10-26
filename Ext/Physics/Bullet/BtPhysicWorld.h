@@ -2,8 +2,9 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2015 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2015 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
+	Copyright (C) 2015 Sascha Brandt <myeti@mail.upb.de>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -94,9 +95,9 @@ class BtPhysicWorld : public PhysicWorld{
 		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
 		
 		// collision shapes
-		Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb)override;
-		Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere&)override;
-		Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes)override;
+		//Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb)override;
+		//Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere&)override;
+		//Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes)override;
 
 		// constraints		
 		void addConstraint_p2p(Node& nodeA, const Geometry::Vec3& pivotLocalA, Node& nodeB,const Geometry::Vec3& pivotLocalB) override;

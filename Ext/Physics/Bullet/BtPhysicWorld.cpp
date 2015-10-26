@@ -2,8 +2,9 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2015 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2015 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
+	Copyright (C) 2015 Sascha Brandt <myeti@mail.upb.de>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -65,6 +66,11 @@ namespace MinSG {
 namespace Physics {
 
 
+
+// --------- Collision shape factories
+CollisionShape* _createShape_AABB(const Geometry::Box& aabb);
+CollisionShape* _createShape_Sphere(const Geometry::Sphere& sphere);
+CollisionShape* _createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes);
 
 void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 	if(!physObj.getRigidBody())
@@ -221,6 +227,15 @@ BtPhysicWorld::BtPhysicWorld(){
 		dynamicsWorld->getSolverInfo().m_solverMode |= SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
 	}
 
+	shapeFactory.registerType(SHAPE_AABB, [](const Geometry::Box& aabb) -> CollisionShape* {
+		return _createShape_AABB(aabb);
+	});
+	shapeFactory.registerType(SHAPE_SPHERE, [](const Geometry::Sphere& sphere) -> CollisionShape* {
+		return _createShape_Sphere(sphere);
+	});
+	shapeFactory.registerType(SHAPE_COMPOSED, [](const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes) -> CollisionShape* {
+		return _createShape_Composed(shapes);
+	});
 }
 
 void BtPhysicWorld::createGroundPlane(const Geometry::Plane& plane ){
@@ -613,10 +628,10 @@ void BtPhysicWorld::setAngularVelocity(Node& node,const Geometry::Vec3&v){
 	}
 }
 
-		
+
 // --------- Collision shape factories
 
-Util::Reference<CollisionShape> BtPhysicWorld::createShape_AABB(const Geometry::Box& aabb){
+CollisionShape* _createShape_AABB(const Geometry::Box& aabb){
 	auto shape = new btCompoundShape;
 	btTransform transformation;
 	transformation.setIdentity();
@@ -625,7 +640,7 @@ Util::Reference<CollisionShape> BtPhysicWorld::createShape_AABB(const Geometry::
 	return new BtCollisionShape(shape);
 }
 
-Util::Reference<CollisionShape> BtPhysicWorld::createShape_Sphere(const Geometry::Sphere& sphere){
+CollisionShape* _createShape_Sphere(const Geometry::Sphere& sphere){
 	auto shape = new btCompoundShape;
 	btTransform transformation;
 	transformation.setIdentity();
@@ -633,9 +648,9 @@ Util::Reference<CollisionShape> BtPhysicWorld::createShape_Sphere(const Geometry
 	shape->addChildShape( transformation,  new btSphereShape(sphere.getRadius()) );
 	return new BtCollisionShape(shape);
 }
-Util::Reference<CollisionShape> BtPhysicWorld::createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes){
+CollisionShape* _createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes){
 	auto containerShape = new btCompoundShape;
-	
+
 	std::vector<Util::Reference<CollisionShape>> childShapes;
 	for(const auto& childShapeEntry : shapes){
 		BtCollisionShape* btShape = dynamic_cast<BtCollisionShape*>(childShapeEntry.first.get());
@@ -646,10 +661,8 @@ Util::Reference<CollisionShape> BtPhysicWorld::createShape_Composed(const std::v
 		btTransform transformation(toBtMatrix3x3(childShapeEntry.second.getRotation()),toBtVector3(childShapeEntry.second.getTranslation()) );
 		containerShape->addChildShape( transformation,  btShape->getShape());
 	}
-	
+
 	return new BtCombinedCollisionShape(containerShape,std::move(childShapes));
-
-
 }
 
 ////
