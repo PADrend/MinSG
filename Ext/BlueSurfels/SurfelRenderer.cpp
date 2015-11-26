@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library extension BlueSurfels.
-	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -14,6 +14,8 @@
 #include "../../Core/Nodes/CameraNode.h"
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/RenderingContext/RenderingParameters.h>
+#include <Rendering/Shader/Shader.h>
+#include <Rendering/Shader/Uniform.h>
 #include <Rendering/Mesh/Mesh.h>
 //#include "../../../Geometry/Rect.h"
 //#include "../../Helper/StdNodeVisitors.h"
@@ -106,12 +108,18 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext & context, Node * no
 //		std::cout << "pSize"<<approxProjectedSideLength << "\t#:"<<surfelCount<<"\ts:"<<surfelSize<<"\n";
 	auto& renderingContext = context.getRenderingContext();
 	
+	static Rendering::Uniform enableSurfels("renderSurfels", true);
+	static Rendering::Uniform disableSurfels("renderSurfels", false);
+	
+	renderingContext.setGlobalUniform(enableSurfels);
 	renderingContext.pushAndSetPointParameters( Rendering::PointParameters(std::min(surfelSize,32.0f) ));
 	renderingContext.pushAndSetMatrix_modelToCamera( renderingContext.getMatrix_worldToCamera() );
 	renderingContext.multMatrix_modelToCamera(node->getWorldTransformationMatrix());
 	context.displayMesh(&surfelMesh,	0, surfelCount );
 	renderingContext.popMatrix_modelToCamera();
 	renderingContext.popPointParameters();
+	renderingContext.setGlobalUniform(disableSurfels);
+	
 	return handled ? NodeRendererResult::NODE_HANDLED : NodeRendererResult::PASS_ON;
 }
 
