@@ -21,6 +21,7 @@
 #include <Geometry/Vec3.h>
 #include <Util/References.h>
 #include <Util/Graphics/Color.h>
+#include <Rendering/Mesh/VertexDescription.h>
 
 namespace Util {
 class PixelAccessor;
@@ -37,6 +38,7 @@ class SurfelGenerator{
 		uint32_t maxAbsSurfels;
 		mutable std::unordered_map<std::string,float> benchmarkResults;
 		bool benchmarkingEnabled;
+		Rendering::VertexDescription vertexDescription;
 		
 	public:
 		
@@ -59,12 +61,17 @@ class SurfelGenerator{
 		};
 		
 		
-		SurfelGenerator() : maxAbsSurfels(10000),benchmarkingEnabled(false){}
+		SurfelGenerator() : maxAbsSurfels(10000),benchmarkingEnabled(false){			
+			vertexDescription.appendPosition3D();
+			vertexDescription.appendNormalByte();
+			vertexDescription.appendColorRGBAByte();
+		}
 		uint32_t getMaxAbsSurfels()const			{	return maxAbsSurfels;	}
 		void setMaxAbsSurfels(uint32_t i)			{	maxAbsSurfels = i;	}
 		void setBenchmarkingEnabled(bool b)			{	benchmarkingEnabled = b;	}
 		const std::unordered_map<std::string,float>& getBenchmarkResults()const	{	return benchmarkResults;	}
 		void clearBenchmarkResults()const			{	benchmarkResults.clear();	}
+		void setVertexDescription(const Rendering::VertexDescription& vd);
 	
 		
 		std::vector<Surfel> extractSurfelsFromTextures(	

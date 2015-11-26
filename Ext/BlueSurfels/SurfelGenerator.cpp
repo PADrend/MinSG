@@ -91,12 +91,7 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 
 	
 	// generate the mesh
-	Rendering::VertexDescription vd;
-	vd.appendPosition3D();
-	vd.appendNormalByte();
-	vd.appendColorRGBAByte();
-//	vd.appendColorRGBAFloat();
-	Util::Reference<Rendering::MeshUtils::MeshBuilder> mb = new Rendering::MeshUtils::MeshBuilder(vd);
+	Util::Reference<Rendering::MeshUtils::MeshBuilder> mb = new Rendering::MeshUtils::MeshBuilder(vertexDescription);
 	
 	struct OctreeEntry : public Geometry::Point<Geometry::Vec3f> {
 		size_t surfelId;
@@ -287,6 +282,16 @@ std::pair<Util::Reference<Rendering::Mesh>,float> SurfelGenerator::createSurfels
 	}
 	return std::make_pair(buildBlueSurfels(surfels),relativeSize);
 	
+}
+
+void SurfelGenerator::setVertexDescription(const Rendering::VertexDescription& vd) {
+	if(	!vd.hasAttribute(Rendering::VertexAttributeIds::POSITION) ||
+			!vd.hasAttribute(Rendering::VertexAttributeIds::NORMAL) ||
+			!vd.hasAttribute(Rendering::VertexAttributeIds::COLOR) ) {
+		WARN("SurfelGenerator requires position, normal and color vertex attributes");
+		return;
+	}
+	vertexDescription = vd;
 }
 
 }
