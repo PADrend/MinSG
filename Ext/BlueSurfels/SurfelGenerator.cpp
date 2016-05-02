@@ -15,6 +15,7 @@
 
 #include <Geometry/Point.h>
 #include <Geometry/PointOctree.h>
+#include <Geometry/Plane.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/VertexDescription.h>
 #include <Rendering/Mesh/VertexAttributeAccessors.h>
@@ -271,7 +272,7 @@ std::pair<Util::Reference<Rendering::Mesh>,float> SurfelGenerator::createSurfels
 									Util::PixelAccessor & pos,
 									Util::PixelAccessor & normal,
 									Util::PixelAccessor & color,
-									Util::PixelAccessor & size					
+									Util::PixelAccessor & size
 									)const{
 
 	const auto surfels = extractSurfelsFromTextures(pos,normal,color,size);
@@ -281,7 +282,48 @@ std::pair<Util::Reference<Rendering::Mesh>,float> SurfelGenerator::createSurfels
 		return std::make_pair(new Rendering::Mesh,0.0);
 	}
 	return std::make_pair(buildBlueSurfels(surfels),relativeSize);
+}
+
+float SurfelGenerator::getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour){
+	if(mesh.getVertexCount()<=nThNeighbour)
+		return 0;
 	
+	auto positionAccessor = Rendering::PositionAttributeAccessor::create(mesh.openVertexData(), Rendering::VertexAttributeIds::POSITION);
+	const size_t endIndex = std::min(static_cast<size_t>(mesh.getVertexCount()),prefixLength);
+	
+	
+	struct OctreeEntry : public Geometry::Point<Geometry::Vec3f> {
+		size_t surfelId;
+		OctreeEntry(size_t i,const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), surfelId(i) {}
+	};
+
+	const auto bb = mesh.getBoundingBox();
+	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01,8);
+	
+	std::deque<OctreeEntry> closestNeighbours;
+	for(size_t vIndex = 0; vIndex<endIndex; ++vIndex)
+		octree.insert( OctreeEntry(vIndex, positionAccessor->getPosition(vIndex)) );
+
+	std::vector<float> nThClosestDistances;
+
+	std::vector<float> distances;
+	for(size_t vIndex = 0; vIndex<endIndex; ++vIndex){
+		distances.clear();
+		
+		const auto pos = positionAccessor->getPosition(vIndex);
+	
+		closestNeighbours.clear();
+		octree.getClosestPoints(pos, nThNeighbour+1, closestNeighbours);
+
+		for(const auto& neighbour : closestNeighbours)
+			distances.push_back( neighbour.getPosition().distance( pos ) );
+		
+		std::sort(distances.begin(), distances.end());
+		nThClosestDistances.push_back( distances[nThNeighbour] );
+	}
+
+	std::sort(nThClosestDistances.begin(), nThClosestDistances.end());
+	return nThClosestDistances[ nThClosestDistances.size()*0.5 ];
 }
 
 void SurfelGenerator::setVertexDescription(const Rendering::VertexDescription& vd) {

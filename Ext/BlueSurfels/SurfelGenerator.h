@@ -97,6 +97,8 @@ class SurfelGenerator{
 													Util::PixelAccessor & color,
 													Util::PixelAccessor & size
 													)const;
+		
+		static float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
 };
 
 }
