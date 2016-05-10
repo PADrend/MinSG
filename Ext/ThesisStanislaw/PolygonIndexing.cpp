@@ -12,10 +12,10 @@ namespace ThesisStanislaw{
 
 NodeRendererResult PolygonIndexingState::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
   if(updatePolygonIDs){
-    std::cout << "Start traversal" << std::endl;
+    if(outputDebug) std::cout << "Start Indexing Polygons" << std::endl;
     node->traverse(visitor);
     updatePolygonIDs = false;
-    std::cout << "End traversal"  << std::endl;
+    if(outputDebug) std::cout << "End Indexing Polygons"  << std::endl;
   }
   return NodeRendererResult::PASS_ON;
 }
