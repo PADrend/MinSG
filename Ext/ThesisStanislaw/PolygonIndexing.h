@@ -5,7 +5,6 @@
 #define MINSG_EXT_THESISSTANISLAW_POLYGONINDEXING_H
 
 #include "../../Core/States/NodeRendererState.h"
-#include "../../Helper/NodeRendererRegistrationHolder.h"
 #include "../../Core/Nodes/GeometryNode.h"
 #include "../../../Rendering/Mesh/Mesh.h"
 #include "../../../Rendering/Mesh/MeshVertexData.h"
