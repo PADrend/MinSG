@@ -33,12 +33,14 @@ LightPatchRenderer::LightPatchRenderer() :
   _tboBindParameters.setReadOperations(true);
   _tboBindParameters.setWriteOperations(true);
   
+  //// Debug output ////
   std::vector<Rendering::Uniform> uniforms;
   _lightPatchShader->getActiveUniforms(uniforms);
   
   for(auto& uniform : uniforms){
     std::cout << uniform.toString() << std::endl << std::endl;
   }
+  //////////////////////
 }
 
 void LightPatchRenderer::initializeFBO(Rendering::RenderingContext& rc){
