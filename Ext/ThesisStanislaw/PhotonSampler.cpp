@@ -54,7 +54,6 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
 NodeRendererResult PhotonSampler::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
   auto& rc = context.getRenderingContext();
   
-  
   if(_fboChanged){
     if(!initializeFBO(rc)){
       WARN("Could not initialize FBO for PhotonSampler!");

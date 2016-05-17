@@ -58,11 +58,11 @@ void LightPatchRenderer::initializeFBO(Rendering::RenderingContext& rc){
   }
   
   rc.popFBO();
+  std::cout << "init FBO" << std::endl;
 }
 
 void LightPatchRenderer::allocateLightPatchTBO(){
-  if(!_approxScene) return;
-  
+
   auto NONE = Util::PixelFormat::NONE;
   
   auto pf = Util::PixelFormat(Util::TypeConstant::UINT32, 0, NONE, NONE, NONE);
@@ -75,9 +75,12 @@ void LightPatchRenderer::allocateLightPatchTBO(){
   
   _lightPatchTBO = new Rendering::Texture(_tboFormat);
   _tboBindParameters.setTexture(_lightPatchTBO.get());
+  std::cout << "Allocated TBO" << std::endl;
 }
 
 NodeRendererResult LightPatchRenderer::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
+  if(!_approxScene) return NodeRendererResult::PASS_ON;
+  
   auto& rc = context.getRenderingContext();
   
   if(_fboChanged){ 
@@ -90,17 +93,16 @@ NodeRendererResult LightPatchRenderer::displayNode(FrameContext & context, Node 
   rc.pushAndSetBoundImage(0, _tboBindParameters);
   
   for(uint32_t i = 0; i < _spotLights.size(); i++){
-   auto cameraNode = computeLightMatrix(_spotLights[i]);
+    auto cameraNode = computeLightMatrix(_spotLights[i]);
    
-   if(cameraNode.get() != nullptr){
-     context.pushAndSetCamera(cameraNode.get());
-     rc.clearDepth(1.0f);
-     _lightPatchShader->setUniform(rc, Rendering::Uniform("lightID", static_cast<int32_t>(1<<i))); // ID of light is its index in the vector
-     
-     _approxScene->display(context, rp);
-   }
-   
-   context.popCamera();
+    if(cameraNode.get() != nullptr){
+      std::cout << "Render Spotlight " << i << std::endl;
+      context.pushAndSetCamera(cameraNode.get());
+      rc.clearDepth(1.0f);
+      _lightPatchShader->setUniform(rc, Rendering::Uniform("lightID", static_cast<int32_t>(1<<i))); // ID of light is its index in the vector
+      _approxScene->display(context, rp);
+      context.popCamera();
+    }
   }
   
   rc.popShader();
@@ -129,81 +131,27 @@ void LightPatchRenderer::setSamplingResolution(uint32_t width, uint32_t height){
 
 void LightPatchRenderer::setSpotLights(std::vector<LightNode*> lights){
   _spotLights = lights;
+  std::cout << "Spotlights number " << lights.size() << std::endl;
 }
 
 Util::Reference<CameraNode> LightPatchRenderer::computeLightMatrix(const MinSG::LightNode* light){
-  const Geometry::Vec3f camPos = light->getWorldOrigin();
-  const Geometry::Box & box = _approxScene->getWorldBB();
-  const Geometry::Vec3f boxCenter = box.getCenter();
-
-  // ##### Fit bounding box into frustum #####
-  if(box.contains(camPos)) {
-    return nullptr;
-  }
-
-  const Geometry::Vec3f camDir = (boxCenter - camPos).getNormalized();
-
-  // Determine the normal of a box side to which the viewing direction is "most" orthogonal.
-  Geometry::Vec3 orthoNormal = Geometry::Helper::getNormal(static_cast<Geometry::side_t>(0));
-  float minAbsCosAngle = std::abs(orthoNormal.dot(camDir));
-  for (uint_fast8_t s = 1; s < 6; ++s) {
-    const Geometry::side_t side = static_cast<Geometry::side_t>(s);
-
-    const Geometry::Vec3 & normal = Geometry::Helper::getNormal(side);
-    const float absCosAngle = std::abs(normal.dot(camDir));
-
-    if(absCosAngle < minAbsCosAngle) {
-      minAbsCosAngle = absCosAngle;
-      orthoNormal = normal;
-    }
-  }
-
-  // Use "best" normal vector for up vector calculation.
-  const Geometry::Vec3f camRight = camDir.cross(orthoNormal).normalize();
-  const Geometry::Vec3f camUp = camRight.cross(camDir).normalize();
-
   Util::Reference<CameraNode> camera = new CameraNode;
-  camera->setRelTransformation(Geometry::SRT(camPos, -camDir, camUp));
 
-  // Calculate minimum and maximum distance of all bounding box corners to camera.
-  const Geometry::Plane camPlane(camPos, camDir);
-  float minDistance = std::numeric_limits<float>::max();
-  float maxDistance = 0.0f;
-  // Calculate maximum angles in four directions between camera direction and all bounding box corners.
-  float leftAngle = 0.0f;
-  float rightAngle = 0.0f;
-  float topAngle = 0.0f;
-  float bottomAngle = 0.0f;
-  const Geometry::Matrix4x4f cameraMatrix = camera->getWorldTransformationMatrix().inverse();
-  for (uint_fast8_t c = 0; c < 8; ++c) {
-    const Geometry::corner_t corner = static_cast<Geometry::corner_t>(c);
-    const Geometry::Vec3f cornerPos = box.getCorner(corner);
-
-    const float distance = camPlane.planeTest(cornerPos);
-    minDistance = std::min(minDistance, distance);
-    maxDistance = std::max(maxDistance, distance);
-
-    const Geometry::Vec3f camSpacePoint = cameraMatrix.transformPosition(cornerPos);
-    const float horizontalAngle = Geometry::Convert::radToDeg(std::atan(camSpacePoint.getX() / -camSpacePoint.getZ()));
-    const float verticalAngle = Geometry::Convert::radToDeg(std::atan(-camSpacePoint.getY() / -camSpacePoint.getZ()));
-    if(camSpacePoint.getX() < 0.0f) {
-      leftAngle = std::min(leftAngle, horizontalAngle);
-    } else {
-      rightAngle = std::max(rightAngle, horizontalAngle);
-    }
-    if(camSpacePoint.getY() < 0.0f) {
-      topAngle = std::max(bottomAngle, verticalAngle);
-    } else {
-      bottomAngle = std::min(topAngle, verticalAngle);
-    }
-  }
-
-  // Make sure that the near plane is not behind the camera.
-  minDistance = std::max(0.001f, minDistance);
+  float minDistance = 0.1f;
+  float maxDistance = 1000.f;
+  
+  float halfCutoff = light->getCutoff()/2.f;
+  
+  camera->setWorldOrigin(light->getWorldOrigin());
+  camera->setWorldTransformation(light->getWorldTransformationSRT());
 
   camera->setViewport(Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight));
   camera->setNearFar(minDistance, maxDistance);
-  camera->setAngles(leftAngle, rightAngle, bottomAngle, topAngle);
+  camera->setAngles(halfCutoff, halfCutoff, halfCutoff, halfCutoff);
+  
+  //camera->setRelTransformation(light->getRelTransformationMatrix());
+  //camera->setRelOrigin(light->getRelOrigin());
+  //camera->setRelScaling(light->getRelScaling());
   
   return camera;
 }
