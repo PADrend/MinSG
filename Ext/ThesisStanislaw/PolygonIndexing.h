@@ -134,6 +134,7 @@ public:
    * This function has to be implemented by subclasses.
    */
   NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+  State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
   /**
    * Create a new node renderer that treats the given channel.

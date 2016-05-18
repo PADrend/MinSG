@@ -1,7 +1,9 @@
 #ifdef MINSG_EXT_THESISSTANISLAW
 
-#ifndef MINSG_EXT_THESISSTANISLAW_PHOTONSAMPLER_H
-#define MINSG_EXT_THESISSTANISLAW_PHOTONSAMPLER_H
+#ifndef MINSG_EXT_THESISSTANISLAW_APPROXSCENEDEBUG_H
+#define MINSG_EXT_THESISSTANISLAW_APPROXSCENEDEBUG_H
+
+#include "LightPatchRenderer.h"
 
 #include <Util/ReferenceCounter.h>
 
@@ -21,32 +23,16 @@
 namespace MinSG{
 namespace ThesisStanislaw{
   
-class PhotonSampler : public NodeRendererState {
-  PROVIDES_TYPE_NAME(PhotonSampler)
-public:
-  enum class Sampling : uint8_t {
-    POISSON
-  };
-  
+class ApproxSceneDebug : public NodeRendererState {
+  PROVIDES_TYPE_NAME(ApproxSceneDebug)
 private:
   static const std::string             _shaderPath;
-  
-  Util::Reference<Rendering::FBO>      _fbo;
-  Util::Reference<Rendering::Texture>  _depthTexture, _posTexture, _normalTexture;
-  bool                                 _fboChanged;
-  
-  CameraNode*  _camera;
   
   Util::Reference<Rendering::Shader>   _shader;
   
   Node*                                _approxScene;
   
-  std::vector<Geometry::Vec2f>    _samplePoints;
-  uint32_t                        _photonNumber;
-  Sampling                        _samplingStrategy;
-  
-  
-  bool initializeFBO(Rendering::RenderingContext& rc);
+  LightPatchRenderer*                  _renderer;
 public:
   /**
    * Node renderer function.
@@ -61,21 +47,15 @@ public:
    * 
    * @param newChannel Rendering channel identifier
    */
-  PhotonSampler();
+  ApproxSceneDebug();
 
-  ~PhotonSampler();
+  ~ApproxSceneDebug();
 
-  PhotonSampler * clone() const override;
+  ApproxSceneDebug * clone() const override;
   
   void setApproximatedScene(Node* root);
-  void setPhotonNumber(uint32_t number);
-  void setSamplingStrategy(uint8_t type);
-  void setCamera(CameraNode* camera);
-  void resample();
+  void setLightPatchRenderer(LightPatchRenderer* renderer);
   
-  Util::Reference<Rendering::Texture> getPosTexture();
-  Util::Reference<Rendering::Texture> getNormalTexture();
-
 };
 
 }
@@ -83,5 +63,5 @@ public:
 
 
 
-#endif // MINSG_EXT_THESISSTANISLAW_PHOTONSAMPLER_H
+#endif // MINSG_EXT_THESISSTANISLAW_ApproxSceneDebug_H
 #endif // MINSG_EXT_THESISSTANISLAW

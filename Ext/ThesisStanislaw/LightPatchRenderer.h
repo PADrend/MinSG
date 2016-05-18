@@ -51,6 +51,7 @@ public:
    * This function has to be implemented by subclasses.
    */
   NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+  State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
   /**
    * Create a new node renderer that treats the given channel.
@@ -67,6 +68,7 @@ public:
   void setLightSources();
   void setSamplingResolution(uint32_t width, uint32_t height);
   void setSpotLights(std::vector<LightNode*> lights);
+  Rendering::ImageBindParameters& getTBOBindParameters();
   
 };
 

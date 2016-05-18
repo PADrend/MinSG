@@ -4,13 +4,15 @@
 
 #include "../../Core/FrameContext.h"
 
+#include "../../../Rendering/Shader/Uniform.h"
+
 #include "SamplingPatterns/PoissonGenerator.h"
 
 
 namespace MinSG{
 namespace ThesisStanislaw{
   
-const std::string PhotonSampler::_shaderPath = "plugins/Effects/resources/PP_Effects";
+const std::string PhotonSampler::_shaderPath = "plugins/Effects/resources/PP_Effects/";
   
 PhotonSampler::PhotonSampler() :
   NodeRendererState(FrameContext::DEFAULT_CHANNEL),
@@ -51,13 +53,13 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
   return true;
 }
 
-NodeRendererResult PhotonSampler::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
+State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
   auto& rc = context.getRenderingContext();
   
   if(_fboChanged){
     if(!initializeFBO(rc)){
       WARN("Could not initialize FBO for PhotonSampler!");
-      return NodeRendererResult::PASS_ON;
+      return State::stateResult_t::STATE_SKIPPED;
     }
     _fboChanged = false;
   }
@@ -68,7 +70,9 @@ NodeRendererResult PhotonSampler::displayNode(FrameContext & context, Node * nod
   
   if(_camera != nullptr){
     context.pushAndSetCamera(_camera);
+    _shader->setUniform(rc, Rendering::Uniform("sg_useMaterials", static_cast<bool>(false)));
     rc.clearDepth(1.0f);
+    rc.clearColor(Util::Color4f(0.f, 0.f, 0.f));
 
     _approxScene->display(context, rp);
   }
@@ -77,7 +81,17 @@ NodeRendererResult PhotonSampler::displayNode(FrameContext & context, Node * nod
   
   rc.popShader();
   rc.popFBO();
+  
+  auto width = _camera->getWidth();
+  auto height = _camera->getHeight();
+  
+  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
 
+  //return State::stateResult_t::STATE_OK;
+  return State::stateResult_t::STATE_SKIP_RENDERING;
+}
+
+NodeRendererResult PhotonSampler::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
   return NodeRendererResult::PASS_ON;
 }
 

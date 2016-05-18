@@ -3,6 +3,7 @@
 #include "LightPatchRenderer.h"
 
 #include "../../Core/FrameContext.h"
+#include "../../Core/States/State.h"
 #include "../../Helper/StdNodeVisitors.h"
 
 #include "../../../Rendering/Texture/TextureType.h"
@@ -78,8 +79,8 @@ void LightPatchRenderer::allocateLightPatchTBO(){
   std::cout << "Allocated TBO" << std::endl;
 }
 
-NodeRendererResult LightPatchRenderer::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
-  if(!_approxScene) return NodeRendererResult::PASS_ON;
+State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
+  if(!_approxScene) return State::stateResult_t::STATE_SKIPPED;
   
   auto& rc = context.getRenderingContext();
   
@@ -96,7 +97,6 @@ NodeRendererResult LightPatchRenderer::displayNode(FrameContext & context, Node 
     auto cameraNode = computeLightMatrix(_spotLights[i]);
    
     if(cameraNode.get() != nullptr){
-      std::cout << "Render Spotlight " << i << std::endl;
       context.pushAndSetCamera(cameraNode.get());
       rc.clearDepth(1.0f);
       _lightPatchShader->setUniform(rc, Rendering::Uniform("lightID", static_cast<int32_t>(1<<i))); // ID of light is its index in the vector
@@ -109,6 +109,10 @@ NodeRendererResult LightPatchRenderer::displayNode(FrameContext & context, Node 
   rc.popBoundImage(0);
   rc.popFBO();
   
+  return State::stateResult_t::STATE_OK;
+}
+
+NodeRendererResult LightPatchRenderer::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
   return NodeRendererResult::PASS_ON;
 }
 
@@ -131,7 +135,10 @@ void LightPatchRenderer::setSamplingResolution(uint32_t width, uint32_t height){
 
 void LightPatchRenderer::setSpotLights(std::vector<LightNode*> lights){
   _spotLights = lights;
-  std::cout << "Spotlights number " << lights.size() << std::endl;
+}
+
+Rendering::ImageBindParameters& LightPatchRenderer::getTBOBindParameters(){
+  return _tboBindParameters;
 }
 
 Util::Reference<CameraNode> LightPatchRenderer::computeLightMatrix(const MinSG::LightNode* light){
