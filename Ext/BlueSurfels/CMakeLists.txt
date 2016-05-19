@@ -10,6 +10,7 @@ minsg_add_sources(
 	SurfelAnalysis.cpp
 	SurfelGenerator.cpp
 	SurfelRenderer.cpp
+	SurfelRenderer2.cpp
 	StreamedSurfelGenerator.cpp
 )
 

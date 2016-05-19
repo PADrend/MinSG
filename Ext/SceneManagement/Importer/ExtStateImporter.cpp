@@ -42,6 +42,7 @@
 
 #ifdef MINSG_EXT_BLUE_SURFELS
 #include "../../BlueSurfels/SurfelRenderer.h"
+#include "../../BlueSurfels/SurfelRenderer2.h"
 #endif // MINSG_EXT_BLUE_SURFELS
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
@@ -92,6 +93,19 @@ static bool importSurfelRenderer(ImportContext & ctxt, const std::string & type,
 	renderer->setMaxSideLength(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_SIZE, 200.0f));
 	renderer->setMinSideLength(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MIN_SIZE, 100.0f));
 	renderer->setSizeFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, 2.0f));
+	
+	ImporterTools::finalizeState(ctxt, renderer.get(), d);
+	parent->addState(renderer.get());
+	return true;
+}
+static bool importSurfelRenderer2(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parent) {
+	if(type != Consts::STATE_TYPE_SURFEL_RENDERER2) 
+		return false;
+	
+	Util::Reference<BlueSurfels::SurfelRenderer2> renderer = new BlueSurfels::SurfelRenderer2;
+	renderer->setCountFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, 1.0f));
+	renderer->setSizeFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, 2.0f));
+	renderer->setMaxSurfelSize(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, 32.0f));
 	
 	ImporterTools::finalizeState(ctxt, renderer.get(), d);
 	parent->addState(renderer.get());
@@ -373,6 +387,7 @@ void initExtStateImporter() {
 
 #ifdef MINSG_EXT_BLUE_SURFELS
 	ImporterTools::registerStateImporter(&importSurfelRenderer);
+	ImporterTools::registerStateImporter(&importSurfelRenderer2);
 #endif
 
 #ifdef MINSG_EXT_COLORCUBES
