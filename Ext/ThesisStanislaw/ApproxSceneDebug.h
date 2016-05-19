@@ -35,6 +35,7 @@ private:
   LightPatchRenderer*                  _renderer;
 public:
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+  void doDisableState(FrameContext & context,Node *, const RenderParam & rp) override;
 
   ApproxSceneDebug();
 

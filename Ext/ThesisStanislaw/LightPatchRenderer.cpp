@@ -144,8 +144,12 @@ Util::Reference<CameraNode> LightPatchRenderer::computeLightMatrix(const MinSG::
   
   float halfCutoff = light->getCutoff()/2.f;
   
-  camera->setWorldOrigin(light->getWorldOrigin());
-  camera->setWorldTransformation(light->getWorldTransformationSRT());
+  //Doesn't work properly!
+  //camera->setWorldOrigin(light->getWorldOrigin());
+  //camera->setWorldTransformation(light->getWorldTransformationSRT());
+  
+  //Doesn't work properly!
+  camera->setRelTransformation(light->getRelTransformationMatrix());
 
   camera->setViewport(Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight));
   camera->setNearFar(minDistance, maxDistance);

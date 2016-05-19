@@ -21,11 +21,13 @@ State::stateResult_t ApproxSceneDebug::doEnableState(FrameContext & context, Nod
   
   rc.pushAndSetShader(_shader.get());
   if(_renderer) rc.pushAndSetBoundImage(0, _renderer->getTBOBindParameters());
-  _approxScene->display(context, rp);
+  return State::stateResult_t::STATE_OK;
+}
+
+void ApproxSceneDebug::doDisableState(FrameContext & context, Node *, const RenderParam & /*rp*/) {
+  auto& rc = context.getRenderingContext();
   if(_renderer) rc.popBoundImage(0);
   rc.popShader();
-
-  return State::stateResult_t::STATE_SKIP_RENDERING;
 }
 
 void ApproxSceneDebug::setApproximatedScene(Node* root){
