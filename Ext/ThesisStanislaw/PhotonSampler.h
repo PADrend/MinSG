@@ -8,7 +8,7 @@
 #include "../../Core/Nodes/Node.h"
 #include "../../Core/Nodes/LightNode.h"
 #include "../../Core/Nodes/CameraNode.h"
-#include "../../Core/States/NodeRendererState.h"
+#include "../../Core/States/State.h"
 
 
 #include "../../../Rendering/RenderingContext/RenderingContext.h"
@@ -21,7 +21,7 @@
 namespace MinSG{
 namespace ThesisStanislaw{
   
-class PhotonSampler : public NodeRendererState {
+class PhotonSampler : public State {
   PROVIDES_TYPE_NAME(PhotonSampler)
 public:
   enum class Sampling : uint8_t {
@@ -48,19 +48,9 @@ private:
   
   bool initializeFBO(Rendering::RenderingContext& rc);
 public:
-  /**
-   * Node renderer function.
-   * This function is registered at the configured channel when the state is activated.
-   * This function has to be implemented by subclasses.
-   */
-  NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-  /**
-   * Create a new node renderer that treats the given channel.
-   * 
-   * @param newChannel Rendering channel identifier
-   */
   PhotonSampler();
 
   ~PhotonSampler();

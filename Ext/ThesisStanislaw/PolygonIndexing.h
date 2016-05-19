@@ -4,7 +4,7 @@
 #ifndef MINSG_EXT_THESISSTANISLAW_POLYGONINDEXING_H
 #define MINSG_EXT_THESISSTANISLAW_POLYGONINDEXING_H
 
-#include "../../Core/States/NodeRendererState.h"
+#include "../../Core/States/State.h"
 #include "../../Core/Nodes/GeometryNode.h"
 #include "../../../Rendering/Mesh/Mesh.h"
 #include "../../../Rendering/Mesh/MeshVertexData.h"
@@ -25,7 +25,7 @@ class RenderParam;
 
 namespace ThesisStanislaw {
   
-class PolygonIndexingState : public NodeRendererState {
+class PolygonIndexingState : public State {
   PROVIDES_TYPE_NAME(PolygonIndexingState)
   
   struct IndexingVisitor : public NodeVisitor {
@@ -128,19 +128,8 @@ private:
   IndexingVisitor visitor;
   
 public:
-  /**
-   * Node renderer function.
-   * This function is registered at the configured channel when the state is activated.
-   * This function has to be implemented by subclasses.
-   */
-  NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-  /**
-   * Create a new node renderer that treats the given channel.
-   * 
-   * @param newChannel Rendering channel identifier
-   */
   PolygonIndexingState();
 
   ~PolygonIndexingState();

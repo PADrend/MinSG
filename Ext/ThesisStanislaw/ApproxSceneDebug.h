@@ -10,7 +10,7 @@
 #include "../../Core/Nodes/Node.h"
 #include "../../Core/Nodes/LightNode.h"
 #include "../../Core/Nodes/CameraNode.h"
-#include "../../Core/States/NodeRendererState.h"
+#include "../../Core/States/State.h"
 
 
 #include "../../../Rendering/RenderingContext/RenderingContext.h"
@@ -23,7 +23,7 @@
 namespace MinSG{
 namespace ThesisStanislaw{
   
-class ApproxSceneDebug : public NodeRendererState {
+class ApproxSceneDebug : public State {
   PROVIDES_TYPE_NAME(ApproxSceneDebug)
 private:
   static const std::string             _shaderPath;
@@ -34,19 +34,8 @@ private:
   
   LightPatchRenderer*                  _renderer;
 public:
-  /**
-   * Node renderer function.
-   * This function is registered at the configured channel when the state is activated.
-   * This function has to be implemented by subclasses.
-   */
-  NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-  /**
-   * Create a new node renderer that treats the given channel.
-   * 
-   * @param newChannel Rendering channel identifier
-   */
   ApproxSceneDebug();
 
   ~ApproxSceneDebug();

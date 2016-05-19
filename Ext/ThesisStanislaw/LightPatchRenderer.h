@@ -8,7 +8,7 @@
 #include "../../Core/Nodes/Node.h"
 #include "../../Core/Nodes/LightNode.h"
 #include "../../Core/Nodes/CameraNode.h"
-#include "../../Core/States/NodeRendererState.h"
+#include "../../Core/States/State.h"
 
 #include "../../../Rendering/Shader/Shader.h"
 #include "../../../Rendering/Texture/Texture.h"
@@ -21,7 +21,7 @@
 namespace MinSG{
 namespace ThesisStanislaw{
 
-class LightPatchRenderer : public NodeRendererState {
+class LightPatchRenderer : public State {
   PROVIDES_TYPE_NAME(LightPatchRenderer)
 private:
   static const std::string _shaderPath;
@@ -45,19 +45,9 @@ private:
   void initializeFBO(Rendering::RenderingContext& rc);
   Util::Reference<CameraNode> computeLightMatrix(const LightNode* light);
 public:
-  /**
-   * Node renderer function.
-   * This function is registered at the configured channel when the state is activated.
-   * This function has to be implemented by subclasses.
-   */
-  NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-  /**
-   * Create a new node renderer that treats the given channel.
-   * 
-   * @param newChannel Rendering channel identifier
-   */
   LightPatchRenderer();
 
   ~LightPatchRenderer();

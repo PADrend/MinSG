@@ -10,7 +10,7 @@ namespace ThesisStanislaw{
 const std::string ApproxSceneDebug::_shaderPath = "ThesisStanislaw/shader/";
   
 ApproxSceneDebug::ApproxSceneDebug() :
-  NodeRendererState(FrameContext::DEFAULT_CHANNEL),
+  State(),
   _shader(nullptr), _approxScene(nullptr), _renderer(nullptr)
 {
   _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "debugApproxScene.vs"), Util::FileName(_shaderPath + "debugApproxScene.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
@@ -26,10 +26,6 @@ State::stateResult_t ApproxSceneDebug::doEnableState(FrameContext & context, Nod
   rc.popShader();
 
   return State::stateResult_t::STATE_SKIP_RENDERING;
-}
-
-NodeRendererResult ApproxSceneDebug::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
-  return NodeRendererResult::PASS_ON;
 }
 
 void ApproxSceneDebug::setApproximatedScene(Node* root){

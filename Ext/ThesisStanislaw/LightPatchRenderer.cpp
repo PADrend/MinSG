@@ -21,8 +21,7 @@ namespace ThesisStanislaw{
   
 const std::string LightPatchRenderer::_shaderPath = "ThesisStanislaw/shader/";
   
-LightPatchRenderer::LightPatchRenderer() : 
-  NodeRendererState(FrameContext::DEFAULT_CHANNEL),
+LightPatchRenderer::LightPatchRenderer() : State(),
   _lightPatchFBO(nullptr), _samplingWidth(256), _samplingHeight(256), _fboChanged(true),
   _lightPatchTBO(nullptr), _lightPatchShader(nullptr), _approxScene(nullptr)
 {
@@ -110,10 +109,6 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
   rc.popFBO();
   
   return State::stateResult_t::STATE_OK;
-}
-
-NodeRendererResult LightPatchRenderer::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
-  return NodeRendererResult::PASS_ON;
 }
 
 LightPatchRenderer * LightPatchRenderer::clone() const {

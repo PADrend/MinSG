@@ -20,15 +20,11 @@ State::stateResult_t PolygonIndexingState::doEnableState(FrameContext & context,
   return State::stateResult_t::STATE_OK;
 }
 
-NodeRendererResult PolygonIndexingState::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
-  return NodeRendererResult::PASS_ON;
-}
-
 PolygonIndexingState * PolygonIndexingState::clone() const {
 	return new PolygonIndexingState(*this);
 }
 
-PolygonIndexingState::PolygonIndexingState() : NodeRendererState(FrameContext::DEFAULT_CHANNEL), updatePolygonIDs(true) {}
+PolygonIndexingState::PolygonIndexingState() : State(), updatePolygonIDs(true) {}
 
 PolygonIndexingState::~PolygonIndexingState(){}
 

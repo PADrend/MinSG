@@ -15,7 +15,7 @@ namespace ThesisStanislaw{
 const std::string PhotonSampler::_shaderPath = "plugins/Effects/resources/PP_Effects/";
   
 PhotonSampler::PhotonSampler() :
-  NodeRendererState(FrameContext::DEFAULT_CHANNEL),
+  State(),
   _fbo(nullptr), _depthTexture(nullptr), _posTexture(nullptr), _normalTexture(nullptr),
   _fboChanged(true), _camera(nullptr), _shader(nullptr), _approxScene(nullptr), _photonNumber(100)
 {
@@ -70,13 +70,13 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   
   if(_camera != nullptr){
     context.pushAndSetCamera(_camera);
-    _shader->setUniform(rc, Rendering::Uniform("sg_useMaterials", static_cast<bool>(false)));
+    _shader->setUniform(rc, Rendering::Uniform("sg_useMaterials", false));
     rc.clearDepth(1.0f);
     rc.clearColor(Util::Color4f(0.f, 0.f, 0.f));
 
     _approxScene->display(context, rp);
   }
-
+  
   context.popCamera();
   
   rc.popShader();
@@ -84,15 +84,10 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   
   auto width = _camera->getWidth();
   auto height = _camera->getHeight();
-  
   Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
 
   //return State::stateResult_t::STATE_OK;
   return State::stateResult_t::STATE_SKIP_RENDERING;
-}
-
-NodeRendererResult PhotonSampler::displayNode(FrameContext & context, Node * node, const RenderParam & rp){
-  return NodeRendererResult::PASS_ON;
 }
 
 void PhotonSampler::setApproximatedScene(Node* root){
