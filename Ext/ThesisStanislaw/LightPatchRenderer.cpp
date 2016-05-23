@@ -1,5 +1,8 @@
 #ifdef MINSG_EXT_THESISSTANISLAW
 
+#define LIB_GL
+#define LIB_GLEW
+
 #include "LightPatchRenderer.h"
 
 #include "../../Core/FrameContext.h"
@@ -14,7 +17,8 @@
 
 #include "../../../Util/Graphics/PixelFormat.h"
 #include "../../../Util/TypeConstant.h"
-
+#include "../../../Rendering/GLHeader.h"
+#include "../../../Rendering/BufferObject.h"
 
 namespace MinSG{
 namespace ThesisStanislaw{
@@ -23,7 +27,7 @@ const std::string LightPatchRenderer::_shaderPath = "ThesisStanislaw/shader/";
   
 LightPatchRenderer::LightPatchRenderer() : State(),
   _lightPatchFBO(nullptr), _samplingWidth(256), _samplingHeight(256), _fboChanged(true),
-  _lightPatchTBO(nullptr), _lightPatchShader(nullptr), _approxScene(nullptr)
+  _lightPatchTBO(nullptr), _lightPatchShader(nullptr), _approxScene(nullptr), _camera(nullptr)
 {
   _lightPatchShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "lightPatchEstimation.vs"), Util::FileName(_shaderPath + "lightPatchEstimation.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
   
@@ -34,12 +38,12 @@ LightPatchRenderer::LightPatchRenderer() : State(),
   _tboBindParameters.setWriteOperations(true);
   
   //// Debug output ////
-  std::vector<Rendering::Uniform> uniforms;
-  _lightPatchShader->getActiveUniforms(uniforms);
-  
-  for(auto& uniform : uniforms){
-    std::cout << uniform.toString() << std::endl << std::endl;
-  }
+//  std::vector<Rendering::Uniform> uniforms;
+//  _lightPatchShader->getActiveUniforms(uniforms);
+//  
+//  for(auto& uniform : uniforms){
+//    std::cout << uniform.toString() << std::endl << std::endl;
+//  }
   //////////////////////
 }
 
@@ -47,6 +51,8 @@ void LightPatchRenderer::initializeFBO(Rendering::RenderingContext& rc){
   _lightPatchFBO = new Rendering::FBO;
   _depthTextureFBO = Rendering::TextureUtils::createDepthTexture(_samplingWidth, _samplingHeight);
   
+  _normalTexture = Rendering::TextureUtils::createHDRTexture(_samplingWidth, _samplingHeight, false);
+  _lightPatchFBO->attachColorTexture(rc, _normalTexture.get(), 0);
   rc.pushAndSetFBO(_lightPatchFBO.get());
   
   _lightPatchFBO->attachDepthTexture(rc, _depthTextureFBO.get());
@@ -72,10 +78,11 @@ void LightPatchRenderer::allocateLightPatchTBO(){
   _tboFormat.sizeX =  countTriangles(_approxScene);
   _tboFormat.linearMinFilter = _tboFormat.linearMagFilter = false;
   _tboFormat.pixelFormat = glpf;
+  _tboFormat.glTextureType = GL_TEXTURE_BUFFER;
   
   _lightPatchTBO = new Rendering::Texture(_tboFormat);
   _tboBindParameters.setTexture(_lightPatchTBO.get());
-  std::cout << "Allocated TBO" << std::endl;
+  std::cout << "Allocated TBO with size " << _lightPatchTBO->getDataSize() <<" for " << _tboFormat.sizeX << " Triangles." << std::endl;
 }
 
 State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
@@ -89,12 +96,13 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
   }
   
   rc.pushAndSetFBO(_lightPatchFBO.get());
+  _lightPatchFBO->setDrawBuffers(1);
   rc.pushAndSetShader(_lightPatchShader.get());
-  rc.pushAndSetBoundImage(0, _tboBindParameters);
+  bindTBO(rc);
   
   for(uint32_t i = 0; i < _spotLights.size(); i++){
     auto cameraNode = computeLightMatrix(_spotLights[i]);
-   
+    
     if(cameraNode.get() != nullptr){
       context.pushAndSetCamera(cameraNode.get());
       rc.clearDepth(1.0f);
@@ -105,10 +113,22 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
   }
   
   rc.popShader();
-  rc.popBoundImage(0);
+  unbindTBO(rc);
   rc.popFBO();
   
+//  rc.pushAndSetShader(nullptr);
+//  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
+//  rc.popShader();
+//  return State::stateResult_t::STATE_SKIP_RENDERING;
+  
   return State::stateResult_t::STATE_OK;
+}
+
+void LightPatchRenderer::doDisableState(FrameContext & context,Node *, const RenderParam & rp){
+  // Need to clear the buffer at the end of the frame, not at this point. It's too early here.
+  //auto glID = _lightPatchTBO->getBufferObject()->getGLId();
+  //glClearNamedBufferData(glID, GL_R32UI, GL_RED, GL_UNSIGNED_INT, 0);
+  //std::cout << "Clearing TBO " << GL_MAX_UNIFORM_BLOCK_SIZE <<" "<< glID <<std::endl;
 }
 
 LightPatchRenderer * LightPatchRenderer::clone() const {
@@ -132,10 +152,6 @@ void LightPatchRenderer::setSpotLights(std::vector<LightNode*> lights){
   _spotLights = lights;
 }
 
-Rendering::ImageBindParameters& LightPatchRenderer::getTBOBindParameters(){
-  return _tboBindParameters;
-}
-
 Util::Reference<CameraNode> LightPatchRenderer::computeLightMatrix(const MinSG::LightNode* light){
   Util::Reference<CameraNode> camera = new CameraNode;
 
@@ -144,22 +160,25 @@ Util::Reference<CameraNode> LightPatchRenderer::computeLightMatrix(const MinSG::
   
   float halfCutoff = light->getCutoff()/2.f;
   
-  //Doesn't work properly!
-  //camera->setWorldOrigin(light->getWorldOrigin());
-  //camera->setWorldTransformation(light->getWorldTransformationSRT());
-  
-  //Doesn't work properly!
   camera->setRelTransformation(light->getRelTransformationMatrix());
 
   camera->setViewport(Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight));
   camera->setNearFar(minDistance, maxDistance);
-  camera->setAngles(halfCutoff, halfCutoff, halfCutoff, halfCutoff);
-  
-  //camera->setRelTransformation(light->getRelTransformationMatrix());
-  //camera->setRelOrigin(light->getRelOrigin());
-  //camera->setRelScaling(light->getRelScaling());
-  
+  camera->setAngles(-halfCutoff, halfCutoff, -halfCutoff, halfCutoff);
+
   return camera;
+}
+
+void LightPatchRenderer::bindTBO(Rendering::RenderingContext& rc){
+  rc.pushAndSetBoundImage(0, _tboBindParameters);
+}
+
+void LightPatchRenderer::unbindTBO(Rendering::RenderingContext& rc){
+  rc.popBoundImage(0);
+}
+
+void LightPatchRenderer::setCamera(CameraNode* camera){
+  _camera = camera;
 }
 
 }

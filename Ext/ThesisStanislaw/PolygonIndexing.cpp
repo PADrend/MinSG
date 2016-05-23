@@ -24,7 +24,7 @@ PolygonIndexingState * PolygonIndexingState::clone() const {
 	return new PolygonIndexingState(*this);
 }
 
-PolygonIndexingState::PolygonIndexingState() : State(), updatePolygonIDs(true) {}
+PolygonIndexingState::PolygonIndexingState() : State(), updatePolygonIDs(true), outputDebug(false) {}
 
 PolygonIndexingState::~PolygonIndexingState(){}
 

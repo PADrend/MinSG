@@ -39,14 +39,19 @@ private:
   
   std::vector<LightNode*> _spotLights;
   
-  Node*               _approxScene;
+  Node*                   _approxScene;
+  
+  CameraNode*  _camera;
+  Util::Reference<Rendering::Texture> _normalTexture;
   
   void allocateLightPatchTBO();
   void initializeFBO(Rendering::RenderingContext& rc);
   Util::Reference<CameraNode> computeLightMatrix(const LightNode* light);
+  
 public:
 
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+  void doDisableState(FrameContext & context,Node *, const RenderParam & rp) override;
 
   LightPatchRenderer();
 
@@ -58,8 +63,11 @@ public:
   void setLightSources();
   void setSamplingResolution(uint32_t width, uint32_t height);
   void setSpotLights(std::vector<LightNode*> lights);
-  Rendering::ImageBindParameters& getTBOBindParameters();
   
+  void bindTBO(Rendering::RenderingContext& rc);
+  void unbindTBO(Rendering::RenderingContext& rc);
+  
+  void setCamera(CameraNode* camera);
 };
 
 }

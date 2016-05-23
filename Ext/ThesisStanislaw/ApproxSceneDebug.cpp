@@ -20,13 +20,13 @@ State::stateResult_t ApproxSceneDebug::doEnableState(FrameContext & context, Nod
   auto& rc = context.getRenderingContext();
   
   rc.pushAndSetShader(_shader.get());
-  if(_renderer) rc.pushAndSetBoundImage(0, _renderer->getTBOBindParameters());
+  _renderer->bindTBO(rc);
   return State::stateResult_t::STATE_OK;
 }
 
 void ApproxSceneDebug::doDisableState(FrameContext & context, Node *, const RenderParam & /*rp*/) {
   auto& rc = context.getRenderingContext();
-  if(_renderer) rc.popBoundImage(0);
+  _renderer->unbindTBO(rc);
   rc.popShader();
 }
 
