@@ -3,6 +3,8 @@
 #ifndef MINSG_EXT_THESISSTANISLAW_PHOTONSAMPLER_H
 #define MINSG_EXT_THESISSTANISLAW_PHOTONSAMPLER_H
 
+#include <tuple>
+
 #include <Util/ReferenceCounter.h>
 
 #include "../../Core/Nodes/Node.h"
@@ -47,6 +49,12 @@ private:
   
   
   bool initializeFBO(Rendering::RenderingContext& rc);
+  
+  float distance(std::pair<float, float> p1, std::pair<float, float> p2);
+  std::vector<size_t> getPointsInQuad(std::vector<std::tuple<float, float, size_t>>& Points, float x1, float y1, float x2, float y2);
+  std::pair<size_t, size_t> checkNeighbours(std::vector<std::tuple<float, float, size_t>>& Points, float x1, float y1, float x2, float y2, float offset, size_t x, size_t y, size_t& idxMovingPoint, size_t& idxStayingPoint);
+  std::vector<int> computeSamplingImage(std::vector<std::tuple<float, float, size_t>> Points, size_t size);
+  
 public:
 
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;

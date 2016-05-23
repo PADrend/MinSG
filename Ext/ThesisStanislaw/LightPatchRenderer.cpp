@@ -64,7 +64,6 @@ void LightPatchRenderer::initializeFBO(Rendering::RenderingContext& rc){
   }
   
   rc.popFBO();
-  std::cout << "init FBO" << std::endl;
 }
 
 void LightPatchRenderer::allocateLightPatchTBO(){
