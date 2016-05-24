@@ -51,8 +51,8 @@ private:
   bool initializeFBO(Rendering::RenderingContext& rc);
   
   float distance(std::pair<float, float> p1, std::pair<float, float> p2);
-  std::vector<size_t> getPointsInQuad(std::vector<std::tuple<float, float, size_t>>& Points, float x1, float y1, float x2, float y2);
-  std::pair<size_t, size_t> checkNeighbours(std::vector<std::tuple<float, float, size_t>>& Points, float x1, float y1, float x2, float y2, float offset, size_t x, size_t y, size_t& idxMovingPoint, size_t& idxStayingPoint);
+  std::vector<size_t> getPointsInQuad(const std::vector<std::tuple<float, float, size_t>>& Points, float x1, float y1, float x2, float y2);
+  std::pair<size_t, size_t> checkNeighbours(const std::vector<std::tuple<float, float, size_t>>& Points, const std::vector<std::vector<bool>>& occupiedCells, float x1, float y1, float x2, float y2, float offset, size_t x, size_t y, size_t& idxMovingPoint, size_t& idxStayingPoint);
   std::vector<int> computeSamplingImage(std::vector<std::tuple<float, float, size_t>> Points, size_t size);
   
 public:

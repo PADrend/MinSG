@@ -107,25 +107,30 @@ void PhotonSampler::setSamplingStrategy(uint8_t type){
 }
 
 void PhotonSampler::resample(){
-  switch(_samplingStrategy){
-    case Sampling::POISSON:
-    default:{
-      Sampler::PoissonGenerator::DefaultPRNG PRNG;
-      auto points = Sampler::PoissonGenerator::GeneratePoissonPoints( _photonNumber, PRNG );
-      _samplePoints.clear();
-      for(auto& point : points){
-        _samplePoints.push_back(Geometry::Vec2f(point.x, point.y));
+  std::vector<int> samplingImage;
+  
+  while(samplingImage.size() == 0){
+      
+    switch(_samplingStrategy){
+      case Sampling::POISSON:
+      default:{
+        Sampler::PoissonGenerator::DefaultPRNG PRNG;
+        auto points = Sampler::PoissonGenerator::GeneratePoissonPoints( _photonNumber, PRNG );
+        _samplePoints.clear();
+        for(auto& point : points){
+          _samplePoints.push_back(Geometry::Vec2f(point.x, point.y));
+        }
       }
     }
+    
+    auto imageSize = static_cast<size_t>(std::ceil(std::sqrt(_photonNumber)));
+    std::vector<std::tuple<float, float, size_t>> fPoints;
+    for (size_t idx = 0; idx < _samplePoints.size(); idx++) {
+      fPoints.push_back(std::make_tuple(_samplePoints[idx].x(), _samplePoints[idx].y(), idx));
+    }
+    
+    samplingImage = computeSamplingImage(fPoints, imageSize);
   }
-  
-  auto imageSize = static_cast<size_t>(std::ceil(std::sqrt(_photonNumber)));
-  std::vector<std::tuple<float, float, size_t>> fPoints;
-  for (size_t idx = 0; idx < _samplePoints.size(); idx++) {
-    fPoints.push_back(std::make_tuple(_samplePoints[idx].x(), _samplePoints[idx].y(), idx));
-  }
-  
-  computeSamplingImage(fPoints, imageSize);
 }
 
 void PhotonSampler::setCamera(CameraNode* camera){
@@ -151,7 +156,7 @@ float PhotonSampler::distance(std::pair<float, float> p1, std::pair<float, float
   return static_cast<float>(std::sqrt((p1.first - p2.first) * (p1.first - p2.first) + (p1.second - p2.second) * (p1.second - p2.second)));
 }
 
-std::vector<size_t> PhotonSampler::getPointsInQuad(std::vector<std::tuple<float, float, size_t>>& Points, float x1, float y1, float x2, float y2) {
+std::vector<size_t> PhotonSampler::getPointsInQuad(const std::vector<std::tuple<float, float, size_t>>& Points, float x1, float y1, float x2, float y2) {
   using std::get;
   std::vector<size_t> ret;
 
@@ -165,7 +170,7 @@ std::vector<size_t> PhotonSampler::getPointsInQuad(std::vector<std::tuple<float,
   return ret;
 }
 
-std::pair<size_t, size_t> PhotonSampler::checkNeighbours(std::vector<std::tuple<float, float, size_t>>& Points, float x1, float y1, float x2, float y2, float offset, size_t x, size_t y, size_t& idxMovingPoint, size_t& idxStayingPoint) {
+std::pair<size_t, size_t> PhotonSampler::checkNeighbours(const std::vector<std::tuple<float, float, size_t>>& Points, const std::vector<std::vector<bool>>& occupiedCells, float x1, float y1, float x2, float y2, float offset, size_t x, size_t y, size_t& idxMovingPoint, size_t& idxStayingPoint) {
   using std::get;
   using std::make_pair;
 
@@ -194,7 +199,7 @@ std::pair<size_t, size_t> PhotonSampler::checkNeighbours(std::vector<std::tuple<
   if (x1 - offset >= 0.f && y2 + offset <= 1.f) 
   {
     auto pINq = getPointsInQuad(Points, x1 - offset, y1 + offset, x2 - offset, y2 + offset);
-    if (pINq.size() == 0) {
+    if (pINq.size() == 0 && occupiedCells[x-1][y+1] == false) {
       auto thisDist = distance(make_pair( x1 - offset + (x2 - x1) / 2.f, y1 + offset + (y2 - y1) / 2.f), movingPoint);
       if (thisDist < dist) {
         dist = thisDist;
@@ -212,7 +217,7 @@ std::pair<size_t, size_t> PhotonSampler::checkNeighbours(std::vector<std::tuple<
   if (y2 + offset <= 1.f)
   {
     auto pINq = getPointsInQuad(Points, x1, y1 + offset, x2, y2 + offset);
-    if (pINq.size() == 0) {
+    if (pINq.size() == 0 && occupiedCells[x][y + 1] == false) {
       auto thisDist = distance(make_pair(x1 + (x2 - x1) / 2.f, y1 + offset + (y2 - y1) / 2.f), movingPoint);
       if (thisDist < dist) {
         dist = thisDist;
@@ -230,7 +235,7 @@ std::pair<size_t, size_t> PhotonSampler::checkNeighbours(std::vector<std::tuple<
   if (x2 + offset <= 1.f && y2 + offset <= 1.f)
   {
     auto pINq = getPointsInQuad(Points, x1 + offset, y1 + offset, x2 + offset, y2 + offset);
-    if (pINq.size() == 0) {
+    if (pINq.size() == 0 && occupiedCells[x + 1][y + 1] == false) {
       auto thisDist = distance(make_pair(x1 + offset + (x2 - x1) / 2.f, y1 + offset + (y2 - y1) / 2.f), movingPoint);
       if (thisDist < dist) {
         dist = thisDist;
@@ -248,7 +253,7 @@ std::pair<size_t, size_t> PhotonSampler::checkNeighbours(std::vector<std::tuple<
   if (x1 - offset >= 0.f)
   {
     auto pINq = getPointsInQuad(Points, x1 - offset, y1, x2 - offset, y2);
-    if (pINq.size() == 0) {
+    if (pINq.size() == 0 && occupiedCells[x - 1][y] == false) {
       auto thisDist = distance(make_pair(x1 - offset + (x2 - x1) / 2.f, y1 + (y2 - y1) / 2.f), movingPoint);
       if (thisDist < dist) {
         dist = thisDist;
@@ -266,7 +271,7 @@ std::pair<size_t, size_t> PhotonSampler::checkNeighbours(std::vector<std::tuple<
   if (x2 + offset <= 1.f)
   {
     auto pINq = getPointsInQuad(Points, x1 + offset, y1, x2 + offset, y2);
-    if (pINq.size() == 0) {
+    if (pINq.size() == 0 && occupiedCells[x + 1][y] == false) {
       auto thisDist = distance(make_pair(x1 + offset + (x2 - x1) / 2.f, y1 + (y2 - y1) / 2.f), movingPoint);
       if (thisDist < dist) {
         dist = thisDist;
@@ -284,7 +289,7 @@ std::pair<size_t, size_t> PhotonSampler::checkNeighbours(std::vector<std::tuple<
   if (x1 - offset >= 0.f && y1 - offset >= 0.f)
   {
     auto pINq = getPointsInQuad(Points, x1 - offset, y1 - offset, x2 - offset, y2 - offset);
-    if (pINq.size() == 0) {
+    if (pINq.size() == 0 && occupiedCells[x - 1][y - 1] == false) {
       auto thisDist = distance(make_pair(x1 - offset + (x2 - x1) / 2.f, y1 - offset + (y2 - y1) / 2.f), movingPoint);
       if (thisDist < dist) {
         dist = thisDist;
@@ -302,7 +307,7 @@ std::pair<size_t, size_t> PhotonSampler::checkNeighbours(std::vector<std::tuple<
   if (y1 - offset >= 0.f)
   {
     auto pINq = getPointsInQuad(Points, x1, y1 - offset, x2, y2 - offset);
-    if (pINq.size() == 0) {
+    if (pINq.size() == 0 && occupiedCells[x][y - 1] == false) {
       auto thisDist = distance(make_pair(x1 + (x2 - x1) / 2.f, y1 - offset + (y2 - y1) / 2.f), movingPoint);
       if (thisDist < dist) {
         dist = thisDist;
@@ -320,7 +325,7 @@ std::pair<size_t, size_t> PhotonSampler::checkNeighbours(std::vector<std::tuple<
   if (x2 + offset <= 1.f && y1 - offset >= 0.f)
   {
     auto pINq = getPointsInQuad(Points, x1 + offset, y1 - offset, x2 + offset, y2 - offset);
-    if (pINq.size() == 0) {
+    if (pINq.size() == 0 && occupiedCells[x + 1][y - 1] == false) {
       auto thisDist = distance(make_pair(x1 + offset + (x2 - x1) / 2.f, y1 - offset + (y2 - y1) / 2.f), movingPoint);
       if (thisDist < dist) {
         dist = thisDist;
@@ -339,7 +344,7 @@ std::vector<int> PhotonSampler::computeSamplingImage(std::vector<std::tuple<floa
 
   std::vector<int> image; 
   image.resize(size * size);
-  image.reserve(size * size);
+  std::fill(image.begin(), image.end(), -1);
 
   float offset = 1.0f / static_cast<float>(size);
   float x1, y1, x2, y2;
@@ -347,21 +352,36 @@ std::vector<int> PhotonSampler::computeSamplingImage(std::vector<std::tuple<floa
   x1 = y1 = 0.f;
   x2 = y2 = offset;
 
-  for (size_t y = 0; y < size - 1; y++){
-    for (size_t x = 0; x < size- 1; x++) {
-      auto pINq = getPointsInQuad(Points, x1, y1, x2, y2);
+  std::vector<std::vector<bool>> occupiedCells;
+  occupiedCells.resize(size);
+  for (size_t i = 0; i < size; i++) {
+    occupiedCells[i].resize(size);
+    std::fill(occupiedCells[i].begin(), occupiedCells[i].end(), false);
+  }
 
+  for (size_t y = 0; y < size; y++){
+    for (size_t x = 0; x < size; x++) {
+      auto pINq = getPointsInQuad(Points, x1, y1, x2, y2);
+      
       if (pINq.size() == 2) {
         auto idxMovingPoint = pINq[0];
         auto idxStayingPoint = pINq[1];
-        auto newPos = checkNeighbours(Points, x1, y1, x2, y2, offset, x, y, idxMovingPoint, idxStayingPoint);
+        auto newPos = checkNeighbours(Points, occupiedCells, x1, y1, x2, y2, offset, x, y, idxMovingPoint, idxStayingPoint);
 
         if (newPos.first == x && newPos.second == y) {
-          std::cout << "FOUL " << pINq.size() << std::endl;
+          image.clear();
+          return image;
         }
         else {
+          if (image[x + y * size] != -1 || image[newPos.first + newPos.second * size] != -1) {
+            image.clear();
+            return image;
+          }
+          
           image[x + y * size] = get<2>(Points[idxStayingPoint]);
           image[newPos.first + newPos.second * size] = get<2>(Points[idxMovingPoint]);
+          occupiedCells[x][y] = true;
+          
           if (idxMovingPoint > idxStayingPoint) {
             Points.erase(Points.begin() + idxMovingPoint);
             Points.erase(Points.begin() + idxStayingPoint);
@@ -371,16 +391,20 @@ std::vector<int> PhotonSampler::computeSamplingImage(std::vector<std::tuple<floa
             Points.erase(Points.begin() + idxMovingPoint);
           }
         }
-
-      } else if(pINq.size() == 1) {
+      } 
+      else if(pINq.size() == 1) {
+        if (image[x + y * size] != -1){
+          image.clear();
+          return image;
+        }
+        
         image[x + y * size] = get<2>(Points[pINq[0]]); 
+        occupiedCells[x][y] = true;
         Points.erase(Points.begin() + pINq[0]);
       }
       else if (pINq.size() > 2) {
-        std::cout << "More than two Points in one Cell! " << pINq.size() << std::endl;
-      }
-      else {
-        image[x + y * size] = -1;
+        image.clear();
+        return image;
       }
 
       x1 += offset;
@@ -394,7 +418,6 @@ std::vector<int> PhotonSampler::computeSamplingImage(std::vector<std::tuple<floa
   }
 
   return image;
-
 }
 
 }
