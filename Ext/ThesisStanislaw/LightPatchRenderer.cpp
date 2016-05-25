@@ -87,6 +87,9 @@ void LightPatchRenderer::allocateLightPatchTBO(){
 State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
   if(!_approxScene) return State::stateResult_t::STATE_SKIPPED;
   
+  auto glID = _lightPatchTBO->getBufferObject()->getGLId();
+  glClearNamedBufferData(glID, GL_R32UI, GL_RED, GL_UNSIGNED_INT, 0);
+  
   auto& rc = context.getRenderingContext();
   
   if(_fboChanged){ 
@@ -124,10 +127,6 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
 }
 
 void LightPatchRenderer::doDisableState(FrameContext & context,Node *, const RenderParam & rp){
-  // Need to clear the buffer at the end of the frame, not at this point. It's too early here.
-  //auto glID = _lightPatchTBO->getBufferObject()->getGLId();
-  //glClearNamedBufferData(glID, GL_R32UI, GL_RED, GL_UNSIGNED_INT, 0);
-  //std::cout << "Clearing TBO " << GL_MAX_UNIFORM_BLOCK_SIZE <<" "<< glID <<std::endl;
 }
 
 LightPatchRenderer * LightPatchRenderer::clone() const {
