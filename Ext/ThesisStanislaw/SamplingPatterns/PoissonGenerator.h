@@ -46,7 +46,7 @@ namespace Sampler{
 namespace PoissonGenerator
 {
 
-  const char* Version = "1.1.3 (10/03/2016)";
+  //const char* Version = "1.1.3 (10/03/2016)";
 
   class DefaultPRNG
   {
@@ -116,12 +116,12 @@ namespace PoissonGenerator
     int y;
   };
 
-  float GetDistance(const sPoint& P1, const sPoint& P2)
+  inline float GetDistance(const sPoint& P1, const sPoint& P2)
   {
     return sqrt((P1.x - P2.x) * (P1.x - P2.x) + (P1.y - P2.y) * (P1.y - P2.y));
   }
 
-  sGridPoint ImageToGrid(const sPoint& P, float CellSize)
+  inline sGridPoint ImageToGrid(const sPoint& P, float CellSize)
   {
     return sGridPoint(static_cast<int>(P.x / CellSize), static_cast<int>(P.y / CellSize));
   }

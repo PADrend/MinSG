@@ -7,19 +7,19 @@
 #include "../../../Rendering/Shader/Uniform.h"
 
 #include "SamplingPatterns/PoissonGenerator.h"
-
+#include "PhotonRenderer.h"
 
 namespace MinSG{
 namespace ThesisStanislaw{
   
-const std::string PhotonSampler::_shaderPath = "plugins/Effects/resources/PP_Effects/";
+const std::string PhotonSampler::_shaderPath = "ThesisStanislaw/shader/";
   
 PhotonSampler::PhotonSampler() :
   State(),
   _fbo(nullptr), _depthTexture(nullptr), _posTexture(nullptr), _normalTexture(nullptr),
   _fboChanged(true), _camera(nullptr), _shader(nullptr), _approxScene(nullptr), _photonNumber(100)
 {
-  _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "PackGeometry.vs"), Util::FileName(_shaderPath + "PackGeometry.fs"), Rendering::Shader::USE_UNIFORMS);
+  _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "MRT.vs"), Util::FileName(_shaderPath + "MRT.fs"), Rendering::Shader::USE_UNIFORMS);
   resample();
 }
 
@@ -47,7 +47,7 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
     rc.popFBO();
     return false;
   }
-  
+  static PhotonRenderer* ph = new PhotonRenderer();
   rc.popFBO();
   
   return true;
@@ -82,6 +82,9 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   rc.popShader();
   rc.popFBO();
   
+  _posTexture->downloadGLTexture(rc);
+  _normalTexture->downloadGLTexture(rc);
+
 //  rc.pushAndSetShader(nullptr);
 //  auto width = _camera->getWidth();
 //  auto height = _camera->getHeight();
@@ -99,6 +102,34 @@ void PhotonSampler::setApproximatedScene(Node* root){
 void PhotonSampler::setPhotonNumber(uint32_t number){
   _photonNumber = number;
   resample();
+}
+
+uint32_t PhotonSampler::getTextureWidth(){
+  if(!_camera) return 0;
+  return _camera->getWidth();
+}
+
+uint32_t PhotonSampler::getTextureHeight(){
+  if(!_camera) return 0;
+  return _camera->getHeight();
+}
+
+Geometry::Vec3f PhotonSampler::getNormalAt(const Geometry::Vec2f& texCoord){
+  auto ptr = _normalTexture->getLocalData();
+  return Geometry::Vec3f(1, 1, 1);
+}
+
+Geometry::Vec3f PhotonSampler::getPosAt(const Geometry::Vec2f& texCoord){
+  auto normal = _posTexture->getLocalData();
+  return Geometry::Vec3f(1, 1, 1);
+}
+
+const std::vector<Geometry::Vec2f>& PhotonSampler::getSamplePoints(){
+  return _samplePoints;
+}
+
+uint32_t PhotonSampler::getPhotonNumber(){
+  return _photonNumber;
 }
 
 void PhotonSampler::setSamplingStrategy(uint8_t type){

@@ -64,7 +64,7 @@ public:
   void setSamplingResolution(uint32_t width, uint32_t height);
   void setSpotLights(std::vector<LightNode*> lights);
   
-  void bindTBO(Rendering::RenderingContext& rc);
+  void bindTBO(Rendering::RenderingContext& rc, bool read, bool write);
   void unbindTBO(Rendering::RenderingContext& rc);
   
   void setCamera(CameraNode* camera);

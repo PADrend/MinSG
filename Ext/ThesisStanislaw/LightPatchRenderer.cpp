@@ -100,7 +100,7 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
   rc.pushAndSetFBO(_lightPatchFBO.get());
   _lightPatchFBO->setDrawBuffers(1);
   rc.pushAndSetShader(_lightPatchShader.get());
-  bindTBO(rc);
+  bindTBO(rc, true, true);
   
   for(uint32_t i = 0; i < _spotLights.size(); i++){
     auto cameraNode = computeLightMatrix(_spotLights[i]);
@@ -167,7 +167,9 @@ Util::Reference<CameraNode> LightPatchRenderer::computeLightMatrix(const MinSG::
   return camera;
 }
 
-void LightPatchRenderer::bindTBO(Rendering::RenderingContext& rc){
+void LightPatchRenderer::bindTBO(Rendering::RenderingContext& rc, bool read, bool write){
+  _tboBindParameters.setReadOperations(read);
+  _tboBindParameters.setWriteOperations(write);
   rc.pushAndSetBoundImage(0, _tboBindParameters);
 }
 

@@ -20,7 +20,7 @@ State::stateResult_t ApproxSceneDebug::doEnableState(FrameContext & context, Nod
   auto& rc = context.getRenderingContext();
   
   rc.pushAndSetShader(_shader.get());
-  _renderer->bindTBO(rc);
+  _renderer->bindTBO(rc, true, false);
   return State::stateResult_t::STATE_OK;
 }
 

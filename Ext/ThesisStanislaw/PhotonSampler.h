@@ -12,7 +12,6 @@
 #include "../../Core/Nodes/CameraNode.h"
 #include "../../Core/States/State.h"
 
-
 #include "../../../Rendering/RenderingContext/RenderingContext.h"
 #include "../../../Rendering/Shader/Shader.h"
 #include "../../../Rendering/Texture/Texture.h"
@@ -71,15 +70,20 @@ public:
   void setCamera(CameraNode* camera);
   void resample();
   
+  uint32_t getPhotonNumber();
+  
   Util::Reference<Rendering::Texture> getPosTexture();
   Util::Reference<Rendering::Texture> getNormalTexture();
+  uint32_t getTextureWidth();
+  uint32_t getTextureHeight();
+  Geometry::Vec3f getNormalAt(const Geometry::Vec2f& texCoord);
+  Geometry::Vec3f getPosAt(const Geometry::Vec2f& texCoord);
+  const std::vector<Geometry::Vec2f>& getSamplePoints();
 
 };
 
 }
 }
-
-
 
 #endif // MINSG_EXT_THESISSTANISLAW_PHOTONSAMPLER_H
 #endif // MINSG_EXT_THESISSTANISLAW
