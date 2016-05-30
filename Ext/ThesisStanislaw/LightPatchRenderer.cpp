@@ -68,20 +68,26 @@ void LightPatchRenderer::initializeFBO(Rendering::RenderingContext& rc){
 
 void LightPatchRenderer::allocateLightPatchTBO(){
 
-  auto NONE = Util::PixelFormat::NONE;
+//  auto NONE = Util::PixelFormat::NONE;
+//  
+//  auto pf = Util::PixelFormat(Util::TypeConstant::UINT32, 0, NONE, NONE, NONE);
+//  auto glpf = Rendering::TextureUtils::pixelFormatToGLPixelFormat(pf);
+//  
+//  _tboFormat.sizeY = _tboFormat.numLayers = 1;
+//  _tboFormat.sizeX =  countTriangles(_approxScene);
+//  _tboFormat.linearMinFilter = _tboFormat.linearMagFilter = false;
+//  _tboFormat.pixelFormat = glpf;
+//  _tboFormat.glTextureType = GL_TEXTURE_BUFFER;
+//  
+//  _lightPatchTBO = new Rendering::Texture(_tboFormat);
+//
+//  _tboBindParameters.setTexture(_lightPatchTBO.get());
+//  
   
-  auto pf = Util::PixelFormat(Util::TypeConstant::UINT32, 0, NONE, NONE, NONE);
-  auto glpf = Rendering::TextureUtils::pixelFormatToGLPixelFormat(pf);
-  
-  _tboFormat.sizeY = _tboFormat.numLayers = 1;
-  _tboFormat.sizeX =  countTriangles(_approxScene);
-  _tboFormat.linearMinFilter = _tboFormat.linearMagFilter = false;
-  _tboFormat.pixelFormat = glpf;
-  _tboFormat.glTextureType = GL_TEXTURE_BUFFER;
-  
-  _lightPatchTBO = new Rendering::Texture(_tboFormat);
+  using namespace Rendering;
+  auto numTriangles = countTriangles(_approxScene);
+  _lightPatchTBO = TextureUtils::createDataTexture(TextureType::TEXTURE_BUFFER, numTriangles, 1, 1, Util::TypeConstant::UINT32, 1);
   _tboBindParameters.setTexture(_lightPatchTBO.get());
-  std::cout << "Allocated TBO with size " << _lightPatchTBO->getDataSize() <<" for " << _tboFormat.sizeX << " Triangles." << std::endl;
 }
 
 State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){

@@ -36,17 +36,19 @@ private:
   Util::Reference<Rendering::Texture>  _depthTexture, _posTexture, _normalTexture;
   bool                                 _fboChanged;
   
-  CameraNode*  _camera;
+  Util::Reference<Rendering::Texture>  _samplingTexture;
+  
+  CameraNode*                          _camera;
   
   Util::Reference<Rendering::Shader>   _shader;
   
   Node*                                _approxScene;
   
-  std::vector<Geometry::Vec2f>    _samplePoints;
-  uint32_t                        _photonNumber;
-  Sampling                        _samplingStrategy;
+  std::vector<Geometry::Vec2f>         _samplePoints;
+  uint32_t                             _photonNumber;
+  Sampling                             _samplingStrategy;
   
-  
+  void allocateSamplingTexture(std::vector<int>& samplingImage);
   bool initializeFBO(Rendering::RenderingContext& rc);
   
   float distance(std::pair<float, float> p1, std::pair<float, float> p2);
@@ -76,9 +78,12 @@ public:
   Util::Reference<Rendering::Texture> getNormalTexture();
   uint32_t getTextureWidth();
   uint32_t getTextureHeight();
-  Geometry::Vec3f getNormalAt(const Geometry::Vec2f& texCoord);
-  Geometry::Vec3f getPosAt(const Geometry::Vec2f& texCoord);
+  Geometry::Vec3f getNormalAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord);
+  Geometry::Vec3f getPosAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord);
   const std::vector<Geometry::Vec2f>& getSamplePoints();
+  
+  void bindSamplingTexture(Rendering::RenderingContext& rc);
+  void unbindSamplingTexture(Rendering::RenderingContext& rc);
 
 };
 

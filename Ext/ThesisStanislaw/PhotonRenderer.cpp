@@ -92,8 +92,8 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     rc.clearDepth(1.0f);
     
     auto samplePoint = samplePoints[i];
-    auto pos = _photonSampler->getPosAt(samplePoint);
-    auto normal = _photonSampler->getNormalAt(samplePoint);
+    auto pos = _photonSampler->getPosAt(rc, samplePoint);
+    auto normal = _photonSampler->getNormalAt(rc, samplePoint);
     auto photonCamera = computePhotonCamera(pos, normal);
     
     context.pushAndSetCamera(photonCamera.get());

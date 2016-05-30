@@ -28,11 +28,11 @@ private:
   
   Util::Reference<Rendering::FBO>      _lightPatchFBO;
   Util::Reference<Rendering::Texture>  _depthTextureFBO;
-  Rendering::ImageBindParameters       _tboBindParameters;
   uint32_t                             _samplingWidth, _samplingHeight;
   bool                                 _fboChanged;
   
   Rendering::Texture::Format           _tboFormat;
+  Rendering::ImageBindParameters       _tboBindParameters;
   Util::Reference<Rendering::Texture>  _lightPatchTBO;
   
   Util::Reference<Rendering::Shader>   _lightPatchShader;

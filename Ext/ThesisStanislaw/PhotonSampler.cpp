@@ -1,10 +1,15 @@
 #ifdef MINSG_EXT_THESISSTANISLAW
 
+#define LIB_GL
+#define LIB_GLEW
+
 #include "PhotonSampler.h"
 
 #include "../../Core/FrameContext.h"
 
 #include "../../../Rendering/Shader/Uniform.h"
+#include "../../../Rendering/GLHeader.h"
+#include "../../../Util/Graphics/PixelAccessor.h"
 
 #include "SamplingPatterns/PoissonGenerator.h"
 #include "PhotonRenderer.h"
@@ -23,6 +28,11 @@ PhotonSampler::PhotonSampler() :
   resample();
 }
 
+void PhotonSampler::allocateSamplingTexture(std::vector<int>& samplingImage){
+  using namespace Rendering;
+  auto size = static_cast<uint32_t>(std::sqrt(samplingImage.size()));
+  _samplingTexture = TextureUtils::createDataTexture(TextureType::TEXTURE_2D, size, size, 1, Util::TypeConstant::INT32, 1);
+}
 
 bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
   if(!_camera) return false;
@@ -85,6 +95,7 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   _posTexture->downloadGLTexture(rc);
   _normalTexture->downloadGLTexture(rc);
 
+  getNormalAt(rc, Geometry::Vec2f(0.5, 0.5));
 //  rc.pushAndSetShader(nullptr);
 //  auto width = _camera->getWidth();
 //  auto height = _camera->getHeight();
@@ -114,12 +125,17 @@ uint32_t PhotonSampler::getTextureHeight(){
   return _camera->getHeight();
 }
 
-Geometry::Vec3f PhotonSampler::getNormalAt(const Geometry::Vec2f& texCoord){
+Geometry::Vec3f PhotonSampler::getNormalAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord){
   auto ptr = _normalTexture->getLocalData();
+  auto acc = Rendering::TextureUtils::createColorPixelAccessor(rc, *(_normalTexture.get()));
+  std::cout << "Width: " << acc->getWidth() << std::endl;
+  std::cout << "Height: " << acc->getHeight() << std::endl;
+  auto color = acc->readColor4f(500, 200);
+  std::cout << "Color: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl << std::endl;
   return Geometry::Vec3f(1, 1, 1);
 }
 
-Geometry::Vec3f PhotonSampler::getPosAt(const Geometry::Vec2f& texCoord){
+Geometry::Vec3f PhotonSampler::getPosAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord){
   auto normal = _posTexture->getLocalData();
   return Geometry::Vec3f(1, 1, 1);
 }
@@ -162,6 +178,8 @@ void PhotonSampler::resample(){
     
     samplingImage = computeSamplingImage(fPoints, imageSize);
   }
+  
+  allocateSamplingTexture(samplingImage);
 }
 
 void PhotonSampler::setCamera(CameraNode* camera){
@@ -175,6 +193,14 @@ Util::Reference<Rendering::Texture> PhotonSampler::getPosTexture(){
 
 Util::Reference<Rendering::Texture> PhotonSampler::getNormalTexture(){
   return _normalTexture;
+}
+
+void PhotonSampler::bindSamplingTexture(Rendering::RenderingContext& rc){
+  rc.pushAndSetTexture(0, _samplingTexture.get());
+}
+
+void PhotonSampler::unbindSamplingTexture(Rendering::RenderingContext& rc){
+  rc.popTexture(0);
 }
 
 PhotonSampler * PhotonSampler::clone() const {
