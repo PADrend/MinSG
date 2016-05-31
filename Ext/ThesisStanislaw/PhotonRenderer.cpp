@@ -81,6 +81,8 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   }
   
   rc.pushAndSetFBO(_fbo.get());
+  rc.clearDepth(1.0f);
+  
   rc.pushAndSetShader(_shader.get());
   
   _lightPatchRenderer->bindTBO(rc, true, false);
@@ -100,6 +102,7 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     
     _shader->setUniform(rc, Rendering::Uniform("photonID", static_cast<int32_t>(i)));
     _approxScene->display(context, rp);
+    rc.clearDepth(1.0f);
     
     context.popCamera();
   }

@@ -27,14 +27,18 @@ private:
   static const std::string _shaderPath;
   
   Util::Reference<Rendering::FBO>      _lightPatchFBO;
+  //Util::Reference<Rendering::FBO>      _fbo2;
   Util::Reference<Rendering::Texture>  _depthTextureFBO;
+  //Util::Reference<Rendering::Texture>  _depthTextureFBO2;
   uint32_t                             _samplingWidth, _samplingHeight;
   bool                                 _fboChanged;
   
   Rendering::Texture::Format           _tboFormat;
   Rendering::ImageBindParameters       _tboBindParameters;
   Util::Reference<Rendering::Texture>  _lightPatchTBO;
+  Util::Reference<Rendering::Texture>  _polygonIDTexture;
   
+  Util::Reference<Rendering::Shader>   _polygonIDWriterShader;
   Util::Reference<Rendering::Shader>   _lightPatchShader;
   
   std::vector<LightNode*> _spotLights;

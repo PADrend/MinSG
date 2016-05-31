@@ -126,17 +126,16 @@ uint32_t PhotonSampler::getTextureHeight(){
 }
 
 Geometry::Vec3f PhotonSampler::getNormalAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord){
-  auto ptr = _normalTexture->getLocalData();
-  auto acc = Rendering::TextureUtils::createColorPixelAccessor(rc, *(_normalTexture.get()));
-  std::cout << "Width: " << acc->getWidth() << std::endl;
-  std::cout << "Height: " << acc->getHeight() << std::endl;
-  auto color = acc->readColor4f(500, 200);
-  std::cout << "Color: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl << std::endl;
+//  auto acc = Rendering::TextureUtils::createColorPixelAccessor(rc, *(_normalTexture.get()));
+//  std::cout << "Width: " << acc->getWidth() << std::endl;
+//  std::cout << "Height: " << acc->getHeight() << std::endl;
+//  auto color = acc->readColor4f(500, 200);
+//  std::cout << "Color: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl << std::endl;
   return Geometry::Vec3f(1, 1, 1);
 }
 
 Geometry::Vec3f PhotonSampler::getPosAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord){
-  auto normal = _posTexture->getLocalData();
+  
   return Geometry::Vec3f(1, 1, 1);
 }
 

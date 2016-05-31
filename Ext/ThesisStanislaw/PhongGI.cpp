@@ -13,14 +13,14 @@ PhongGI::PhongGI() :
   State(),
   _shader(nullptr), _photonSampler(nullptr)
 {
-  _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "phongGI.vs"), Util::FileName(_shaderPath + "phongGI.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+  _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "phongGI.vs"), Util::FileName(_shaderPath + "phongGI.fs"), Rendering::Shader::USE_UNIFORMS);
 }
 
 State::stateResult_t PhongGI::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
   auto& rc = context.getRenderingContext();
   
   rc.pushAndSetShader(_shader.get());
-  _photonSampler->bindSamplingTexture(rc);
+  if(_photonSampler) _photonSampler->bindSamplingTexture(rc);
   
   return State::stateResult_t::STATE_OK;
 }
@@ -28,7 +28,7 @@ State::stateResult_t PhongGI::doEnableState(FrameContext & context, Node * node,
 void PhongGI::doDisableState(FrameContext & context, Node *, const RenderParam & /*rp*/) {
   auto& rc = context.getRenderingContext();
   
-  _photonSampler->unbindSamplingTexture(rc);
+  if(_photonSampler) _photonSampler->unbindSamplingTexture(rc);
   rc.popShader();
 }
 

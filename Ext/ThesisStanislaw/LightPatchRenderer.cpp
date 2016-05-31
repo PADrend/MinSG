@@ -29,41 +29,48 @@ LightPatchRenderer::LightPatchRenderer() : State(),
   _lightPatchFBO(nullptr), _samplingWidth(256), _samplingHeight(256), _fboChanged(true),
   _lightPatchTBO(nullptr), _lightPatchShader(nullptr), _approxScene(nullptr), _camera(nullptr)
 {
-  _lightPatchShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "lightPatchEstimation.vs"), Util::FileName(_shaderPath + "lightPatchEstimation.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
+  _lightPatchShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "lightPatchEstimation.vs"), Util::FileName(_shaderPath + "lightPatchEstimation.fs"), Rendering::Shader::USE_UNIFORMS);
+  _polygonIDWriterShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "polygonIDWriter.vs"), Util::FileName(_shaderPath + "polygonIDWriter.fs"), Rendering::Shader::USE_UNIFORMS);
   
   _tboBindParameters.setLayer(0);
   _tboBindParameters.setLevel(0);
   _tboBindParameters.setMultiLayer(false);
   _tboBindParameters.setReadOperations(true);
   _tboBindParameters.setWriteOperations(true);
-  
-  //// Debug output ////
-//  std::vector<Rendering::Uniform> uniforms;
-//  _lightPatchShader->getActiveUniforms(uniforms);
-//  
-//  for(auto& uniform : uniforms){
-//    std::cout << uniform.toString() << std::endl << std::endl;
-//  }
-  //////////////////////
 }
 
 void LightPatchRenderer::initializeFBO(Rendering::RenderingContext& rc){
-  _lightPatchFBO = new Rendering::FBO;
-  _depthTextureFBO = Rendering::TextureUtils::createDepthTexture(_samplingWidth, _samplingHeight);
+  using namespace Rendering;
+
+  _lightPatchFBO = new FBO;
+  _depthTextureFBO = TextureUtils::createDepthTexture(_samplingWidth, _samplingHeight);
+  _polygonIDTexture = TextureUtils::createDataTexture(TextureType::TEXTURE_2D, _samplingWidth, _samplingHeight, 1, Util::TypeConstant::UINT32, 1);
   
-  _normalTexture = Rendering::TextureUtils::createHDRTexture(_samplingWidth, _samplingHeight, false);
-  _lightPatchFBO->attachColorTexture(rc, _normalTexture.get(), 0);
-  rc.pushAndSetFBO(_lightPatchFBO.get());
   
+  _lightPatchFBO->attachColorTexture(rc, _polygonIDTexture.get(), 0);
   _lightPatchFBO->attachDepthTexture(rc, _depthTextureFBO.get());
+  
+  /////////////
+  _normalTexture = Rendering::TextureUtils::createHDRTexture(_samplingWidth, _samplingHeight, false);
+  _lightPatchFBO->attachColorTexture(rc, _normalTexture.get(), 1);
+  /////////////
   
   if(!_lightPatchFBO->isComplete(rc)){
     WARN( _lightPatchFBO->getStatusMessage(rc) );
-    rc.popFBO();
     return;
   }
   
-  rc.popFBO();
+  //
+//  _fbo2 = new FBO;
+//  _depthTextureFBO2 = TextureUtils::createDepthTexture(_samplingWidth, _samplingHeight);
+//  
+//  _fbo2->attachDepthTexture(rc, _depthTextureFBO2.get());
+//  
+//  if(!_fbo2->isComplete(rc)){
+//    WARN( _fbo2->getStatusMessage(rc) );
+//    return;
+//  }
+  //
 }
 
 void LightPatchRenderer::allocateLightPatchTBO(){
@@ -104,24 +111,41 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
   }
   
   rc.pushAndSetFBO(_lightPatchFBO.get());
-  _lightPatchFBO->setDrawBuffers(1);
-  rc.pushAndSetShader(_lightPatchShader.get());
-  bindTBO(rc, true, true);
   
   for(uint32_t i = 0; i < _spotLights.size(); i++){
     auto cameraNode = computeLightMatrix(_spotLights[i]);
-    
     if(cameraNode.get() != nullptr){
+      // Write all visible polygonID's on the texture
+      _lightPatchFBO->setDrawBuffers(2);
+
+      rc.pushAndSetShader(_polygonIDWriterShader.get());
       context.pushAndSetCamera(cameraNode.get());
-      rc.clearDepth(1.0f);
-      _lightPatchShader->setUniform(rc, Rendering::Uniform("lightID", static_cast<int32_t>(1<<i))); // ID of light is its index in the vector
+      
       _approxScene->display(context, rp);
+      rc.clearDepth(1.0f);
       context.popCamera();
+      rc.popShader();
+      
+      // Take every polygonID in the polygonIDTexture and the corresponding TBO entry to be lit by this light source.
+      _lightPatchFBO->setDrawBuffers(0);
+      rc.pushAndSetShader(_lightPatchShader.get());
+      rc.pushAndSetTexture(0, _polygonIDTexture.get());
+      bindTBO(rc, true, true);
+      _lightPatchShader->setUniform(rc, Rendering::Uniform("lightID", static_cast<int32_t>(1<<i))); // ID of light is its index in the vector
+      Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *_polygonIDTexture.get(), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
+      rc.clearDepth(1.0f);
+      unbindTBO(rc);
+      rc.popTexture(0);
+      rc.popShader();
+
+      // Clear the uint polygonID Texture
+      _lightPatchFBO->setDrawBuffers(2);
+      GLuint clearColor[] = {0, 0, 0, 0};
+      glClearBufferuiv(GL_COLOR, 0, clearColor);
+
     }
   }
   
-  rc.popShader();
-  unbindTBO(rc);
   rc.popFBO();
   
 //  rc.pushAndSetShader(nullptr);
