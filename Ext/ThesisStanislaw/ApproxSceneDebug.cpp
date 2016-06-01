@@ -7,7 +7,7 @@
 namespace MinSG{
 namespace ThesisStanislaw{
   
-const std::string ApproxSceneDebug::_shaderPath = "ThesisStanislaw/shader/";
+const std::string ApproxSceneDebug::_shaderPath = "ThesisStanislaw/ShaderScenes/shader/";
   
 ApproxSceneDebug::ApproxSceneDebug() :
   State(),

@@ -19,7 +19,7 @@
 namespace MinSG{
 namespace ThesisStanislaw{
   
-const std::string PhotonRenderer::_shaderPath = "ThesisStanislaw/shader/";
+const std::string PhotonRenderer::_shaderPath = "ThesisStanislaw/ShaderScenes/shader/";
   
 PhotonRenderer::PhotonRenderer() :
   State(),
@@ -91,7 +91,6 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   const auto& samplePoints = _photonSampler->getSamplePoints();
   
   for(uint32_t i = 0; i < _photonSampler->getPhotonNumber(); i++){
-    rc.clearDepth(1.0f);
     
     auto samplePoint = samplePoints[i];
     auto pos = _photonSampler->getPosAt(rc, samplePoint);

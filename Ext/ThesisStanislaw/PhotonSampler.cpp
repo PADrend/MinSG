@@ -17,7 +17,7 @@
 namespace MinSG{
 namespace ThesisStanislaw{
   
-const std::string PhotonSampler::_shaderPath = "ThesisStanislaw/shader/";
+const std::string PhotonSampler::_shaderPath = "ThesisStanislaw/ShaderScenes/shader/";
   
 PhotonSampler::PhotonSampler() :
   State(),
@@ -46,19 +46,14 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
   _posTexture = Rendering::TextureUtils::createHDRTexture(width, height, false);
   _normalTexture = Rendering::TextureUtils::createHDRTexture(width, height, false);
   
-  rc.pushAndSetFBO(_fbo.get());
-  
   _fbo->attachDepthTexture(rc, _depthTexture.get());
   _fbo->attachColorTexture(rc, _posTexture.get(), 0);
   _fbo->attachColorTexture(rc, _normalTexture.get(), 1);
   
   if(!_fbo->isComplete(rc)){
     WARN( _fbo->getStatusMessage(rc) );
-    rc.popFBO();
     return false;
   }
-  static PhotonRenderer* ph = new PhotonRenderer();
-  rc.popFBO();
   
   return true;
 }
@@ -81,29 +76,29 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   if(_camera != nullptr){
     context.pushAndSetCamera(_camera);
     _shader->setUniform(rc, Rendering::Uniform("sg_useMaterials", false));
+    
     rc.clearDepth(1.0f);
     rc.clearColor(Util::Color4f(0.f, 0.f, 0.f));
-
     _approxScene->display(context, rp);
+
+    context.popCamera();
   }
-  
-  context.popCamera();
   
   rc.popShader();
   rc.popFBO();
   
   _posTexture->downloadGLTexture(rc);
   _normalTexture->downloadGLTexture(rc);
-
   getNormalAt(rc, Geometry::Vec2f(0.5, 0.5));
-//  rc.pushAndSetShader(nullptr);
-//  auto width = _camera->getWidth();
-//  auto height = _camera->getHeight();
-//  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
-//  rc.popShader();
-//  return State::stateResult_t::STATE_SKIP_RENDERING;
   
-  return State::stateResult_t::STATE_OK;
+  rc.pushAndSetShader(nullptr);
+  auto width = _camera->getWidth();
+  auto height = _camera->getHeight();
+  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
+  rc.popShader();
+  return State::stateResult_t::STATE_SKIP_RENDERING;
+  
+//  return State::stateResult_t::STATE_OK;
 }
 
 void PhotonSampler::setApproximatedScene(Node* root){
@@ -126,11 +121,16 @@ uint32_t PhotonSampler::getTextureHeight(){
 }
 
 Geometry::Vec3f PhotonSampler::getNormalAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord){
-//  auto acc = Rendering::TextureUtils::createColorPixelAccessor(rc, *(_normalTexture.get()));
-//  std::cout << "Width: " << acc->getWidth() << std::endl;
-//  std::cout << "Height: " << acc->getHeight() << std::endl;
-//  auto color = acc->readColor4f(500, 200);
-//  std::cout << "Color: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl << std::endl;
+  //rc.finish();
+  auto acc = Rendering::TextureUtils::createColorPixelAccessor(rc, *(_normalTexture.get()));
+  std::cout << "Width: " << acc->getWidth() << std::endl;
+  std::cout << "Height: " << acc->getHeight() << std::endl;
+  auto color = acc->readColor4f(500, 200);
+  std::cout << "Color: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
+  auto colorF = acc->readSingleValueFloat(500, 200);
+  std::cout << "ColorF: " << colorF << std::endl;
+  auto colorU = acc->readColor4ub(500, 200);
+  std::cout << "ColorU: " << (int)(colorU.r()) << " " << (int)(colorU.g()) <<" " << (int)(colorU.b()) << std::endl << std::endl;
   return Geometry::Vec3f(1, 1, 1);
 }
 

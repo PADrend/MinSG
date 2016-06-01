@@ -23,7 +23,7 @@
 namespace MinSG{
 namespace ThesisStanislaw{
   
-const std::string LightPatchRenderer::_shaderPath = "ThesisStanislaw/shader/";
+const std::string LightPatchRenderer::_shaderPath = "ThesisStanislaw/ShaderScenes/shader/";
   
 LightPatchRenderer::LightPatchRenderer() : State(),
   _lightPatchFBO(nullptr), _samplingWidth(256), _samplingHeight(256), _fboChanged(true),
@@ -59,18 +59,6 @@ void LightPatchRenderer::initializeFBO(Rendering::RenderingContext& rc){
     WARN( _lightPatchFBO->getStatusMessage(rc) );
     return;
   }
-  
-  //
-//  _fbo2 = new FBO;
-//  _depthTextureFBO2 = TextureUtils::createDepthTexture(_samplingWidth, _samplingHeight);
-//  
-//  _fbo2->attachDepthTexture(rc, _depthTextureFBO2.get());
-//  
-//  if(!_fbo2->isComplete(rc)){
-//    WARN( _fbo2->getStatusMessage(rc) );
-//    return;
-//  }
-  //
 }
 
 void LightPatchRenderer::allocateLightPatchTBO(){
@@ -120,7 +108,7 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
 
       rc.pushAndSetShader(_polygonIDWriterShader.get());
       context.pushAndSetCamera(cameraNode.get());
-      
+      // rc.clearDepth(1.0f); // If clearing the depth at this point, the second loop iteration does not have a cleared depth buffer. Thus wrong rendering of the second light source.
       _approxScene->display(context, rp);
       rc.clearDepth(1.0f);
       context.popCamera();
@@ -129,13 +117,12 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
       // Take every polygonID in the polygonIDTexture and the corresponding TBO entry to be lit by this light source.
       _lightPatchFBO->setDrawBuffers(0);
       rc.pushAndSetShader(_lightPatchShader.get());
-      rc.pushAndSetTexture(0, _polygonIDTexture.get());
       bindTBO(rc, true, true);
       _lightPatchShader->setUniform(rc, Rendering::Uniform("lightID", static_cast<int32_t>(1<<i))); // ID of light is its index in the vector
+      //When removing this line, the normal texture in the photonsampler state is displayed correctly. Otherwise the screen is black.
       Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *_polygonIDTexture.get(), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
       rc.clearDepth(1.0f);
       unbindTBO(rc);
-      rc.popTexture(0);
       rc.popShader();
 
       // Clear the uint polygonID Texture
@@ -186,13 +173,13 @@ Util::Reference<CameraNode> LightPatchRenderer::computeLightMatrix(const MinSG::
   float minDistance = 0.1f;
   float maxDistance = 1000.f;
   
-  float halfCutoff = light->getCutoff()/2.f;
+  float cutoff = light->getCutoff();
   
   camera->setRelTransformation(light->getRelTransformationMatrix());
 
   camera->setViewport(Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight));
   camera->setNearFar(minDistance, maxDistance);
-  camera->setAngles(-halfCutoff, halfCutoff, -halfCutoff, halfCutoff);
+  camera->setAngles(-cutoff, cutoff, -cutoff, cutoff);
 
   return camera;
 }

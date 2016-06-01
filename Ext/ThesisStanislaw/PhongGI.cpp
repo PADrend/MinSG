@@ -7,7 +7,7 @@
 namespace MinSG{
 namespace ThesisStanislaw{
   
-const std::string PhongGI::_shaderPath = "ThesisStanislaw/shader/";
+const std::string PhongGI::_shaderPath = "ThesisStanislaw/ShaderScenes/shader/";
   
 PhongGI::PhongGI() :
   State(),
@@ -18,7 +18,7 @@ PhongGI::PhongGI() :
 
 State::stateResult_t PhongGI::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
   auto& rc = context.getRenderingContext();
-  
+
   rc.pushAndSetShader(_shader.get());
   if(_photonSampler) _photonSampler->bindSamplingTexture(rc);
   
