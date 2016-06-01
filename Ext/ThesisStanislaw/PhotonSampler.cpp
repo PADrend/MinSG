@@ -1,5 +1,6 @@
 #ifdef MINSG_EXT_THESISSTANISLAW
-
+#include <iostream>
+#include <iomanip>
 #define LIB_GL
 #define LIB_GLEW
 
@@ -22,7 +23,7 @@ const std::string PhotonSampler::_shaderPath = "ThesisStanislaw/ShaderScenes/sha
 PhotonSampler::PhotonSampler() :
   State(),
   _fbo(nullptr), _depthTexture(nullptr), _posTexture(nullptr), _normalTexture(nullptr),
-  _fboChanged(true), _camera(nullptr), _shader(nullptr), _approxScene(nullptr), _photonNumber(100)
+  _fboChanged(true), _camera(nullptr), _shader(nullptr), _approxScene(nullptr), _photonNumber(50)
 {
   _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "MRT.vs"), Util::FileName(_shaderPath + "MRT.fs"), Rendering::Shader::USE_UNIFORMS);
   resample();
@@ -89,16 +90,17 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   
   _posTexture->downloadGLTexture(rc);
   _normalTexture->downloadGLTexture(rc);
-  getNormalAt(rc, Geometry::Vec2f(0.5, 0.5));
+  //getNormalAt(rc, Geometry::Vec2f(0.5, 0.5));
   
-  rc.pushAndSetShader(nullptr);
-  auto width = _camera->getWidth();
-  auto height = _camera->getHeight();
-  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
-  rc.popShader();
-  return State::stateResult_t::STATE_SKIP_RENDERING;
+//  rc.pushAndSetShader(nullptr);
+//  auto width = _camera->getWidth();
+//  auto height = _camera->getHeight();
+//  // Displays the normal texture correctly if and only if the mentioned line in the LightPatchRenderer is commented out.
+//  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
+//  rc.popShader();
+//  return State::stateResult_t::STATE_SKIP_RENDERING;
   
-//  return State::stateResult_t::STATE_OK;
+  return State::stateResult_t::STATE_OK;
 }
 
 void PhotonSampler::setApproximatedScene(Node* root){
@@ -121,22 +123,45 @@ uint32_t PhotonSampler::getTextureHeight(){
 }
 
 Geometry::Vec3f PhotonSampler::getNormalAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord){
-  //rc.finish();
   auto acc = Rendering::TextureUtils::createColorPixelAccessor(rc, *(_normalTexture.get()));
-  std::cout << "Width: " << acc->getWidth() << std::endl;
-  std::cout << "Height: " << acc->getHeight() << std::endl;
-  auto color = acc->readColor4f(500, 200);
-  std::cout << "Color: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
-  auto colorF = acc->readSingleValueFloat(500, 200);
-  std::cout << "ColorF: " << colorF << std::endl;
-  auto colorU = acc->readColor4ub(500, 200);
-  std::cout << "ColorU: " << (int)(colorU.r()) << " " << (int)(colorU.g()) <<" " << (int)(colorU.b()) << std::endl << std::endl;
-  return Geometry::Vec3f(1, 1, 1);
+  auto width = _camera->getWidth();
+  auto height = _camera->getHeight();
+  auto x = static_cast<uint32_t>(texCoord.x() * width);
+  auto y = static_cast<uint32_t>(texCoord.y() * height);
+  
+  if(x == width) x--;
+  if(y == height) y--;
+  
+  auto color = acc->readColor4f(x, y);
+//  std::cout << "Color: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
+//  auto colorF = acc->readSingleValueFloat(500, 200);
+//  std::cout << "ColorF: " << colorF << std::endl;
+//  auto colorU = acc->readColor4ub(500, 200);
+//  std::cout << "ColorU: " << (int)(colorU.r()) << " " << (int)(colorU.g()) <<" " << (int)(colorU.b()) << std::endl << std::endl;
+//  std::cout << "Width: " << acc->getWidth() << std::endl;
+//  std::cout << "Height: " << acc->getHeight() << std::endl;
+//  std::cout <<  "Normal: " <<std::fixed << std::setprecision(10) << std::setfill('0') << texCoord.x() << " " << texCoord.y() << std::endl;
+//  std::cout <<  "Normal: " << x << " " << y << std::endl;
+  return Geometry::Vec3f(color.r(), color.g(), color.b());
 }
 
 Geometry::Vec3f PhotonSampler::getPosAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord){
+  auto acc = Rendering::TextureUtils::createColorPixelAccessor(rc, *(_posTexture.get()));
+  auto width = _camera->getWidth();
+  auto height = _camera->getHeight();
+  auto x = static_cast<uint32_t>(texCoord.x() * width);
+  auto y = static_cast<uint32_t>(texCoord.y() * height);
   
-  return Geometry::Vec3f(1, 1, 1);
+  if(x == width) x--;
+  if(y == height) y--;
+  
+  auto color = acc->readColor4f(x, y);
+  
+//  std::cout << "Width: " << acc->getWidth() << std::endl;
+//  std::cout << "Height: " << acc->getHeight() << std::endl;
+//  std::cout << "Pos: " <<std::fixed << std::setprecision(10) << std::setfill('0') << texCoord.x() << " " << texCoord.y() << std::endl;
+//  std::cout << "Pos: " << x << " " << y << std::endl;
+  return Geometry::Vec3f(color.r(), color.g(), color.b());
 }
 
 const std::vector<Geometry::Vec2f>& PhotonSampler::getSamplePoints(){
@@ -154,14 +179,16 @@ void PhotonSampler::setSamplingStrategy(uint8_t type){
 
 void PhotonSampler::resample(){
   std::vector<int> samplingImage;
+
+  uint32_t additionalPhotons = 0;
   
-  while(samplingImage.size() == 0){
+  while(samplingImage.size() == 0 || _samplePoints.size() < _photonNumber){
       
     switch(_samplingStrategy){
       case Sampling::POISSON:
       default:{
         Sampler::PoissonGenerator::DefaultPRNG PRNG;
-        auto points = Sampler::PoissonGenerator::GeneratePoissonPoints( _photonNumber, PRNG );
+        auto points = Sampler::PoissonGenerator::GeneratePoissonPoints( _photonNumber + additionalPhotons, PRNG , 50, false);
         _samplePoints.clear();
         for(auto& point : points){
           _samplePoints.push_back(Geometry::Vec2f(point.x, point.y));
@@ -169,14 +196,35 @@ void PhotonSampler::resample(){
       }
     }
     
-    auto imageSize = static_cast<size_t>(std::ceil(std::sqrt(_photonNumber)));
+    auto imageSize = static_cast<size_t>(std::ceil(std::sqrt(_photonNumber + additionalPhotons)));
     std::vector<std::tuple<float, float, size_t>> fPoints;
     for (size_t idx = 0; idx < _samplePoints.size(); idx++) {
       fPoints.push_back(std::make_tuple(_samplePoints[idx].x(), _samplePoints[idx].y(), idx));
     }
     
     samplingImage = computeSamplingImage(fPoints, imageSize);
+    additionalPhotons++;
   }
+  
+//  std::cout << samplingImage.size() << std::endl;
+//  std::cout << "------------------------------------------------------" << std::endl;
+//  size_t countt = 0;
+//  for(auto point : _samplePoints){
+//    std::cout << countt <<": ";
+//    std::cout << std::fixed << std::setprecision(10) << std::setfill('0') << point.x() << " " << point.y() << std::endl;
+//    countt++;
+//  }
+//  std::cout << "------------------------------------------------------" << std::endl;
+//  auto width = 1280;
+//  auto height = 720;
+//  countt = 0;
+//  for(auto point : _samplePoints){
+//    std::cout << countt <<": ";
+//    auto x = static_cast<uint32_t>(point.x() * width);
+//    auto y = static_cast<uint32_t>(point.y() * height);
+//    std::cout << x << " " << y << std::endl;
+//    countt++;
+//  }
   
   allocateSamplingTexture(samplingImage);
 }

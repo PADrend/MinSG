@@ -24,12 +24,12 @@ class PhotonSampler;
 class LightPatchRenderer;
   
 class PhotonRenderer : public State {
-  PROVIDES_TYPE_NAME(PhotonSampler)
+  PROVIDES_TYPE_NAME(PhotonRenderer)
 private:
   static const std::string             _shaderPath;
   
   Util::Reference<Rendering::FBO>      _fbo;
-  Util::Reference<Rendering::Texture>  _depthTexture;
+  Util::Reference<Rendering::Texture>  _indirectLightTexture, _depthTexture;
   bool                                 _fboChanged;
   uint32_t                             _samplingWidth, _samplingHeight;
   

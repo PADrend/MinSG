@@ -13,7 +13,7 @@
 
 #include "../../../Rendering/Shader/Uniform.h"
 
-#include "SamplingPatterns/PoissonGenerator.h"
+#include "../../../Geometry/Matrix4x4.h"
 
 
 namespace MinSG{
@@ -23,8 +23,8 @@ const std::string PhotonRenderer::_shaderPath = "ThesisStanislaw/ShaderScenes/sh
   
 PhotonRenderer::PhotonRenderer() :
   State(),
-  _fbo(nullptr), _depthTexture(nullptr), _fboChanged(true),_samplingWidth(64), _samplingHeight(64), _shader(nullptr), _approxScene(nullptr),
-  _photonSampler(nullptr), _lightPatchRenderer(nullptr), _photonBufferGLId(0)
+  _fbo(nullptr), _indirectLightTexture(nullptr), _depthTexture(nullptr), _fboChanged(true),_samplingWidth(64), _samplingHeight(64), 
+  _shader(nullptr), _approxScene(nullptr), _photonSampler(nullptr), _lightPatchRenderer(nullptr), _photonBufferGLId(0)
 {
   _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "photonGathering.vs"), Util::FileName(_shaderPath + "photonGathering.fs"), Rendering::Shader::USE_UNIFORMS);
 }
@@ -35,18 +35,16 @@ bool PhotonRenderer::initializeFBO(Rendering::RenderingContext& rc){
   _fbo = new Rendering::FBO;
   
   _depthTexture = Rendering::TextureUtils::createDepthTexture(_samplingWidth, _samplingHeight);
-  
-  rc.pushAndSetFBO(_fbo.get());
+  _indirectLightTexture = Rendering::TextureUtils::createHDRTexture(_samplingWidth, _samplingHeight, true);
   
   _fbo->attachDepthTexture(rc, _depthTexture.get());
+  _fbo->attachColorTexture(rc, _indirectLightTexture.get());
   
   if(!_fbo->isComplete(rc)){
     WARN( _fbo->getStatusMessage(rc) );
     rc.popFBO();
     return false;
   }
-  
-  rc.popFBO();
   
   return true;
 }
@@ -95,19 +93,28 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     auto samplePoint = samplePoints[i];
     auto pos = _photonSampler->getPosAt(rc, samplePoint);
     auto normal = _photonSampler->getNormalAt(rc, samplePoint);
+//    auto pos = _photonSampler->getPosAt(rc, Geometry::Vec2f(0.5f, 0.5f));
+//    auto normal = _photonSampler->getNormalAt(rc, Geometry::Vec2f(0.5f, 0.5f));
     auto photonCamera = computePhotonCamera(pos, normal);
     
     context.pushAndSetCamera(photonCamera.get());
     
-    _shader->setUniform(rc, Rendering::Uniform("photonID", static_cast<int32_t>(i)));
+    //_shader->setUniform(rc, Rendering::Uniform("photonID", static_cast<int32_t>(i)));
     _approxScene->display(context, rp);
     rc.clearDepth(1.0f);
     
     context.popCamera();
   }
   
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
+  _lightPatchRenderer->unbindTBO(rc);
   rc.popShader();
   rc.popFBO();
+  
+//  rc.pushAndSetShader(nullptr);
+//  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_indirectLightTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
+//  rc.popShader();
+//  return State::stateResult_t::STATE_SKIP_RENDERING;
   
   return State::stateResult_t::STATE_OK;
 }
@@ -120,6 +127,7 @@ void PhotonRenderer::setPhotonSampler(PhotonSampler* sampler){
 void PhotonRenderer::setSamplingResolution(uint32_t width, uint32_t height){
   _samplingWidth = width;
   _samplingHeight = height;
+  _fboChanged = true;
 }
 
 void PhotonRenderer::setApproximatedScene(Node* root){
@@ -138,7 +146,11 @@ Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(Geometry::Vec3f 
   float maxDistance = 500.f;
   
   // TODO: Compute RelTransformation with "pos" and "normal"
-  // camera->setRelTransformation();
+  Geometry::Matrix4x4f m;
+  
+  m.translate(pos).rotateToDirection(normal);
+  
+  camera->setRelTransformation(m);
 
   camera->setViewport(Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight));
   camera->setNearFar(minDistance, maxDistance);
