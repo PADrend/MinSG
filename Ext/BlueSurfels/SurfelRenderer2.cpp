@@ -36,6 +36,8 @@ SurfelRenderer2::SurfelRenderer2() : NodeRendererState(FrameContext::DEFAULT_CHA
 SurfelRenderer2::~SurfelRenderer2() {}
 
 NodeRendererResult SurfelRenderer2::displayNode(FrameContext & context, Node * node, const RenderParam & /*rp*/){
+	if(!node->isActive())
+		return NodeRendererResult::NODE_HANDLED;
 	
 	static const Util::StringIdentifier SURFEL_ATTRIBUTE("surfels");
 	auto surfelAttribute = dynamic_cast<Util::ReferenceAttribute<Rendering::Mesh>*>(node->findAttribute( SURFEL_ATTRIBUTE ));
