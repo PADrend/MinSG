@@ -10,6 +10,7 @@
 #include "LightPatchRenderer.h"
 
 #include "../../Core/FrameContext.h"
+#include "../../Core/States/LightingState.h"
 
 #include "../../../Rendering/Shader/Uniform.h"
 
@@ -31,14 +32,15 @@ PhotonRenderer::PhotonRenderer() :
 
 
 bool PhotonRenderer::initializeFBO(Rendering::RenderingContext& rc){
-  
   _fbo = new Rendering::FBO;
   
   _depthTexture = Rendering::TextureUtils::createDepthTexture(_samplingWidth, _samplingHeight);
   _indirectLightTexture = Rendering::TextureUtils::createHDRTexture(_samplingWidth, _samplingHeight, true);
+  _normalTex = Rendering::TextureUtils::createHDRTexture(_samplingWidth, _samplingHeight, true);
   
   _fbo->attachDepthTexture(rc, _depthTexture.get());
-  _fbo->attachColorTexture(rc, _indirectLightTexture.get());
+  _fbo->attachColorTexture(rc, _indirectLightTexture.get(), 0);
+  _fbo->attachColorTexture(rc, _normalTex.get(), 1);
   
   if(!_fbo->isComplete(rc)){
     WARN( _fbo->getStatusMessage(rc) );
@@ -80,11 +82,19 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   
   rc.pushAndSetFBO(_fbo.get());
   rc.clearDepth(1.0f);
-  
+  _fbo->setDrawBuffers(2);
   rc.pushAndSetShader(_shader.get());
   
   _lightPatchRenderer->bindTBO(rc, true, false);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _photonBufferGLId);
+  
+  std::vector<LightingState*> lstates;
+  
+  for(uint32_t i = 0; i < _spotLights.size(); i++){
+    auto state = new LightingState(_spotLights[i]);
+    lstates.push_back(state);
+    _approxScene->addState(state);
+  }
   
   const auto& samplePoints = _photonSampler->getSamplePoints();
   
@@ -95,6 +105,8 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     auto normal = _photonSampler->getNormalAt(rc, samplePoint);
 //    auto pos = _photonSampler->getPosAt(rc, Geometry::Vec2f(0.5f, 0.5f));
 //    auto normal = _photonSampler->getNormalAt(rc, Geometry::Vec2f(0.5f, 0.5f));
+//    pos = Geometry::Vec3f(12.5f, 14.89f, -31.0577f);
+//    normal = Geometry::Vec3f(0.f , 0.f, -1.f);
     auto photonCamera = computePhotonCamera(pos, normal);
     
     context.pushAndSetCamera(photonCamera.get());
@@ -104,6 +116,12 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     rc.clearDepth(1.0f);
     
     context.popCamera();
+  }
+  
+  for(uint32_t i = 0; i < _spotLights.size(); i++){
+    auto state = lstates[i];
+    _approxScene->removeState(state);
+    //delete state; //Yes, this causes memory leaks, but uncommentig this line causes a crash.
   }
   
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
@@ -138,6 +156,10 @@ void PhotonRenderer::setLightPatchRenderer(LightPatchRenderer* renderer){
   _lightPatchRenderer = renderer;
 }
 
+void PhotonRenderer::setSpotLights(std::vector<LightNode*> lights){
+  _spotLights = lights;
+}
+
 
 Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(Geometry::Vec3f pos, Geometry::Vec3f normal){
   Util::Reference<CameraNode> camera = new CameraNode;
@@ -145,10 +167,8 @@ Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(Geometry::Vec3f 
   float minDistance = 0.01f;
   float maxDistance = 500.f;
   
-  // TODO: Compute RelTransformation with "pos" and "normal"
   Geometry::Matrix4x4f m;
-  
-  m.translate(pos).rotateToDirection(normal);
+  m.rotateToDirection(normal * -1.0f ).translate(pos);
   
   camera->setRelTransformation(m);
 

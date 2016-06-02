@@ -29,7 +29,7 @@ private:
   static const std::string             _shaderPath;
   
   Util::Reference<Rendering::FBO>      _fbo;
-  Util::Reference<Rendering::Texture>  _indirectLightTexture, _depthTexture;
+  Util::Reference<Rendering::Texture>  _indirectLightTexture, _normalTex, _depthTexture;
   bool                                 _fboChanged;
   uint32_t                             _samplingWidth, _samplingHeight;
   
@@ -39,6 +39,8 @@ private:
   
   PhotonSampler*                       _photonSampler;
   LightPatchRenderer*                  _lightPatchRenderer;
+  
+  std::vector<LightNode*>              _spotLights;
   
   unsigned int                         _photonBufferGLId;
   
@@ -59,6 +61,7 @@ public:
   void setApproximatedScene(Node* root);
   void setLightPatchRenderer(LightPatchRenderer* renderer);
   void setPhotonSampler(PhotonSampler* sampler);
+  void setSpotLights(std::vector<LightNode*> lights);
   void setSamplingResolution(uint32_t width, uint32_t height);
   
 };

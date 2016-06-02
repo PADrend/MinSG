@@ -62,6 +62,15 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
 State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
   auto& rc = context.getRenderingContext();
   
+//  auto pos = Geometry::Vec3f(12.5f, 14.89f, -31.0577f);
+//  auto pos = Geometry::Vec3f(-12.f, -58.f, -17.0577f);
+//  auto normal = Geometry::Vec3f(0.f , 0.f, -1.f);
+//  Geometry::Matrix4x4f m;
+//  m.setIdentity();
+//  m.lookAt(pos, pos + normal, Geometry::Vec3f(0.f, 1.f, 0.f));
+//  m.rotateToDirection(normal).translate(pos);
+//  _camera->setRelTransformation(m);
+  
   if(_fboChanged){
     if(!initializeFBO(rc)){
       WARN("Could not initialize FBO for PhotonSampler!");
@@ -90,12 +99,13 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   
   _posTexture->downloadGLTexture(rc);
   _normalTexture->downloadGLTexture(rc);
-  //getNormalAt(rc, Geometry::Vec2f(0.5, 0.5));
-  
+//  getPosAt(rc, Geometry::Vec2f(0.5f, 0.5f));
+//  getNormalAt(rc, Geometry::Vec2f(0.5f, 0.5f));
+//  std::cout << std::endl;
 //  rc.pushAndSetShader(nullptr);
 //  auto width = _camera->getWidth();
 //  auto height = _camera->getHeight();
-//  // Displays the normal texture correctly if and only if the mentioned line in the LightPatchRenderer is commented out.
+////   Displays the normal texture correctly if and only if the mentioned line in the LightPatchRenderer is commented out.
 //  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
 //  rc.popShader();
 //  return State::stateResult_t::STATE_SKIP_RENDERING;
@@ -133,7 +143,7 @@ Geometry::Vec3f PhotonSampler::getNormalAt(Rendering::RenderingContext& rc, cons
   if(y == height) y--;
   
   auto color = acc->readColor4f(x, y);
-//  std::cout << "Color: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
+  std::cout << "Normal: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
 //  auto colorF = acc->readSingleValueFloat(500, 200);
 //  std::cout << "ColorF: " << colorF << std::endl;
 //  auto colorU = acc->readColor4ub(500, 200);
@@ -157,6 +167,7 @@ Geometry::Vec3f PhotonSampler::getPosAt(Rendering::RenderingContext& rc, const G
   
   auto color = acc->readColor4f(x, y);
   
+  std::cout << "Pos: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
 //  std::cout << "Width: " << acc->getWidth() << std::endl;
 //  std::cout << "Height: " << acc->getHeight() << std::endl;
 //  std::cout << "Pos: " <<std::fixed << std::setprecision(10) << std::setfill('0') << texCoord.x() << " " << texCoord.y() << std::endl;
