@@ -134,6 +134,11 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   
   rc.setImmediateMode(false);
   
+//  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
+//  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+//  std::cout << *reinterpret_cast<float*>(p) << std::endl;
+//  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+  
 //  rc.pushAndSetShader(nullptr);
 //  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_indirectLightTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
 //  rc.popShader();
