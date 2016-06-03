@@ -15,6 +15,8 @@
 #include "SamplingPatterns/PoissonGenerator.h"
 #include "PhotonRenderer.h"
 
+#include "../../../Geometry/SRT.h"
+
 namespace MinSG{
 namespace ThesisStanislaw{
   
@@ -61,15 +63,22 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
 
 State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
   auto& rc = context.getRenderingContext();
+  rc.setImmediateMode(true);
+  rc.applyChanges();
   
 //  auto pos = Geometry::Vec3f(12.5f, 14.89f, -31.0577f);
-//  auto pos = Geometry::Vec3f(-12.f, -58.f, -17.0577f);
-//  auto normal = Geometry::Vec3f(0.f , 0.f, -1.f);
+//  //auto pos = Geometry::Vec3f(12.f, 58.f, 17.0577f);
+//  auto normal = Geometry::Vec3f(0.f , 0.f, 1.f);
 //  Geometry::Matrix4x4f m;
 //  m.setIdentity();
-//  m.lookAt(pos, pos + normal, Geometry::Vec3f(0.f, 1.f, 0.f));
-//  m.rotateToDirection(normal).translate(pos);
-//  _camera->setRelTransformation(m);
+////  m.lookAt(pos, pos + normal, Geometry::Vec3f(0.f, 1.f, 0.f));
+//  m.translate(pos);//.rotateToDirection(normal);
+//  
+//  auto srt = Geometry::_SRT<float>();
+//  srt.translate(pos);
+//  srt.setRotation(normal * -1.f, Geometry::Vec3f(0.f, 1.f, 0.f));
+//  //_camera->setRelTransformation(m);
+//  _camera->setRelTransformation(srt);
   
   if(_fboChanged){
     if(!initializeFBO(rc)){
@@ -99,9 +108,9 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   
   _posTexture->downloadGLTexture(rc);
   _normalTexture->downloadGLTexture(rc);
-//  getPosAt(rc, Geometry::Vec2f(0.5f, 0.5f));
-//  getNormalAt(rc, Geometry::Vec2f(0.5f, 0.5f));
-//  std::cout << std::endl;
+  
+  rc.setImmediateMode(false);
+  
 //  rc.pushAndSetShader(nullptr);
 //  auto width = _camera->getWidth();
 //  auto height = _camera->getHeight();
@@ -143,7 +152,7 @@ Geometry::Vec3f PhotonSampler::getNormalAt(Rendering::RenderingContext& rc, cons
   if(y == height) y--;
   
   auto color = acc->readColor4f(x, y);
-  std::cout << "Normal: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
+//  std::cout << "Normal: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
 //  auto colorF = acc->readSingleValueFloat(500, 200);
 //  std::cout << "ColorF: " << colorF << std::endl;
 //  auto colorU = acc->readColor4ub(500, 200);
@@ -167,7 +176,7 @@ Geometry::Vec3f PhotonSampler::getPosAt(Rendering::RenderingContext& rc, const G
   
   auto color = acc->readColor4f(x, y);
   
-  std::cout << "Pos: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
+//  std::cout << "Pos: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
 //  std::cout << "Width: " << acc->getWidth() << std::endl;
 //  std::cout << "Height: " << acc->getHeight() << std::endl;
 //  std::cout << "Pos: " <<std::fixed << std::setprecision(10) << std::setfill('0') << texCoord.x() << " " << texCoord.y() << std::endl;

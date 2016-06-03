@@ -88,10 +88,12 @@ void LightPatchRenderer::allocateLightPatchTBO(){
 State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
   if(!_approxScene) return State::stateResult_t::STATE_SKIPPED;
   
+  auto& rc = context.getRenderingContext();
+  rc.setImmediateMode(true);
+  rc.applyChanges();
+  
   auto glID = _lightPatchTBO->getBufferObject()->getGLId();
   glClearNamedBufferData(glID, GL_R32UI, GL_RED, GL_UNSIGNED_INT, 0);
-  
-  auto& rc = context.getRenderingContext();
   
   if(_fboChanged){ 
     initializeFBO(rc); 
@@ -108,9 +110,8 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
 
       rc.pushAndSetShader(_polygonIDWriterShader.get());
       context.pushAndSetCamera(cameraNode.get());
-      // rc.clearDepth(1.0f); // If clearing the depth at this point, the second loop iteration does not have a cleared depth buffer. Thus wrong rendering of the second light source.
+      rc.clearDepth(1.0f); 
       _approxScene->display(context, rp);
-      rc.clearDepth(1.0f);
       context.popCamera();
       rc.popShader();
       
@@ -129,11 +130,13 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
       _lightPatchFBO->setDrawBuffers(2);
       GLuint clearColor[] = {0, 0, 0, 0};
       glClearBufferuiv(GL_COLOR, 0, clearColor);
-
+      rc.applyChanges();
     }
   }
   
   rc.popFBO();
+  
+  rc.setImmediateMode(false);
   
 //  rc.pushAndSetShader(nullptr);
 //  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));

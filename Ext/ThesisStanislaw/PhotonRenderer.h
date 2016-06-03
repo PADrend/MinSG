@@ -33,7 +33,7 @@ private:
   bool                                 _fboChanged;
   uint32_t                             _samplingWidth, _samplingHeight;
   
-  Util::Reference<Rendering::Shader>   _shader;
+  Util::Reference<Rendering::Shader>   _indirectLightShader, _accumulationShader;
   
   Node*                                _approxScene;
   
@@ -63,6 +63,9 @@ public:
   void setPhotonSampler(PhotonSampler* sampler);
   void setSpotLights(std::vector<LightNode*> lights);
   void setSamplingResolution(uint32_t width, uint32_t height);
+  
+  void bindPhotonBuffer(unsigned int location);
+  void unbindPhotonBuffer(unsigned int location);
   
 };
 

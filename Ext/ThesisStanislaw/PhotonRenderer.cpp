@@ -25,9 +25,10 @@ const std::string PhotonRenderer::_shaderPath = "ThesisStanislaw/ShaderScenes/sh
 PhotonRenderer::PhotonRenderer() :
   State(),
   _fbo(nullptr), _indirectLightTexture(nullptr), _depthTexture(nullptr), _fboChanged(true),_samplingWidth(64), _samplingHeight(64), 
-  _shader(nullptr), _approxScene(nullptr), _photonSampler(nullptr), _lightPatchRenderer(nullptr), _photonBufferGLId(0)
+  _indirectLightShader(nullptr), _accumulationShader(nullptr), _approxScene(nullptr), _photonSampler(nullptr), _lightPatchRenderer(nullptr), _photonBufferGLId(0)
 {
-  _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "photonGathering.vs"), Util::FileName(_shaderPath + "photonGathering.fs"), Rendering::Shader::USE_UNIFORMS);
+  _indirectLightShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "indirectLightGathering.vs"), Util::FileName(_shaderPath + "indirectLightGathering.fs"), Rendering::Shader::USE_UNIFORMS);
+  _accumulationShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "indirectLightAccumulation.vs"), Util::FileName(_shaderPath + "indirectLightAccumulation.fs"), Rendering::Shader::USE_UNIFORMS);
 }
 
 
@@ -67,10 +68,9 @@ void PhotonRenderer::initializePhotonBuffer(){
 State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
   if(!_photonSampler || _photonBufferGLId == 0) return State::stateResult_t::STATE_SKIPPED;
   
-  // Clear Buffer
-  glClearNamedBufferData(_photonBufferGLId, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
-  
   auto& rc = context.getRenderingContext();
+  rc.setImmediateMode(true);
+  rc.applyChanges();
   
   if(_fboChanged){
     if(!initializeFBO(rc)){
@@ -80,26 +80,19 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     _fboChanged = false;
   }
   
+  // Clear Buffer
+  glClearNamedBufferData(_photonBufferGLId, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
+  
   rc.pushAndSetFBO(_fbo.get());
   rc.clearDepth(1.0f);
-  _fbo->setDrawBuffers(2);
-  rc.pushAndSetShader(_shader.get());
   
-  _lightPatchRenderer->bindTBO(rc, true, false);
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _photonBufferGLId);
-  
-  std::vector<LightingState*> lstates;
-  
-  for(uint32_t i = 0; i < _spotLights.size(); i++){
-    auto state = new LightingState(_spotLights[i]);
-    lstates.push_back(state);
-    _approxScene->addState(state);
-  }
+  rc.applyChanges();
   
   const auto& samplePoints = _photonSampler->getSamplePoints();
   
   for(uint32_t i = 0; i < _photonSampler->getPhotonNumber(); i++){
     
+    // Compute indirect light at every pixel
     auto samplePoint = samplePoints[i];
     auto pos = _photonSampler->getPosAt(rc, samplePoint);
     auto normal = _photonSampler->getNormalAt(rc, samplePoint);
@@ -107,27 +100,39 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
 //    auto normal = _photonSampler->getNormalAt(rc, Geometry::Vec2f(0.5f, 0.5f));
 //    pos = Geometry::Vec3f(12.5f, 14.89f, -31.0577f);
 //    normal = Geometry::Vec3f(0.f , 0.f, -1.f);
+    if (normal.isZero()) continue;
     auto photonCamera = computePhotonCamera(pos, normal);
     
+    _fbo->setDrawBuffers(2);
+    rc.pushAndSetShader(_indirectLightShader.get());
+    _lightPatchRenderer->bindTBO(rc, true, false);
     context.pushAndSetCamera(photonCamera.get());
-    
-    //_shader->setUniform(rc, Rendering::Uniform("photonID", static_cast<int32_t>(i)));
-    _approxScene->display(context, rp);
     rc.clearDepth(1.0f);
+    rc.clearColor(Util::Color4f(0.f, 0.f, 0.f, 0.f));
+    
+    _approxScene->display(context, rp);
     
     context.popCamera();
+    _lightPatchRenderer->unbindTBO(rc);
+    rc.popShader();
+    
+    
+    // Accumulate all pixel values in one photon 
+    _fbo->setDrawBuffers(0);
+    rc.pushAndSetShader(_accumulationShader.get());
+    
+    _accumulationShader->setUniform(rc, Rendering::Uniform("photonID", static_cast<int32_t>(i)));
+    bindPhotonBuffer(1);
+    rc.clearDepth(1.0f);
+    Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *_indirectLightTexture.get(), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
+    unbindPhotonBuffer(1);
+    
+    rc.popShader();
   }
   
-  for(uint32_t i = 0; i < _spotLights.size(); i++){
-    auto state = lstates[i];
-    _approxScene->removeState(state);
-    //delete state; //Yes, this causes memory leaks, but uncommentig this line causes a crash.
-  }
-  
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
-  _lightPatchRenderer->unbindTBO(rc);
-  rc.popShader();
   rc.popFBO();
+  
+  rc.setImmediateMode(false);
   
 //  rc.pushAndSetShader(nullptr);
 //  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_indirectLightTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
@@ -135,6 +140,14 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
 //  return State::stateResult_t::STATE_SKIP_RENDERING;
   
   return State::stateResult_t::STATE_OK;
+}
+
+void PhotonRenderer::bindPhotonBuffer(unsigned int location){
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, _photonBufferGLId);
+}
+
+void PhotonRenderer::unbindPhotonBuffer(unsigned int location){
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, 0);
 }
 
 void PhotonRenderer::setPhotonSampler(PhotonSampler* sampler){
@@ -167,10 +180,11 @@ Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(Geometry::Vec3f 
   float minDistance = 0.01f;
   float maxDistance = 500.f;
   
-  Geometry::Matrix4x4f m;
-  m.rotateToDirection(normal * -1.0f ).translate(pos);
+  auto srt = Geometry::_SRT<float>();
+  srt.translate(pos);
+  srt.setRotation(normal * -1.f, Geometry::Vec3f(0.f, 1.f, 0.f));
   
-  camera->setRelTransformation(m);
+  camera->setRelTransformation(srt);
 
   camera->setViewport(Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight));
   camera->setNearFar(minDistance, maxDistance);
