@@ -10,7 +10,11 @@
 
 #include "../../../Rendering/Shader/Uniform.h"
 #include "../../../Rendering/GLHeader.h"
+#include "../../../Rendering/Texture/TextureUtils.h"
+
 #include "../../../Util/Graphics/PixelAccessor.h"
+#include "../../../Util/Graphics/Bitmap.h"
+#include "../../../Util/Graphics/PixelFormat.h"
 
 #include "SamplingPatterns/PoissonGenerator.h"
 #include "PhotonRenderer.h"
@@ -201,6 +205,7 @@ void PhotonSampler::resample(){
   std::vector<int> samplingImage;
 
   uint32_t additionalPhotons = 0;
+  size_t imageSize = 0;
   
   while(samplingImage.size() == 0 || _samplePoints.size() < _photonNumber){
       
@@ -216,7 +221,7 @@ void PhotonSampler::resample(){
       }
     }
     
-    auto imageSize = static_cast<size_t>(std::ceil(std::sqrt(_photonNumber + additionalPhotons)));
+    imageSize = static_cast<size_t>(std::ceil(std::sqrt(_photonNumber + additionalPhotons)));
     std::vector<std::tuple<float, float, size_t>> fPoints;
     for (size_t idx = 0; idx < _samplePoints.size(); idx++) {
       fPoints.push_back(std::make_tuple(_samplePoints[idx].x(), _samplePoints[idx].y(), idx));
@@ -226,6 +231,22 @@ void PhotonSampler::resample(){
     additionalPhotons++;
   }
   
+  std::vector<uint8_t> byteData;
+  
+  uint8_t* ptr = reinterpret_cast<uint8_t*>(&samplingImage[0]);
+  for(size_t i = 0; i < samplingImage.size() * sizeof(int); i++){
+    byteData.push_back(ptr[i]);
+  }
+  
+  auto NONE = Util::PixelFormat::NONE;
+  Util::PixelFormat pf = Util::PixelFormat(Util::TypeConstant::INT32, 0, NONE, NONE, NONE);
+  
+  Util::Bitmap bitmap(static_cast<const uint32_t>(imageSize), static_cast<const uint32_t>(imageSize), pf);
+  bitmap.setData(byteData);
+  bitmap.flipVertically();
+  
+  _samplingTexture = Rendering::TextureUtils::createTextureFromBitmap(bitmap);
+  std::cout << "Image Size: " << imageSize << std::endl;
 //  std::cout << samplingImage.size() << std::endl;
 //  std::cout << "------------------------------------------------------" << std::endl;
 //  size_t countt = 0;
@@ -234,7 +255,7 @@ void PhotonSampler::resample(){
 //    std::cout << std::fixed << std::setprecision(10) << std::setfill('0') << point.x() << " " << point.y() << std::endl;
 //    countt++;
 //  }
-//  std::cout << "------------------------------------------------------" << std::endl;
+//  std::cout << "--------static_cast<uint32_t>(----------------------------------------------" << std::endl;
 //  auto width = 1280;
 //  auto height = 720;
 //  countt = 0;

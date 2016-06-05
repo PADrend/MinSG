@@ -61,7 +61,7 @@ void PhotonRenderer::initializePhotonBuffer(){
 
   glGenBuffers(1, &_photonBufferGLId);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, numPhotons * sizeof(float) * 4, NULL, GL_STATIC_READ);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, numPhotons * sizeof(float) * 4 * 3, NULL, GL_STATIC_READ);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -81,7 +81,8 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   }
   
   // Clear Buffer
-  glClearNamedBufferData(_photonBufferGLId, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
+  float clearVal = 0.f;
+  glClearNamedBufferData(_photonBufferGLId, GL_R32F, GL_RED, GL_FLOAT, &clearVal);
   
   rc.pushAndSetFBO(_fbo.get());
   rc.clearDepth(1.0f);
@@ -109,7 +110,11 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     context.pushAndSetCamera(photonCamera.get());
     rc.clearDepth(1.0f);
     rc.clearColor(Util::Color4f(0.f, 0.f, 0.f, 0.f));
-    
+//    auto _near = 0.01f;
+//    auto _far = 500.f;
+//    auto degToRad = [](float deg){const double halfC = M_PI / 180; return static_cast<float>(static_cast<double>(deg) * halfC);};
+//    auto persp = Geometry::Matrix4x4::perspectiveProjection(_near * std::tan(degToRad(-70.f)), _near * std::tan(degToRad(70.f)), _near * std::tan(degToRad(-50.f)), _near * std::tan(degToRad(50.f)), _near, _far);
+//    _indirectLightShader->setUniform(rc, Rendering::Uniform("perspective", persp));
     _approxScene->display(context, rp);
     
     context.popCamera();
@@ -122,6 +127,8 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     rc.pushAndSetShader(_accumulationShader.get());
     
     _accumulationShader->setUniform(rc, Rendering::Uniform("photonID", static_cast<int32_t>(i)));
+    _accumulationShader->setUniform(rc, Rendering::Uniform("photonPos_ws", pos));
+    _accumulationShader->setUniform(rc, Rendering::Uniform("photonNormal_ws", normal));
     bindPhotonBuffer(1);
     rc.clearDepth(1.0f);
     Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *_indirectLightTexture.get(), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
@@ -136,7 +143,9 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   
 //  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
 //  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-//  std::cout << *reinterpret_cast<float*>(p) << std::endl;
+//  float* ptr = reinterpret_cast<float*>(p);
+//  std::cout << *(ptr) <<" "<< *((ptr)++) <<" "<< *((ptr)+2) <<" "<< *((ptr)+3) << std::endl;
+//  std::cout << *(ptr+4) <<" "<< *((ptr)+5) <<" "<< *((ptr)+6) <<" "<< *((ptr)+7) << std::endl << std::endl;;
 //  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   
 //  rc.pushAndSetShader(nullptr);
