@@ -65,7 +65,8 @@ public:
   
   void bindPhotonBuffer(unsigned int location);
   void unbindPhotonBuffer(unsigned int location);
-  
+  Util::Reference<Rendering::Texture> getLightTexture() const { return _indirectLightTexture; }
+  Util::Reference<Rendering::Texture> getNormalTexture() const { return _normalTex; }
 };
 
 }

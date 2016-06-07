@@ -97,6 +97,7 @@ Geometry::Vec3f getNormalAt(Rendering::RenderingContext& rc, const Geometry::Vec
   void unbindPhotonBuffer(unsigned int location);
   void clearPhotonBuffer();
 
+  Util::Reference<Rendering::Texture> getSamplingTexture() const { return _samplingTexture; }
 };
 
 }
