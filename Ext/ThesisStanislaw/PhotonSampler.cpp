@@ -87,7 +87,7 @@ void PhotonSampler::initializeSamplePointMesh(){
 }
 
 void PhotonSampler::computePhotonMatrices(Rendering::RenderingContext& rc){
-  rc.pushAndSetFBO(_fbo2.get());
+  //rc.pushAndSetFBO(_fbo2.get());
   rc.pushAndSetShader(_photonMatrixShader.get());
   rc.clearDepth(1.f);
   
@@ -117,7 +117,7 @@ void PhotonSampler::computePhotonMatrices(Rendering::RenderingContext& rc){
   rc.popTexture(0);
   unbindPhotonBuffer(1);
   rc.popShader();
-  rc.popFBO();
+  //rc.popFBO();
   
 }
 
