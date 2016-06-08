@@ -42,11 +42,10 @@ private:
   
   std::vector<LightNode*>              _spotLights;
   
-  unsigned int                         _photonBufferGLId;
+  Util::Reference<CameraNode>          _photonCamera;
   
   bool initializeFBO(Rendering::RenderingContext& rc);
-  void initializePhotonBuffer();
-  Util::Reference<CameraNode> computePhotonCamera(Geometry::Vec3f pos, Geometry::Vec3f normal);
+  Util::Reference<CameraNode> computePhotonCamera();
   
 public:
 

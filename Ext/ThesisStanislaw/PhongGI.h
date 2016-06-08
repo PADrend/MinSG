@@ -24,7 +24,6 @@ private:
   Util::Reference<Rendering::Shader>   _shader;
   
   PhotonSampler*                       _photonSampler;
-  PhotonRenderer*                      _photonRenderer;
   
 public:
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
@@ -37,7 +36,6 @@ public:
   PhongGI * clone() const override;
   
   void setPhotonSampler(PhotonSampler* sampler);
-  void setPhotonRenderer(PhotonRenderer* photonRenderer);
   
 };
 

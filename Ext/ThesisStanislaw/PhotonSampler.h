@@ -19,6 +19,8 @@
 #include "../../../Rendering/Texture/TextureType.h"
 #include "../../../Rendering/FBO.h"
 
+#include "../../../Rendering/Mesh/Mesh.h"
+
 namespace MinSG{
 namespace ThesisStanislaw{
   
@@ -32,7 +34,8 @@ public:
 private:
   static const std::string             _shaderPath;
   
-  Util::Reference<Rendering::FBO>      _fbo;
+  Util::Reference<Rendering::FBO>      _fbo, _fbo2;
+  Util::Reference<Rendering::Texture>  _depthTexture2, _posTexture2;
   Util::Reference<Rendering::Texture>  _depthTexture, _posTexture, _normalTexture;
   bool                                 _fboChanged;
   
@@ -40,16 +43,21 @@ private:
   
   CameraNode*                          _camera;
   
-  Util::Reference<Rendering::Shader>   _shader;
+  Util::Reference<Rendering::Shader>   _mrtShader;
+  Util::Reference<Rendering::Shader>   _photonMatrixShader;
   
   Node*                                _approxScene;
   
   std::vector<Geometry::Vec2f>         _samplePoints;
   uint32_t                             _photonNumber;
   Sampling                             _samplingStrategy;
+  Util::Reference<Rendering::Mesh>     _samplingMesh;
+  unsigned int                         _photonBufferGLId;
   
   void allocateSamplingTexture(std::vector<int>& samplingImage);
   bool initializeFBO(Rendering::RenderingContext& rc);
+  void initializeSamplePointMesh();
+  void computePhotonMatrices(Rendering::RenderingContext& rc);
   
   float distance(std::pair<float, float> p1, std::pair<float, float> p2);
   std::vector<size_t> getPointsInQuad(const std::vector<std::tuple<float, float, size_t>>& Points, float x1, float y1, float x2, float y2);
@@ -78,12 +86,14 @@ public:
   Util::Reference<Rendering::Texture> getNormalTexture();
   uint32_t getTextureWidth();
   uint32_t getTextureHeight();
-  Geometry::Vec3f getNormalAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord);
-  Geometry::Vec3f getPosAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord);
   const std::vector<Geometry::Vec2f>& getSamplePoints();
   
   void bindSamplingTexture(Rendering::RenderingContext& rc);
   void unbindSamplingTexture(Rendering::RenderingContext& rc);
+  
+  void bindPhotonBuffer(unsigned int location);
+  void unbindPhotonBuffer(unsigned int location);
+  void clearPhotonBuffer();
 
 };
 

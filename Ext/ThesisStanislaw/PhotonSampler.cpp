@@ -11,10 +11,18 @@
 #include "../../../Rendering/Shader/Uniform.h"
 #include "../../../Rendering/GLHeader.h"
 #include "../../../Rendering/Texture/TextureUtils.h"
+#include "../../../Rendering/RenderingContext/RenderingParameters.h"
 
 #include "../../../Util/Graphics/PixelAccessor.h"
 #include "../../../Util/Graphics/Bitmap.h"
 #include "../../../Util/Graphics/PixelFormat.h"
+
+#include "../../../Rendering/Mesh/MeshVertexData.h"
+#include "../../../Rendering/Mesh/MeshDataStrategy.h"
+#include "../../../Rendering/Mesh/VertexDescription.h"
+#include "../../../Rendering/Mesh/VertexAttributeAccessors.h"
+#include "../../../Rendering/Mesh/VertexAttributeIds.h"
+#include "../../../Rendering/MeshUtils/MeshUtils.h"
 
 #include "SamplingPatterns/PoissonGenerator.h"
 #include "PhotonRenderer.h"
@@ -29,10 +37,88 @@ const std::string PhotonSampler::_shaderPath = "ThesisStanislaw/ShaderScenes/sha
 PhotonSampler::PhotonSampler() :
   State(),
   _fbo(nullptr), _depthTexture(nullptr), _posTexture(nullptr), _normalTexture(nullptr),
-  _fboChanged(true), _camera(nullptr), _shader(nullptr), _approxScene(nullptr), _photonNumber(50)
+  _fboChanged(true), _camera(nullptr), _mrtShader(nullptr), _photonMatrixShader(nullptr), 
+  _approxScene(nullptr), _photonNumber(50), _samplingMesh(nullptr), _photonBufferGLId(0)
 {
-  _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "MRT.vs"), Util::FileName(_shaderPath + "MRT.fs"), Rendering::Shader::USE_UNIFORMS);
+  _mrtShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "MRT.vs"), Util::FileName(_shaderPath + "MRT.fs"), Rendering::Shader::USE_UNIFORMS);
+  _photonMatrixShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "photonMatrices.vs"), Util::FileName(_shaderPath + "photonMatrices.fs"), Rendering::Shader::USE_UNIFORMS);
   resample();
+  initializeSamplePointMesh();
+}
+
+void PhotonSampler::initializeSamplePointMesh(){
+  // create mesh
+  Rendering::VertexDescription vertexDesc;
+  vertexDesc.appendPosition3D();
+  vertexDesc.appendTexCoord(0);
+  vertexDesc.appendUnsignedIntAttribute(Util::StringIdentifier("sg_PhotonID"), static_cast<uint8_t>(1));
+  
+  _samplingMesh = new Rendering::Mesh(vertexDesc, _photonNumber, 0);
+  _samplingMesh->setDataStrategy(Rendering::SimpleMeshDataStrategy::getPureLocalStrategy());
+  _samplingMesh->setUseIndexData(false);
+  _samplingMesh->setDrawMode(Rendering::Mesh::draw_mode_t::DRAW_POINTS);
+  
+  // init vertex data
+  auto& vertexData = _samplingMesh->openVertexData();
+
+  vertexData.allocate(_samplePoints.size(), vertexDesc);
+  
+  auto posAcc = Rendering::PositionAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::POSITION);
+  auto texAcc = Rendering::TexCoordAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::TEXCOORD0);
+  auto IDAcc = Rendering::UIntAttributeAccessor::create(vertexData, Util::StringIdentifier("sg_PhotonID"));
+  auto mapPos = [](const Geometry::Vec2& p){ return Geometry::Vec3(p.x()*2.f - 1.f, p.y()*2.f - 1.f, 0.f);}; //map [0,1] to [-1,1]
+  
+  for(uint32_t i = 0; i < _samplePoints.size(); i++){
+    posAcc->setPosition(i, mapPos(_samplePoints[i]));
+    texAcc->setCoordinate(i, _samplePoints[i]);
+    IDAcc->setValue(i, i);
+  }
+  
+  // Initialize ssbo to store the photon matrices
+  if(_photonBufferGLId != 0){
+    glDeleteBuffers(1, &_photonBufferGLId);
+  }
+
+  glGenBuffers(1, &_photonBufferGLId);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, _photonNumber * sizeof(float) * 28 , NULL, GL_STATIC_READ);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+}
+
+void PhotonSampler::computePhotonMatrices(Rendering::RenderingContext& rc){
+  rc.pushAndSetFBO(_fbo2.get());
+  rc.pushAndSetShader(_photonMatrixShader.get());
+  rc.clearDepth(1.f);
+  
+  bindPhotonBuffer(1);
+  rc.pushAndSetTexture(0, _posTexture.get());
+  rc.pushAndSetTexture(1, _normalTexture.get());
+  
+  rc.pushAndSetDepthBuffer(Rendering::DepthBufferParameters(false, false, Rendering::Comparison::LESS));
+  rc.pushAndSetLighting(Rendering::LightingParameters(false));
+  
+  rc.pushMatrix_cameraToClipping();
+  rc.setMatrix_cameraToClipping(Geometry::Matrix4x4::orthographicProjection(0, getTextureWidth(), 0, getTextureHeight(), -1, 1));
+  
+  Geometry::Matrix4x4 identityMatrix;
+  identityMatrix.setIdentity();
+
+  rc.pushMatrix_modelToCamera();
+  rc.setMatrix_modelToCamera(identityMatrix);
+  
+  rc.displayMesh(_samplingMesh.get());
+  
+  rc.popMatrix_modelToCamera();
+  rc.popMatrix_cameraToClipping();
+  rc.popLighting();
+  rc.popDepthBuffer();
+  rc.popTexture(1);
+  rc.popTexture(0);
+  unbindPhotonBuffer(1);
+  rc.popShader();
+  rc.popFBO();
+  
 }
 
 void PhotonSampler::allocateSamplingTexture(std::vector<int>& samplingImage){
@@ -45,9 +131,13 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
   if(!_camera) return false;
   
   _fbo = new Rendering::FBO;
+  _fbo2 = new Rendering::FBO;
   
   auto width = _camera->getWidth();
   auto height = _camera->getHeight();
+  
+  _depthTexture2 = Rendering::TextureUtils::createDepthTexture(width, height);
+  _posTexture2 = Rendering::TextureUtils::createHDRTexture(width, height, false);
   
   _depthTexture = Rendering::TextureUtils::createDepthTexture(width, height);
   _posTexture = Rendering::TextureUtils::createHDRTexture(width, height, false);
@@ -56,6 +146,9 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
   _fbo->attachDepthTexture(rc, _depthTexture.get());
   _fbo->attachColorTexture(rc, _posTexture.get(), 0);
   _fbo->attachColorTexture(rc, _normalTexture.get(), 1);
+  
+  _fbo2->attachDepthTexture(rc, _depthTexture.get());
+  _fbo2->attachColorTexture(rc, _posTexture.get(), 0);
   
   if(!_fbo->isComplete(rc)){
     WARN( _fbo->getStatusMessage(rc) );
@@ -70,20 +163,6 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   rc.setImmediateMode(true);
   rc.applyChanges();
   
-//  auto pos = Geometry::Vec3f(12.5f, 14.89f, -31.0577f);
-//  //auto pos = Geometry::Vec3f(12.f, 58.f, 17.0577f);
-//  auto normal = Geometry::Vec3f(0.f , 0.f, 1.f);
-//  Geometry::Matrix4x4f m;
-//  m.setIdentity();
-////  m.lookAt(pos, pos + normal, Geometry::Vec3f(0.f, 1.f, 0.f));
-//  m.translate(pos);//.rotateToDirection(normal);
-//  
-//  auto srt = Geometry::_SRT<float>();
-//  srt.translate(pos);
-//  srt.setRotation(normal * -1.f, Geometry::Vec3f(0.f, 1.f, 0.f));
-//  //_camera->setRelTransformation(m);
-//  _camera->setRelTransformation(srt);
-  
   if(_fboChanged){
     if(!initializeFBO(rc)){
       WARN("Could not initialize FBO for PhotonSampler!");
@@ -92,13 +171,15 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
     _fboChanged = false;
   }
   
+  clearPhotonBuffer();
+  
   rc.pushAndSetFBO(_fbo.get());
   _fbo->setDrawBuffers(2);
-  rc.pushAndSetShader(_shader.get());
+  rc.pushAndSetShader(_mrtShader.get());
   
   if(_camera != nullptr){
     context.pushAndSetCamera(_camera);
-    _shader->setUniform(rc, Rendering::Uniform("sg_useMaterials", false));
+    _mrtShader->setUniform(rc, Rendering::Uniform("sg_useMaterials", false));
     
     rc.clearDepth(1.0f);
     rc.clearColor(Util::Color4f(0.f, 0.f, 0.f));
@@ -110,8 +191,18 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   rc.popShader();
   rc.popFBO();
   
-  _posTexture->downloadGLTexture(rc);
-  _normalTexture->downloadGLTexture(rc);
+  computePhotonMatrices(rc);
+  
+  
+  // Check if the PhotonBuffer has changed somehow
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
+  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+  float* ptr = reinterpret_cast<float*>(p);
+  std::cout << *(ptr) <<" "<< *((ptr)++) <<" "<< *((ptr)+2) <<" "<< *((ptr)+3) << std::endl;
+  std::cout << *(ptr+4) <<" "<< *((ptr)+5) <<" "<< *((ptr)+6) <<" "<< *((ptr)+7) << std::endl;
+  std::cout << *(ptr+8) <<" "<< *((ptr)+9) <<" "<< *((ptr)+10) <<" "<< *((ptr)+11) << std::endl;
+  std::cout << *(ptr+12) <<" "<< *((ptr)+13) <<" "<< *((ptr)+14) <<" "<< *((ptr)+15) << std::endl << std::endl;
+  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   
   rc.setImmediateMode(false);
   
@@ -133,6 +224,7 @@ void PhotonSampler::setApproximatedScene(Node* root){
 void PhotonSampler::setPhotonNumber(uint32_t number){
   _photonNumber = number;
   resample();
+  initializeSamplePointMesh();
 }
 
 uint32_t PhotonSampler::getTextureWidth(){
@@ -145,47 +237,17 @@ uint32_t PhotonSampler::getTextureHeight(){
   return _camera->getHeight();
 }
 
-Geometry::Vec3f PhotonSampler::getNormalAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord){
-  auto acc = Rendering::TextureUtils::createColorPixelAccessor(rc, *(_normalTexture.get()));
-  auto width = _camera->getWidth();
-  auto height = _camera->getHeight();
-  auto x = static_cast<uint32_t>(texCoord.x() * width);
-  auto y = static_cast<uint32_t>(texCoord.y() * height);
-  
-  if(x == width) x--;
-  if(y == height) y--;
-  
-  auto color = acc->readColor4f(x, y);
-//  std::cout << "Normal: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
-//  auto colorF = acc->readSingleValueFloat(500, 200);
-//  std::cout << "ColorF: " << colorF << std::endl;
-//  auto colorU = acc->readColor4ub(500, 200);
-//  std::cout << "ColorU: " << (int)(colorU.r()) << " " << (int)(colorU.g()) <<" " << (int)(colorU.b()) << std::endl << std::endl;
-//  std::cout << "Width: " << acc->getWidth() << std::endl;
-//  std::cout << "Height: " << acc->getHeight() << std::endl;
-//  std::cout <<  "Normal: " <<std::fixed << std::setprecision(10) << std::setfill('0') << texCoord.x() << " " << texCoord.y() << std::endl;
-//  std::cout <<  "Normal: " << x << " " << y << std::endl;
-  return Geometry::Vec3f(color.r(), color.g(), color.b());
+void PhotonSampler::bindPhotonBuffer(unsigned int location){
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, _photonBufferGLId);
 }
 
-Geometry::Vec3f PhotonSampler::getPosAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord){
-  auto acc = Rendering::TextureUtils::createColorPixelAccessor(rc, *(_posTexture.get()));
-  auto width = _camera->getWidth();
-  auto height = _camera->getHeight();
-  auto x = static_cast<uint32_t>(texCoord.x() * width);
-  auto y = static_cast<uint32_t>(texCoord.y() * height);
-  
-  if(x == width) x--;
-  if(y == height) y--;
-  
-  auto color = acc->readColor4f(x, y);
-  
-//  std::cout << "Pos: " << color.r() << " " << color.g() <<" " <<color.b() << std::endl;
-//  std::cout << "Width: " << acc->getWidth() << std::endl;
-//  std::cout << "Height: " << acc->getHeight() << std::endl;
-//  std::cout << "Pos: " <<std::fixed << std::setprecision(10) << std::setfill('0') << texCoord.x() << " " << texCoord.y() << std::endl;
-//  std::cout << "Pos: " << x << " " << y << std::endl;
-  return Geometry::Vec3f(color.r(), color.g(), color.b());
+void PhotonSampler::unbindPhotonBuffer(unsigned int location){
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, _photonBufferGLId);
+}
+
+void PhotonSampler::clearPhotonBuffer(){
+  float clearVal = 0.f;
+  glClearNamedBufferData(_photonBufferGLId, GL_R32F, GL_RED, GL_FLOAT, &clearVal);
 }
 
 const std::vector<Geometry::Vec2f>& PhotonSampler::getSamplePoints(){
