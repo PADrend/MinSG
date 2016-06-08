@@ -36,7 +36,7 @@ const std::string PhotonSampler::_shaderPath = "ThesisStanislaw/ShaderScenes/sha
   
 PhotonSampler::PhotonSampler() :
   State(),
-  _fbo(nullptr), _depthTexture(nullptr), _posTexture(nullptr), _normalTexture(nullptr),
+  _fbo(nullptr), _photonMatrixFBO(nullptr), _depthTexture(nullptr), _posTexture(nullptr), _normalTexture(nullptr),
   _fboChanged(true), _camera(nullptr), _mrtShader(nullptr), _photonMatrixShader(nullptr), 
   _approxScene(nullptr), _photonNumber(50), _samplingMesh(nullptr), _photonBufferGLId(0)
 {
@@ -61,18 +61,19 @@ void PhotonSampler::initializeSamplePointMesh(){
   // init vertex data
   auto& vertexData = _samplingMesh->openVertexData();
 
-  vertexData.allocate(_samplePoints.size(), vertexDesc);
+  vertexData.allocate(_samplePoints.size() + 1, vertexDesc);
   
   auto posAcc = Rendering::PositionAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::POSITION);
   auto texAcc = Rendering::TexCoordAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::TEXCOORD0);
   auto IDAcc = Rendering::UIntAttributeAccessor::create(vertexData, Util::StringIdentifier("sg_PhotonID"));
-  auto mapPos = [](const Geometry::Vec2& p){ return Geometry::Vec3(p.x()*2.f - 1.f, p.y()*2.f - 1.f, 0.f);}; //map [0,1] to [-1,1]
+  auto mapPos = [](const Geometry::Vec2& p){ return Geometry::Vec3(p.x()* 2.f - 1.f, p.y()* 2.f - 1.f, 0.f);}; //map [0,1] to [-1,1]
   
   for(uint32_t i = 0; i < _samplePoints.size(); i++){
     posAcc->setPosition(i, mapPos(_samplePoints[i]));
     texAcc->setCoordinate(i, _samplePoints[i]);
     IDAcc->setValue(i, i);
   }
+  
   
   // Initialize ssbo to store the photon matrices
   if(_photonBufferGLId != 0){
@@ -87,38 +88,25 @@ void PhotonSampler::initializeSamplePointMesh(){
 }
 
 void PhotonSampler::computePhotonMatrices(Rendering::RenderingContext& rc){
-  //rc.pushAndSetFBO(_fbo2.get());
+  rc.pushAndSetFBO(_photonMatrixFBO.get());
+  _photonMatrixFBO->setDrawBuffers(1);
   rc.pushAndSetShader(_photonMatrixShader.get());
   rc.clearDepth(1.f);
-  
+  rc.clearColor(Util::Color4f(0.f, 0.f, 0.f));
   bindPhotonBuffer(1);
   rc.pushAndSetTexture(0, _posTexture.get());
   rc.pushAndSetTexture(1, _normalTexture.get());
   
-  rc.pushAndSetDepthBuffer(Rendering::DepthBufferParameters(false, false, Rendering::Comparison::LESS));
   rc.pushAndSetLighting(Rendering::LightingParameters(false));
-  
-  rc.pushMatrix_cameraToClipping();
-  rc.setMatrix_cameraToClipping(Geometry::Matrix4x4::orthographicProjection(0, getTextureWidth(), 0, getTextureHeight(), -1, 1));
-  
-  Geometry::Matrix4x4 identityMatrix;
-  identityMatrix.setIdentity();
-
-  rc.pushMatrix_modelToCamera();
-  rc.setMatrix_modelToCamera(identityMatrix);
   
   rc.displayMesh(_samplingMesh.get());
   
-  rc.popMatrix_modelToCamera();
-  rc.popMatrix_cameraToClipping();
   rc.popLighting();
-  rc.popDepthBuffer();
   rc.popTexture(1);
   rc.popTexture(0);
   unbindPhotonBuffer(1);
   rc.popShader();
-  //rc.popFBO();
-  
+  rc.popFBO();
 }
 
 void PhotonSampler::allocateSamplingTexture(std::vector<int>& samplingImage){
@@ -131,13 +119,10 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
   if(!_camera) return false;
   
   _fbo = new Rendering::FBO;
-  _fbo2 = new Rendering::FBO;
+  _photonMatrixFBO = new Rendering::FBO;
   
   auto width = _camera->getWidth();
   auto height = _camera->getHeight();
-  
-  _depthTexture2 = Rendering::TextureUtils::createDepthTexture(width, height);
-  _posTexture2 = Rendering::TextureUtils::createHDRTexture(width, height, false);
   
   _depthTexture = Rendering::TextureUtils::createDepthTexture(width, height);
   _posTexture = Rendering::TextureUtils::createHDRTexture(width, height, false);
@@ -147,8 +132,11 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
   _fbo->attachColorTexture(rc, _posTexture.get(), 0);
   _fbo->attachColorTexture(rc, _normalTexture.get(), 1);
   
-  _fbo2->attachDepthTexture(rc, _depthTexture.get());
-  _fbo2->attachColorTexture(rc, _posTexture.get(), 0);
+  _depthTexturePhotonMatrix = Rendering::TextureUtils::createDepthTexture(width, height);
+  _photonMatrixTexture = Rendering::TextureUtils::createHDRTexture(width, height, false);
+  
+  _photonMatrixFBO->attachDepthTexture(rc, _depthTexturePhotonMatrix.get());
+  _photonMatrixFBO->attachColorTexture(rc, _photonMatrixTexture.get(), 0);
   
   if(!_fbo->isComplete(rc)){
     WARN( _fbo->getStatusMessage(rc) );
@@ -198,10 +186,10 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
   GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
   float* ptr = reinterpret_cast<float*>(p);
-  std::cout << *(ptr) <<" "<< *((ptr)++) <<" "<< *((ptr)+2) <<" "<< *((ptr)+3) << std::endl;
-  std::cout << *(ptr+4) <<" "<< *((ptr)+5) <<" "<< *((ptr)+6) <<" "<< *((ptr)+7) << std::endl;
-  std::cout << *(ptr+8) <<" "<< *((ptr)+9) <<" "<< *((ptr)+10) <<" "<< *((ptr)+11) << std::endl;
-  std::cout << *(ptr+12) <<" "<< *((ptr)+13) <<" "<< *((ptr)+14) <<" "<< *((ptr)+15) << std::endl << std::endl;
+  std::cout << *(ptr) <<" "<< *(ptr+4) <<" "<< *((ptr)+8) <<" "<< *((ptr)+12) << std::endl;
+  std::cout << *(ptr+1) <<" "<< *((ptr)+5) <<" "<< *((ptr)+9) <<" "<< *((ptr)+13) << std::endl;
+  std::cout << *(ptr+2) <<" "<< *((ptr)+6) <<" "<< *((ptr)+10) <<" "<< *((ptr)+14) << std::endl;
+  std::cout << *(ptr+3) <<" "<< *((ptr)+7) <<" "<< *((ptr)+11) <<" "<< *((ptr)+15) << std::endl << std::endl;
   glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   
   rc.setImmediateMode(false);
@@ -210,7 +198,7 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
 //  auto width = _camera->getWidth();
 //  auto height = _camera->getHeight();
 ////   Displays the normal texture correctly if and only if the mentioned line in the LightPatchRenderer is commented out.
-//  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
+//  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_photonMatrixTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
 //  rc.popShader();
 //  return State::stateResult_t::STATE_SKIP_RENDERING;
   
@@ -308,7 +296,7 @@ void PhotonSampler::resample(){
   bitmap.flipVertically();
   
   _samplingTexture = Rendering::TextureUtils::createTextureFromBitmap(bitmap);
-  std::cout << "Image Size: " << imageSize << std::endl;
+  std::cout << "Num Sample Points: " << _samplePoints.size() << " Image Size: " << imageSize << std::endl;
 //  std::cout << samplingImage.size() << std::endl;
 //  std::cout << "------------------------------------------------------" << std::endl;
 //  size_t countt = 0;

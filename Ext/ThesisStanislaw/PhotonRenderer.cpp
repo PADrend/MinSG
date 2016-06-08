@@ -68,7 +68,7 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   
   rc.applyChanges();
   
-  for(int32_t i = 0; i < _photonSampler->getPhotonNumber(); i++){
+  for(int32_t i = 0; i < 1/*_photonSampler->getPhotonNumber()*/; i++){
     
     _fbo->setDrawBuffers(2);
     rc.pushAndSetShader(_indirectLightShader.get());
@@ -102,12 +102,12 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   
   rc.setImmediateMode(false);
   
-//  rc.pushAndSetShader(nullptr);
-//  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_indirectLightTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
-//  rc.popShader();
-//  return State::stateResult_t::STATE_SKIP_RENDERING;
+  rc.pushAndSetShader(nullptr);
+  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_indirectLightTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
+  rc.popShader();
+  return State::stateResult_t::STATE_SKIP_RENDERING;
   
-  return State::stateResult_t::STATE_OK;
+//  return State::stateResult_t::STATE_OK;
 }
 
 void PhotonRenderer::setPhotonSampler(PhotonSampler* sampler){
@@ -118,6 +118,7 @@ void PhotonRenderer::setSamplingResolution(uint32_t width, uint32_t height){
   _samplingWidth = width;
   _samplingHeight = height;
   _fboChanged = true;
+  _photonCamera = computePhotonCamera();
 }
 
 void PhotonRenderer::setApproximatedScene(Node* root){

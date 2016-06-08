@@ -34,8 +34,8 @@ public:
 private:
   static const std::string             _shaderPath;
   
-  Util::Reference<Rendering::FBO>      _fbo, _fbo2;
-  Util::Reference<Rendering::Texture>  _depthTexture2, _posTexture2;
+  Util::Reference<Rendering::FBO>      _fbo, _photonMatrixFBO;
+  Util::Reference<Rendering::Texture>  _depthTexturePhotonMatrix, _photonMatrixTexture;
   Util::Reference<Rendering::Texture>  _depthTexture, _posTexture, _normalTexture;
   bool                                 _fboChanged;
   
