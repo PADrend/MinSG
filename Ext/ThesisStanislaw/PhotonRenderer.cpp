@@ -25,7 +25,7 @@ PhotonRenderer::PhotonRenderer() :
 {
   _indirectLightShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "indirectLightGathering.vs"), Util::FileName(_shaderPath + "indirectLightGathering.fs"), Rendering::Shader::USE_UNIFORMS);
   _accumulationShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "indirectLightAccumulation.vs"), Util::FileName(_shaderPath + "indirectLightAccumulation.fs"), Rendering::Shader::USE_UNIFORMS);
-  _photonCamera = computePhotonCamera();
+//  _photonCamera = computePhotonCamera();
 }
 
 bool PhotonRenderer::initializeFBO(Rendering::RenderingContext& rc){
@@ -74,6 +74,7 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     rc.pushAndSetShader(_indirectLightShader.get());
     _lightPatchRenderer->bindTBO(rc, true, false);
     _photonSampler->bindPhotonBuffer(1);
+    _photonCamera = computePhotonCamera(rc);
     context.pushAndSetCamera(_photonCamera.get());
     _indirectLightShader->setUniform(rc, Rendering::Uniform("photonID", i));
     
@@ -118,7 +119,7 @@ void PhotonRenderer::setSamplingResolution(uint32_t width, uint32_t height){
   _samplingWidth = width;
   _samplingHeight = height;
   _fboChanged = true;
-  _photonCamera = computePhotonCamera();
+//  _photonCamera = computePhotonCamera();
 }
 
 void PhotonRenderer::setApproximatedScene(Node* root){
@@ -134,30 +135,27 @@ void PhotonRenderer::setSpotLights(std::vector<LightNode*> lights){
 }
 
 
-Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(){
+Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(Rendering::RenderingContext& rc){
   Util::Reference<CameraNode> camera = new CameraNode;
 
-  float minDistance = 0.01f;
-  float maxDistance = 500.f;
-  
+//  Geometry::Vec3f normal;
+//  Geometry::Vec3f pos;
+//  
+//  normal = _photonSampler->getNormalAt(rc, Geometry::Vec2f(0.5, 0.5));
+//  pos = _photonSampler->getPosAt(rc,Geometry::Vec2f(0.5, 0.5));
+//  
 //  auto srt = Geometry::_SRT<float>();
 //  srt.translate(pos);
-//  srt.setRotation(normal * -1.f, Geometry::Vec3f(0.f, 1.f, 0.f));
-  
+//  MinSG::Transformations::rotateToWorldDir(*camera.get(), normal * -1.f);
 //  camera->setRelTransformation(srt);
+  
+  float minDistance = 0.01f;
+  float maxDistance = 500.f;
 
   camera->setViewport(Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight));
   camera->setNearFar(minDistance, maxDistance);
   camera->setAngles(-70, 70, -50, 50);
   
-//  std::cout << "Result" << std::endl;
-//  for(int i = 0; i < 4; i++){
-//    for(int j = 0; j < 4; j++){
-//      std::cout << mat[i * 4 + j] << " ";  
-//    }
-//    std::cout << std::endl;
-//  }
-//  std::cout << std::endl;
 
   return camera;
 }
