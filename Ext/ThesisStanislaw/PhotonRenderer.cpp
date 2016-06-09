@@ -1,11 +1,17 @@
 #ifdef MINSG_EXT_THESISSTANISLAW
 
+#define LIB_GL
+#define LIB_GLEW
+
+#include "../../../Rendering/GLHeader.h"
+
 #include "PhotonRenderer.h"
 #include "PhotonSampler.h"
 #include "LightPatchRenderer.h"
 
 #include "../../Core/FrameContext.h"
 #include "../../Core/States/LightingState.h"
+#include "../../Core/Transformations.h"
 
 #include "../../../Rendering/Shader/Uniform.h"
 
@@ -101,6 +107,20 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   
   rc.popFBO();
   
+    // Check if the PhotonBuffer has changed somehow
+//  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonSampler->_photonBufferGLId);
+//  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+//  float* ptr = reinterpret_cast<float*>(p);
+//  std::cout << "Photon Buffer (Renderer): " << std::endl;
+//  std::cout << *(ptr) <<" "<< *(ptr+4) <<" "<< *((ptr)+8) <<" "<< *((ptr)+12) << std::endl;
+//  std::cout << *(ptr+1) <<" "<< *((ptr)+5) <<" "<< *((ptr)+9) <<" "<< *((ptr)+13) << std::endl;
+//  std::cout << *(ptr+2) <<" "<< *((ptr)+6) <<" "<< *((ptr)+10) <<" "<< *((ptr)+14) << std::endl;
+//  std::cout << *(ptr+3) <<" "<< *((ptr)+7) <<" "<< *((ptr)+11) <<" "<< *((ptr)+15) << std::endl << std::endl;
+//////  std::cout << "Diffuse: " << *(ptr+16) <<" "<< *((ptr)+17) <<" "<< *((ptr)+18) <<" "<< *((ptr)+19) << std::endl;
+////  std::cout << "Pos: " << *(ptr+20) <<" "<< *((ptr)+21) <<" "<< *((ptr)+22) <<" "<< *((ptr)+23) << std::endl;
+////  std::cout << "Nor: " << *(ptr+24) <<" "<< *((ptr)+25) <<" "<< *((ptr)+26) <<" "<< *((ptr)+27) << std::endl << std::endl;
+//  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+  
   rc.setImmediateMode(false);
   
   rc.pushAndSetShader(nullptr);
@@ -138,16 +158,12 @@ void PhotonRenderer::setSpotLights(std::vector<LightNode*> lights){
 Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(Rendering::RenderingContext& rc){
   Util::Reference<CameraNode> camera = new CameraNode;
 
-//  Geometry::Vec3f normal;
-//  Geometry::Vec3f pos;
-//  
-//  normal = _photonSampler->getNormalAt(rc, Geometry::Vec2f(0.5, 0.5));
-//  pos = _photonSampler->getPosAt(rc,Geometry::Vec2f(0.5, 0.5));
-//  
+//  auto normal = _photonSampler->getNormalAt(rc, Geometry::Vec2f(0.5, 0.5));
+//  auto pos = _photonSampler->getPosAt(rc,Geometry::Vec2f(0.5, 0.5));
 //  auto srt = Geometry::_SRT<float>();
 //  srt.translate(pos);
-//  MinSG::Transformations::rotateToWorldDir(*camera.get(), normal * -1.f);
 //  camera->setRelTransformation(srt);
+//  MinSG::Transformations::rotateToWorldDir(*camera.get(), normal * -1.f);
   
   float minDistance = 0.01f;
   float maxDistance = 500.f;
