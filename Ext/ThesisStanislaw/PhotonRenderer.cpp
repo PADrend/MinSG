@@ -158,19 +158,31 @@ void PhotonRenderer::setSpotLights(std::vector<LightNode*> lights){
 Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(Rendering::RenderingContext& rc){
   Util::Reference<CameraNode> camera = new CameraNode;
 
-//  auto normal = _photonSampler->getNormalAt(rc, Geometry::Vec2f(0.5, 0.5));
-//  auto pos = _photonSampler->getPosAt(rc,Geometry::Vec2f(0.5, 0.5));
-//  auto srt = Geometry::_SRT<float>();
-//  srt.translate(pos);
-//  camera->setRelTransformation(srt);
-//  MinSG::Transformations::rotateToWorldDir(*camera.get(), normal * -1.f);
-  
+  auto normal = _photonSampler->getNormalAt(rc, Geometry::Vec2f(0.5, 0.5)); //Geometry::Vec3f(0,1,0);
+  auto pos = _photonSampler->getPosAt(rc,Geometry::Vec2f(0.5, 0.5)); //Geometry::Vec3f(0,0,0);
+  auto srt = Geometry::_SRT<float>();
+  srt.translate(pos);
+  camera->setRelTransformation(srt);
+  MinSG::Transformations::rotateToWorldDir(*camera.get(), normal * -1.f);
+
   float minDistance = 0.01f;
   float maxDistance = 500.f;
 
   camera->setViewport(Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight));
   camera->setNearFar(minDistance, maxDistance);
   camera->setAngles(-70, 70, -50, 50);
+  
+  std::cout << "CameraNode: " <<std::endl;
+  auto mat = camera->getRelTransformationMatrix();
+  for(int i = 0; i < 4; i++){
+    for(int j = 0; j < 4; j++){
+      std::cout << mat.at(i * 4 + j) << " ";  
+    }
+    std::cout << std::endl;
+  }
+  std::cout << "Pos: " << pos.x() << " " << pos.y() << " " << pos.z() << std::endl;
+  std::cout << "Nor: " << normal.x() << " " << normal.y() << " " << normal.z() << std::endl;
+  std::cout << std::endl;
   
 
   return camera;

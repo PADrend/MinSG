@@ -102,16 +102,6 @@ void PhotonSampler::computePhotonMatrices(Rendering::RenderingContext& rc, Frame
 //  camera->setNearFar(0.01, 500);
 //  camera->setAngles(-70, 70, -50, 50);
   
-//  std::cout << "CameraNode: " <<std::endl;
-//  auto mat = camera->getRelTransformationMatrix();
-//  for(int i = 0; i < 4; i++){
-//    for(int j = 0; j < 4; j++){
-//      std::cout << mat.at(i * 4 + j) << " ";  
-//    }
-//    std::cout << std::endl;
-//  }
-//  std::cout << std::endl;
-  
   
   rc.pushAndSetFBO(_photonMatrixFBO.get());
   _photonMatrixFBO->setDrawBuffers(1);
@@ -204,25 +194,25 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   rc.popShader();
   rc.popFBO();
   
-//  _posTexture->downloadGLTexture(rc);
-//  _normalTexture->downloadGLTexture(rc);
+  _posTexture->downloadGLTexture(rc);
+  _normalTexture->downloadGLTexture(rc);
   
   computePhotonMatrices(rc, context);
   
   
   // Check if the PhotonBuffer has changed somehow
-//  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
-//  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-//  float* ptr = reinterpret_cast<float*>(p);
-//  std::cout << "Photon Buffer (Sampler): " << std::endl;
-//  std::cout << *(ptr) <<" "<< *(ptr+4) <<" "<< *((ptr)+8) <<" "<< *((ptr)+12) << std::endl;
-//  std::cout << *(ptr+1) <<" "<< *((ptr)+5) <<" "<< *((ptr)+9) <<" "<< *((ptr)+13) << std::endl;
-//  std::cout << *(ptr+2) <<" "<< *((ptr)+6) <<" "<< *((ptr)+10) <<" "<< *((ptr)+14) << std::endl;
-//  std::cout << *(ptr+3) <<" "<< *((ptr)+7) <<" "<< *((ptr)+11) <<" "<< *((ptr)+15) << std::endl << std::endl;
-////  std::cout << "Diffuse: " << *(ptr+16) <<" "<< *((ptr)+17) <<" "<< *((ptr)+18) <<" "<< *((ptr)+19) << std::endl;
-////  std::cout << "Pos: " << *(ptr+20) <<" "<< *((ptr)+21) <<" "<< *((ptr)+22) <<" "<< *((ptr)+23) << std::endl;
-////  std::cout << "Nor: " << *(ptr+24) <<" "<< *((ptr)+25) <<" "<< *((ptr)+26) <<" "<< *((ptr)+27) << std::endl << std::endl;
-//  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
+  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+  float* ptr = reinterpret_cast<float*>(p);
+  std::cout << "Photon Buffer (Sampler): " << std::endl;
+  std::cout << *(ptr) <<" "<< *(ptr+4) <<" "<< *((ptr)+8) <<" "<< *((ptr)+12) << std::endl;
+  std::cout << *(ptr+1) <<" "<< *((ptr)+5) <<" "<< *((ptr)+9) <<" "<< *((ptr)+13) << std::endl;
+  std::cout << *(ptr+2) <<" "<< *((ptr)+6) <<" "<< *((ptr)+10) <<" "<< *((ptr)+14) << std::endl;
+  std::cout << *(ptr+3) <<" "<< *((ptr)+7) <<" "<< *((ptr)+11) <<" "<< *((ptr)+15) << std::endl;// << std::endl;
+//  std::cout << "Diffuse: " << *(ptr+16) <<" "<< *((ptr)+17) <<" "<< *((ptr)+18) <<" "<< *((ptr)+19) << std::endl;
+  std::cout << "Pos: " << *(ptr+20) <<" "<< *((ptr)+21) <<" "<< *((ptr)+22) <<" "<< *((ptr)+23) << std::endl;
+  std::cout << "Nor: " << *(ptr+24) <<" "<< *((ptr)+25) <<" "<< *((ptr)+26) <<" "<< *((ptr)+27) << std::endl << std::endl;
+  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   
   rc.setImmediateMode(false);
   
