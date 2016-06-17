@@ -31,7 +31,7 @@ namespace BlueSurfels {
 #define SURFEL_MEDIAN_COUNT 1000
 		
 SurfelRenderer2::SurfelRenderer2() : NodeRendererState(FrameContext::DEFAULT_CHANNEL),
-		countFactor(1.0f),sizeFactor(2.0f),maxSurfelSize(32.0) {
+		countFactor(1.0f),sizeFactor(2.0f),maxSurfelSize(32.0), debugHideSurfels(false) {
 }
 SurfelRenderer2::~SurfelRenderer2() {}
 
@@ -79,7 +79,7 @@ NodeRendererResult SurfelRenderer2::displayNode(FrameContext & context, Node * n
 	bool renderOriginal = surfelCount > maxCount && minSurfelDistance > meterPerSurfel/2;
 	surfelCount = std::min(std::max<uint32_t>(renderOriginal ? (2*maxCount-std::min(2*maxCount,surfelCount)) : surfelCount,0),maxCount);
 
-	if(surfelCount > 0) {
+	if(surfelCount > 0 && !debugHideSurfels) {
 		auto& renderingContext = context.getRenderingContext();
 		
 		static Rendering::Uniform enableSurfels("renderSurfels", true);
@@ -96,7 +96,7 @@ NodeRendererResult SurfelRenderer2::displayNode(FrameContext & context, Node * n
 		
 		return renderOriginal ? NodeRendererResult::PASS_ON : NodeRendererResult::NODE_HANDLED;
 	}
-	return NodeRendererResult::PASS_ON;
+	return (debugHideSurfels && !renderOriginal) ? NodeRendererResult::NODE_HANDLED : NodeRendererResult::PASS_ON;
 }
 
 

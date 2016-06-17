@@ -31,14 +31,17 @@ class SurfelRenderer2 : public NodeRendererState{
 		float getCountFactor()const		{	return countFactor;	}
 		float getSizeFactor()const		{	return sizeFactor;	}
 		float getMaxSurfelSize()const		{	return maxSurfelSize;	}
+		bool getDebugHideSurfels() const { return debugHideSurfels; }
 
 		void setCountFactor(float f)	{	countFactor = f;	}
 		void setSizeFactor(float f)		{	sizeFactor = f;	}
 		void setMaxSurfelSize(float f)		{	maxSurfelSize = f;	}
+		void setDebugHideSufels(bool b) { debugHideSurfels = b; }
 		
 		SurfelRenderer2* clone()const	{	return new SurfelRenderer2(*this);	}
 	private:
 		float countFactor,sizeFactor,maxSurfelSize;
+		bool debugHideSurfels;
 };
 }
 
