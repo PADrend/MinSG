@@ -20,6 +20,8 @@
 #include "../../../Rendering/GLHeader.h"
 #include "../../../Rendering/BufferObject.h"
 
+#include <Rendering/Helper.h>
+
 namespace MinSG{
 namespace ThesisStanislaw{
   
@@ -92,8 +94,10 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
   rc.setImmediateMode(true);
   rc.applyChanges();
   
+  _lightPatchTBO->_uploadGLTexture(rc);
   auto glID = _lightPatchTBO->getBufferObject()->getGLId();
-  glClearNamedBufferData(glID, GL_R32UI, GL_RED, GL_UNSIGNED_INT, 0);
+  glClearNamedBufferDataEXT(glID, GL_R32UI, GL_RED, GL_UNSIGNED_INT, 0);
+  GET_GL_ERROR();
   
   if(_fboChanged){ 
     initializeFBO(rc); 
@@ -137,6 +141,7 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
   rc.popFBO();
   
   rc.setImmediateMode(false);
+  GET_GL_ERROR();
   
 //  rc.pushAndSetShader(nullptr);
 //  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));

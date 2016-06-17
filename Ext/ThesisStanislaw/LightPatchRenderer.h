@@ -72,6 +72,9 @@ public:
   void unbindTBO(Rendering::RenderingContext& rc);
   
   void setCamera(CameraNode* camera);
+  Util::Reference<Rendering::Texture> getPolygonIDTexture() const { return _polygonIDTexture; }
+  Util::Reference<Rendering::Texture> getLightPatchTBO() const { return _lightPatchTBO; }
+  Util::Reference<Rendering::Texture> getNormalTexture() const { return _normalTexture; }
 };
 
 }

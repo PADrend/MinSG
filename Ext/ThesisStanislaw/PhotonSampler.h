@@ -96,6 +96,8 @@ public:
   void unbindPhotonBuffer(unsigned int location);
   void clearPhotonBuffer();
 
+  Util::Reference<Rendering::Texture> getSamplingTexture() const { return _samplingTexture; }
+  Util::Reference<Rendering::Texture> getMatrixTexture() const { return _photonMatrixTexture; }
 };
 
 }
