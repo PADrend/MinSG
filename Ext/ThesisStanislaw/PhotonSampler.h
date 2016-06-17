@@ -40,6 +40,7 @@ private:
   bool                                 _fboChanged;
   
   Util::Reference<Rendering::Texture>  _samplingTexture;
+  uint32_t                             _samplingTextureSize;
   
   CameraNode*                          _camera;
   
@@ -52,7 +53,7 @@ private:
   uint32_t                             _photonNumber;
   Sampling                             _samplingStrategy;
   Util::Reference<Rendering::Mesh>     _samplingMesh;
-  //unsigned int                         _photonBufferGLId;
+//  unsigned int                         _photonBufferGLId;
   
   void allocateSamplingTexture(std::vector<int>& samplingImage);
   bool initializeFBO(Rendering::RenderingContext& rc);
@@ -66,8 +67,6 @@ private:
   
   
 public:
-Geometry::Vec3f getNormalAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord);
-  Geometry::Vec3f getPosAt(Rendering::RenderingContext& rc, const Geometry::Vec2f& texCoord);
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
   PhotonSampler();

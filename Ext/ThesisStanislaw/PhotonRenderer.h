@@ -45,7 +45,7 @@ private:
   Util::Reference<CameraNode>          _photonCamera;
   
   bool initializeFBO(Rendering::RenderingContext& rc);
-  Util::Reference<CameraNode> computePhotonCamera(Rendering::RenderingContext& rc);
+  Util::Reference<CameraNode> computePhotonCamera();
   
 public:
 
