@@ -23,7 +23,8 @@ State::stateResult_t PhongGI::doEnableState(FrameContext & context, Node * node,
 
   rc.pushAndSetShader(_shader.get());
   if(_photonSampler) {
-    _photonSampler->bindSamplingTexture(rc);
+    _shader->setUniform(rc, Rendering::Uniform("samplingTextureSize", static_cast<int32_t>(_photonSampler->getSamplingTextureSize())));
+    _photonSampler->bindSamplingTexture(rc, 2);
     _photonSampler->bindPhotonBuffer(1);
   }
   return State::stateResult_t::STATE_OK;
@@ -33,11 +34,13 @@ void PhongGI::doDisableState(FrameContext & context, Node *, const RenderParam &
   auto& rc = context.getRenderingContext();
   
   if(_photonSampler){ 
-    _photonSampler->unbindSamplingTexture(rc);
+    _photonSampler->unbindSamplingTexture(rc, 2);
     _photonSampler->unbindPhotonBuffer(1);
   }
   
   rc.popShader();
+  
+  _photonSampler->outputPhotonBuffer("PhongGI");
 }
 
 void PhongGI::setPhotonSampler(PhotonSampler* sampler){

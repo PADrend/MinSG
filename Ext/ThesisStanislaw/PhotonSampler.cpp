@@ -13,6 +13,7 @@
 #include "../../../Rendering/GLHeader.h"
 #include "../../../Rendering/Texture/TextureUtils.h"
 #include "../../../Rendering/RenderingContext/RenderingParameters.h"
+#include "../../../Rendering/Texture/TextureType.h"
 
 #include "../../../Util/Graphics/PixelAccessor.h"
 #include "../../../Util/Graphics/Bitmap.h"
@@ -39,13 +40,11 @@ PhotonSampler::PhotonSampler() :
   State(),
   _fbo(nullptr), _photonMatrixFBO(nullptr), _depthTexturePhotonMatrix(nullptr), _photonMatrixTexture(nullptr),
   _depthTexture(nullptr), _posTexture(nullptr), _normalTexture(nullptr),
-  _fboChanged(true), _samplingTexture(nullptr), _samplingTextureSize(0), _camera(nullptr), _mrtShader(nullptr), _photonMatrixShader(nullptr), 
+  _fboChanged(true), _needResampling(true), _samplingTexture(nullptr), _samplingTextureSize(0), _camera(nullptr), _mrtShader(nullptr), _photonMatrixShader(nullptr), 
   _approxScene(nullptr), _photonNumber(50), _samplingMesh(nullptr), _photonBufferGLId(0)
 {
   _mrtShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "MRT.vs"), Util::FileName(_shaderPath + "MRT.fs"), Rendering::Shader::USE_UNIFORMS);
   _photonMatrixShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "photonMatrices.vs"), Util::FileName(_shaderPath + "photonMatrices.fs"), Rendering::Shader::USE_UNIFORMS);
-  resample();
-  initializeSamplePointMesh();
 }
 
 void PhotonSampler::initializeSamplePointMesh(){
@@ -112,9 +111,9 @@ void PhotonSampler::computePhotonMatrices(Rendering::RenderingContext& rc, Frame
 }
 
 void PhotonSampler::allocateSamplingTexture(std::vector<int>& samplingImage){
-  using namespace Rendering;
-  auto size = static_cast<uint32_t>(std::sqrt(samplingImage.size()));
-  _samplingTexture = TextureUtils::createDataTexture(TextureType::TEXTURE_2D, size, size, 1, Util::TypeConstant::INT32, 1);
+//  using namespace Rendering;
+//  auto size = static_cast<uint32_t>(std::sqrt(samplingImage.size()));
+//  _samplingTexture = TextureUtils::createDataTexture(TextureType::TEXTURE_2D, size, size, 1, Util::TypeConstant::INT32, 1);
 }
 
 bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
@@ -161,6 +160,12 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
     _fboChanged = false;
   }
   
+  if(_needResampling){
+    resample(rc);
+    initializeSamplePointMesh();
+    _needResampling = false;  
+  }
+  
   clearPhotonBuffer();
   
   rc.pushAndSetFBO(_fbo.get());
@@ -183,21 +188,6 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   
   computePhotonMatrices(rc, context);
   
-  
-  // Check if the PhotonBuffer has changed somehow
-//  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
-//  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-//  float* ptr = reinterpret_cast<float*>(p);
-//  std::cout << "Photon Buffer (Sampler): " << std::endl;
-//  std::cout << *(ptr) <<" "<< *(ptr+4) <<" "<< *((ptr)+8) <<" "<< *((ptr)+12) << std::endl;
-//  std::cout << *(ptr+1) <<" "<< *((ptr)+5) <<" "<< *((ptr)+9) <<" "<< *((ptr)+13) << std::endl;
-//  std::cout << *(ptr+2) <<" "<< *((ptr)+6) <<" "<< *((ptr)+10) <<" "<< *((ptr)+14) << std::endl;
-//  std::cout << *(ptr+3) <<" "<< *((ptr)+7) <<" "<< *((ptr)+11) <<" "<< *((ptr)+15) << std::endl;// << std::endl;
-////  std::cout << "Diffuse: " << *(ptr+16) <<" "<< *((ptr)+17) <<" "<< *((ptr)+18) <<" "<< *((ptr)+19) << std::endl;
-//  std::cout << "Pos: " << *(ptr+20) <<" "<< *((ptr)+21) <<" "<< *((ptr)+22) <<" "<< *((ptr)+23) << std::endl;
-//  std::cout << "Nor: " << *(ptr+24) <<" "<< *((ptr)+25) <<" "<< *((ptr)+26) <<" "<< *((ptr)+27) << std::endl << std::endl;
-//  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-  
   rc.setImmediateMode(false);
   
 //  rc.pushAndSetShader(nullptr);
@@ -211,14 +201,29 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   return State::stateResult_t::STATE_OK;
 }
 
+void PhotonSampler::outputPhotonBuffer(std::string location){
+  // Check if the PhotonBuffer has changed somehow
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
+  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+  float* ptr = reinterpret_cast<float*>(p);
+  std::cout << "Photon Buffer (" << location << "): " << std::endl;
+//  std::cout << *(ptr) <<" "<< *(ptr+4) <<" "<< *((ptr)+8) <<" "<< *((ptr)+12) << std::endl;
+//  std::cout << *(ptr+1) <<" "<< *((ptr)+5) <<" "<< *((ptr)+9) <<" "<< *((ptr)+13) << std::endl;
+//  std::cout << *(ptr+2) <<" "<< *((ptr)+6) <<" "<< *((ptr)+10) <<" "<< *((ptr)+14) << std::endl;
+//  std::cout << *(ptr+3) <<" "<< *((ptr)+7) <<" "<< *((ptr)+11) <<" "<< *((ptr)+15) << std::endl;// << std::endl;
+  std::cout << "Diffuse: " << *(ptr+16) <<" "<< *((ptr)+17) <<" "<< *((ptr)+18) <<" "<< *((ptr)+19) << std::endl;
+////  std::cout << "Pos: " << *(ptr+20) <<" "<< *((ptr)+21) <<" "<< *((ptr)+22) <<" "<< *((ptr)+23) << std::endl;
+////  std::cout << "Nor: " << *(ptr+24) <<" "<< *((ptr)+25) <<" "<< *((ptr)+26) <<" "<< *((ptr)+27) << std::endl << std::endl;
+  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
 void PhotonSampler::setApproximatedScene(Node* root){
   _approxScene = root;
 }
 
 void PhotonSampler::setPhotonNumber(uint32_t number){
   _photonNumber = number;
-  resample();
-  initializeSamplePointMesh();
+  _needResampling = true;
 }
 
 uint32_t PhotonSampler::getTextureWidth(){
@@ -231,12 +236,24 @@ uint32_t PhotonSampler::getTextureHeight(){
   return _camera->getHeight();
 }
 
+int PhotonSampler::getSamplingTextureSize(){
+  return _samplingTextureSize;
+}
+
 void PhotonSampler::bindPhotonBuffer(unsigned int location){
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, _photonBufferGLId);
 }
 
 void PhotonSampler::unbindPhotonBuffer(unsigned int location){
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, _photonBufferGLId);
+}
+
+void PhotonSampler::bindSamplingTexture(Rendering::RenderingContext& rc, unsigned int location){
+  rc.pushAndSetTexture(location, _samplingTexture.get());
+}
+
+void PhotonSampler::unbindSamplingTexture(Rendering::RenderingContext& rc, unsigned int location){
+  rc.popTexture(location);
 }
 
 void PhotonSampler::clearPhotonBuffer(){
@@ -254,14 +271,13 @@ uint32_t PhotonSampler::getPhotonNumber(){
 
 void PhotonSampler::setSamplingStrategy(uint8_t type){
   _samplingStrategy = static_cast<Sampling>(type);
-  resample();
+  _needResampling = true;
 }
 
-void PhotonSampler::resample(){
+void PhotonSampler::resample(Rendering::RenderingContext& rc){
   std::vector<int> samplingImage;
 
   uint32_t additionalPhotons = 0;
-  size_t imageSize = 0;
   
   while(samplingImage.size() == 0 || _samplePoints.size() < _photonNumber){
       
@@ -277,19 +293,27 @@ void PhotonSampler::resample(){
       }
     }
     
-    imageSize = static_cast<size_t>(std::ceil(std::sqrt(_photonNumber + additionalPhotons)));
+    _samplingTextureSize = static_cast<int>(std::ceil(std::sqrt(_photonNumber + additionalPhotons)));
     std::vector<std::tuple<float, float, size_t>> fPoints;
     for (size_t idx = 0; idx < _samplePoints.size(); idx++) {
       fPoints.push_back(std::make_tuple(_samplePoints[idx].x(), _samplePoints[idx].y(), idx));
     }
     
-    samplingImage = computeSamplingImage(fPoints, imageSize);
+    samplingImage = computeSamplingImage(fPoints, _samplingTextureSize);
     additionalPhotons++;
   }
   
-  std::vector<uint8_t> byteData;
   
-  uint8_t* ptr = reinterpret_cast<uint8_t*>(&samplingImage[0]);
+  /////////////////// Upload Sample Image containing the photon ID's /////////////////
+
+  std::vector<uint8_t> byteData;
+
+  int* testData = new int[samplingImage.size()];
+  for (int i = 0; i < samplingImage.size(); i++) {
+    testData[i] = 42;
+  }
+  
+  uint8_t* ptr = reinterpret_cast<uint8_t*>(testData);
   for(size_t i = 0; i < samplingImage.size() * sizeof(int); i++){
     byteData.push_back(ptr[i]);
   }
@@ -297,13 +321,35 @@ void PhotonSampler::resample(){
   auto NONE = Util::PixelFormat::NONE;
   Util::PixelFormat pf = Util::PixelFormat(Util::TypeConstant::INT32, 0, NONE, NONE, NONE);
   
-  Util::Bitmap bitmap(static_cast<const uint32_t>(imageSize), static_cast<const uint32_t>(imageSize), pf);
+  Util::Bitmap bitmap(static_cast<const uint32_t>(_samplingTextureSize), static_cast<const uint32_t>(_samplingTextureSize), pf);
   bitmap.setData(byteData);
-  bitmap.flipVertically();
   
   _samplingTexture = Rendering::TextureUtils::createTextureFromBitmap(bitmap);
-  std::cout << "Num Sample Points: " << _samplePoints.size() << " Image Size: " << imageSize << std::endl;
+  _samplingTexture->_createGLID(rc);
+  _samplingTexture->_uploadGLTexture(rc);
+  
+  
+  
+  ////////// Doesn't work
+//  _samplingTexture = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, _samplingTextureSize, _samplingTextureSize, 1, Util::TypeConstant::INT32, 1);
+//  _samplingTexture->_createGLID(rc);
+//  auto ptrTex = _samplingTexture->openLocalData(rc);
+//  int* testData = new int[samplingImage.size()];
+//  for (int i = 0; i < samplingImage.size(); i++) {
+//    testData[i] = 42;
+//  }
+//  ptr = reinterpret_cast<uint8_t*>(testData);
+//  for(size_t i = 0; i < samplingImage.size() * sizeof(int); i++){
+//    ptrTex[i] = ptr[i];   
+//  }
+//  _samplingTexture->_uploadGLTexture(rc);
+  
+  
+  
+  std::cout << "Num Sample Points: " << _samplePoints.size() << " Image Size: " << _samplingTextureSize << std::endl;
   std::cout << "First entry ID: " << samplingImage[0] << " with " << _samplePoints[samplingImage[0]] << std::endl;
+  
+  
 //  std::cout << samplingImage.size() << std::endl;
 //  std::cout << "------------------------------------------------------" << std::endl;
 //  size_t countt = 0;
@@ -324,7 +370,7 @@ void PhotonSampler::resample(){
 //    countt++;
 //  }
   
-  allocateSamplingTexture(samplingImage);
+ // allocateSamplingTexture(samplingImage);
 }
 
 void PhotonSampler::setCamera(CameraNode* camera){
@@ -338,14 +384,6 @@ Util::Reference<Rendering::Texture> PhotonSampler::getPosTexture(){
 
 Util::Reference<Rendering::Texture> PhotonSampler::getNormalTexture(){
   return _normalTexture;
-}
-
-void PhotonSampler::bindSamplingTexture(Rendering::RenderingContext& rc){
-  rc.pushAndSetTexture(0, _samplingTexture.get());
-}
-
-void PhotonSampler::unbindSamplingTexture(Rendering::RenderingContext& rc){
-  rc.popTexture(0);
 }
 
 PhotonSampler * PhotonSampler::clone() const {

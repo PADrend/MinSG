@@ -108,20 +108,6 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   
   rc.popFBO();
   
-    // Check if the PhotonBuffer has changed somehow
-//  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonSampler->_photonBufferGLId);
-//  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-//  float* ptr = reinterpret_cast<float*>(p);
-//  std::cout << "Photon Buffer (Renderer): " << std::endl;
-//  std::cout << *(ptr) <<" "<< *(ptr+4) <<" "<< *((ptr)+8) <<" "<< *((ptr)+12) << std::endl;
-//  std::cout << *(ptr+1) <<" "<< *((ptr)+5) <<" "<< *((ptr)+9) <<" "<< *((ptr)+13) << std::endl;
-//  std::cout << *(ptr+2) <<" "<< *((ptr)+6) <<" "<< *((ptr)+10) <<" "<< *((ptr)+14) << std::endl;
-//  std::cout << *(ptr+3) <<" "<< *((ptr)+7) <<" "<< *((ptr)+11) <<" "<< *((ptr)+15) << std::endl << std::endl;
-//////  std::cout << "Diffuse: " << *(ptr+16) <<" "<< *((ptr)+17) <<" "<< *((ptr)+18) <<" "<< *((ptr)+19) << std::endl;
-////  std::cout << "Pos: " << *(ptr+20) <<" "<< *((ptr)+21) <<" "<< *((ptr)+22) <<" "<< *((ptr)+23) << std::endl;
-////  std::cout << "Nor: " << *(ptr+24) <<" "<< *((ptr)+25) <<" "<< *((ptr)+26) <<" "<< *((ptr)+27) << std::endl << std::endl;
-//  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-  
   rc.setImmediateMode(false);
   
 //  rc.pushAndSetShader(nullptr);

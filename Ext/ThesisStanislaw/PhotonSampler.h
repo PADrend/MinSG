@@ -37,7 +37,7 @@ private:
   Util::Reference<Rendering::FBO>      _fbo, _photonMatrixFBO;
   Util::Reference<Rendering::Texture>  _depthTexturePhotonMatrix, _photonMatrixTexture;
   Util::Reference<Rendering::Texture>  _depthTexture, _posTexture, _normalTexture;
-  bool                                 _fboChanged;
+  bool                                 _fboChanged, _needResampling;
   
   Util::Reference<Rendering::Texture>  _samplingTexture;
   uint32_t                             _samplingTextureSize;
@@ -79,7 +79,7 @@ public:
   void setPhotonNumber(uint32_t number);
   void setSamplingStrategy(uint8_t type);
   void setCamera(CameraNode* camera);
-  void resample();
+  void resample(Rendering::RenderingContext& rc);
   
   uint32_t getPhotonNumber();
   
@@ -89,8 +89,9 @@ public:
   uint32_t getTextureHeight();
   const std::vector<Geometry::Vec2f>& getSamplePoints();
   
-  void bindSamplingTexture(Rendering::RenderingContext& rc);
-  void unbindSamplingTexture(Rendering::RenderingContext& rc);
+  void bindSamplingTexture(Rendering::RenderingContext& rc, unsigned int location);
+  void unbindSamplingTexture(Rendering::RenderingContext& rc, unsigned int location);
+  int getSamplingTextureSize();
   
   void bindPhotonBuffer(unsigned int location);
   void unbindPhotonBuffer(unsigned int location);
@@ -98,6 +99,8 @@ public:
 
   Util::Reference<Rendering::Texture> getSamplingTexture() const { return _samplingTexture; }
   Util::Reference<Rendering::Texture> getMatrixTexture() const { return _photonMatrixTexture; }
+  
+  void outputPhotonBuffer(std::string location);
 };
 
 }
