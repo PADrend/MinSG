@@ -83,7 +83,7 @@ void PhotonSampler::initializeSamplePointMesh(){
 
   glGenBuffers(1, &_photonBufferGLId);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, _photonNumber * sizeof(float) * 28 , NULL, GL_STATIC_READ);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, _photonNumber * sizeof(float) * 32 , NULL, GL_STATIC_READ);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 }
@@ -207,14 +207,17 @@ void PhotonSampler::outputPhotonBuffer(std::string location){
   GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
   float* ptr = reinterpret_cast<float*>(p);
   std::cout << "Photon Buffer (" << location << "): " << std::endl;
+  for(int i = 0 ; i < 1/*_photonNumber*/; i++){
 //  std::cout << *(ptr) <<" "<< *(ptr+4) <<" "<< *((ptr)+8) <<" "<< *((ptr)+12) << std::endl;
 //  std::cout << *(ptr+1) <<" "<< *((ptr)+5) <<" "<< *((ptr)+9) <<" "<< *((ptr)+13) << std::endl;
 //  std::cout << *(ptr+2) <<" "<< *((ptr)+6) <<" "<< *((ptr)+10) <<" "<< *((ptr)+14) << std::endl;
 //  std::cout << *(ptr+3) <<" "<< *((ptr)+7) <<" "<< *((ptr)+11) <<" "<< *((ptr)+15) << std::endl;// << std::endl;
-  std::cout << "Diffuse: " << *(ptr+16) <<" "<< *((ptr)+17) <<" "<< *((ptr)+18) <<" "<< *((ptr)+19) << std::endl;
-////  std::cout << "Pos: " << *(ptr+20) <<" "<< *((ptr)+21) <<" "<< *((ptr)+22) <<" "<< *((ptr)+23) << std::endl;
-////  std::cout << "Nor: " << *(ptr+24) <<" "<< *((ptr)+25) <<" "<< *((ptr)+26) <<" "<< *((ptr)+27) << std::endl << std::endl;
+  std::cout << "Diffuse: " << *(ptr+ i * 32 +16) <<" "<< *((ptr)+ i * 32 +17) <<" "<< *((ptr)+ i * 32 +18) <<" "<< *((ptr)+ i * 32 +19) << std::endl;
+//  std::cout << "Pos: " << *(ptr+20) <<" "<< *((ptr)+21) <<" "<< *((ptr)+22) <<" "<< *((ptr)+23) << std::endl;
+//  std::cout << "PosSS: " << *(ptr+ i * 32 +24) <<" "<< *((ptr)+ i * 32 +25) <<" "<< *((ptr)+ i * 32 +26) <<" "<< *((ptr)+ i * 32 +27) << std::endl;
+  }
   glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+  std::cout << std::endl;
 }
 
 void PhotonSampler::setApproximatedScene(Node* root){
@@ -275,45 +278,44 @@ void PhotonSampler::setSamplingStrategy(uint8_t type){
 }
 
 void PhotonSampler::resample(Rendering::RenderingContext& rc){
-  std::vector<int> samplingImage;
-
   uint32_t additionalPhotons = 0;
+  std::vector<MinSG::ThesisStanislaw::Sampler::PoissonGenerator::sPoint> generatedPoints;
   
-  while(samplingImage.size() == 0 || _samplePoints.size() < _photonNumber){
-      
+  while(generatedPoints.size() < _photonNumber){
     switch(_samplingStrategy){
       case Sampling::POISSON:
       default:{
         Sampler::PoissonGenerator::DefaultPRNG PRNG;
-        auto points = Sampler::PoissonGenerator::GeneratePoissonPoints( _photonNumber + additionalPhotons, PRNG , 50, false);
-        _samplePoints.clear();
-        for(auto& point : points){
-          _samplePoints.push_back(Geometry::Vec2f(point.x, point.y));
-        }
+        generatedPoints = Sampler::PoissonGenerator::GeneratePoissonPoints( _photonNumber + additionalPhotons, PRNG , 50, false);
       }
     }
-    
-    _samplingTextureSize = static_cast<int>(std::ceil(std::sqrt(_photonNumber + additionalPhotons)));
-    std::vector<std::tuple<float, float, size_t>> fPoints;
-    for (size_t idx = 0; idx < _samplePoints.size(); idx++) {
-      fPoints.push_back(std::make_tuple(_samplePoints[idx].x(), _samplePoints[idx].y(), idx));
-    }
-    
-    samplingImage = computeSamplingImage(fPoints, _samplingTextureSize);
     additionalPhotons++;
+
   }
   
+  _samplePoints.clear();
+  for(auto& point : generatedPoints){
+    _samplePoints.push_back(Geometry::Vec2f(point.x, point.y));
+  }
   
+  std::vector<std::tuple<float, float, size_t>> fPoints;
+  for (size_t idx = 0; idx < _samplePoints.size(); idx++) {
+    fPoints.push_back(std::make_tuple(_samplePoints[idx].x(), _samplePoints[idx].y(), idx));
+  }
+  
+  std::vector<int> samplingImage;
+  size_t additionalSize = 0;
+  while(samplingImage.size() == 0){
+    _samplingTextureSize = static_cast<int>(std::ceil(std::sqrt(_samplePoints.size() + additionalSize)));
+    samplingImage = computeSamplingImage(fPoints, _samplingTextureSize);
+    additionalSize++;
+  }
+    
   /////////////////// Upload Sample Image containing the photon ID's /////////////////
 
   std::vector<uint8_t> byteData;
 
-  int* testData = new int[samplingImage.size()];
-  for (int i = 0; i < samplingImage.size(); i++) {
-    testData[i] = 42;
-  }
-  
-  uint8_t* ptr = reinterpret_cast<uint8_t*>(testData);
+  uint8_t* ptr = reinterpret_cast<uint8_t*>(&(samplingImage[0]));
   for(size_t i = 0; i < samplingImage.size() * sizeof(int); i++){
     byteData.push_back(ptr[i]);
   }
@@ -327,23 +329,6 @@ void PhotonSampler::resample(Rendering::RenderingContext& rc){
   _samplingTexture = Rendering::TextureUtils::createTextureFromBitmap(bitmap);
   _samplingTexture->_createGLID(rc);
   _samplingTexture->_uploadGLTexture(rc);
-  
-  
-  
-  ////////// Doesn't work
-//  _samplingTexture = Rendering::TextureUtils::createDataTexture(Rendering::TextureType::TEXTURE_2D, _samplingTextureSize, _samplingTextureSize, 1, Util::TypeConstant::INT32, 1);
-//  _samplingTexture->_createGLID(rc);
-//  auto ptrTex = _samplingTexture->openLocalData(rc);
-//  int* testData = new int[samplingImage.size()];
-//  for (int i = 0; i < samplingImage.size(); i++) {
-//    testData[i] = 42;
-//  }
-//  ptr = reinterpret_cast<uint8_t*>(testData);
-//  for(size_t i = 0; i < samplingImage.size() * sizeof(int); i++){
-//    ptrTex[i] = ptr[i];   
-//  }
-//  _samplingTexture->_uploadGLTexture(rc);
-  
   
   
   std::cout << "Num Sample Points: " << _samplePoints.size() << " Image Size: " << _samplingTextureSize << std::endl;
