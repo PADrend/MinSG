@@ -12,6 +12,7 @@
 #define SURFEL_RENDERER2
 
 #include "../../Core/States/NodeRendererState.h"
+#include "../../Core/Nodes/CameraNode.h"
 
 #include <Geometry/Vec3.h>
 
@@ -32,16 +33,19 @@ class SurfelRenderer2 : public NodeRendererState{
 		float getSizeFactor()const		{	return sizeFactor;	}
 		float getMaxSurfelSize()const		{	return maxSurfelSize;	}
 		bool getDebugHideSurfels() const { return debugHideSurfels; }
+		bool isDebugCameraEnabled() const { return debugCameraEnabled; }
 
 		void setCountFactor(float f)	{	countFactor = f;	}
 		void setSizeFactor(float f)		{	sizeFactor = f;	}
 		void setMaxSurfelSize(float f)		{	maxSurfelSize = f;	}
 		void setDebugHideSufels(bool b) { debugHideSurfels = b; }
+		void setDebugCameraEnabled(bool b);
 		
 		SurfelRenderer2* clone()const	{	return new SurfelRenderer2(*this);	}
 	private:
 		float countFactor,sizeFactor,maxSurfelSize;
-		bool debugHideSurfels;
+		bool debugHideSurfels, debugCameraEnabled;
+		Util::Reference<CameraNode> debugCamera;
 };
 }
 

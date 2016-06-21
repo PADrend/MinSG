@@ -31,13 +31,19 @@ namespace BlueSurfels {
 #define SURFEL_MEDIAN_COUNT 1000
 		
 SurfelRenderer2::SurfelRenderer2() : NodeRendererState(FrameContext::DEFAULT_CHANNEL),
-		countFactor(1.0f),sizeFactor(2.0f),maxSurfelSize(32.0), debugHideSurfels(false) {
+		countFactor(1.0f),sizeFactor(2.0f),maxSurfelSize(32.0), debugHideSurfels(false), debugCameraEnabled(false) {
 }
 SurfelRenderer2::~SurfelRenderer2() {}
 
 NodeRendererResult SurfelRenderer2::displayNode(FrameContext & context, Node * node, const RenderParam & /*rp*/){
 	if(!node->isActive())
 		return NodeRendererResult::NODE_HANDLED;
+		
+	if(debugCameraEnabled && debugCamera.isNull()) {
+		debugCamera = static_cast<CameraNode*>(context.getCamera()->clone());
+		debugCamera->setWorldTransformation(context.getCamera()->getWorldTransformationSRT());
+	}
+	auto& renderingContext = context.getRenderingContext();
 	
 	static const Util::StringIdentifier SURFEL_ATTRIBUTE("surfels");
 	auto surfelAttribute = dynamic_cast<Util::ReferenceAttribute<Rendering::Mesh>*>(node->findAttribute( SURFEL_ATTRIBUTE ));
@@ -57,19 +63,33 @@ NodeRendererResult SurfelRenderer2::displayNode(FrameContext & context, Node * n
 		surfelMedianDist = surfelMedianAttr->toFloat();
 	}
 	
+	float surfelSize = this->sizeFactor;
 	float meterPerPixel;
+	float meterPerPixelOriginal;
 	{
 		static Geometry::Vec3 X_AXIS(1,0,0);
 		auto centerWorld = Transformations::localPosToWorldPos(*node, node->getBB().getCenter() );
+		float nodeScale = node->getWorldTransformationSRT().getScale();
+		if(debugCameraEnabled) {
+			auto oneMeterVector = Transformations::localDirToWorldDir(*context.getCamera(), X_AXIS ).normalize()*0.1;
+			auto screenPos1 = context.convertWorldPosToScreenPos(centerWorld);
+			auto screenPos2 = context.convertWorldPosToScreenPos(centerWorld+oneMeterVector);
+			float d = screenPos1.distance(screenPos2)*10;
+			meterPerPixelOriginal = 1/(d!=0?d:1) / nodeScale;			
+			renderingContext.pushMatrix_modelToCamera();
+			context.pushAndSetCamera(debugCamera.get());
+		}
 		auto oneMeterVector = Transformations::localDirToWorldDir(*context.getCamera(), X_AXIS ).normalize()*0.1;
 		auto screenPos1 = context.convertWorldPosToScreenPos(centerWorld);
 		auto screenPos2 = context.convertWorldPosToScreenPos(centerWorld+oneMeterVector);
 		float d = screenPos1.distance(screenPos2)*10;
-		float nodeScale = node->getWorldTransformationSRT().getScale();
 		meterPerPixel = 1/(d!=0?d:1) / nodeScale;
+		if(debugCameraEnabled) {
+			context.popCamera();
+			renderingContext.popMatrix_modelToCamera();
+		}
 	}
 	
-	float surfelSize = this->sizeFactor;
 	float meterPerSurfel = std::min(surfelSize,this->maxSurfelSize) * meterPerPixel;
 	
 	uint32_t maxCount = surfelMesh.isUsingIndexData() ?  surfelMesh.getIndexCount() : surfelMesh.getVertexCount();	
@@ -79,11 +99,12 @@ NodeRendererResult SurfelRenderer2::displayNode(FrameContext & context, Node * n
 	bool renderOriginal = surfelCount > maxCount && minSurfelDistance > meterPerSurfel/2;
 	surfelCount = std::min(std::max<uint32_t>(renderOriginal ? (2*maxCount-std::min(2*maxCount,surfelCount)) : surfelCount,0),maxCount);
 
-	if(surfelCount > 0 && !debugHideSurfels) {
-		auto& renderingContext = context.getRenderingContext();
-		
+	if(surfelCount > 0 && !debugHideSurfels) {		
 		static Rendering::Uniform enableSurfels("renderSurfels", true);
 		static Rendering::Uniform disableSurfels("renderSurfels", false);
+		
+		if(debugCameraEnabled)
+			surfelSize *= meterPerPixel/meterPerPixelOriginal;
 		
 		renderingContext.setGlobalUniform(enableSurfels);
 		renderingContext.pushAndSetPointParameters( Rendering::PointParameters(std::min(surfelSize,this->maxSurfelSize) ));
@@ -99,7 +120,10 @@ NodeRendererResult SurfelRenderer2::displayNode(FrameContext & context, Node * n
 	return (debugHideSurfels && !renderOriginal) ? NodeRendererResult::NODE_HANDLED : NodeRendererResult::PASS_ON;
 }
 
-
+void SurfelRenderer2::setDebugCameraEnabled(bool b) {
+	debugCamera = nullptr;
+	debugCameraEnabled = b;
+}
 
 }
 }
