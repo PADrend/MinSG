@@ -17,10 +17,10 @@
 
 namespace MinSG {
 
-OccludeeRenderer::OccludeeRenderer() : State(), occlusionCullingRenderer(new OccRenderer) {
+OccludeeRenderer::OccludeeRenderer() : useWireframe(true), showOriginal(true), State(), occlusionCullingRenderer(new OccRenderer) {
 }
 
-OccludeeRenderer::OccludeeRenderer(const OccludeeRenderer & other) : State(other), occlusionCullingRenderer(other.occlusionCullingRenderer->clone()) {
+OccludeeRenderer::OccludeeRenderer(const OccludeeRenderer & other) : useWireframe(other.useWireframe), showOriginal(other.showOriginal), State(other), occlusionCullingRenderer(other.occlusionCullingRenderer->clone()) {
 }
 
 OccludeeRenderer::~OccludeeRenderer() = default;
@@ -33,22 +33,29 @@ State::stateResult_t OccludeeRenderer::doEnableState(FrameContext & context, Nod
 	if (rp.getFlag(SKIP_RENDERER)) {
 		return State::STATE_SKIPPED;
 	}
+	context.getRenderingContext().setImmediateMode(true);
 
 	static PolygonModeState polygonMode;
 	polygonMode.changeParameters().setMode(Rendering::PolygonModeParameters::LINE);
-
+	
+	if(!showOriginal)
+		context.getRenderingContext().pushAndSetColorBuffer(Rendering::ColorBufferParameters(false,false,false,false));
+		
 	occlusionCullingRenderer->setMode(OccRenderer::MODE_CULLING);
 	const State::stateResult_t resultCulling = occlusionCullingRenderer->enableState(context, rootNode, rp);
 	if(resultCulling != State::STATE_SKIP_RENDERING) {
 		WARN("Using the OccRenderer for culling failed.");
 		return resultCulling;
 	}
+	if(!showOriginal)
+		context.getRenderingContext().popColorBuffer();
 
 	// Clear the depth buffer to be able to render the occluded geometry in front of the previously rendered geometry.
 	context.getRenderingContext().clearDepth(1.0f);
 
 	// Activate wireframe mode.
-	polygonMode.enableState(context, rootNode, rp);
+	if(useWireframe)
+		polygonMode.enableState(context, rootNode, rp);
 
 	occlusionCullingRenderer->setMode(OccRenderer::MODE_SHOW_CULLED);
 	RenderParam rpWorldMatrix = rp;
@@ -60,7 +67,9 @@ State::stateResult_t OccludeeRenderer::doEnableState(FrameContext & context, Nod
 	}
 
 	// Deactivate wireframe mode.
-	polygonMode.disableState(context, rootNode, rp);
+	if(useWireframe)
+		polygonMode.disableState(context, rootNode, rp);
+	context.getRenderingContext().setImmediateMode(false);
 
 	return State::STATE_SKIP_RENDERING;
 }

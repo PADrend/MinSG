@@ -365,7 +365,7 @@ State::stateResult_t OccRenderer::showVisible(FrameContext & context,Node * root
 		Node * node=nodes.front();
 		nodes.pop_front();
 		NodeInfo * nInfo=getNodeInfo(node);
-		if(nInfo->getVisibleFrameNumber()!=frameNumber)
+		if(nInfo->getVisibleFrameNumber()!=frameNumber || !node->isActive())
 			continue;
 		else if(!conditionalFrustumTest(context.getCamera()->getFrustum(), node->getWorldBB(), rp))
 			continue;
@@ -387,7 +387,7 @@ State::stateResult_t OccRenderer::showCulled(FrameContext & context,Node * rootN
 		nodes.pop_front();
 		NodeInfo * nInfo=getNodeInfo(node);
 
-		if(!conditionalFrustumTest(context.getCamera()->getFrustum(), node->getWorldBB(), rp))
+		if(!conditionalFrustumTest(context.getCamera()->getFrustum(), node->getWorldBB(), rp) || !node->isActive())
 			continue;
 		else if(node->isClosed() ){
 			if(nInfo->getVisibleFrameNumber()!=frameNumber)

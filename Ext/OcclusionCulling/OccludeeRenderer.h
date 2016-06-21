@@ -34,9 +34,16 @@ class OccludeeRenderer : public State {
 		virtual ~OccludeeRenderer();
 
 		OccludeeRenderer * clone() const override;
-
+		
+		void setUseWireframe(bool b) { useWireframe = b; }
+		bool getUseWireframe() const { return useWireframe; }
+		
+		void setShowOriginal(bool b) { showOriginal = b; }
+		bool getShowOriginal() const { return showOriginal; }
+		
 	private:
 		std::unique_ptr<OccRenderer> occlusionCullingRenderer;
+		bool useWireframe, showOriginal;
 
 		stateResult_t doEnableState(FrameContext & context, Node * rootNode, const RenderParam & rp) override;
 };
