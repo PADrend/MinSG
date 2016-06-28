@@ -64,23 +64,6 @@ void LightPatchRenderer::initializeFBO(Rendering::RenderingContext& rc){
 }
 
 void LightPatchRenderer::allocateLightPatchTBO(){
-
-//  auto NONE = Util::PixelFormat::NONE;
-//  
-//  auto pf = Util::PixelFormat(Util::TypeConstant::UINT32, 0, NONE, NONE, NONE);
-//  auto glpf = Rendering::TextureUtils::pixelFormatToGLPixelFormat(pf);
-//  
-//  _tboFormat.sizeY = _tboFormat.numLayers = 1;
-//  _tboFormat.sizeX =  countTriangles(_approxScene);
-//  _tboFormat.linearMinFilter = _tboFormat.linearMagFilter = false;
-//  _tboFormat.pixelFormat = glpf;
-//  _tboFormat.glTextureType = GL_TEXTURE_BUFFER;
-//  
-//  _lightPatchTBO = new Rendering::Texture(_tboFormat);
-//
-//  _tboBindParameters.setTexture(_lightPatchTBO.get());
-//  
-  
   using namespace Rendering;
   auto numTriangles = countTriangles(_approxScene);
   _lightPatchTBO = TextureUtils::createDataTexture(TextureType::TEXTURE_BUFFER, numTriangles, 1, 1, Util::TypeConstant::UINT32, 1);
@@ -88,7 +71,10 @@ void LightPatchRenderer::allocateLightPatchTBO(){
 }
 
 State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
-  if(!_approxScene) return State::stateResult_t::STATE_SKIPPED;
+  if(!_approxScene){
+    WARN("No approximated Scene present in LightPatchRenderer!");
+    return State::stateResult_t::STATE_SKIPPED;
+  }
   
   auto& rc = context.getRenderingContext();
   rc.setImmediateMode(true);

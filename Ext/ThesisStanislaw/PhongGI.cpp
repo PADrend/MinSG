@@ -15,7 +15,7 @@ PhongGI::PhongGI() :
   State(),
   _shader(nullptr), _photonSampler(nullptr)
 {
-  _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "phongGI.vs"), Util::FileName(_shaderPath + "phongGI.fs"), Rendering::Shader::USE_UNIFORMS);
+  _shader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "phongGI.vs"), Util::FileName(_shaderPath + "phongGI.fs"), Rendering::Shader::USE_UNIFORMS | Rendering::Shader::USE_GL);
 }
 
 State::stateResult_t PhongGI::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){

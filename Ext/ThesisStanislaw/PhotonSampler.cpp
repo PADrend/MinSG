@@ -148,6 +148,11 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
 }
 
 State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
+  if(!_approxScene){
+    WARN("No approximated Scene present in PhotonSampler!");
+    return State::stateResult_t::STATE_SKIPPED;
+  }
+  
   auto& rc = context.getRenderingContext();
   rc.setImmediateMode(true);
   rc.applyChanges();
@@ -332,7 +337,7 @@ void PhotonSampler::resample(Rendering::RenderingContext& rc){
   
   
   std::cout << "Num Sample Points: " << _samplePoints.size() << " Image Size: " << _samplingTextureSize << std::endl;
-  std::cout << "First entry ID: " << samplingImage[0] << " with " << _samplePoints[samplingImage[0]] << std::endl;
+//  std::cout << "First entry ID: " << samplingImage[0] << " with " << _samplePoints[samplingImage[0]] << std::endl;
   
   
 //  std::cout << samplingImage.size() << std::endl;

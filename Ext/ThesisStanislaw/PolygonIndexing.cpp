@@ -13,6 +13,8 @@ namespace ThesisStanislaw{
 State::stateResult_t PolygonIndexingState::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
   if(updatePolygonIDs){
     if(outputDebug){ std::cout << "Start Indexing Polygons" << std::endl; }
+    IndexingVisitor visitor;
+    if(outputDebug) visitor.setDebug(true);
     node->traverse(visitor);
     updatePolygonIDs = false;
     if(outputDebug){ std::cout << "End Indexing Polygons"  << std::endl; }
@@ -22,6 +24,10 @@ State::stateResult_t PolygonIndexingState::doEnableState(FrameContext & context,
 
 PolygonIndexingState * PolygonIndexingState::clone() const {
 	return new PolygonIndexingState(*this);
+}
+
+void PolygonIndexingState::reupdatePolygonIDs(){
+  updatePolygonIDs = true;
 }
 
 PolygonIndexingState::PolygonIndexingState() : State(), updatePolygonIDs(true), outputDebug(false) {}

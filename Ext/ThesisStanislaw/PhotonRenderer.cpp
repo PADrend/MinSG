@@ -55,7 +55,16 @@ bool PhotonRenderer::initializeFBO(Rendering::RenderingContext& rc){
 }
 
 State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
-  if(!_photonSampler) return State::stateResult_t::STATE_SKIPPED;
+  if(!_photonSampler){
+    WARN("No PhotonSampler present in PhotonRenderer!");
+    return State::stateResult_t::STATE_SKIPPED;
+  }
+  
+  if(!_approxScene){
+    WARN("No approximated Scene present in PhotonRenderer!");
+    return State::stateResult_t::STATE_SKIPPED;
+  }
+  
   
   auto& rc = context.getRenderingContext();
   rc.setImmediateMode(true);
@@ -77,7 +86,6 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   rc.applyChanges();
   
   for(int32_t i = 0; i < _photonSampler->getPhotonNumber(); i++){
-    
     _fbo->setDrawBuffers(2);
     rc.pushAndSetShader(_indirectLightShader.get());
     _lightPatchRenderer->bindTBO(rc, true, false);
@@ -145,13 +153,6 @@ void PhotonRenderer::setSpotLights(std::vector<LightNode*> lights){
 Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(){
   Util::Reference<CameraNode> camera = new CameraNode;
 
-//  auto normal = _photonSampler->getNormalAt(rc, Geometry::Vec2f(0.5, 0.5)); //Geometry::Vec3f(0,1,0);
-//  auto pos = _photonSampler->getPosAt(rc,Geometry::Vec2f(0.5, 0.5)); //Geometry::Vec3f(0,0,0);
-//  auto srt = Geometry::_SRT<float>();
-//  srt.translate(pos);
-//  camera->setRelTransformation(srt);
-//  MinSG::Transformations::rotateToWorldDir(*camera.get(), normal * -1.f);
-
   float minDistance = 0.01f;
   float maxDistance = 500.f;
 
@@ -159,19 +160,6 @@ Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(){
   camera->setNearFar(minDistance, maxDistance);
   camera->setAngles(-70, 70, -50, 50);
   
-//  std::cout << "CameraNode: " <<std::endl;
-//  auto mat = camera->getRelTransformationMatrix();
-//  for(int i = 0; i < 4; i++){
-//    for(int j = 0; j < 4; j++){
-//      std::cout << mat.at(i * 4 + j) << " ";  
-//    }
-//    std::cout << std::endl;
-//  }
-//  std::cout << "Pos: " << pos.x() << " " << pos.y() << " " << pos.z() << std::endl;
-//  std::cout << "Nor: " << normal.x() << " " << normal.y() << " " << normal.z() << std::endl;
-//  std::cout << std::endl;
-  
-
   return camera;
 }
 

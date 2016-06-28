@@ -125,7 +125,6 @@ class PolygonIndexingState : public State {
 private:
   bool updatePolygonIDs;
   bool outputDebug;
-  IndexingVisitor visitor;
   
 public:
   State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
@@ -136,7 +135,8 @@ public:
 
   PolygonIndexingState * clone() const override;
   
-  void setDebugOutput(bool v) {outputDebug = v; visitor.setDebug(v);}
+  void reupdatePolygonIDs();
+  void setDebugOutput(bool v) {outputDebug = v;}
 };
 
 }
