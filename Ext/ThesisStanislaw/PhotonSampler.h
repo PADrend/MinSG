@@ -28,7 +28,8 @@ class PhotonSampler : public State {
   PROVIDES_TYPE_NAME(PhotonSampler)
 public:
   enum class Sampling : uint8_t {
-    POISSON
+    POISSON,
+    UNIFORM
   };
   
 private:

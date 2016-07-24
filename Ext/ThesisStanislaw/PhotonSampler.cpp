@@ -27,6 +27,7 @@
 #include "../../../Rendering/MeshUtils/MeshUtils.h"
 
 #include "SamplingPatterns/PoissonGenerator.h"
+#include "SamplingPatterns/UniformSampler.h"
 #include "PhotonRenderer.h"
 
 #include "../../../Geometry/SRT.h"
@@ -284,24 +285,32 @@ void PhotonSampler::setSamplingStrategy(uint8_t type){
 
 void PhotonSampler::resample(Rendering::RenderingContext& rc){
   uint32_t additionalPhotons = 0;
-  std::vector<MinSG::ThesisStanislaw::Sampler::PoissonGenerator::sPoint> generatedPoints;
+  _samplePoints.clear();
   
-  while(generatedPoints.size() < _photonNumber){
+  while(_samplePoints.size() < _photonNumber){
     switch(_samplingStrategy){
+      case Sampling::UNIFORM:{
+        auto generatedPoints = Sampler::UniformSampler::generateUniformSamples( _photonNumber + additionalPhotons);
+        _samplePoints.clear();
+        for(auto& point : generatedPoints){
+          _samplePoints.push_back(Geometry::Vec2f(point.x, point.y));
+        }
+      } break;
       case Sampling::POISSON:
       default:{
         Sampler::PoissonGenerator::DefaultPRNG PRNG;
-        generatedPoints = Sampler::PoissonGenerator::GeneratePoissonPoints( _photonNumber + additionalPhotons, PRNG , 50, false);
+        auto generatedPoints = Sampler::PoissonGenerator::GeneratePoissonPoints( _photonNumber + additionalPhotons, PRNG , 50, false);
+        _samplePoints.clear();
+        for(auto& point : generatedPoints){
+          _samplePoints.push_back(Geometry::Vec2f(point.x, point.y));
+        }
       }
     }
     additionalPhotons++;
 
   }
   
-  _samplePoints.clear();
-  for(auto& point : generatedPoints){
-    _samplePoints.push_back(Geometry::Vec2f(point.x, point.y));
-  }
+  
   
   std::vector<std::tuple<float, float, size_t>> fPoints;
   for (size_t idx = 0; idx < _samplePoints.size(); idx++) {
