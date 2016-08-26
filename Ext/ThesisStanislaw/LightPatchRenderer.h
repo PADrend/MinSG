@@ -4,11 +4,13 @@
 #define MINSG_EXT_THESISSTANISLAW_LIGHTPATCHRENDERER_H
 
 #include <Util/ReferenceCounter.h>
+#include <Util/Timer.h>
 
 #include "../../Core/Nodes/Node.h"
 #include "../../Core/Nodes/LightNode.h"
 #include "../../Core/Nodes/CameraNode.h"
 #include "../../Core/States/State.h"
+#include "../../Core/Statistics.h"
 
 #include "../../../Rendering/Shader/Shader.h"
 #include "../../../Rendering/Texture/Texture.h"
@@ -47,6 +49,11 @@ private:
   
   CameraNode*  _camera;
   Util::Reference<Rendering::Texture> _normalTexture;
+  
+  //Framestatistics
+  Util::Timer _timer;
+  uint32_t _statKey;
+  bool _statInitialized;
   
   void allocateLightPatchTBO();
   void initializeFBO(Rendering::RenderingContext& rc);

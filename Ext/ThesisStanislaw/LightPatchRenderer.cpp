@@ -29,7 +29,8 @@ const std::string LightPatchRenderer::_shaderPath = "ThesisStanislaw/ShaderScene
   
 LightPatchRenderer::LightPatchRenderer() : State(),
   _lightPatchFBO(nullptr), _samplingWidth(256), _samplingHeight(256), _fboChanged(true),
-  _lightPatchTBO(nullptr), _lightPatchShader(nullptr), _approxScene(nullptr), _camera(nullptr)
+  _lightPatchTBO(nullptr), _lightPatchShader(nullptr), _approxScene(nullptr), _camera(nullptr), 
+  _statKey(0), _statInitialized(false)
 {
   _lightPatchShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "lightPatchEstimation.vs"), Util::FileName(_shaderPath + "lightPatchEstimation.fs"), Rendering::Shader::USE_UNIFORMS);
   _polygonIDWriterShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "polygonIDWriter.vs"), Util::FileName(_shaderPath + "polygonIDWriter.fs"), Rendering::Shader::USE_UNIFORMS);
@@ -71,6 +72,13 @@ void LightPatchRenderer::allocateLightPatchTBO(){
 }
 
 State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
+  _timer.reset();
+  
+  if(!_statInitialized){
+    _statKey = context.getStatistics().addCounter("lightpatches", "ms");
+    _statInitialized = true;
+  }
+  
   if(!_approxScene){
     WARN("No approximated Scene present in LightPatchRenderer!");
     return State::stateResult_t::STATE_SKIPPED;
@@ -133,6 +141,18 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
 //  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_normalTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
 //  rc.popShader();
 //  return State::stateResult_t::STATE_SKIP_RENDERING;
+
+
+
+
+  _timer.stop();
+  context.getStatistics().setValue(_statKey, _timer.getMilliseconds()); // Does not work. Creates errors.
+  
+  // Does not work. Creates same errors as above.
+  // context.getStatistics().setValue(context.getStatistics().getCounterForDescription("lightpatches"), _timer.getMilliseconds());
+  
+  // Only works when line 78 is commented and no addCounter method is called.
+  // context.getStatistics().setValue(context.getStatistics().getCounterForDescription("frame number"), _timer.getMilliseconds());
   
   return State::stateResult_t::STATE_OK;
 }
