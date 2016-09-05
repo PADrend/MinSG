@@ -6,6 +6,8 @@
 #include <Util/ReferenceCounter.h>
 #include <Util/Timer.h>
 
+#include "Statistics.h"
+
 #include "../../Core/Nodes/Node.h"
 #include "../../Core/Nodes/LightNode.h"
 #include "../../Core/Nodes/CameraNode.h"
@@ -49,12 +51,12 @@ private:
   
   CameraNode*  _camera;
   Util::Reference<Rendering::Texture> _normalTexture;
-  
+
+#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
   //Framestatistics
   Util::Timer _timer;
-  uint32_t _statKey;
-  bool _statInitialized;
-  
+#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
+
   void allocateLightPatchTBO();
   void initializeFBO(Rendering::RenderingContext& rc);
   Util::Reference<CameraNode> computeLightMatrix(const LightNode* light);

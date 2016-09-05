@@ -4,6 +4,9 @@
 #define MINSG_EXT_THESISSTANISLAW_PHOTONRENDERER_H
 
 #include <Util/ReferenceCounter.h>
+#include <Util/Timer.h>
+
+#include "Statistics.h"
 
 #include "../../Core/Nodes/Node.h"
 #include "../../Core/Nodes/LightNode.h"
@@ -43,7 +46,12 @@ private:
   std::vector<LightNode*>              _spotLights;
   
   Util::Reference<CameraNode>          _photonCamera;
-  
+
+#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  //Framestatistics
+  Util::Timer _timer;
+#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
+
   bool initializeFBO(Rendering::RenderingContext& rc);
   Util::Reference<CameraNode> computePhotonCamera();
   

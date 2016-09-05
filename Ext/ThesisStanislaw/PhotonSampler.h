@@ -6,6 +6,9 @@
 #include <tuple>
 
 #include <Util/ReferenceCounter.h>
+#include <Util/Timer.h>
+
+#include "Statistics.h"
 
 #include "../../Core/Nodes/Node.h"
 #include "../../Core/Nodes/LightNode.h"
@@ -55,7 +58,12 @@ private:
   Sampling                             _samplingStrategy;
   Util::Reference<Rendering::Mesh>     _samplingMesh;
 //  unsigned int                         _photonBufferGLId;
-  
+
+#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  //Framestatistics
+  Util::Timer _timer;
+#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
+
   void allocateSamplingTexture(std::vector<int>& samplingImage);
   bool initializeFBO(Rendering::RenderingContext& rc);
   void initializeSamplePointMesh();

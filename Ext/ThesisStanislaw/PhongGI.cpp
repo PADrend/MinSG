@@ -19,6 +19,10 @@ PhongGI::PhongGI() :
 }
 
 State::stateResult_t PhongGI::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
+#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  _timer.reset();
+#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
+
   auto& rc = context.getRenderingContext();
 
   rc.pushAndSetShader(_shader.get());
@@ -27,6 +31,7 @@ State::stateResult_t PhongGI::doEnableState(FrameContext & context, Node * node,
     _photonSampler->bindSamplingTexture(rc, 7);
     _photonSampler->bindPhotonBuffer(30);
   }
+  
   return State::stateResult_t::STATE_OK;
 }
 
@@ -40,6 +45,12 @@ void PhongGI::doDisableState(FrameContext & context, Node *, const RenderParam &
   
   rc.popShader();
   
+#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  _timer.stop();
+  auto& stats = context.getStatistics();
+  Statistics::instance(stats).addPhongGITime(stats, _timer.getMilliseconds());
+#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
+
   //_photonSampler->outputPhotonBuffer("PhongGI");
 }
 

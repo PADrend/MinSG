@@ -55,6 +55,10 @@ bool PhotonRenderer::initializeFBO(Rendering::RenderingContext& rc){
 }
 
 State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
+#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  _timer.reset();
+#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
+
   if(!_photonSampler){
     WARN("No PhotonSampler present in PhotonRenderer!");
     return State::stateResult_t::STATE_SKIPPED;
@@ -122,7 +126,13 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
 //  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_indirectLightTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
 //  rc.popShader();
 //  return State::stateResult_t::STATE_SKIP_RENDERING;
-  
+
+#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  _timer.stop();
+  auto& stats = context.getStatistics();
+  Statistics::instance(stats).addPhotonRendererTime(stats, _timer.getMilliseconds());
+#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
+
   return State::stateResult_t::STATE_OK;
 }
 
