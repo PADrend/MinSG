@@ -72,6 +72,7 @@ void LightPatchRenderer::allocateLightPatchTBO(){
 
 State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
 #ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  Rendering::RenderingContext::finish();
   _timer.reset();
 #endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
   
@@ -139,6 +140,7 @@ State::stateResult_t LightPatchRenderer::doEnableState(FrameContext & context, N
 //  return State::stateResult_t::STATE_SKIP_RENDERING;
 
 #ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  Rendering::RenderingContext::finish();
   _timer.stop();
   auto& stats = context.getStatistics();
   Statistics::instance(stats).addLightPatchTime(stats, _timer.getMilliseconds());

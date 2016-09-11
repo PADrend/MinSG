@@ -150,6 +150,7 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
 
 State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
 #ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  Rendering::RenderingContext::finish();
   _timer.reset();
 #endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
 
@@ -209,6 +210,7 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
 //  return State::stateResult_t::STATE_SKIP_RENDERING;
 
 #ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  Rendering::RenderingContext::finish();
   _timer.stop();
   auto& stats = context.getStatistics();
   Statistics::instance(stats).addPhotonSamplerTime(stats, _timer.getMilliseconds());

@@ -1,9 +1,11 @@
 #ifdef MINSG_EXT_THESISSTANISLAW
 
+
 #include "PhongGI.h"
 
 #include "../../Core/FrameContext.h"
 #include "../../../Rendering/Shader/Uniform.h"
+#include "../../../Rendering/RenderingContext/RenderingContext.h"
 
 
 namespace MinSG{
@@ -20,6 +22,7 @@ PhongGI::PhongGI() :
 
 State::stateResult_t PhongGI::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
 #ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  Rendering::RenderingContext::finish();
   _timer.reset();
 #endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
 
@@ -46,6 +49,7 @@ void PhongGI::doDisableState(FrameContext & context, Node *, const RenderParam &
   rc.popShader();
   
 #ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  Rendering::RenderingContext::finish();
   _timer.stop();
   auto& stats = context.getStatistics();
   Statistics::instance(stats).addPhongGITime(stats, _timer.getMilliseconds());

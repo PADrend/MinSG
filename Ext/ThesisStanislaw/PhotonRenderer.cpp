@@ -56,6 +56,7 @@ bool PhotonRenderer::initializeFBO(Rendering::RenderingContext& rc){
 
 State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
 #ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  Rendering::RenderingContext::finish();
   _timer.reset();
 #endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
 
@@ -111,6 +112,8 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     _fbo->setDrawBuffers(0);
     rc.pushAndSetShader(_accumulationShader.get());
     _accumulationShader->setUniform(rc, Rendering::Uniform("photonID", i));
+    _accumulationShader->setUniform(rc, Rendering::Uniform("samplingWidth", static_cast<int>(_samplingWidth)));
+    _accumulationShader->setUniform(rc, Rendering::Uniform("samplingHeight", static_cast<int>(_samplingHeight)));
     _photonSampler->bindPhotonBuffer(1);
     rc.clearDepth(1.0f);
     Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *_indirectLightTexture.get(), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
@@ -128,6 +131,7 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
 //  return State::stateResult_t::STATE_SKIP_RENDERING;
 
 #ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
+  Rendering::RenderingContext::finish();
   _timer.stop();
   auto& stats = context.getStatistics();
   Statistics::instance(stats).addPhotonRendererTime(stats, _timer.getMilliseconds());
