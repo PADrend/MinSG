@@ -3,7 +3,7 @@
 #ifndef MINSG_EXT_THESISSTANISLAW_STATISTICS_H
 #define MINSG_EXT_THESISSTANISLAW_STATISTICS_H
 
-#define MINSG_THESISSTANISLAW_GATHER_STATISTICS //Define this symbol when statistics should be gathered
+//#define MINSG_THESISSTANISLAW_GATHER_STATISTICS //Define this symbol when statistics should be gathered
 
 #include <cstdint>
 #include <iostream>

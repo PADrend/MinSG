@@ -319,7 +319,6 @@ void PhotonSampler::resample(Rendering::RenderingContext& rc){
       }
     }
     additionalPhotons++;
-
   }
   
   
@@ -330,7 +329,7 @@ void PhotonSampler::resample(Rendering::RenderingContext& rc){
   }
   
   std::vector<int> samplingImage;
-  size_t additionalSize = 0;
+  size_t additionalSize = 0; 
   while(samplingImage.size() == 0){
     _samplingTextureSize = static_cast<int>(std::ceil(std::sqrt(_samplePoints.size() + additionalSize)));
     samplingImage = computeSamplingImage(fPoints, _samplingTextureSize);
@@ -351,6 +350,7 @@ void PhotonSampler::resample(Rendering::RenderingContext& rc){
   
   Util::Bitmap bitmap(static_cast<const uint32_t>(_samplingTextureSize), static_cast<const uint32_t>(_samplingTextureSize), pf);
   bitmap.setData(byteData);
+  bitmap.flipVertically();
   
   _samplingTexture = Rendering::TextureUtils::createTextureFromBitmap(bitmap);
   _samplingTexture->_createGLID(rc);
@@ -361,25 +361,21 @@ void PhotonSampler::resample(Rendering::RenderingContext& rc){
 //  std::cout << "First entry ID: " << samplingImage[0] << " with " << _samplePoints[samplingImage[0]] << std::endl;
   
   
-//  std::cout << samplingImage.size() << std::endl;
-//  std::cout << "------------------------------------------------------" << std::endl;
-//  size_t countt = 0;
-//  for(auto point : _samplePoints){
-//    std::cout << countt <<": ";
-//    std::cout << std::fixed << std::setprecision(10) << std::setfill('0') << point.x() << " " << point.y() << std::endl;
-//    countt++;
-//  }
-//  std::cout << "--------static_cast<uint32_t>(----------------------------------------------" << std::endl;
-//  auto width = 1280;
-//  auto height = 720;
-//  countt = 0;
-//  for(auto point : _samplePoints){
-//    std::cout << countt <<": ";
-//    auto x = static_cast<uint32_t>(point.x() * width);
-//    auto y = static_cast<uint32_t>(point.y() * height);
-//    std::cout << x << " " << y << std::endl;
-//    countt++;
-//  }
+  std::cout << samplingImage.size() << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  for(auto point : fPoints){
+    std::cout << std::get<2>(point) <<": ";
+    std::cout << std::fixed << std::setprecision(10) << std::setfill('0') << std::get<0>(point) << " " << std::get<1>(point) << std::endl;
+  }
+  std::cout << "--------static_cast<uint32_t>(----------------------------------------------" << std::endl;
+  auto width = 1280;
+  auto height = 740;
+  for(auto point : fPoints){
+    std::cout << std::get<2>(point) <<": ";
+    auto x = static_cast<uint32_t>(std::get<0>(point) * width);
+    auto y = static_cast<uint32_t>(std::get<1>(point) * height);
+    std::cout << x << " " << y << std::endl;
+  }
   
  // allocateSamplingTexture(samplingImage);
 }
