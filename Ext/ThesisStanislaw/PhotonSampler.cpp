@@ -361,21 +361,21 @@ void PhotonSampler::resample(Rendering::RenderingContext& rc){
 //  std::cout << "First entry ID: " << samplingImage[0] << " with " << _samplePoints[samplingImage[0]] << std::endl;
   
   
-  std::cout << samplingImage.size() << std::endl;
-  std::cout << "------------------------------------------------------" << std::endl;
-  for(auto point : fPoints){
-    std::cout << std::get<2>(point) <<": ";
-    std::cout << std::fixed << std::setprecision(10) << std::setfill('0') << std::get<0>(point) << " " << std::get<1>(point) << std::endl;
-  }
-  std::cout << "--------static_cast<uint32_t>(----------------------------------------------" << std::endl;
-  auto width = 1280;
-  auto height = 740;
-  for(auto point : fPoints){
-    std::cout << std::get<2>(point) <<": ";
-    auto x = static_cast<uint32_t>(std::get<0>(point) * width);
-    auto y = static_cast<uint32_t>(std::get<1>(point) * height);
-    std::cout << x << " " << y << std::endl;
-  }
+//  std::cout << samplingImage.size() << std::endl;
+//  std::cout << "------------------------------------------------------" << std::endl;
+//  for(auto point : fPoints){
+//    std::cout << std::get<2>(point) <<": ";
+//    std::cout << std::fixed << std::setprecision(10) << std::setfill('0') << std::get<0>(point) << " " << std::get<1>(point) << std::endl;
+//  }
+//  std::cout << "--------static_cast<uint32_t>(----------------------------------------------" << std::endl;
+//  auto width = 1280;
+//  auto height = 740;
+//  for(auto point : fPoints){
+//    std::cout << std::get<2>(point) <<": ";
+//    auto x = static_cast<uint32_t>(std::get<0>(point) * width);
+//    auto y = static_cast<uint32_t>(std::get<1>(point) * height);
+//    std::cout << x << " " << y << std::endl;
+//  }
   
  // allocateSamplingTexture(samplingImage);
 }
