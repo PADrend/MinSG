@@ -1,6 +1,7 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 20016 Stanislaw Eppinger
+	Copyright (C) 2016 Stanislaw Eppinger
+	Copyright (C) 2016 Sascha Brandt
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -13,21 +14,14 @@
 #define MINSG_EXT_THESISSTANISLAW_PHOTONRENDERER_H
 
 #include <Util/ReferenceCounter.h>
-#include <Util/Timer.h>
-
-#include "Statistics.h"
 
 #include "../../Core/Nodes/Node.h"
-#include "../../Core/Nodes/LightNode.h"
 #include "../../Core/Nodes/CameraNode.h"
-#include "../../Core/States/State.h"
 
-#include "../../../Rendering/RenderingContext/RenderingContext.h"
-#include "../../../Rendering/Shader/Shader.h"
-#include "../../../Rendering/Texture/Texture.h"
-#include "../../../Rendering/Texture/TextureUtils.h"
-#include "../../../Rendering/Texture/TextureType.h"
-#include "../../../Rendering/FBO.h"
+#include <Rendering/RenderingContext/RenderingContext.h>
+#include <Rendering/Shader/Shader.h>
+#include <Rendering/Texture/Texture.h>
+#include <Rendering/FBO.h>
 
 namespace MinSG{
 namespace ThesisStanislaw{
@@ -35,11 +29,8 @@ namespace ThesisStanislaw{
 class PhotonSampler;
 class LightPatchRenderer;
   
-class PhotonRenderer : public State {
-  PROVIDES_TYPE_NAME(PhotonRenderer)
-private:
-  static const std::string             _shaderPath;
-  
+class PhotonRenderer {
+private:  
   Util::Reference<Rendering::FBO>      _fbo;
   Util::Reference<Rendering::Texture>  _indirectLightTexture, _normalTex, _depthTexture;
   bool                                 _fboChanged;
@@ -47,37 +38,27 @@ private:
   
   Util::Reference<Rendering::Shader>   _indirectLightShader, _accumulationShader;
   
-  Node*                                _approxScene;
+  Util::Reference<Node>                _approxScene;
   
   PhotonSampler*                       _photonSampler;
   LightPatchRenderer*                  _lightPatchRenderer;
   
-  std::vector<LightNode*>              _spotLights;
-  
   Util::Reference<CameraNode>          _photonCamera;
-
-#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
-  //Framestatistics
-  Util::Timer _timer;
-#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
 
   bool initializeFBO(Rendering::RenderingContext& rc);
   Util::Reference<CameraNode> computePhotonCamera();
   
 public:
 
-  State::stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
-
   PhotonRenderer();
+  ~PhotonRenderer() = default;  
 
-  ~PhotonRenderer();
-
-  PhotonRenderer * clone() const override;
+  bool gatherLight(FrameContext & context, const RenderParam & rp);
   
+  void setShader(const std::string& gatheringShaderFile, const std::string& accumShaderFile);  
   void setApproximatedScene(Node* root);
   void setLightPatchRenderer(LightPatchRenderer* renderer);
   void setPhotonSampler(PhotonSampler* sampler);
-  void setSpotLights(std::vector<LightNode*> lights);
   void setSamplingResolution(uint32_t width, uint32_t height);
   
   void bindPhotonBuffer(unsigned int location);

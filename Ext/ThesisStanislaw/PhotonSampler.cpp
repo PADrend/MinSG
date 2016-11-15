@@ -1,6 +1,7 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 20016 Stanislaw Eppinger
+	Copyright (C) 2016 Stanislaw Eppinger
+	Copyright (C) 2016 Sascha Brandt
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -8,61 +9,67 @@
 */
 
 #ifdef MINSG_EXT_THESISSTANISLAW
-#include <iostream>
-#include <iomanip>
-#define LIB_GL
-#define LIB_GLEW
 
 #include "PhotonSampler.h"
-
-#include "../../Core/FrameContext.h"
-#include "../../Core/Transformations.h"
-
-#include "../../../Rendering/Shader/Uniform.h"
-#include "../../../Rendering/GLHeader.h"
-#include "../../../Rendering/Texture/TextureUtils.h"
-#include "../../../Rendering/RenderingContext/RenderingParameters.h"
-#include "../../../Rendering/Texture/TextureType.h"
-
-#include "../../../Util/Graphics/PixelAccessor.h"
-#include "../../../Util/Graphics/Bitmap.h"
-#include "../../../Util/Graphics/PixelFormat.h"
-
-#include "../../../Rendering/Mesh/MeshVertexData.h"
-#include "../../../Rendering/Mesh/MeshDataStrategy.h"
-#include "../../../Rendering/Mesh/VertexDescription.h"
-#include "../../../Rendering/Mesh/VertexAttributeAccessors.h"
-#include "../../../Rendering/Mesh/VertexAttributeIds.h"
-#include "../../../Rendering/MeshUtils/MeshUtils.h"
-
 #include "SamplingPatterns/PoissonGenerator.h"
 #include "SamplingPatterns/UniformSampler.h"
-#include "PhotonRenderer.h"
 
-#include "../../../Geometry/SRT.h"
+#include "../../Core/Nodes/Node.h"
+#include "../../Core/Nodes/CameraNode.h"
+#include "../../Core/Transformations.h"
+
+#include <Rendering/RenderingContext/RenderingContext.h>
+#include <Rendering/Texture/TextureUtils.h>
+#include <Rendering/Texture/TextureType.h>
+#include <Rendering/Shader/Uniform.h>
+#include <Rendering/Texture/TextureUtils.h>
+#include <Rendering/RenderingContext/RenderingParameters.h>
+#include <Rendering/Texture/TextureType.h>
+#include <Rendering/Texture/PixelFormatGL.h>
+#include <Rendering/Mesh/MeshVertexData.h>
+#include <Rendering/Mesh/MeshDataStrategy.h>
+#include <Rendering/Mesh/VertexDescription.h>
+#include <Rendering/Mesh/VertexAttributeAccessors.h>
+#include <Rendering/Mesh/VertexAttributeIds.h>
+#include <Rendering/MeshUtils/MeshUtils.h>
+
+#include <Util/Graphics/PixelAccessor.h>
+#include <Util/Graphics/Bitmap.h>
+#include <Util/Graphics/PixelFormat.h>
+
+#include <Geometry/SRT.h>
+
+#include <iostream>
+#include <iomanip>
+
+#ifndef GL_SHADER_STORAGE_BUFFER
+#define GL_SHADER_STORAGE_BUFFER 0x90D2
+#endif
+
+#ifndef GL_STATIC_READ
+#define GL_STATIC_READ 0x88E5
+#endif
 
 namespace MinSG{
 namespace ThesisStanislaw{
-  
-const std::string PhotonSampler::_shaderPath = "ThesisStanislaw/ShaderScenes/shader/";
-  
+    
 PhotonSampler::PhotonSampler() :
-  State(),
   _fbo(nullptr), _photonMatrixFBO(nullptr), _depthTexturePhotonMatrix(nullptr), _photonMatrixTexture(nullptr),
   _depthTexture(nullptr), _posTexture(nullptr), _normalTexture(nullptr),
-  _fboChanged(true), _needResampling(true), _samplingTexture(nullptr), _samplingTextureSize(0), _camera(nullptr), _mrtShader(nullptr), _photonMatrixShader(nullptr), 
-  _approxScene(nullptr), _photonNumber(50), _samplingMesh(nullptr), _photonBufferGLId(0)
-{
-  _mrtShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "MRT.vs"), Util::FileName(_shaderPath + "MRT.fs"), Rendering::Shader::USE_UNIFORMS);
-  _photonMatrixShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "photonMatrices.vs"), Util::FileName(_shaderPath + "photonMatrices.fs"), Rendering::Shader::USE_UNIFORMS);
+  _fboChanged(true), _needResampling(true), _samplingTexture(nullptr), _samplingTextureSize(0), _mrtShader(nullptr), _photonMatrixShader(nullptr), 
+  _approxScene(nullptr), _photonNumber(50), _samplingMesh(nullptr), _photonBuffer() { }
+
+void PhotonSampler::setShader(const std::string& mrtShaderFile, const std::string& photonShaderFile) {
+  _mrtShader = Rendering::Shader::loadShader(Util::FileName(mrtShaderFile), Util::FileName(mrtShaderFile), Rendering::Shader::USE_UNIFORMS);
+  _photonMatrixShader = Rendering::Shader::loadShader(Util::FileName(photonShaderFile), Util::FileName(photonShaderFile), Rendering::Shader::USE_UNIFORMS);
 }
 
-void PhotonSampler::initializeSamplePointMesh(){
+void PhotonSampler::initializeSamplePointMesh() {
   // create mesh
   Rendering::VertexDescription vertexDesc;
   vertexDesc.appendPosition3D();
   vertexDesc.appendTexCoord(0);
-  vertexDesc.appendUnsignedIntAttribute(Util::StringIdentifier("sg_PhotonID"), static_cast<uint8_t>(1));
+  vertexDesc.appendUnsignedIntAttribute(Util::StringIdentifier("sg_PhotonID"), static_cast<uint8_t>(1), false);
   
   _samplingMesh = new Rendering::Mesh(vertexDesc, _photonNumber, 0);
   _samplingMesh->setDataStrategy(Rendering::SimpleMeshDataStrategy::getPureLocalStrategy());
@@ -87,18 +94,12 @@ void PhotonSampler::initializeSamplePointMesh(){
   
   
   // Initialize ssbo to store the photon matrices
-  if(_photonBufferGLId != 0){
-    glDeleteBuffers(1, &_photonBufferGLId);
-  }
-
-  glGenBuffers(1, &_photonBufferGLId);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, _photonNumber * sizeof(float) * 32 , NULL, GL_STATIC_READ);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
+  _photonBuffer.destroy();
+  _photonBuffer.allocateData<uint32_t>(GL_SHADER_STORAGE_BUFFER, _photonNumber * 32, GL_STATIC_READ);
 }
 
-void PhotonSampler::computePhotonMatrices(Rendering::RenderingContext& rc, FrameContext & context){
+void PhotonSampler::computePhotonMatrices(FrameContext & context){
+  auto& rc = context.getRenderingContext();
   rc.pushAndSetFBO(_photonMatrixFBO.get());
   _photonMatrixFBO->setDrawBuffers(1);
   rc.pushAndSetShader(_photonMatrixShader.get());
@@ -120,20 +121,15 @@ void PhotonSampler::computePhotonMatrices(Rendering::RenderingContext& rc, Frame
   rc.popFBO();
 }
 
-void PhotonSampler::allocateSamplingTexture(std::vector<int>& samplingImage){
-//  using namespace Rendering;
-//  auto size = static_cast<uint32_t>(std::sqrt(samplingImage.size()));
-//  _samplingTexture = TextureUtils::createDataTexture(TextureType::TEXTURE_2D, size, size, 1, Util::TypeConstant::INT32, 1);
-}
-
-bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
-  if(!_camera) return false;
+bool PhotonSampler::initializeFBO(FrameContext & context){
+  auto camera = context.getCamera();
   
+  auto& rc = context.getRenderingContext();
   _fbo = new Rendering::FBO;
   _photonMatrixFBO = new Rendering::FBO;
   
-  auto width = _camera->getWidth();
-  auto height = _camera->getHeight();
+  auto width = camera->getWidth();
+  auto height = camera->getHeight();
   
   _depthTexture = Rendering::TextureUtils::createDepthTexture(width, height);
   _posTexture = Rendering::TextureUtils::createHDRTexture(width, height, false);
@@ -157,15 +153,11 @@ bool PhotonSampler::initializeFBO(Rendering::RenderingContext& rc){
   return true;
 }
 
-State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
-#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
-  Rendering::RenderingContext::finish();
-  _timer.reset();
-#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
-
+bool PhotonSampler::computePhotonSamples(FrameContext & context, const RenderParam & rp){
+  
   if(!_approxScene){
     WARN("No approximated Scene present in PhotonSampler!");
-    return State::stateResult_t::STATE_SKIPPED;
+    return false;
   }
   
   auto& rc = context.getRenderingContext();
@@ -173,9 +165,9 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   rc.applyChanges();
   
   if(_fboChanged){
-    if(!initializeFBO(rc)){
+    if(!initializeFBO(context)){
       WARN("Could not initialize FBO for PhotonSampler!");
-      return State::stateResult_t::STATE_SKIPPED;
+      return false;
     }
     _fboChanged = false;
   }
@@ -191,59 +183,37 @@ State::stateResult_t PhotonSampler::doEnableState(FrameContext & context, Node *
   rc.pushAndSetFBO(_fbo.get());
   _fbo->setDrawBuffers(2);
   rc.pushAndSetShader(_mrtShader.get());
-  
-  if(_camera != nullptr){
-    context.pushAndSetCamera(_camera);
-    _mrtShader->setUniform(rc, Rendering::Uniform("sg_useMaterials", false));
-    
-    rc.clearDepth(1.0f);
-    rc.clearColor(Util::Color4f(0.f, 0.f, 0.f));
-    _approxScene->display(context, rp);
 
-    context.popCamera();
-  }
+  //context.pushAndSetCamera(_camera.get());
+  _mrtShader->setUniform(rc, Rendering::Uniform("sg_useMaterials", false));
+  
+  rc.clearDepth(1.0f);
+  rc.clearColor(Util::Color4f(0.f, 0.f, 0.f));
+  _approxScene->display(context, rp);
+  //context.popCamera();
   
   rc.popShader();
   rc.popFBO();
   
-  computePhotonMatrices(rc, context);
+  computePhotonMatrices(context);
   
   rc.setImmediateMode(false);
   
-//  rc.pushAndSetShader(nullptr);
-//  auto width = _camera->getWidth();
-//  auto height = _camera->getHeight();
-////   Displays the normal texture correctly if and only if the mentioned line in the LightPatchRenderer is commented out.
-//  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, width, height), *(_photonMatrixTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
-//  rc.popShader();
-//  return State::stateResult_t::STATE_SKIP_RENDERING;
-
-#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
-  Rendering::RenderingContext::finish();
-  _timer.stop();
-  auto& stats = context.getStatistics();
-  Statistics::instance(stats).addPhotonSamplerTime(stats, _timer.getMilliseconds());
-#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
-
-  return State::stateResult_t::STATE_OK;
+  return true;
 }
 
-void PhotonSampler::outputPhotonBuffer(std::string location){
+void PhotonSampler::outputPhotonBuffer(){
   // Check if the PhotonBuffer has changed somehow
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, _photonBufferGLId);
-  GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-  float* ptr = reinterpret_cast<float*>(p);
-  std::cout << "Photon Buffer (" << location << "): " << std::endl;
-  for(int i = 0 ; i < 1/*_photonNumber*/; i++){
+  std::vector<float> photonData = _photonBuffer.downloadData<float>(GL_SHADER_STORAGE_BUFFER, _photonNumber*32);
+  for(uint32_t i = 0; i < _photonNumber; ++i) {
 //  std::cout << *(ptr) <<" "<< *(ptr+4) <<" "<< *((ptr)+8) <<" "<< *((ptr)+12) << std::endl;
 //  std::cout << *(ptr+1) <<" "<< *((ptr)+5) <<" "<< *((ptr)+9) <<" "<< *((ptr)+13) << std::endl;
 //  std::cout << *(ptr+2) <<" "<< *((ptr)+6) <<" "<< *((ptr)+10) <<" "<< *((ptr)+14) << std::endl;
 //  std::cout << *(ptr+3) <<" "<< *((ptr)+7) <<" "<< *((ptr)+11) <<" "<< *((ptr)+15) << std::endl;// << std::endl;
-  std::cout << "Diffuse: " << *(ptr+ i * 32 +16) <<" "<< *((ptr)+ i * 32 +17) <<" "<< *((ptr)+ i * 32 +18) <<" "<< *((ptr)+ i * 32 +19) << std::endl;
+  std::cout << "Diffuse: " << photonData[i * 32 +16] <<" "<< photonData[i * 32 +17] <<" "<< photonData[i * 32 +18] <<" "<< photonData[i * 32 +19] << std::endl;
 //  std::cout << "Pos: " << *(ptr+20) <<" "<< *((ptr)+21) <<" "<< *((ptr)+22) <<" "<< *((ptr)+23) << std::endl;
 //  std::cout << "PosSS: " << *(ptr+ i * 32 +24) <<" "<< *((ptr)+ i * 32 +25) <<" "<< *((ptr)+ i * 32 +26) <<" "<< *((ptr)+ i * 32 +27) << std::endl;
   }
-  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   std::cout << std::endl;
 }
 
@@ -256,26 +226,16 @@ void PhotonSampler::setPhotonNumber(uint32_t number){
   _needResampling = true;
 }
 
-uint32_t PhotonSampler::getTextureWidth(){
-  if(!_camera) return 0;
-  return _camera->getWidth();
-}
-
-uint32_t PhotonSampler::getTextureHeight(){
-  if(!_camera) return 0;
-  return _camera->getHeight();
-}
-
 int PhotonSampler::getSamplingTextureSize(){
   return _samplingTextureSize;
 }
 
 void PhotonSampler::bindPhotonBuffer(unsigned int location){
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, _photonBufferGLId);
+  _photonBuffer.bind(GL_SHADER_STORAGE_BUFFER, location);
 }
 
 void PhotonSampler::unbindPhotonBuffer(unsigned int location){
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location, _photonBufferGLId);
+  _photonBuffer.unbind(GL_SHADER_STORAGE_BUFFER, location);
 }
 
 void PhotonSampler::bindSamplingTexture(Rendering::RenderingContext& rc, unsigned int location){
@@ -287,8 +247,8 @@ void PhotonSampler::unbindSamplingTexture(Rendering::RenderingContext& rc, unsig
 }
 
 void PhotonSampler::clearPhotonBuffer(){
-  float clearVal = 0.f;
-  glClearNamedBufferData(_photonBufferGLId, GL_R32F, GL_RED, GL_FLOAT, &clearVal);
+  static auto format = Rendering::TextureUtils::pixelFormatToGLPixelFormat(Util::PixelFormat::MONO_FLOAT);
+  _photonBuffer.clear(GL_SHADER_STORAGE_BUFFER, format.glInternalFormat, format.glLocalDataFormat, format.glLocalDataType);
 }
 
 const std::vector<Geometry::Vec2f>& PhotonSampler::getSamplePoints(){
@@ -389,11 +349,6 @@ void PhotonSampler::resample(Rendering::RenderingContext& rc){
  // allocateSamplingTexture(samplingImage);
 }
 
-void PhotonSampler::setCamera(CameraNode* camera){
-  _camera = camera;
-  _fboChanged = true;
-}
-
 Util::Reference<Rendering::Texture> PhotonSampler::getPosTexture(){
   return _posTexture;
 }
@@ -401,12 +356,6 @@ Util::Reference<Rendering::Texture> PhotonSampler::getPosTexture(){
 Util::Reference<Rendering::Texture> PhotonSampler::getNormalTexture(){
   return _normalTexture;
 }
-
-PhotonSampler * PhotonSampler::clone() const {
-  return new PhotonSampler(*this);
-}
-
-PhotonSampler::~PhotonSampler(){}
 
 float PhotonSampler::distance(std::pair<float, float> p1, std::pair<float, float> p2) {
   return static_cast<float>(std::sqrt((p1.first - p2.first) * (p1.first - p2.first) + (p1.second - p2.second) * (p1.second - p2.second)));
@@ -675,6 +624,9 @@ std::vector<int> PhotonSampler::computeSamplingImage(std::vector<std::tuple<floa
 
   return image;
 }
+
+Util::Reference<Rendering::Texture> PhotonSampler::getSamplingTexture() const { return _samplingTexture; }
+Util::Reference<Rendering::Texture> PhotonSampler::getMatrixTexture() const { return _photonMatrixTexture; }
 
 }
 }

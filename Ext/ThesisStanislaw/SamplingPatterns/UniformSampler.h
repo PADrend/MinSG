@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 20016 Stanislaw Eppinger
+	Copyright (C) 2016 Stanislaw Eppinger
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -12,6 +12,9 @@
 #ifndef MINSG_EXT_THESISSTANISLAW_UNIFORMSAMPLER_H
 #define MINSG_EXT_THESISSTANISLAW_UNIFORMSAMPLER_H
 
+#include <cstdint>
+#include <vector>
+#include <cmath>
 
 namespace MinSG{
 namespace ThesisStanislaw{

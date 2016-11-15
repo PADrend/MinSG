@@ -8,9 +8,7 @@
 #
 
 minsg_add_sources(
-	ApproxSceneDebug.cpp
 	LightPatchRenderer.cpp
-	PhongGI.cpp
 	PhotonRenderer.cpp
 	PhotonSampler.cpp
 	PolygonIndexing.cpp

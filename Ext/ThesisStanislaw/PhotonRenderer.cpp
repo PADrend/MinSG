@@ -1,6 +1,7 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 20016 Stanislaw Eppinger
+	Copyright (C) 2016 Stanislaw Eppinger
+	Copyright (C) 2016 Sascha Brandt
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -8,11 +9,6 @@
 */
 
 #ifdef MINSG_EXT_THESISSTANISLAW
-
-#define LIB_GL
-#define LIB_GLEW
-
-#include "../../../Rendering/GLHeader.h"
 
 #include "PhotonRenderer.h"
 #include "PhotonSampler.h"
@@ -22,28 +18,30 @@
 #include "../../Core/States/LightingState.h"
 #include "../../Core/Transformations.h"
 
-#include "../../../Rendering/Shader/Uniform.h"
+#include <Rendering/Shader/Uniform.h>
+#include <Rendering/Texture/TextureUtils.h>
+#include <Rendering/Texture/TextureType.h>
 
-#include "../../../Geometry/Matrix4x4.h"
+#include <Geometry/Matrix4x4.h>
 
 
 namespace MinSG{
 namespace ThesisStanislaw{
   
-const std::string PhotonRenderer::_shaderPath = "ThesisStanislaw/ShaderScenes/shader/";
-  
 PhotonRenderer::PhotonRenderer() :
-  State(),
   _fbo(nullptr), _indirectLightTexture(nullptr), _depthTexture(nullptr), _fboChanged(true),_samplingWidth(64), _samplingHeight(64), 
   _indirectLightShader(nullptr), _accumulationShader(nullptr), _approxScene(nullptr), _photonSampler(nullptr), _lightPatchRenderer(nullptr), 
   _photonCamera(nullptr)
 {
-  _indirectLightShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "indirectLightGathering.vs"), Util::FileName(_shaderPath + "indirectLightGathering.fs"), Rendering::Shader::USE_UNIFORMS);
-  _accumulationShader = Rendering::Shader::loadShader(Util::FileName(_shaderPath + "indirectLightAccumulation.vs"), Util::FileName(_shaderPath + "indirectLightAccumulation.fs"), Rendering::Shader::USE_UNIFORMS);
   _photonCamera = computePhotonCamera();
 }
 
-bool PhotonRenderer::initializeFBO(Rendering::RenderingContext& rc){
+void PhotonRenderer::setShader(const std::string& gatheringShaderFile, const std::string& accumShaderFile) {  
+  _indirectLightShader = Rendering::Shader::loadShader(Util::FileName(gatheringShaderFile), Util::FileName(gatheringShaderFile), Rendering::Shader::USE_UNIFORMS);
+  _accumulationShader = Rendering::Shader::loadShader(Util::FileName(accumShaderFile), Util::FileName(accumShaderFile), Rendering::Shader::USE_UNIFORMS);
+}
+
+bool PhotonRenderer::initializeFBO(Rendering::RenderingContext& rc) {
   _fbo = new Rendering::FBO;
   
   _depthTexture = Rendering::TextureUtils::createDepthTexture(_samplingWidth, _samplingHeight);
@@ -63,22 +61,17 @@ bool PhotonRenderer::initializeFBO(Rendering::RenderingContext& rc){
   return true;
 }
 
-State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node * node, const RenderParam & rp){
-#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
-  Rendering::RenderingContext::finish();
-  _timer.reset();
-#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
+bool PhotonRenderer::gatherLight(FrameContext & context, const RenderParam & rp){
 
   if(!_photonSampler){
     WARN("No PhotonSampler present in PhotonRenderer!");
-    return State::stateResult_t::STATE_SKIPPED;
+    return false;
   }
   
   if(!_approxScene){
     WARN("No approximated Scene present in PhotonRenderer!");
-    return State::stateResult_t::STATE_SKIPPED;
-  }
-  
+    return false;
+  }  
   
   auto& rc = context.getRenderingContext();
   rc.setImmediateMode(true);
@@ -87,7 +80,7 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   if(_fboChanged){
     if(!initializeFBO(rc)){
       WARN("Could not initialize FBO for PhotonRenderer!");
-      return State::stateResult_t::STATE_SKIPPED;
+      return false;
     }
     _fboChanged = false;
   }
@@ -114,8 +107,7 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
     context.popCamera();
     _photonSampler->unbindPhotonBuffer(1);
     _lightPatchRenderer->unbindTBO(rc);
-    rc.popShader();
-    
+    rc.popShader();    
     
     // Accumulate all pixel values in one photon 
     _fbo->setDrawBuffers(0);
@@ -133,20 +125,8 @@ State::stateResult_t PhotonRenderer::doEnableState(FrameContext & context, Node 
   rc.popFBO();
   
   rc.setImmediateMode(false);
-  
-//  rc.pushAndSetShader(nullptr);
-//  Rendering::TextureUtils::drawTextureToScreen(rc, Geometry::Rect_i(0, 0, _samplingWidth, _samplingHeight), *(_indirectLightTexture.get()), Geometry::Rect_f(0.0f, 0.0f, 1.0f, 1.0f));
-//  rc.popShader();
-//  return State::stateResult_t::STATE_SKIP_RENDERING;
 
-#ifdef MINSG_THESISSTANISLAW_GATHER_STATISTICS
-  Rendering::RenderingContext::finish();
-  _timer.stop();
-  auto& stats = context.getStatistics();
-  Statistics::instance(stats).addPhotonRendererTime(stats, _timer.getMilliseconds());
-#endif // MINSG_THESISSTANISLAW_GATHER_STATISTICS
-
-  return State::stateResult_t::STATE_OK;
+  return true;
 }
 
 void PhotonRenderer::setPhotonSampler(PhotonSampler* sampler){
@@ -168,11 +148,6 @@ void PhotonRenderer::setLightPatchRenderer(LightPatchRenderer* renderer){
   _lightPatchRenderer = renderer;
 }
 
-void PhotonRenderer::setSpotLights(std::vector<LightNode*> lights){
-  _spotLights = lights;
-}
-
-
 Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(){
   Util::Reference<CameraNode> camera = new CameraNode;
 
@@ -185,12 +160,6 @@ Util::Reference<CameraNode> PhotonRenderer::computePhotonCamera(){
   
   return camera;
 }
-
-PhotonRenderer * PhotonRenderer::clone() const {
-  return new PhotonRenderer(*this);
-}
-
-PhotonRenderer::~PhotonRenderer(){}
 
 }
 }

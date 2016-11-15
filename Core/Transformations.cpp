@@ -101,9 +101,6 @@ void rotateToWorldDir(Node & node, const Geometry::Vec3 & worldDir){
 	
 	const Geometry::Vec3 relRight = relDir.cross( (std::abs(relDir.y())<0.99 ? Geometry::Vec3(0,1,0) : Geometry::Vec3(1,0,0))  ).normalize();
 	const Geometry::Vec3 relUp = relDir.cross( -relRight );
-//  std::cout << "RelDir: " << relDir.x() << " " << relDir.y() << " " << relDir.z() << std::endl;
-//  std::cout << "RelRig: " << relRight.x() << " " << relRight.y() << " " << relRight.z() << std::endl;
-//  std::cout << "Rel Up: " << relUp.x() << " " << relUp.y() << " " << relUp.z() << std::endl;
 	Geometry::SRT srt = node.getRelTransformationSRT();
 	srt.setRotation(relDir,relUp);
 	node.setRelTransformation( srt );
