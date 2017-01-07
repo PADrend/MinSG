@@ -96,7 +96,7 @@ void BtPhysicWorld::initCollisionCallbacks(BtPhysicObject& physObj){
 			cp.m_combinedFriction = btManifoldResult::calculateCombinedFriction( body0, body1);
 			cp.m_combinedRestitution = btManifoldResult::calculateCombinedRestitution( body0,body1);
 
-			cp.m_lateralFrictionInitialized = true;
+			cp.m_contactPointFlags |= BT_CONTACT_FLAG_LATERAL_FRICTION_INITIALIZED;
 
 			if(physObj0==physObjPtr){
 
