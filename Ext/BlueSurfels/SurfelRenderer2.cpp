@@ -57,8 +57,10 @@ NodeRendererResult SurfelRenderer2::displayNode(FrameContext & context, Node * n
 	auto surfelMedianAttr = node->findAttribute(SURFEL_MEDIAN_ATTRIBUTE);
 	float surfelMedianDist = 0;
 	if(!surfelMedianAttr) {
+		std::cout << "Computing surfel median distance...";
 		surfelMedianDist = SurfelGenerator::getMedianOfNthClosestNeighbours(surfelMesh, SURFEL_MEDIAN_COUNT, 2);
 		node->setAttribute(SURFEL_MEDIAN_ATTRIBUTE, Util::GenericAttribute::createNumber(surfelMedianDist));
+		std::cout << "done!" << std::endl;
 	} else {
 		surfelMedianDist = surfelMedianAttr->toFloat();
 	}
@@ -68,20 +70,24 @@ NodeRendererResult SurfelRenderer2::displayNode(FrameContext & context, Node * n
 	float meterPerPixelOriginal;
 	{
 		static Geometry::Vec3 X_AXIS(1,0,0);
-		auto centerWorld = Transformations::localPosToWorldPos(*node, node->getBB().getCenter() );
+		static Geometry::Vec3 Z_AXIS(0,0,1);
+		//auto centerWorld = Transformations::localPosToWorldPos(*node, node->getBB().getCenter() );
+		auto camDir = Transformations::localDirToWorldDir(*context.getCamera(), -Z_AXIS ).normalize() * context.getCamera()->getNearPlane();
+		auto closestPoint = node->getWorldBB().getClosestPoint(context.getCamera()->getWorldOrigin() + camDir);
 		float nodeScale = node->getWorldTransformationSRT().getScale();
+		
 		if(debugCameraEnabled) {
 			auto oneMeterVector = Transformations::localDirToWorldDir(*context.getCamera(), X_AXIS ).normalize()*0.1;
-			auto screenPos1 = context.convertWorldPosToScreenPos(centerWorld);
-			auto screenPos2 = context.convertWorldPosToScreenPos(centerWorld+oneMeterVector);
+			auto screenPos1 = context.convertWorldPosToScreenPos(closestPoint);
+			auto screenPos2 = context.convertWorldPosToScreenPos(closestPoint+oneMeterVector);
 			float d = screenPos1.distance(screenPos2)*10;
 			meterPerPixelOriginal = 1/(d!=0?d:1) / nodeScale;			
 			renderingContext.pushMatrix_modelToCamera();
 			context.pushAndSetCamera(debugCamera.get());
 		}
 		auto oneMeterVector = Transformations::localDirToWorldDir(*context.getCamera(), X_AXIS ).normalize()*0.1;
-		auto screenPos1 = context.convertWorldPosToScreenPos(centerWorld);
-		auto screenPos2 = context.convertWorldPosToScreenPos(centerWorld+oneMeterVector);
+		auto screenPos1 = context.convertWorldPosToScreenPos(closestPoint);
+		auto screenPos2 = context.convertWorldPosToScreenPos(closestPoint+oneMeterVector);
 		float d = screenPos1.distance(screenPos2)*10;
 		meterPerPixel = 1/(d!=0?d:1) / nodeScale;
 		if(debugCameraEnabled) {
