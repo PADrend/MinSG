@@ -150,6 +150,7 @@ std::deque<Node *> collectClosedNodesIntersectingBox(Node * root, const Geometry
 std::deque<GeometryNode *> collectGeoNodesAtPosition(Node * root, const Geometry::Vec3 & position);
 std::deque<GeometryNode *> collectGeoNodesIntersectingBox(Node * root, const Geometry::Box & box);
 std::deque<GeometryNode *> collectGeoNodesIntersectingSphere(Node * root, const Geometry::Vec3 & pos, float radius);
+std::deque<GeometryNode *> collectGeoNodesIntersectingRay(Node * node, const Geometry::Vec3 & pos, const Geometry::Vec3 & dir);
 
 std::deque<Node *> collectInstances(Node * root, const Node * prototype);
 

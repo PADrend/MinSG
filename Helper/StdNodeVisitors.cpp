@@ -15,6 +15,7 @@
 #include <Geometry/Box.h>
 #include <Geometry/BoxIntersection.h>
 #include <Geometry/Matrix4x4.h>
+#include <Geometry/RayBoxIntersection.h>
 #include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/OcclusionQuery.h>
@@ -203,6 +204,36 @@ std::deque<GeometryNode *> collectGeoNodesIntersectingSphere(Node * root, const 
 			return CONTINUE_TRAVERSAL;
 		}
 	} visitor(pos, radius, geoNodes);
+	root->traverse(visitor);
+	return geoNodes;
+}
+
+std::deque<GeometryNode *> collectGeoNodesIntersectingRay(Node * root, const Geometry::Vec3 & pos, const Geometry::Vec3 & dir) {
+	Geometry::Ray3f ray(pos, dir);
+	std::deque<GeometryNode *> geoNodes;
+	Geometry::Intersection::Slope<float> slope(ray);
+	struct Vis : public MinSG::NodeVisitor {
+		Vis(const Geometry::Intersection::Slope<float> & _s, std::deque<MinSG::GeometryNode *> & _geoNodes) :
+			slope(_s), geoNodes(_geoNodes) {
+		}
+		virtual ~Vis() {
+		}
+
+		const Geometry::Intersection::Slope<float> & slope;
+		std::deque<MinSG::GeometryNode *> & geoNodes;
+
+		// ---|> NodeVisitor
+		NodeVisitor::status enter(MinSG::Node * node) override {
+			if(!slope.isRayIntersectingBox(node->getWorldBB())) {
+				return BREAK_TRAVERSAL;
+			}
+			MinSG::GeometryNode * geoNode = dynamic_cast<MinSG::GeometryNode *>(node);
+			if(geoNode != nullptr) {
+				geoNodes.push_back(geoNode);
+			}
+			return CONTINUE_TRAVERSAL;
+		}
+	} visitor(slope, geoNodes);
 	root->traverse(visitor);
 	return geoNodes;
 }
