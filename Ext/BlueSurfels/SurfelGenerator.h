@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <vector>
 #include <unordered_map>
+#include <tuple>
 #include <Geometry/Vec3.h>
 #include <Util/References.h>
 #include <Util/Graphics/Color.h>
@@ -35,12 +36,24 @@ class FrameContext;
 namespace BlueSurfels {
 
 class SurfelGenerator{
-		uint32_t maxAbsSurfels;
 		mutable std::unordered_map<std::string,float> benchmarkResults;
-		bool benchmarkingEnabled;
 		Rendering::VertexDescription vertexDescription;
-		
 	public:
+		struct Parameters {
+			uint32_t maxAbsSurfels;
+			uint32_t medianDistCount;
+			uint32_t samplesPerRound;
+			bool pureRandomStrategy;
+			bool guessSurfelSize;
+			bool benchmarkingEnabled;
+		};
+		
+		struct SurfelResult {
+			Util::Reference<Rendering::Mesh> mesh;
+			float minDist;
+			float medianDist;
+			float relCovering;
+		};
 		
 		struct Surfel{
 			Geometry::Vec3 pos;
@@ -61,14 +74,16 @@ class SurfelGenerator{
 		};
 		
 		
-		SurfelGenerator() : maxAbsSurfels(10000),benchmarkingEnabled(false){			
+		SurfelGenerator() : parameters{10000,1000,160,false,false,false} {			
 			vertexDescription.appendPosition3D();
 			vertexDescription.appendNormalByte();
 			vertexDescription.appendColorRGBAByte();
 		}
-		uint32_t getMaxAbsSurfels()const			{	return maxAbsSurfels;	}
-		void setMaxAbsSurfels(uint32_t i)			{	maxAbsSurfels = i;	}
-		void setBenchmarkingEnabled(bool b)			{	benchmarkingEnabled = b;	}
+		void setParameters(const Parameters& p) { parameters = p; };
+		const Parameters& getParameters() const { return parameters; };
+		uint32_t getMaxAbsSurfels()const			{	return parameters.maxAbsSurfels;	}
+		void setMaxAbsSurfels(uint32_t i)			{	parameters.maxAbsSurfels = i;	}
+		void setBenchmarkingEnabled(bool b)			{	parameters.benchmarkingEnabled = b;	}
 		const std::unordered_map<std::string,float>& getBenchmarkResults()const	{	return benchmarkResults;	}
 		void clearBenchmarkResults()const			{	benchmarkResults.clear();	}
 		void setVertexDescription(const Rendering::VertexDescription& vd);
@@ -81,7 +96,7 @@ class SurfelGenerator{
 													Util::PixelAccessor & size
 													)const;
 
-		Util::Reference<Rendering::Mesh> buildBlueSurfels(const std::vector<Surfel> & allSurfels)const;
+		SurfelResult buildBlueSurfels(const std::vector<Surfel> & allSurfels)const;
 		
 		/*! Calculate a surfel-mesh from a set of bitmaps encoding the positions, normals, colors and size using the SurfelGenerator's current settings.
 			\param The bitmaps are given as Util::PixelAccessors parameters.
@@ -91,7 +106,7 @@ class SurfelGenerator{
 				
 			\see Uses extractSurfelsFromTextures(...) and buildBlueSurfels(...)
 		*/
-		std::pair<Util::Reference<Rendering::Mesh>,float> createSurfels(
+		SurfelResult createSurfels(
 													Util::PixelAccessor & pos,
 													Util::PixelAccessor & normal,
 													Util::PixelAccessor & color,
@@ -99,6 +114,8 @@ class SurfelGenerator{
 													)const;
 		
 		static float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
+	private:
+		Parameters parameters;
 };
 
 }

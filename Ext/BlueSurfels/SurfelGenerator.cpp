@@ -55,7 +55,7 @@ std::vector<SurfelGenerator::Surfel> SurfelGenerator::extractSurfelsFromTextures
 			}
 		}
 	}
-	if(benchmarkingEnabled){
+	if(parameters.benchmarkingEnabled){
 		benchmarkResults["t_createInitialSet"] = t.getSeconds();
 		t.reset();
 	}
@@ -63,8 +63,8 @@ std::vector<SurfelGenerator::Surfel> SurfelGenerator::extractSurfelsFromTextures
 	return surfels;
 }
 	
-Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::vector<Surfel> & surfels)const{
-	if(benchmarkingEnabled)
+SurfelGenerator::SurfelResult SurfelGenerator::buildBlueSurfels(const std::vector<Surfel> & surfels)const{
+	if(parameters.benchmarkingEnabled)
 		benchmarkResults["num_initialSetSize"] = surfels.size();
 
 	Util::Timer t;
@@ -85,11 +85,10 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 		}
 	}
 
-	if(benchmarkingEnabled){
+	if(parameters.benchmarkingEnabled){
 		benchmarkResults["t_bbCalculation"] = t.getSeconds();
 		t.reset();
 	}
-
 	
 	// generate the mesh
 	Util::Reference<Rendering::MeshUtils::MeshBuilder> mb = new Rendering::MeshUtils::MeshBuilder(vertexDescription);
@@ -101,6 +100,7 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 //	const Geometry::Box & boundingBox, float minimumBoxSize, uint32_t maximumPoints
 	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01,8);
 	size_t surfelCount = 0;
+	float minDist = bb.getDiameterSquared();
 
 	static std::default_random_engine engine;
 	
@@ -141,9 +141,8 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 
 	std::vector<std::pair<size_t,float>> sortedSubset; // surfelId , distance to nearest other sample
 
-
-	if(false){	// pure random
-		const auto randomSubset = _::extractRandomSurfelIds(freeSurfelIds,maxAbsSurfels);
+	if(parameters.pureRandomStrategy){	// pure random
+		const auto randomSubset = _::extractRandomSurfelIds(freeSurfelIds,parameters.maxAbsSurfels);
 		for(const auto& vId : randomSubset){
 			const Surfel & v = surfels[vId];
 			mb->position(v.pos);
@@ -157,16 +156,16 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 	else{
 	unsigned int acceptSamples=1;
 //	unsigned int samplesPerRound=/*160*/ 1000; // hq
-	unsigned int samplesPerRound=160; 
-	unsigned int round = 1;
+	unsigned int samplesPerRound = parameters.samplesPerRound; 
+	unsigned int round = 1; 
 
-	if(benchmarkingEnabled)
+	if(parameters.benchmarkingEnabled)
 		benchmarkResults["num_initialSamples"] = samplesPerRound;
 
 	std::deque<OctreeEntry> closest;
 
 	Util::Timer tRound;
-	while(surfelCount<maxAbsSurfels && freeSurfelIds.size()>samplesPerRound){
+	while(surfelCount<parameters.maxAbsSurfels && freeSurfelIds.size()>samplesPerRound){
 		const auto randomSubset = _::extractRandomSurfelIds(freeSurfelIds,samplesPerRound);
 		for(const auto& vId : randomSubset){
 			const Geometry::Vec3 & vPos = surfels[vId].pos;
@@ -188,6 +187,9 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 			mb->color(v.color);
 			mb->addVertex();
 			octree.insert(OctreeEntry(vId,v.pos));
+			if(surfelCount < parameters.medianDistCount) {
+				minDist = std::min(minDist, sample.second);
+			}
 			++surfelCount;
 		}
 
@@ -216,22 +218,22 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 		++round;
 	}
 	}
-	if(benchmarkingEnabled){
+	if(parameters.benchmarkingEnabled){
 		benchmarkResults["t_sampling"] = t.getSeconds();
 		benchmarkResults["num_Surfels"] = surfelCount;
-		benchmarkResults["num_targetSurfels"] = maxAbsSurfels;
+		benchmarkResults["num_targetSurfels"] = parameters.maxAbsSurfels;
 		t.reset();
 	}
 
 	auto mesh = mb->buildMesh();
 	mesh->setDrawMode(Rendering::Mesh::DRAW_POINTS);
-	if(benchmarkingEnabled){
+	if(parameters.benchmarkingEnabled){
 		benchmarkResults["t_buildMesh"] = t.getSeconds();
 		t.reset();
 	}
 
 	// guess size
-	if(mesh->getVertexCount()>0){
+	if(parameters.guessSurfelSize && mesh->getVertexCount()>0){
 		Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::POSITION));
 		Util::Reference<Rendering::NormalAttributeAccessor> normalAccessor(Rendering::NormalAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::NORMAL));
 		Util::Reference<Rendering::ColorAttributeAccessor> colorAccessor(Rendering::ColorAttributeAccessor::create(mesh->openVertexData(), Rendering::VertexAttributeIds::COLOR));
@@ -260,15 +262,15 @@ Util::Reference<Rendering::Mesh> SurfelGenerator::buildBlueSurfels(const std::ve
 		}
 		
 	}
-	if(benchmarkingEnabled){
+	if(parameters.benchmarkingEnabled){
 		benchmarkResults["t_guessSizes"] = t.getSeconds();
 		t.reset();
 	}
-	return mesh;
+	float medianDist = getMedianOfNthClosestNeighbours(*mesh,parameters.medianDistCount,2);
+	return {mesh, std::sqrt(minDist), medianDist, 0.0};
 }
 
-
-std::pair<Util::Reference<Rendering::Mesh>,float> SurfelGenerator::createSurfels(
+SurfelGenerator::SurfelResult SurfelGenerator::createSurfels(
 									Util::PixelAccessor & pos,
 									Util::PixelAccessor & normal,
 									Util::PixelAccessor & color,
@@ -279,9 +281,11 @@ std::pair<Util::Reference<Rendering::Mesh>,float> SurfelGenerator::createSurfels
 	const float relativeSize = static_cast<float>(surfels.size()) / (pos.getWidth() * pos.getHeight());
 	if(surfels.empty()){
 		WARN("trying to create surfels from empty textures, returning empty mesh");
-		return std::make_pair(new Rendering::Mesh,0.0);
+		return {new Rendering::Mesh,0.0,0.0};
 	}
-	return std::make_pair(buildBlueSurfels(surfels),relativeSize);
+	auto result = buildBlueSurfels(surfels);
+	result.relCovering = relativeSize;
+	return result;
 }
 
 float SurfelGenerator::getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour){
