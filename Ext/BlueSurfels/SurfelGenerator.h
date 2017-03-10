@@ -3,6 +3,7 @@
 	Copyright (C) 2012 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2012 Benjamin Eikel <benjamin@eikel.org>
 	Copyright (C) 2012 Ralf Petring <ralf@petring.net>
+	Copyright (C) 2016-2017 Sascha Brandt <myeti@mail.uni-paderborn.de>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -113,7 +114,7 @@ class SurfelGenerator{
 													Util::PixelAccessor & size
 													)const;
 		
-		static float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
+		SurfelResult createSurfelsFromMesh(Rendering::Mesh& mesh) const;
 	private:
 		Parameters parameters;
 };

@@ -1,6 +1,7 @@
 /*
 	This file is part of the MinSG library extension BlueSurfels.
-	Copyright (C) 2014 Claudius J�hn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2016-2017 Sascha Brandt <myeti@mail.uni-paderborn.de>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -8,24 +9,28 @@
 */
 #ifdef MINSG_EXT_BLUE_SURFELS
 
-#ifndef SURFEL_RENDERER2
-#define SURFEL_RENDERER2
+#ifndef SURFEL_RENDERER_FIXE_SIZE_H_
+#define SURFEL_RENDERER_FIXE_SIZE_H_
 
 #include "../../Core/States/NodeRendererState.h"
 #include "../../Core/Nodes/CameraNode.h"
 
 #include <Geometry/Vec3.h>
 
+namespace Rendering {
+class Mesh;
+} 
+
 namespace MinSG{
 
 namespace BlueSurfels {
 	
-class SurfelRenderer2 : public NodeRendererState{
-	PROVIDES_TYPE_NAME(SurfelRenderer2)
+class SurfelRendererFixedSize : public NodeRendererState{
+	PROVIDES_TYPE_NAME(SurfelRendererFixedSize)
 	public:
-		SurfelRenderer2();
-		SurfelRenderer2(const SurfelRenderer2&) = default;
-		virtual ~SurfelRenderer2();
+		SurfelRendererFixedSize();
+		SurfelRendererFixedSize(const SurfelRendererFixedSize&) = default;
+		virtual ~SurfelRendererFixedSize();
 		
 		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
@@ -41,15 +46,17 @@ class SurfelRenderer2 : public NodeRendererState{
 		void setDebugHideSufels(bool b) { debugHideSurfels = b; }
 		void setDebugCameraEnabled(bool b);
 		
-		SurfelRenderer2* clone()const	{	return new SurfelRenderer2(*this);	}
+		SurfelRendererFixedSize* clone()const	{	return new SurfelRendererFixedSize(*this);	}
 	private:
 		float countFactor,sizeFactor,maxSurfelSize;
 		bool debugHideSurfels, debugCameraEnabled;
 		Util::Reference<CameraNode> debugCamera;
+				
+		float getMedianDist(Node * node, Rendering::Mesh& mesh);
 };
 }
 
 }
 
-#endif // SURFEL_RENDERER2
+#endif // SURFEL_RENDERER_FIXE_SIZE_H_
 #endif // MINSG_EXT_BLUE_SURFELS

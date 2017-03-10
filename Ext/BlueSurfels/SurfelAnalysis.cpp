@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library extension BlueSurfels.
-	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -9,6 +9,10 @@
 #ifdef MINSG_EXT_BLUE_SURFELS
 
 #include "SurfelAnalysis.h"
+
+#include "../../Core/FrameContext.h"
+#include "../../Core/Nodes/CameraNode.h"
+#include "../../Core/Transformations.h"
 
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/VertexAttributeAccessors.h>
@@ -97,6 +101,63 @@ std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefix
 		}
 	}
 	return closestDistances;
+}
+
+float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour){
+	if(mesh.getVertexCount()<=nThNeighbour)
+		return 0;
+	
+	auto positionAccessor = Rendering::PositionAttributeAccessor::create(mesh.openVertexData(), Rendering::VertexAttributeIds::POSITION);
+	const size_t endIndex = std::min(static_cast<size_t>(mesh.getVertexCount()),prefixLength);
+	
+	
+	struct OctreeEntry : public Geometry::Point<Geometry::Vec3f> {
+		size_t surfelId;
+		OctreeEntry(size_t i,const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), surfelId(i) {}
+	};
+
+	const auto bb = mesh.getBoundingBox();
+	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01,8);
+	
+	std::deque<OctreeEntry> closestNeighbours;
+	for(size_t vIndex = 0; vIndex<endIndex; ++vIndex)
+		octree.insert( OctreeEntry(vIndex, positionAccessor->getPosition(vIndex)) );
+
+	std::vector<float> nThClosestDistances;
+
+	std::vector<float> distances;
+	for(size_t vIndex = 0; vIndex<endIndex; ++vIndex){
+		distances.clear();
+		
+		const auto pos = positionAccessor->getPosition(vIndex);
+	
+		closestNeighbours.clear();
+		octree.getClosestPoints(pos, nThNeighbour+1, closestNeighbours);
+
+		for(const auto& neighbour : closestNeighbours)
+			distances.push_back( neighbour.getPosition().distance( pos ) );
+		
+		std::sort(distances.begin(), distances.end());
+		nThClosestDistances.push_back( distances[nThNeighbour] );
+	}
+
+	std::sort(nThClosestDistances.begin(), nThClosestDistances.end());
+	return nThClosestDistances[ nThClosestDistances.size()*0.5 ];
+}
+
+
+float getMeterPerPixel(MinSG::FrameContext & context, MinSG::Node * node) {
+  static const Geometry::Vec3 X_AXIS(1,0,0);
+  static const Geometry::Vec3 Z_AXIS(0,0,1);
+  //auto centerWorld = Transformations::localPosToWorldPos(*node, node->getBB().getCenter() );
+  auto camDir = Transformations::localDirToWorldDir(*context.getCamera(), -Z_AXIS ).normalize() * context.getCamera()->getNearPlane();
+  auto closestPoint = node->getWorldBB().getClosestPoint(context.getCamera()->getWorldOrigin() + camDir);
+	
+	auto oneMeterVector = Transformations::localDirToWorldDir(*context.getCamera(), X_AXIS ).normalize()*0.1;
+	auto screenPos1 = context.convertWorldPosToScreenPos(closestPoint);
+	auto screenPos2 = context.convertWorldPosToScreenPos(closestPoint+oneMeterVector);
+	float d = screenPos1.distance(screenPos2)*10;
+	return  1/(d!=0?d:1) / node->getWorldTransformationSRT().getScale();		
 }
 
 }

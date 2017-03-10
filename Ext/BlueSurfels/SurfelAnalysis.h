@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library extension BlueSurfels.
-	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -18,11 +18,17 @@ namespace Rendering{
 class Mesh;
 }
 namespace MinSG{
+class FrameContext;
+class Node;
 namespace BlueSurfels {
 
 std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh);
 std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength);
-	
+
+float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
+
+float getMeterPerPixel(MinSG::FrameContext & context, MinSG::Node * node);
+
 }
 }
 

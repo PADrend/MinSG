@@ -3,6 +3,7 @@
 	Copyright (C) 2012-2014 Claudius Jähn <claudius@uni-paderborn.de>
 	Copyright (C) 2012 Benjamin Eikel <benjamin@eikel.org>
 	Copyright (C) 2012 Ralf Petring <ralf@petring.net>
+	Copyright (C) 2016-2017 Sascha Brandt <myeti@mail.uni-paderborn.de>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -12,6 +13,7 @@
 #ifdef MINSG_EXT_BLUE_SURFELS
 
 #include "SurfelGenerator.h"
+#include "SurfelAnalysis.h"
 
 #include <Geometry/Point.h>
 #include <Geometry/PointOctree.h>
@@ -288,47 +290,6 @@ SurfelGenerator::SurfelResult SurfelGenerator::createSurfels(
 	return result;
 }
 
-float SurfelGenerator::getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour){
-	if(mesh.getVertexCount()<=nThNeighbour)
-		return 0;
-	
-	auto positionAccessor = Rendering::PositionAttributeAccessor::create(mesh.openVertexData(), Rendering::VertexAttributeIds::POSITION);
-	const size_t endIndex = std::min(static_cast<size_t>(mesh.getVertexCount()),prefixLength);
-	
-	
-	struct OctreeEntry : public Geometry::Point<Geometry::Vec3f> {
-		size_t surfelId;
-		OctreeEntry(size_t i,const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), surfelId(i) {}
-	};
-
-	const auto bb = mesh.getBoundingBox();
-	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01,8);
-	
-	std::deque<OctreeEntry> closestNeighbours;
-	for(size_t vIndex = 0; vIndex<endIndex; ++vIndex)
-		octree.insert( OctreeEntry(vIndex, positionAccessor->getPosition(vIndex)) );
-
-	std::vector<float> nThClosestDistances;
-
-	std::vector<float> distances;
-	for(size_t vIndex = 0; vIndex<endIndex; ++vIndex){
-		distances.clear();
-		
-		const auto pos = positionAccessor->getPosition(vIndex);
-	
-		closestNeighbours.clear();
-		octree.getClosestPoints(pos, nThNeighbour+1, closestNeighbours);
-
-		for(const auto& neighbour : closestNeighbours)
-			distances.push_back( neighbour.getPosition().distance( pos ) );
-		
-		std::sort(distances.begin(), distances.end());
-		nThClosestDistances.push_back( distances[nThNeighbour] );
-	}
-
-	std::sort(nThClosestDistances.begin(), nThClosestDistances.end());
-	return nThClosestDistances[ nThClosestDistances.size()*0.5 ];
-}
 
 void SurfelGenerator::setVertexDescription(const Rendering::VertexDescription& vd) {
 	if(	!vd.hasAttribute(Rendering::VertexAttributeIds::POSITION) ||
@@ -338,6 +299,32 @@ void SurfelGenerator::setVertexDescription(const Rendering::VertexDescription& v
 		return;
 	}
 	vertexDescription = vd;
+}
+
+
+SurfelGenerator::SurfelResult SurfelGenerator::createSurfelsFromMesh(Rendering::Mesh& mesh) const {
+	auto vd = mesh.getVertexDescription();
+	if(	!vd.hasAttribute(Rendering::VertexAttributeIds::POSITION) ||
+			!vd.hasAttribute(Rendering::VertexAttributeIds::NORMAL) ||
+			!vd.hasAttribute(Rendering::VertexAttributeIds::COLOR) ) {
+		WARN("SurfelGenerator requires position, normal and color vertex attributes");
+		return {};
+	}
+	auto& vertexData = mesh.openVertexData();
+	
+	std::vector<Surfel> surfels;
+	
+	{
+		auto posAcc = Rendering::PositionAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::POSITION);
+		auto nrmAcc = Rendering::NormalAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::NORMAL);
+		auto colAcc = Rendering::ColorAttributeAccessor::create(vertexData, Rendering::VertexAttributeIds::COLOR);
+		
+		for(uint32_t i=0; i<mesh.getVertexCount(); ++i) {
+			surfels.emplace_back(posAcc->getPosition(i), nrmAcc->getNormal(i), colAcc->getColor4f(i), 1.0f);
+		}
+	}
+	
+	return buildBlueSurfels(surfels);
 }
 
 }

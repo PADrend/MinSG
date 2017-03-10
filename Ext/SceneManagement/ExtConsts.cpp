@@ -64,6 +64,8 @@ const Util::StringIdentifier ATTR_SURFEL_RENDERER_SIZE_FACTOR("sizeFactor");
 const Util::StringIdentifier ATTR_SURFEL_RENDERER_MIN_SIZE("minSize");
 const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_SIZE("maxSize");
 cStr_t STATE_TYPE_SURFEL_RENDERER2 = "SurfelRenderer2";
+cStr_t STATE_TYPE_SURFEL_RENDERER_FIXED_SIZE = "SurfelRendererFixedSize";
+cStr_t STATE_TYPE_SURFEL_RENDERER_BUDGET = "SurfelRendererBudget";
 const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE("maxSurfelSize");
 #endif
 
