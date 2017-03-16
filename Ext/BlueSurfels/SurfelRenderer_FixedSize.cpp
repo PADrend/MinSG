@@ -50,7 +50,7 @@ float SurfelRendererFixedSize::getMedianDist(Node * node, Rendering::Mesh& mesh)
 };
 
 SurfelRendererFixedSize::SurfelRendererFixedSize() : NodeRendererState(FrameContext::DEFAULT_CHANNEL),
-		countFactor(1.0f),sizeFactor(2.0f),maxSurfelSize(32.0), debugHideSurfels(false), debugCameraEnabled(false) {
+		countFactor(1.0f),sizeFactor(2.0f),maxSurfelSize(32.0), debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(false) {
 }
 SurfelRendererFixedSize::~SurfelRendererFixedSize() {}
 
@@ -101,29 +101,61 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	bool renderOriginal = surfelPrefixLength > maxSurfelCount && minSurfelDistance > surfelRadius;
 	surfelPrefixLength = std::min(std::max<uint32_t>(renderOriginal ? (2*maxSurfelCount-std::min(2*maxSurfelCount,surfelPrefixLength)) : surfelPrefixLength,0),maxSurfelCount);
 
-	if(surfelPrefixLength > 0 && !debugHideSurfels) {
+	if(surfelPrefixLength > 0 && (!debugHideSurfels || deferredSurfels)) {
 		if(debugCameraEnabled)
 			surfelSize *= meterPerPixel/meterPerPixelOriginal;
-			
-		float nodeScale = node->getWorldTransformationSRT().getScale();
-		renderingContext.setGlobalUniform({uniform_surfelRadius, surfelRadius*nodeScale});
-		renderingContext.setGlobalUniform({uniform_renderSurfels, true});
-		renderingContext.pushAndSetPointParameters( Rendering::PointParameters(std::min(surfelSize,this->maxSurfelSize) ));
-		renderingContext.pushAndSetMatrix_modelToCamera( renderingContext.getMatrix_worldToCamera() );
-		renderingContext.multMatrix_modelToCamera(node->getWorldTransformationMatrix());
-		context.displayMesh(&surfelMesh,	0, surfelPrefixLength );
-		renderingContext.popMatrix_modelToCamera();
-		renderingContext.popPointParameters();
-		renderingContext.setGlobalUniform({uniform_renderSurfels, false});
+		
+		if(deferredSurfels) {
+			deferredSurfelQueue.emplace_back(node, surfelPrefixLength, surfelRadius, meterPerPixel);
+		} else {
+			float nodeScale = node->getWorldTransformationSRT().getScale();
+			renderingContext.setGlobalUniform({uniform_surfelRadius, surfelRadius*nodeScale});
+			renderingContext.setGlobalUniform({uniform_renderSurfels, true});
+			renderingContext.pushAndSetPointParameters( Rendering::PointParameters(std::min(surfelSize,this->maxSurfelSize)));
+			renderingContext.pushAndSetMatrix_modelToCamera( renderingContext.getMatrix_worldToCamera() );
+			renderingContext.multMatrix_modelToCamera(node->getWorldTransformationMatrix());
+			context.displayMesh(&surfelMesh,	0, surfelPrefixLength );
+			renderingContext.popMatrix_modelToCamera();
+			renderingContext.popPointParameters();
+			renderingContext.setGlobalUniform({uniform_renderSurfels, false});
+		}
 
 		return renderOriginal ? NodeRendererResult::PASS_ON : NodeRendererResult::NODE_HANDLED;
 	}
 	return (debugHideSurfels && !renderOriginal) ? NodeRendererResult::NODE_HANDLED : NodeRendererResult::PASS_ON;
 }
 
-void SurfelRendererFixedSize::setDebugCameraEnabled(bool b) {
-	debugCamera = nullptr;
-	debugCameraEnabled = b;
+SurfelRendererFixedSize::stateResult_t SurfelRendererFixedSize::doEnableState(FrameContext & context, Node * node, const RenderParam & rp) {
+	deferredSurfelQueue.clear();
+	return NodeRendererState::doEnableState(context, node, rp);
+}
+
+void SurfelRendererFixedSize::doDisableState(FrameContext & context, Node * node, const RenderParam & rp) {
+	NodeRendererState::doDisableState(context, node, rp);	
+	if(deferredSurfels && !debugHideSurfels) 
+		drawSurfels(context);
+}
+
+void SurfelRendererFixedSize::drawSurfels(FrameContext & context) const {
+	auto& rc = context.getRenderingContext();	
+	rc.setGlobalUniform({uniform_renderSurfels, true});	
+	Node* node; uint32_t prefix; float radius, mpp;
+	for(auto& s : deferredSurfelQueue) {
+		std::tie(node, prefix, radius, mpp) = s;
+		float nodeScale = node->getWorldTransformationSRT().getScale();
+		float surfelSize = std::min(2.0f * radius / mpp, maxSurfelSize);		
+		auto surfelAttribute = dynamic_cast<Util::ReferenceAttribute<Rendering::Mesh>*>(node->findAttribute( SURFEL_ATTRIBUTE ));
+		auto surfels = surfelAttribute ? surfelAttribute->get() : nullptr;
+			
+		rc.setGlobalUniform({uniform_surfelRadius, radius*nodeScale});
+		rc.pushAndSetPointParameters( Rendering::PointParameters(surfelSize));
+		rc.pushAndSetMatrix_modelToCamera( rc.getMatrix_worldToCamera() );
+		rc.multMatrix_modelToCamera(node->getWorldTransformationMatrix());
+		context.displayMesh(surfels,	0, prefix );
+		rc.popMatrix_modelToCamera();
+		rc.popPointParameters();
+	}
+	rc.setGlobalUniform({uniform_renderSurfels, false});
 }
 
 }

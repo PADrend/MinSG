@@ -16,6 +16,9 @@
 
 #include <Geometry/Vec3.h>
 
+#include <vector>
+#include <unordered_map>
+
 namespace Rendering {
 class Mesh;
 } 
@@ -33,26 +36,48 @@ class SurfelRendererBudget : public NodeRendererState{
 		
 		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-		float getCountFactor()const		{	return countFactor;	}
-		float getSizeFactor()const		{	return sizeFactor;	}
 		float getMaxSurfelSize()const		{	return maxSurfelSize;	}
 		bool getDebugHideSurfels() const { return debugHideSurfels; }
 		bool isDebugCameraEnabled() const { return debugCameraEnabled; }
 
-		void setCountFactor(float f)	{	countFactor = f;	}
-		void setSizeFactor(float f)		{	sizeFactor = f;	}
 		void setMaxSurfelSize(float f)		{	maxSurfelSize = f;	}
 		void setDebugHideSufels(bool b) { debugHideSurfels = b; }
-		void setDebugCameraEnabled(bool b);
+		void setDebugCameraEnabled(bool b) { debugCamera = nullptr; debugCameraEnabled = b; }
+		
+		double getBudget() const { return budget; }
+		void setBudget(double b) { budget = b; }
+		
+		bool getDeferredSurfels() const { return deferredSurfels; }
+		void setDeferredSurfels(bool b) { deferredSurfels = b; }
 		
 		SurfelRendererBudget* clone()const	{	return new SurfelRendererBudget(*this);	}
-	private:
-		float countFactor,sizeFactor,maxSurfelSize;
-		bool debugHideSurfels, debugCameraEnabled;
-		Util::Reference<CameraNode> debugCamera;
 		
-		float getMedianDist(Node * node, Rendering::Mesh& mesh);
-		double getBudget(Node* node);
+		void drawSurfels(FrameContext & context) const;
+	protected:
+		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+	private:	
+		struct SurfelAssignment {
+			Node* node;
+			uint32_t prefix;
+			float radius;
+			uint32_t maxPrefix;
+			uint32_t minPrefix;
+			float ps; // projected size
+			float mpp; // meter per pixel
+			float smd; // surfel median distance
+		};
+		
+		float maxSurfelSize, surfelCostFactor, geoCostFactor, benefitGrowRate;
+		bool debugHideSurfels, debugCameraEnabled, deferredSurfels;
+		double budget, budgetRemainder, usedBudget;
+		uint32_t maxTime;
+		Util::Reference<CameraNode> debugCamera;
+		std::vector<SurfelAssignment> surfelAssignments;
+				
+		double getSurfelBenefit(float x, float ps, float sat) const;
+		double getSurfelBenefitDerivative(float x, float ps, float sat) const;
+		float getMedianDist(Node * node, Rendering::Mesh* mesh);
 };
 }
 

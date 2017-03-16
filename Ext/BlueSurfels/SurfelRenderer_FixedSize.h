@@ -39,18 +39,26 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		float getMaxSurfelSize()const		{	return maxSurfelSize;	}
 		bool getDebugHideSurfels() const { return debugHideSurfels; }
 		bool isDebugCameraEnabled() const { return debugCameraEnabled; }
+		bool getDeferredSurfels() const { return deferredSurfels; }
 
 		void setCountFactor(float f)	{	countFactor = f;	}
 		void setSizeFactor(float f)		{	sizeFactor = f;	}
 		void setMaxSurfelSize(float f)		{	maxSurfelSize = f;	}
 		void setDebugHideSufels(bool b) { debugHideSurfels = b; }
-		void setDebugCameraEnabled(bool b);
+		void setDebugCameraEnabled(bool b) { debugCamera = nullptr; debugCameraEnabled = b; };
+		void setDeferredSurfels(bool b) { deferredSurfels = b; }
 		
 		SurfelRendererFixedSize* clone()const	{	return new SurfelRendererFixedSize(*this);	}
-	private:
+		
+		void drawSurfels(FrameContext & context) const;
+	protected:
+		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+	private:			
 		float countFactor,sizeFactor,maxSurfelSize;
-		bool debugHideSurfels, debugCameraEnabled;
+		bool debugHideSurfels, debugCameraEnabled, deferredSurfels;
 		Util::Reference<CameraNode> debugCamera;
+		std::deque<std::tuple<Node*,uint32_t,float,float>> deferredSurfelQueue;
 				
 		float getMedianDist(Node * node, Rendering::Mesh& mesh);
 };

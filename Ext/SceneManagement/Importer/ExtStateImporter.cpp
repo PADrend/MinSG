@@ -117,8 +117,7 @@ static bool importSurfelRendererBudget(ImportContext & ctxt, const std::string &
 		return false;
 	
 	Util::Reference<BlueSurfels::SurfelRendererBudget> renderer = new BlueSurfels::SurfelRendererBudget;
-	renderer->setCountFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, 1.0f));
-	renderer->setSizeFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, 2.0f));
+	renderer->setBudget(d.getDouble(Consts::ATTR_SURFEL_RENDERER_BUDGET, 1e+6));
 	renderer->setMaxSurfelSize(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, 32.0f));
 	
 	ImporterTools::finalizeState(ctxt, renderer.get(), d);
