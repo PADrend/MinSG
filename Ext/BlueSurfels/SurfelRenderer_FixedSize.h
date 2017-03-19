@@ -17,6 +17,8 @@
 
 #include <Geometry/Vec3.h>
 
+#include <set>
+
 namespace Rendering {
 class Mesh;
 } 
@@ -44,13 +46,13 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		void setCountFactor(float f)	{	countFactor = f;	}
 		void setSizeFactor(float f)		{	sizeFactor = f;	}
 		void setMaxSurfelSize(float f)		{	maxSurfelSize = f;	}
-		void setDebugHideSufels(bool b) { debugHideSurfels = b; }
+		void setDebugHideSurfels(bool b) { debugHideSurfels = b; }
 		void setDebugCameraEnabled(bool b) { debugCamera = nullptr; debugCameraEnabled = b; };
 		void setDeferredSurfels(bool b) { deferredSurfels = b; }
 		
 		SurfelRendererFixedSize* clone()const	{	return new SurfelRendererFixedSize(*this);	}
 		
-		void drawSurfels(FrameContext & context) const;
+		void drawSurfels(FrameContext & context, float minSize=0, float maxSize=1024) const;
 	protected:
 		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
@@ -58,7 +60,8 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		float countFactor,sizeFactor,maxSurfelSize;
 		bool debugHideSurfels, debugCameraEnabled, deferredSurfels;
 		Util::Reference<CameraNode> debugCamera;
-		std::deque<std::tuple<Node*,uint32_t,float,float>> deferredSurfelQueue;
+		typedef std::tuple<float,Node*,uint32_t,float,float> SurfelAssignment_t;
+		std::set<SurfelAssignment_t, std::less<SurfelAssignment_t>> deferredSurfelQueue;
 				
 		float getMedianDist(Node * node, Rendering::Mesh& mesh);
 };

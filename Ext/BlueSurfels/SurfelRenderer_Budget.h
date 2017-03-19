@@ -41,7 +41,7 @@ class SurfelRendererBudget : public NodeRendererState{
 		bool isDebugCameraEnabled() const { return debugCameraEnabled; }
 
 		void setMaxSurfelSize(float f)		{	maxSurfelSize = f;	}
-		void setDebugHideSufels(bool b) { debugHideSurfels = b; }
+		void setDebugHideSurfels(bool b) { debugHideSurfels = b; }
 		void setDebugCameraEnabled(bool b) { debugCamera = nullptr; debugCameraEnabled = b; }
 		
 		double getBudget() const { return budget; }
@@ -52,7 +52,7 @@ class SurfelRendererBudget : public NodeRendererState{
 		
 		SurfelRendererBudget* clone()const	{	return new SurfelRendererBudget(*this);	}
 		
-		void drawSurfels(FrameContext & context) const;
+		void drawSurfels(FrameContext & context, float minSize=0, float maxSize=1024) const;
 	protected:
 		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;

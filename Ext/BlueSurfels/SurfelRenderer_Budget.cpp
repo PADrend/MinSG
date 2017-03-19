@@ -239,11 +239,13 @@ NodeRendererResult SurfelRendererBudget::displayNode(FrameContext & context, Nod
 	const auto projSize = getProjectedSize(context, node);
 	const auto benefitCost = std::min(projSize / static_cast<double>(primitiveCount), 1.0);
 	
+  
 	if(primitiveCount > nodeBudget && primitiveCount <= nodeBudget + budgetRemainder*benefitCost) {
 		nodeBudget += budgetRemainder*benefitCost;
 		budgetRemainder -= budgetRemainder*benefitCost;	
 	}	
 	
+  
 	if(primitiveCount <= nodeBudget) {
 		passChildren(node, true);
 		budgetRemainder += nodeBudget-primitiveCount;
@@ -252,6 +254,7 @@ NodeRendererResult SurfelRendererBudget::displayNode(FrameContext & context, Nod
 	} else {
 		passChildren(node, false);
 	}
+	//passChildren(node, false);
 	distributeBudget(nodeBudget, node, context);
 	
 	/*
@@ -317,7 +320,7 @@ NodeRendererResult SurfelRendererBudget::displayNode(FrameContext & context, Nod
 		surfelAssignments.push_back({node, budgetCount, budgetRadius, minPrefix, maxPrefix, projSize, meterPerPixel, medianDist});
 		return NodeRendererResult::NODE_HANDLED;
 	}
-		
+    
 	return NodeRendererResult::PASS_ON;
 }
 
@@ -356,12 +359,14 @@ void SurfelRendererBudget::doDisableState(FrameContext & context, Node * node, c
 		drawSurfels(context);
 }
 
-void SurfelRendererBudget::drawSurfels(FrameContext & context) const {
+void SurfelRendererBudget::drawSurfels(FrameContext & context, float minSize, float maxSize) const {
 	auto& rc = context.getRenderingContext();	
 	rc.setGlobalUniform({uniform_renderSurfels, true});	
 	for(auto& s : surfelAssignments) {
 		float nodeScale = s.node->getWorldTransformationSRT().getScale();
 		float surfelSize = std::min(2.0f * s.radius / s.mpp, maxSurfelSize);
+    if(surfelSize < minSize || surfelSize >= maxSize)
+      continue;
 		auto surfels = getSurfelMesh(s.node);
 		rc.setGlobalUniform({uniform_surfelRadius, s.radius*nodeScale});
 		rc.pushAndSetPointParameters( Rendering::PointParameters(surfelSize));

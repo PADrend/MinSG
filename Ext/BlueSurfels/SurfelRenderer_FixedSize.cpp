@@ -99,14 +99,19 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	uint32_t surfelPrefixLength = (SURFEL_MEDIAN_COUNT * surfelMedianDist * surfelMedianDist / (surfelRadius * surfelRadius)) * this->countFactor;
 
 	bool renderOriginal = surfelPrefixLength > maxSurfelCount && minSurfelDistance > surfelRadius;
-	surfelPrefixLength = std::min(std::max<uint32_t>(renderOriginal ? (2*maxSurfelCount-std::min(2*maxSurfelCount,surfelPrefixLength)) : surfelPrefixLength,0),maxSurfelCount);
+	if(renderOriginal) {
+		uint32_t diff = std::min(maxSurfelCount, surfelPrefixLength - maxSurfelCount);
+		surfelPrefixLength = maxSurfelCount - diff;
+	}
+	surfelPrefixLength = std::min(surfelPrefixLength,maxSurfelCount);
 
 	if(surfelPrefixLength > 0 && (!debugHideSurfels || deferredSurfels)) {
 		if(debugCameraEnabled)
 			surfelSize *= meterPerPixel/meterPerPixelOriginal;
 		
 		if(deferredSurfels) {
-			deferredSurfelQueue.emplace_back(node, surfelPrefixLength, surfelRadius, meterPerPixel);
+			float camDistSqr = node->getWorldBB().getDistanceSquared(context.getCamera()->getWorldOrigin());
+			deferredSurfelQueue.emplace(camDistSqr, node, surfelPrefixLength, surfelRadius, meterPerPixel);
 		} else {
 			float nodeScale = node->getWorldTransformationSRT().getScale();
 			renderingContext.setGlobalUniform({uniform_surfelRadius, surfelRadius*nodeScale});
@@ -136,14 +141,18 @@ void SurfelRendererFixedSize::doDisableState(FrameContext & context, Node * node
 		drawSurfels(context);
 }
 
-void SurfelRendererFixedSize::drawSurfels(FrameContext & context) const {
+void SurfelRendererFixedSize::drawSurfels(FrameContext & context, float minSize, float maxSize) const {
 	auto& rc = context.getRenderingContext();	
 	rc.setGlobalUniform({uniform_renderSurfels, true});	
-	Node* node; uint32_t prefix; float radius, mpp;
+	Node* node; uint32_t prefix; float radius, mpp, distance;
 	for(auto& s : deferredSurfelQueue) {
-		std::tie(node, prefix, radius, mpp) = s;
+		std::tie(distance, node, prefix, radius, mpp) = s;
 		float nodeScale = node->getWorldTransformationSRT().getScale();
 		float surfelSize = std::min(2.0f * radius / mpp, maxSurfelSize);		
+		
+    if(surfelSize < minSize || surfelSize >= maxSize)
+      continue;
+			
 		auto surfelAttribute = dynamic_cast<Util::ReferenceAttribute<Rendering::Mesh>*>(node->findAttribute( SURFEL_ATTRIBUTE ));
 		auto surfels = surfelAttribute ? surfelAttribute->get() : nullptr;
 			
