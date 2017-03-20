@@ -125,6 +125,7 @@ static void describeSurfelRendererBudget(ExporterContext &,DescriptionMap & desc
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SURFEL_RENDERER_BUDGET);
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, Util::GenericAttribute::createNumber(renderer->getMaxSurfelSize()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_BUDGET, Util::GenericAttribute::createNumber(renderer->getBudget()));
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_INCR, Util::GenericAttribute::createNumber(renderer->getMaxIncrement()));
 }
 #endif // MINSG_EXT_BLUE_SURFELS
 

@@ -23,6 +23,7 @@
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Shader/Uniform.h>
 #include <Rendering/Mesh/Mesh.h>
+#include <Rendering/Helper.h>
 
 #include <Geometry/Vec3.h>
 #include <Geometry/Frustum.h>
@@ -41,11 +42,11 @@ static const Rendering::Uniform::UniformName uniform_surfelRadius("surfelRadius"
 static const Util::StringIdentifier SURFEL_ATTRIBUTE("surfels");
 static const Util::StringIdentifier SURFEL_MEDIAN_ATTRIBUTE("surfelMedianDist");
 static const Util::StringIdentifier SURFEL_BUDGET_ATTRIBUTE("SurfelBudget");
-static const Util::StringIdentifier PASS_CHILDREN_ATTRIBUTE(NodeAttributeModifier::create("PassChildren", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 
-static const Util::StringIdentifier MAX_DEPTH_ATTRIBUTE("MaxDepth");
-static const Util::StringIdentifier SURFEL_COUNT_ATTRIBUTE("SurfelCount");
-static const Util::StringIdentifier PRIMITIVE_COUNT_ATTRIBUTE("PrimitiveCount");
+static const Util::StringIdentifier BUDGET_ASSIGNMENT_ATTRIBUTE(NodeAttributeModifier::create("BudgetAssignment", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+
+static const Util::StringIdentifier SURFEL_COUNT_ATTRIBUTE(NodeAttributeModifier::create("SurfelCount", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
+static const Util::StringIdentifier PRIMITIVE_COUNT_ATTRIBUTE(NodeAttributeModifier::create("PrimitiveCount", NodeAttributeModifier::PRIVATE_ATTRIBUTE));
 
 #define SURFEL_MEDIAN_COUNT 1000
 
@@ -64,28 +65,9 @@ static void setOrUpdateAttribute(Node * node, const Util::StringIdentifier & att
 	}
 }
 
-static void setOrUpdateAttribute(Node * node, const Util::StringIdentifier & attributeId, bool value) {
-	const auto attr = dynamic_cast<Util::BoolAttribute *>(node->getAttribute(attributeId));
-	if(attr != nullptr) {
-		attr->set(value);
-	} else {
-		node->setAttribute(attributeId, Util::GenericAttribute::createBool(value));
-	}
-}
-
 static uint32_t getUIntAttr(Node* node, const Util::StringIdentifier& id) {
 	auto attr = node->findAttribute(id);	
 	return attr ? attr->toUnsignedInt() : 0;
-}
-
-static double getDoubleAttr(Node* node, const Util::StringIdentifier& id) {
-	auto attr = node->findAttribute(id);	
-	return attr ? attr->toDouble() : -1;
-}
-
-static bool getBoolAttr(Node* node, const Util::StringIdentifier& id) {
-	auto attr = node->findAttribute(id);	
-	return attr ? attr->toBool() : false;
 }
 
 static Rendering::Mesh* getSurfelMesh(Node * node) {
@@ -106,36 +88,7 @@ static float getProjectedSize(FrameContext & context, Node* node) {
 	return projRect.getArea();
 }
 
-/*
-static uint32_t getMaxDepth(Node* node) {	
-	struct DepthVisitor : public NodeVisitor {
-		uint32_t depth;
-		uint32_t maxDepth;
-		DepthVisitor() : depth(0), maxDepth(0) {	}
-		virtual ~DepthVisitor() { }
-		NodeVisitor::status enter(Node * _node) override {
-			++depth;
-			maxDepth = std::max(depth, maxDepth);
-			return CONTINUE_TRAVERSAL;
-		}
-		NodeVisitor::status leave(Node * _node) override {
-			--depth;
-			return CONTINUE_TRAVERSAL;
-		}
-	};
-	
-	if(!node->isAttributeSet(MAX_DEPTH_ATTRIBUTE)) {
-		DepthVisitor visitor;
-		node->traverse(visitor);
-		setOrUpdateAttribute(node, MAX_DEPTH_ATTRIBUTE, visitor.maxDepth);
-	}
-	return getUIntAttr(node, MAX_DEPTH_ATTRIBUTE);
-}
-*/
-
-//! Distribute the budget based on the projected size of the child nodes.
-static void distributeBudget(double value, Node * node, FrameContext & context) {
-	
+static void updatePrimitiveCount(Node * node, FrameContext & context) {	
 	struct PrimitiveSurfelCountAnnotationVisitor : public NodeVisitor {
 		PrimitiveSurfelCountAnnotationVisitor() {	}
 		virtual ~PrimitiveSurfelCountAnnotationVisitor() { }
@@ -157,51 +110,16 @@ static void distributeBudget(double value, Node * node, FrameContext & context) 
 			setOrUpdateAttribute(_node, SURFEL_COUNT_ATTRIBUTE, surfelCount);
 			return CONTINUE_TRAVERSAL;
 		}
-	};
-	
-	const auto children = getChildNodes(node);
+	};	
 
-	// A tuple stores the benefit/cost ratio and the node.
-	std::vector<std::tuple<float, Node *, uint32_t>> benefitCostTuples;
-	benefitCostTuples.reserve(children.size());
-	double benefitCostSum = 0.0;
-	
-	for(const auto & child : children) {		
-		// Compute primitive count and surfel count in subtree (only once)
-		if(!child->isAttributeSet(PRIMITIVE_COUNT_ATTRIBUTE) || !child->isAttributeSet(SURFEL_COUNT_ATTRIBUTE)) {
-			PrimitiveSurfelCountAnnotationVisitor visitor;
-			node->traverse(visitor);
-		}
-		const auto primitiveCount = child->getAttribute(PRIMITIVE_COUNT_ATTRIBUTE)->toUnsignedInt();
-		const auto projSize = getProjectedSize(context, child);
-		const auto benefitCost = projSize / static_cast<double>(primitiveCount);
-		benefitCostSum += benefitCost;
-		benefitCostTuples.emplace_back(benefitCost, child, primitiveCount);
-	}
-
-	for(const auto & benefitCostTuple : benefitCostTuples) {
-		const auto benefitCost = std::get<0>(benefitCostTuple);
-		auto child = std::get<1>(benefitCostTuple);
-		auto primitiveCount = std::get<2>(benefitCostTuple);
-		const auto benefitCostFactor = benefitCost / benefitCostSum;		
-		const auto assignment = std::min(benefitCostFactor * value, static_cast<double>(primitiveCount));
-		setOrUpdateAttribute(child, SURFEL_BUDGET_ATTRIBUTE, assignment);
-		value -= assignment;
-		benefitCostSum -= benefitCost;
+	// Compute primitive count and surfel count in subtree (only once)
+	if(!node->isAttributeSet(PRIMITIVE_COUNT_ATTRIBUTE) || !node->isAttributeSet(SURFEL_COUNT_ATTRIBUTE)) {
+		PrimitiveSurfelCountAnnotationVisitor visitor;
+		node->traverse(visitor);
 	}
 }
 
-static void passChildren(Node * node, bool value) {
-	const auto children = getChildNodes(node);
-	for(const auto & child : children) {
-		setOrUpdateAttribute(child, PASS_CHILDREN_ATTRIBUTE, value);
-	}
-}
-
-SurfelRendererBudget::SurfelRendererBudget() : NodeRendererState(FrameContext::DEFAULT_CHANNEL),
-		maxSurfelSize(32.0), surfelCostFactor(1.0), geoCostFactor(1.0), benefitGrowRate(2.0), 
-		debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(true), 
-    budget(1e+6), budgetRemainder(0), usedBudget(0), maxTime(100) {}
+SurfelRendererBudget::SurfelRendererBudget() : NodeRendererState(FrameContext::DEFAULT_CHANNEL) {}
 SurfelRendererBudget::~SurfelRendererBudget() {}
 
 
@@ -222,108 +140,187 @@ float SurfelRendererBudget::getMedianDist(Node * node, Rendering::Mesh* mesh) {
 NodeRendererResult SurfelRendererBudget::displayNode(FrameContext & context, Node * node, const RenderParam & /*rp*/){
 	if(!node->isActive())
 		return NodeRendererResult::NODE_HANDLED;	
-	
-	
-	double nodeBudget = getDoubleAttr(node, SURFEL_BUDGET_ATTRIBUTE);
-		
-	if(nodeBudget < 0) 
-		return NodeRendererResult::PASS_ON;
-	
-	if(getBoolAttr(node, PASS_CHILDREN_ATTRIBUTE)) {
-		passChildren(node, true);
-		return NodeRendererResult::PASS_ON;
-	} 
-	
-	uint32_t primitiveCount = getUIntAttr(node, PRIMITIVE_COUNT_ATTRIBUTE);
-	
-	const auto projSize = getProjectedSize(context, node);
-	const auto benefitCost = std::min(projSize / static_cast<double>(primitiveCount), 1.0);
-	
   
-	if(primitiveCount > nodeBudget && primitiveCount <= nodeBudget + budgetRemainder*benefitCost) {
-		nodeBudget += budgetRemainder*benefitCost;
-		budgetRemainder -= budgetRemainder*benefitCost;	
-	}	
+  updatePrimitiveCount(node, context);
 	
+	BudgetAssignment& assignment = getAssignment(node);
   
-	if(primitiveCount <= nodeBudget) {
-		passChildren(node, true);
-		budgetRemainder += nodeBudget-primitiveCount;
-		usedBudget += primitiveCount;
-		return NodeRendererResult::PASS_ON;
-	} else {
-		passChildren(node, false);
-	}
-	//passChildren(node, false);
-	distributeBudget(nodeBudget, node, context);
-	
-	/*
-	auto mesh = getGeometryMesh(node);
-	if(mesh && primitiveCount > nodeBudget) {
-		budgetRemainder += nodeBudget;
-		return NodeRendererResult::NODE_HANDLED;
-	}*/
-			
 	auto surfels = getSurfelMesh(node);
 	
 	// get max. surfel count
 	uint32_t surfelCount = surfels ? (surfels->isUsingIndexData() ? surfels->getIndexCount() : surfels->getVertexCount()) : 0;	
 	uint32_t subtreeSurfelCount = getUIntAttr(node, SURFEL_COUNT_ATTRIBUTE) - surfelCount;
-	
-	// subtree cannot be displayed with current budget -> surfels need to be rendered
-	bool surfelsRequired = subtreeSurfelCount == 0 && primitiveCount > nodeBudget;
-	
-	if(!surfels && surfelsRequired) {
-		budgetRemainder += nodeBudget;
-		return NodeRendererResult::NODE_HANDLED;
-	}
-	
-	if(!surfels)
-		return NodeRendererResult::PASS_ON;
-
-
-	// get median distance between surfels at a fixed prefix length 
-	float medianDist = getMedianDist(node, surfels);		
-	// calculate the projected distance between two adjacent pixels in screen space
-	float meterPerPixel = getMeterPerPixel(context, node);
-	
-	// compute saturation factor (number of surfels when they cover the object with surfel size 1)
-	float minRadius = meterPerPixel / 2.0f; 
-	double saturation = SURFEL_MEDIAN_COUNT * medianDist * medianDist / (minRadius * minRadius);
-	saturation /= surfelCount;
-	
-	//double surfelBenefit = getSurfelBenefit(float x, projSize, saturation);	
-	uint32_t maxPrefix = std::min(static_cast<uint32_t>(saturation*surfelCount), surfelCount);	
-	
-	// compute min. prefix, i.e. number of surfels that cover the object with max. surfel size
-	float maxRadius = maxSurfelSize * minRadius;
-	uint32_t minPrefix = SURFEL_MEDIAN_COUNT * medianDist * medianDist / (maxRadius * maxRadius);
-	
-	if(saturation <= 1.0 && nodeBudget >= maxPrefix) {
-		// we can render surfels with size 1 within budget
-		surfelAssignments.push_back({node, maxPrefix, minRadius, minPrefix, maxPrefix, projSize, meterPerPixel, medianDist});
-		return NodeRendererResult::NODE_HANDLED;
-	}
-	
-	if(!surfelsRequired && (minPrefix > maxPrefix || minPrefix > nodeBudget)) {
-		// cannot draw surfels without exceeding max. surfel radius 
-		return NodeRendererResult::PASS_ON;
-	}
-	minPrefix = std::min(minPrefix, maxPrefix);
-	
-	uint32_t budgetCount = std::min(maxPrefix, static_cast<uint32_t>(nodeBudget));
-	float budgetRadius = medianDist * std::sqrt(SURFEL_MEDIAN_COUNT / static_cast<float>(budgetCount));
-	
-	if(surfelsRequired || maxPrefix > nodeBudget) {
-		// we fill the budget with this node -> it is not worthwhile to traverse any further
-		budgetRemainder += nodeBudget - budgetCount;
-		surfelAssignments.push_back({node, budgetCount, budgetRadius, minPrefix, maxPrefix, projSize, meterPerPixel, medianDist});
-		return NodeRendererResult::NODE_HANDLED;
-	}
+	uint32_t primitiveCount = getUIntAttr(node, PRIMITIVE_COUNT_ATTRIBUTE);
+  
+  auto mesh = getGeometryMesh(node);
+  if(mesh && (assignment.expanded || surfelCount == 0)) {
+    usedBudget += mesh->getPrimitiveCount() * geoCostFactor;
+    return NodeRendererResult::PASS_ON;
+  }
+  
+  if(subtreeSurfelCount == 0 && surfelCount == 0) {
+    return NodeRendererResult::PASS_ON;
+  }
+  
+  float minSurfelSize = 0;
+  float projSize = getProjectedSize(context, node); 
     
-	return NodeRendererResult::PASS_ON;
+  if(surfels) {
+  	// get median distance between surfels at a fixed prefix length 
+  	float medianDist = getMedianDist(node, surfels);		
+  	// calculate the projected distance between two adjacent pixels in screen space
+  	float meterPerPixel = getMeterPerPixel(context, node);
+  	
+  	// compute saturation factor (number of surfels when they cover the object with surfel size 1)
+  	float minRadius = meterPerPixel / 2.0f; 
+  	float saturation = (SURFEL_MEDIAN_COUNT * medianDist * medianDist / (minRadius * minRadius)) / static_cast<float>(surfelCount);
+  	
+    // compute max. prefix
+  	assignment.maxPrefix = std::min(static_cast<uint32_t>(saturation*surfelCount), surfelCount);
+  	
+  	// compute min. prefix, i.e. number of surfels that cover the object with max. surfel size
+  	float maxRadius = maxSurfelSize * minRadius;
+  	assignment.minPrefix = SURFEL_MEDIAN_COUNT * medianDist * medianDist / (maxRadius * maxRadius);
+    
+    // update min. surfel size
+  	minSurfelSize = 2.0f * medianDist * std::sqrt(SURFEL_MEDIAN_COUNT / static_cast<float>(assignment.maxPrefix)) / meterPerPixel;
+    
+    float a = static_cast<float>(assignment.prefix) / static_cast<float>(assignment.maxPrefix);
+    assignment.gradient = getSurfelBenefitDerivative(a, projSize, saturation);
+		assignment.gradient = a < 1 ? std::max(0.0f, assignment.gradient-0.0001f/(1.0f - a)) : 0.0f; 
+    gradientSum += assignment.gradient;
+    
+    // compute current size
+    if(assignment.prefix > 0)
+      assignment.size = std::min(2.0f * medianDist * std::sqrt(SURFEL_MEDIAN_COUNT / static_cast<float>(assignment.prefix)) / meterPerPixel, maxSurfelSize);
+  }
+  
+  // compute expansion benefit
+  assignment.expansionBenefit = 0;
+  auto children = getChildNodes(node);
+  if(children.size() == 0) {
+    assignment.expansionBenefit = projSize;
+  } else {
+    for(auto child : children) {
+      float ps = getProjectedSize(context, child);        
+      assignment.expansionBenefit += ps;
+    }
+  }
+  
+  // compute expansion cost (only once)
+  if(!assignment.expanded) { 
+    assignment.expansionCost = 0;
+    if(subtreeSurfelCount == 0) {
+      assignment.expansionCost = primitiveCount * geoCostFactor;
+    } else {
+      // compute min. cost of subtree
+      for(auto child : children) {
+        auto s = getSurfelMesh(child);
+        if(s) {
+        	uint32_t sc = surfels->isUsingIndexData() ? surfels->getIndexCount() : surfels->getVertexCount();	
+          float md = getMedianDist(child, s);		
+        	float mpp = getMeterPerPixel(context, child);
+          float msd = minSurfelSize * mpp / 2.0f;
+          uint32_t minPrefix = std::min<uint32_t>(SURFEL_MEDIAN_COUNT * md * md / (msd * msd), sc);
+          assignment.expansionCost += minPrefix * surfelCostFactor; // TODO: incororate surfel size
+        } else {
+          // TODO: check subtree surfel count
+          assignment.expansionCost += getUIntAttr(child, PRIMITIVE_COUNT_ATTRIBUTE) * geoCostFactor;
+        }
+      }
+    }
+  }
+  
+  if(!assignment.expanded || (assignment.prefix > 0)) {
+    assignments.insert(&assignment);
+    usedBudget += assignment.prefix;
+  }
+  
+  if(!deferredSurfels && !debugHideSurfels && assignment.prefix > 0) {
+    assert(assignment.prefix <= surfels->isUsingIndexData() ? surfels->getIndexCount() : surfels->getVertexCount());
+  	/*auto& rc = context.getRenderingContext();	
+    rc.setGlobalUniform({uniform_renderSurfels, true});
+    rc.pushAndSetPointParameters( Rendering::PointParameters(assignment.size));
+    rc.pushAndSetMatrix_modelToCamera( rc.getMatrix_worldToCamera() );
+    rc.multMatrix_modelToCamera(node->getWorldTransformationMatrix());
+    context.displayMesh(surfels,	0, assignment.prefix );
+    rc.popMatrix_modelToCamera();
+    rc.popPointParameters();
+    rc.setGlobalUniform({uniform_renderSurfels, false});*/
+  }
+    
+  return assignment.expanded ? NodeRendererResult::PASS_ON : NodeRendererResult::NODE_HANDLED;
 }
 
+void SurfelRendererBudget::assignmentStep() {  
+  double remainingBudget = budget - usedBudget;
+  float increment = std::min<double>(maxIncrement, remainingBudget);
+  float slope_d = 0; // max. discrete slope
+  double slope_c = 0; // max. continuous slope
+  BudgetAssignment* maxExpand = nullptr;
+  double benefitSum = 0;
+  double costSum = 0;
+  
+  std::cout << "Budget " << remainingBudget << " Increment " << increment << std::endl;
+  for(auto a : assignments) {
+    if(!a->expanded && a->expansionCost <= remainingBudget && a->prefix >= a->maxPrefix) {
+      float s = a->expansionBenefit / a->expansionCost; 
+      if(s > slope_d) {
+        slope_d = s;
+        maxExpand = a;
+      }
+    }
+    std::cout << "(" << a->expansionCost << " cost)";
+    benefitSum += a->gradient;
+    costSum += a->maxPrefix * surfelCostFactor; // TODO: incorporate surfel size
+    
+    /*
+    if(a->prefix < a->maxPrefix && a->expanded) {
+      a->expanded = false;
+      std::cout << "(col " << a->node << ")";
+    }
+    
+    if(a->prefix > a->maxPrefix) {
+      uint32_t dec = a->prefix - a->maxPrefix;
+      std::cout << "(" << a->prefix << "-" << dec << ")";
+      a->prefix -= dec;
+      increment += dec;
+    }
+    
+    if(a->expanded && a->prefix > 0) {
+      uint32_t dec = a->prefix * 0.1;
+      std::cout << "(" << a->prefix << "-" << dec << ")";
+      a->prefix -= dec;
+      increment += dec;
+    }*/
+  }
+  
+  slope_c = benefitSum / costSum;
+  if(slope_d > slope_c && maxExpand) {
+    // expand node
+    maxExpand->expanded = true;
+    for(auto n : getChildNodes(maxExpand->node)) {
+      BudgetAssignment& a = getAssignment(n);
+      a.prefix = 0;
+      a.expanded = false;
+    }
+    std::cout << "(exp " << maxExpand->node << ")";
+  } else {
+    for(auto a : assignments) {
+      if(gradientSum <= 0)
+        break;
+      float maxInc = a->maxPrefix - a->prefix;
+      float factor = a->gradient / gradientSum;
+      uint32_t inc = std::min(maxInc, factor * increment);
+      std::cout << "(" << a->prefix << "+" << inc << " " << factor << ")";
+      a->prefix += inc;
+      increment -= inc;
+      //gradientSum -= a->gradient;
+    }
+  }
+  std::cout << std::endl;
+  std::cout << "Slopes " << slope_d << "/" << slope_c << std::endl << std::endl;
+}
 
 // surfel benefit: projSize * tanh(a*x / 2*b)
 // hyperbolic function tanh(ax/2b) <-> logistic function (2 / (1+e^-(ax/b)) - 1)
@@ -342,41 +339,57 @@ double SurfelRendererBudget::getSurfelBenefitDerivative(float x, float ps, float
 }
 
 SurfelRendererBudget::stateResult_t SurfelRendererBudget::doEnableState(FrameContext & context, Node * node, const RenderParam & rp) {
-	usedBudget = 0;
-	budgetRemainder = 0;
-	surfelAssignments.clear();
-	setOrUpdateAttribute(node, SURFEL_BUDGET_ATTRIBUTE, budget);
-	setOrUpdateAttribute(node, PASS_CHILDREN_ATTRIBUTE, false);
-	distributeBudget(budget, node, context);
-	passChildren(node, false);
+  if(doClearAssignment) {
+    forEachNodeTopDown(node, [&](Node * n) {
+      BudgetAssignment& a = getAssignment(n);
+      a.prefix = 0;
+      a.expanded = false;
+    });
+    doClearAssignment = false;
+  }
+  
+	assignments.clear();
+  gradientSum = 0;
+  usedBudget = 0;
 	return NodeRendererState::doEnableState(context, node, rp);
 }
 
 void SurfelRendererBudget::doDisableState(FrameContext & context, Node * node, const RenderParam & rp) {
 	NodeRendererState::doDisableState(context, node, rp);
+  
+  if(!debugAssignment)
+    assignmentStep();
 	
-	if(!debugHideSurfels) 
+	if(deferredSurfels && !debugHideSurfels) 
 		drawSurfels(context);
 }
 
 void SurfelRendererBudget::drawSurfels(FrameContext & context, float minSize, float maxSize) const {
 	auto& rc = context.getRenderingContext();	
 	rc.setGlobalUniform({uniform_renderSurfels, true});	
-	for(auto& s : surfelAssignments) {
-		float nodeScale = s.node->getWorldTransformationSRT().getScale();
-		float surfelSize = std::min(2.0f * s.radius / s.mpp, maxSurfelSize);
-    if(surfelSize < minSize || surfelSize >= maxSize)
+	for(auto s : assignments) {
+    auto surfels = getSurfelMesh(s->node);
+    if(!surfels || s->prefix == 0 || s->size < minSize || s->size >= maxSize)
       continue;
-		auto surfels = getSurfelMesh(s.node);
-		rc.setGlobalUniform({uniform_surfelRadius, s.radius*nodeScale});
-		rc.pushAndSetPointParameters( Rendering::PointParameters(surfelSize));
+		rc.pushAndSetPointParameters( Rendering::PointParameters(std::max(1.0f, s->size)));
 		rc.pushAndSetMatrix_modelToCamera( rc.getMatrix_worldToCamera() );
-		rc.multMatrix_modelToCamera(s.node->getWorldTransformationMatrix());
-		context.displayMesh(surfels,	0, s.prefix );
+		rc.multMatrix_modelToCamera(s->node->getWorldTransformationMatrix());
+		context.displayMesh(surfels, 0, s->prefix );
 		rc.popMatrix_modelToCamera();
 		rc.popPointParameters();
 	}
 	rc.setGlobalUniform({uniform_renderSurfels, false});
+}
+
+SurfelRendererBudget::BudgetAssignment& SurfelRendererBudget::getAssignment(Node* node) {
+	auto attr = dynamic_cast<Util::WrapperAttribute<BudgetAssignment> *>(node->getAttribute(BUDGET_ASSIGNMENT_ATTRIBUTE));
+  if(!attr) {
+    BudgetAssignment assignment;
+    assignment.node = node;
+    attr = new Util::WrapperAttribute<BudgetAssignment>(assignment);
+    node->setAttribute(BUDGET_ASSIGNMENT_ATTRIBUTE, attr);
+  }
+  return attr->ref();
 }
 
 }

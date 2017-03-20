@@ -17,7 +17,7 @@
 
 #include <Geometry/Vec3.h>
 
-#include <set>
+#include <deque>
 
 namespace Rendering {
 class Mesh;
@@ -60,8 +60,9 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		float countFactor,sizeFactor,maxSurfelSize;
 		bool debugHideSurfels, debugCameraEnabled, deferredSurfels;
 		Util::Reference<CameraNode> debugCamera;
-		typedef std::tuple<float,Node*,uint32_t,float,float> SurfelAssignment_t;
-		std::set<SurfelAssignment_t, std::less<SurfelAssignment_t>> deferredSurfelQueue;
+		// distance to camera, node, prefix length, size
+		typedef std::tuple<float,Node*,uint32_t,float> SurfelAssignment_t;
+		std::deque<SurfelAssignment_t> deferredSurfelQueue;
 				
 		float getMedianDist(Node * node, Rendering::Mesh& mesh);
 };
