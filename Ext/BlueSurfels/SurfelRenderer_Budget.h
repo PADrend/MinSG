@@ -59,43 +59,55 @@ class SurfelRendererBudget : public NodeRendererState{
 		SurfelRendererBudget* clone()const	{	return new SurfelRendererBudget(*this);	}
 		
 		void drawSurfels(FrameContext & context, float minSize=0, float maxSize=1024) const;
-		void assignmentStep();
+		void assignmentStep() { stepAssignment = true; };
 		void clearAssignment() { doClearAssignment = true; };
 	protected:
 		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 	private:	
-		//enum ExpansionState_t {COLLAPSED, REQUEST_COLLAPSE, REQUEST_EXPAND, EXPANDED};
 		
 		struct BudgetAssignment {
-			Node* node = nullptr; 
-			uint32_t prefix = 0; 
-			float size = 1;
-			float gradient = 0;
+			// Runtime values; required for rendering
+			Node* node = nullptr; // the associated node 
+			uint32_t prefix = 0; // the current assigned prefix length
+			float size = 1; // the current point size
+			// surfel parameters
+			float medianDist = 0; // median distance at 1000 points
+			float mpp = 0; // meter per pixel
+			uint32_t surfelCount = 0; // number of available surfels 
+			uint32_t maxPrefix = 0; // max. prefix length (obj. is covered with size 1)
+			uint32_t minPrefix = 0; // min. prefix length (obj. is covered with max. size)
+			float minSize = 1;
+			// expansion
+			bool expanded = false;
 			float expansionCost = 0;
 			float expansionBenefit = 0;
-			uint32_t maxPrefix = 0;
-			uint32_t minPrefix = 0;
-			bool expanded = false;
-			//ExpansionState_t expansion = COLLAPSED;
+			float expansionThreshold = 0;
+			// other
+			double surfelBenefit = 0;
+			uint64_t frame = 0;
 		};
 		struct BudgetCmp {
 			constexpr bool operator()(const BudgetAssignment* la, const BudgetAssignment* ra) const {
-				return la->gradient > ra->gradient || (la->gradient == ra->gradient && la->node > ra->node);
+				return la->surfelBenefit > ra->surfelBenefit || (la->surfelBenefit == ra->surfelBenefit && la->node > ra->node);
 			} 
 		};
 		
-		double budget=1e+6, usedBudget=0, gradientSum=0;
+		double budget=1e+6, usedBudget=0, surfelBenefitSum=0;
 		float maxSurfelSize=32, surfelCostFactor=1, geoCostFactor=1, benefitGrowRate=2, maxIncrement=1000;
-		bool debugHideSurfels = false, debugCameraEnabled=false, deferredSurfels=true, debugAssignment=false, doClearAssignment=false;
+		bool debugHideSurfels = false, debugCameraEnabled=false, deferredSurfels=true, debugAssignment=false, doClearAssignment=false, stepAssignment=false;
+		double debugSurfelUsed = 0;
+		double debugGeoUsed = 0;
+		uint64_t frameCount = 0;
 		
 		Util::Reference<CameraNode> debugCamera;
 		std::set<BudgetAssignment*, BudgetCmp> assignments;
 		
-		double getSurfelBenefit(float x, float ps, float sat) const;
-		double getSurfelBenefitDerivative(float x, float ps, float sat) const;
+		//double getSurfelBenefit(float x, float ps, float sat) const;
+		//double getSurfelBenefitDerivative(float x, float ps, float sat) const;
 		float getMedianDist(Node * node, Rendering::Mesh* mesh);
 		BudgetAssignment& getAssignment(Node* node);
+		void assignBudget();
 };
 }
 

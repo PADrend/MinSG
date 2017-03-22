@@ -13,6 +13,8 @@
 
 #include <vector>
 #include <cstddef>
+#include <cstdint>
+#include <algorithm>
 
 namespace Rendering{
 class Mesh;
@@ -28,6 +30,22 @@ std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefix
 float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
 
 float getMeterPerPixel(MinSG::FrameContext & context, MinSG::Node * node);
+
+inline uint32_t getPrefixForRadius(float radius, float medianDist, uint32_t medianCount, uint32_t maxCount) {
+  return radius > 0 ? std::min<uint32_t>(medianCount * medianDist * medianDist / (radius * radius), maxCount) : 0;
+}
+
+inline float getRadiusForPrefix(uint32_t prefixLength, float medianDist, uint32_t medianCount) {
+	return prefixLength > 0 ? medianDist * std::sqrt(static_cast<float>(medianCount) / static_cast<float>(prefixLength)) : 0;
+}
+
+inline float radiusToSize(float radius, float mpp) {
+	return std::max(2.0f * radius / mpp, 1.0f);
+}
+
+inline float sizeToRadius(float size, float mpp) {
+	return size * mpp * 0.5f;
+}
 
 }
 }
