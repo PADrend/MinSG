@@ -119,6 +119,8 @@ static void describeSurfelRendererFixedSize(ExporterContext &,DescriptionMap & d
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, Util::GenericAttribute::createNumber(renderer->getCountFactor()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, Util::GenericAttribute::createNumber(renderer->getSizeFactor()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, Util::GenericAttribute::createNumber(renderer->getMaxSurfelSize()));
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_TIME, Util::GenericAttribute::createNumber(renderer->getMaxFrameTime()));
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_ADAPTIVE, Util::GenericAttribute::createBool(renderer->isAdaptive()));
 }
 static void describeSurfelRendererBudget(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto renderer = dynamic_cast<BlueSurfels::SurfelRendererBudget *>(state);

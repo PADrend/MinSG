@@ -197,7 +197,7 @@ NodeRendererResult SurfelRendererBudget::displayNode(FrameContext & context, Nod
     if(assignment.expanded && assignment.prefix > 0) {
       // expanded & prefix > 0 -> gradually decrease prefix without changing size
       float factor = 0.9f;//std::max(0.0f, std::min(1.0f, (childCost - assignment.expansionCost)/assignment.expansionCost));
-      if(debugAssignment) std::cout << "shrink " << assignment.node << " " << assignment.prefix << "->" << (factor * assignment.maxPrefix)  << std::endl;
+      if(debugAssignment) std::cout << "shrink " << assignment.node << " " << assignment.prefix << "->" << (factor * assignment.prefix)  << std::endl;
       assignment.prefix = assignment.prefix < assignment.minPrefix ? 0 : factor * assignment.prefix;
       assignment.surfelBenefit = 0;
       
@@ -210,12 +210,12 @@ NodeRendererResult SurfelRendererBudget::displayNode(FrameContext & context, Nod
             
       if(assignment.prefix > 0 && assignment.prefix < assignment.minPrefix) {
         if(debugAssignment) std::cout << "needs expansion " << node << " "<< assignment.prefix << "<" << assignment.minPrefix << std::endl;
-        assignment.prefix = assignment.minPrefix;
+        //assignment.prefix = assignment.minPrefix;
       } 
       
       
       if(assignment.minPrefix >= assignment.maxPrefix) {
-        assignment.prefix = assignment.minPrefix;
+        //assignment.prefix = assignment.minPrefix;
         //assignment.expanded = true;
         assignment.surfelBenefit = 1;
       }
@@ -317,6 +317,7 @@ void SurfelRendererBudget::assignBudget() {
   // find best candidates for expansion
   for(auto ass : assignments) {
     // only expand when it fits the budget & the surfel count is not exhausted
+		//double cost = static_cast<float>(ass->prefix) * surfelCostFactor;
     if(!ass->expanded && ass->expansionCost <= remainingBudget && ass->prefix >= ass->surfelCount) {
       /*float s = ass->expansionBenefit / ass->expansionCost; 
       if(s > maxBenefitCost) {
@@ -341,7 +342,7 @@ void SurfelRendererBudget::assignBudget() {
         a.expanded = false;
       }
       ass->expansionThreshold = ass->expansionBenefit;
-      remainingBudget -= ass->expansionCost;
+      remainingBudget -= expansionCost;
     }  
     //if(!a->expanded && debugAssignment) std::cout << "e " << a->node << " " << a->expansionCost << "/" << remainingBudget << " " << a->prefix << "/" << a->surfelCount << std::endl;
   }

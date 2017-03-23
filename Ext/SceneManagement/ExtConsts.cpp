@@ -69,6 +69,8 @@ cStr_t STATE_TYPE_SURFEL_RENDERER_BUDGET = "SurfelRendererBudget";
 const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE("maxSurfelSize");
 const Util::StringIdentifier ATTR_SURFEL_RENDERER_BUDGET("surfelBudget");
 const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_INCR("surfelMaxIncrement");
+const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_TIME("surfelMaxFrameTime");
+const Util::StringIdentifier ATTR_SURFEL_RENDERER_ADAPTIVE("surfelAdaptive");
 #endif
 
 // ---------------------------------------------------------------------------

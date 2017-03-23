@@ -15,6 +15,8 @@
 #include "../../Core/States/NodeRendererState.h"
 #include "../../Core/Nodes/CameraNode.h"
 
+#include <Util/Timer.h>
+
 #include <Geometry/Vec3.h>
 
 #include <deque>
@@ -37,18 +39,28 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 		float getCountFactor()const		{	return countFactor;	}
-		float getSizeFactor()const		{	return sizeFactor;	}
-		float getMaxSurfelSize()const		{	return maxSurfelSize;	}
-		bool getDebugHideSurfels() const { return debugHideSurfels; }
-		bool isDebugCameraEnabled() const { return debugCameraEnabled; }
-		bool getDeferredSurfels() const { return deferredSurfels; }
-
 		void setCountFactor(float f)	{	countFactor = f;	}
+				
+		float getSizeFactor()const		{	return sizeFactor;	}
 		void setSizeFactor(float f)		{	sizeFactor = f;	}
+		
+		float getMaxSurfelSize()const		{	return maxSurfelSize;	}
 		void setMaxSurfelSize(float f)		{	maxSurfelSize = f;	}
+		
+		bool getDebugHideSurfels() const { return debugHideSurfels; }
 		void setDebugHideSurfels(bool b) { debugHideSurfels = b; }
+		
+		bool isDebugCameraEnabled() const { return debugCameraEnabled; }
 		void setDebugCameraEnabled(bool b) { debugCamera = nullptr; debugCameraEnabled = b; };
+		
+		bool getDeferredSurfels() const { return deferredSurfels; }
 		void setDeferredSurfels(bool b) { deferredSurfels = b; }
+		
+		bool isAdaptive() const	{	return adaptive;	}
+		void setAdaptive(bool b)	{	adaptive = b;	}
+		
+		float getMaxFrameTime() const		{	return maxFrameTime;	}
+		void setMaxFrameTime(float f)		{	maxFrameTime = f;	}
 		
 		SurfelRendererFixedSize* clone()const	{	return new SurfelRendererFixedSize(*this);	}
 		
@@ -57,12 +69,14 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 	private:			
-		float countFactor,sizeFactor,maxSurfelSize;
-		bool debugHideSurfels, debugCameraEnabled, deferredSurfels;
+		float countFactor,sizeFactor,maxSurfelSize,maxFrameTime;
+		bool debugHideSurfels, debugCameraEnabled, deferredSurfels, adaptive;
+		uint64_t frameNumber;
 		Util::Reference<CameraNode> debugCamera;
 		// distance to camera, node, prefix length, size
 		typedef std::tuple<float,Node*,uint32_t,float> SurfelAssignment_t;
 		std::deque<SurfelAssignment_t> deferredSurfelQueue;
+		Util::Timer frameTimer;
 				
 		float getMedianDist(Node * node, Rendering::Mesh& mesh);
 };

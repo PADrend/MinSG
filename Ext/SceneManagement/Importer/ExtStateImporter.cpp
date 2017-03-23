@@ -107,6 +107,8 @@ static bool importSurfelRendererFixedSize(ImportContext & ctxt, const std::strin
 	renderer->setCountFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, 1.0f));
 	renderer->setSizeFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, 2.0f));
 	renderer->setMaxSurfelSize(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, 32.0f));
+	renderer->setMaxFrameTime(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_TIME, 16.0f));
+	renderer->setAdaptive(d.getBool(Consts::ATTR_SURFEL_RENDERER_ADAPTIVE, false));
 	
 	ImporterTools::finalizeState(ctxt, renderer.get(), d);
 	parent->addState(renderer.get());

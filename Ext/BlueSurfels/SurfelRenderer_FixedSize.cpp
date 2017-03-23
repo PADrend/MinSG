@@ -13,6 +13,7 @@
 #include "SurfelAnalysis.h"
 
 #include "../../Core/FrameContext.h"
+#include "../../Core/Statistics.h"
 #include "../../Core/Nodes/CameraNode.h"
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/RenderingContext/RenderingParameters.h>
@@ -50,7 +51,8 @@ float SurfelRendererFixedSize::getMedianDist(Node * node, Rendering::Mesh& mesh)
 };
 
 SurfelRendererFixedSize::SurfelRendererFixedSize() : NodeRendererState(FrameContext::DEFAULT_CHANNEL),
-		countFactor(1.0f),sizeFactor(2.0f),maxSurfelSize(32.0), debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(false) {
+		countFactor(1.0f),sizeFactor(2.0f),maxSurfelSize(32.0), maxFrameTime(16.0f), 
+		debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(false), adaptive(false), frameNumber(0) {
 }
 SurfelRendererFixedSize::~SurfelRendererFixedSize() {}
 
@@ -131,6 +133,20 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 
 SurfelRendererFixedSize::stateResult_t SurfelRendererFixedSize::doEnableState(FrameContext & context, Node * node, const RenderParam & rp) {
 	deferredSurfelQueue.clear();
+	++frameNumber;
+		
+	if(adaptive && frameNumber >= 1 ) {
+		double avgFrameTime = frameTimer.getMilliseconds()/static_cast<double>(frameNumber);
+		if(avgFrameTime > maxFrameTime*1.1) {
+			sizeFactor = std::min(sizeFactor + 0.1f, maxSurfelSize);
+		} else if(avgFrameTime < maxFrameTime*0.7) {
+			sizeFactor = std::max(sizeFactor - 0.1f, 1.0f);
+		}
+		//std::cout << "\r" << avgFrameTime << " " << sizeFactor << "                 " << std::flush;
+		frameTimer.reset();
+		frameNumber = 0;
+	}
+	
 	return NodeRendererState::doEnableState(context, node, rp);
 }
 

@@ -85,6 +85,8 @@ extern cStr_t STATE_TYPE_SURFEL_RENDERER_BUDGET;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_BUDGET;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_INCR;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_TIME;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_ADAPTIVE;
 #endif
 // @}
 // ------------------------------------------------------------
