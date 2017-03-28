@@ -64,6 +64,7 @@
 #include <Rendering/Shader/Uniform.h>
 
 #include <Util/GenericAttribute.h>
+#include <Util/GenericAttributeSerialization.h>
 #include <Util/StringIdentifier.h>
 #include <Util/Macros.h>
 
@@ -111,16 +112,13 @@ static bool importSurfelRendererFixedSize(ImportContext & ctxt, const std::strin
 	renderer->setMaxFrameTime(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_TIME, 16.0f));
 	renderer->setAdaptive(d.getBool(Consts::ATTR_SURFEL_RENDERER_ADAPTIVE, false));
 	renderer->setFoveated(d.getBool(Consts::ATTR_SURFEL_RENDERER_FOVEATED, false));
-	auto foveatZones = d.getValue<Util::GenericAttributeList>(Consts::ATTR_SURFEL_RENDERER_FOVEAT_ZONES);
-	if(foveatZones) {
+	auto attr = d.getValue(Consts::ATTR_SURFEL_RENDERER_FOVEAT_ZONES);
+	if(attr) {
 		auto zones = renderer->getFoveatZones();
 		zones.clear();
-		for(auto it = foveatZones->begin(); it != foveatZones->end(); ++it) {
-			float v1 = (*it)->toFloat();
-			if(++it != foveatZones->end()) {
-				float v2 = (*it)->toFloat();
-				zones.push_back({v1, v2});
-			}
+		auto values = Util::StringUtils::toFloats(attr->toString());
+		for(uint32_t i=1; i<values.size(); i+=2) {
+			zones.push_back({values[i-1], values[i]});
 		}
 		renderer->setFoveatZones(zones);
 	}

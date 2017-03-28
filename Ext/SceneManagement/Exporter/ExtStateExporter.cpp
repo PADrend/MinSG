@@ -123,12 +123,15 @@ static void describeSurfelRendererFixedSize(ExporterContext &,DescriptionMap & d
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_TIME, Util::GenericAttribute::createNumber(renderer->getMaxFrameTime()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_ADAPTIVE, Util::GenericAttribute::createBool(renderer->isAdaptive()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_FOVEATED, Util::GenericAttribute::createBool(renderer->isFoveated()));
-	auto foveatZones = new Util::GenericAttributeList;
-	for(const auto& zone : renderer->getFoveatZones()) {
-		foveatZones->push_back(Util::GenericAttribute::createNumber(zone.first));
-		foveatZones->push_back(Util::GenericAttribute::createNumber(zone.second));
+	std::ostringstream zoneStream;
+	auto zones = renderer->getFoveatZones();
+	auto it = zones.begin();
+	if(it != zones.end()) {
+		zoneStream << it->first << " " << it->second;
+		for(++it; it!=zones.end(); ++it)
+			zoneStream << " " << it->first << " " << it->second;
 	}
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_FOVEAT_ZONES, foveatZones);
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_FOVEAT_ZONES, Util::GenericAttribute::createString(zoneStream.str()));
 }
 static void describeSurfelRendererBudget(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto renderer = dynamic_cast<BlueSurfels::SurfelRendererBudget *>(state);
