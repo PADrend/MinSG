@@ -89,6 +89,13 @@ static float getBenefit(FrameContext & context, Node* node) {
   return std::min(1.0f, std::max(0.0f, (far*far-dist)/(far*far-near*near)));*/
 }
 
+static float getProjSize(FrameContext & context, Node* node) {
+	const Geometry::Rect_f screenRect(context.getRenderingContext().getWindowClientArea());
+	auto projRect = context.getProjectedRect(node);
+  projRect.clipBy(screenRect);
+	return projRect.getArea();
+}
+
 static void updatePrimitiveCount(Node * node, FrameContext & context) {	
 	struct PrimitiveSurfelCountAnnotationVisitor : public NodeVisitor {
 		PrimitiveSurfelCountAnnotationVisitor() {	}
@@ -177,6 +184,7 @@ NodeRendererResult SurfelRendererBudget::displayNode(FrameContext & context, Nod
     // compute max. prefix, i.e. number of surfels that cover the object with size 1
   	float minRadius = sizeToRadius(1, assignment.mpp); 
   	assignment.maxPrefix = getPrefixForRadius(minRadius, assignment.medianDist, SURFEL_MEDIAN_COUNT, assignment.surfelCount);
+		assignment.maxPrefix = std::min<uint32_t>(assignment.maxPrefix, getProjSize(context, node));
     assignment.minSize = radiusToSize(getRadiusForPrefix(assignment.maxPrefix, assignment.medianDist, SURFEL_MEDIAN_COUNT), assignment.mpp);
   	
   	// compute min. prefix, i.e. number of surfels that cover the object with max. surfel size

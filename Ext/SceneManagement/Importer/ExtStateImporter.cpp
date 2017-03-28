@@ -105,10 +105,25 @@ static bool importSurfelRendererFixedSize(ImportContext & ctxt, const std::strin
 	
 	Util::Reference<BlueSurfels::SurfelRendererFixedSize> renderer = new BlueSurfels::SurfelRendererFixedSize;
 	renderer->setCountFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, 1.0f));
-	renderer->setSizeFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, 2.0f));
+	renderer->setSizeFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, 1.0f));
+	renderer->setSurfelSize(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SURFEL_SIZE, 1.0f));
 	renderer->setMaxSurfelSize(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, 32.0f));
 	renderer->setMaxFrameTime(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_TIME, 16.0f));
 	renderer->setAdaptive(d.getBool(Consts::ATTR_SURFEL_RENDERER_ADAPTIVE, false));
+	renderer->setFoveated(d.getBool(Consts::ATTR_SURFEL_RENDERER_FOVEATED, false));
+	auto foveatZones = d.getValue<Util::GenericAttributeList>(Consts::ATTR_SURFEL_RENDERER_FOVEAT_ZONES);
+	if(foveatZones) {
+		auto zones = renderer->getFoveatZones();
+		zones.clear();
+		for(auto it = foveatZones->begin(); it != foveatZones->end(); ++it) {
+			float v1 = (*it)->toFloat();
+			if(++it != foveatZones->end()) {
+				float v2 = (*it)->toFloat();
+				zones.push_back({v1, v2});
+			}
+		}
+		renderer->setFoveatZones(zones);
+	}
 	
 	ImporterTools::finalizeState(ctxt, renderer.get(), d);
 	parent->addState(renderer.get());

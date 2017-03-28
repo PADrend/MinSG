@@ -118,9 +118,17 @@ static void describeSurfelRendererFixedSize(ExporterContext &,DescriptionMap & d
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SURFEL_RENDERER_FIXED_SIZE);
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, Util::GenericAttribute::createNumber(renderer->getCountFactor()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, Util::GenericAttribute::createNumber(renderer->getSizeFactor()));
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_SURFEL_SIZE, Util::GenericAttribute::createNumber(renderer->getSurfelSize()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, Util::GenericAttribute::createNumber(renderer->getMaxSurfelSize()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_TIME, Util::GenericAttribute::createNumber(renderer->getMaxFrameTime()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_ADAPTIVE, Util::GenericAttribute::createBool(renderer->isAdaptive()));
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_FOVEATED, Util::GenericAttribute::createBool(renderer->isFoveated()));
+	auto foveatZones = new Util::GenericAttributeList;
+	for(const auto& zone : renderer->getFoveatZones()) {
+		foveatZones->push_back(Util::GenericAttribute::createNumber(zone.first));
+		foveatZones->push_back(Util::GenericAttribute::createNumber(zone.second));
+	}
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_FOVEAT_ZONES, foveatZones);
 }
 static void describeSurfelRendererBudget(ExporterContext &,DescriptionMap & desc,State * state) {
 	auto renderer = dynamic_cast<BlueSurfels::SurfelRendererBudget *>(state);

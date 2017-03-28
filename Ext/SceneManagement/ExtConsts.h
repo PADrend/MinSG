@@ -83,10 +83,13 @@ extern cStr_t STATE_TYPE_SURFEL_RENDERER2; // deprecated
 extern cStr_t STATE_TYPE_SURFEL_RENDERER_FIXED_SIZE;
 extern cStr_t STATE_TYPE_SURFEL_RENDERER_BUDGET;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_SURFEL_SIZE;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_BUDGET;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_INCR;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_TIME;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_ADAPTIVE;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_FOVEATED;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_FOVEAT_ZONES;
 #endif
 // @}
 // ------------------------------------------------------------

@@ -326,5 +326,26 @@ void moveStatesIntoLeaves(Node * root);
 // -----------------------------------------------------------------------------------------------
 
 
+/**
+ * gets the level of a node relative to the given root node.
+ * gives a warning if the node is not a child of the root node and returns the max. Integer
+ *
+ * @param rootNode Root node of a MinSG subgraph
+ * @param node Node in the subtree of rootNode
+ * @return The level of the node or 0xffffffffU (max. of uint32_t)
+ */
+uint32_t getNodeLevel(Node * rootNode, Node * node);
+
+
+/**
+ * gets the of the given subtree.
+ *
+ * @param rootNode Root node of a MinSG subgraph
+ * @return The depth of the given subtree
+ */
+uint32_t getTreeDepth(Node * rootNode);
+
+// -----------------------------------------------------------------------------------------------
+
 }
 #endif // STDNODEVISITORS_H

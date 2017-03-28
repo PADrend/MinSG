@@ -51,8 +51,9 @@ float SurfelRendererFixedSize::getMedianDist(Node * node, Rendering::Mesh& mesh)
 };
 
 SurfelRendererFixedSize::SurfelRendererFixedSize() : NodeRendererState(FrameContext::DEFAULT_CHANNEL),
-		countFactor(1.0f),sizeFactor(2.0f),maxSurfelSize(32.0), maxFrameTime(16.0f), 
-		debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(false), adaptive(false), frameNumber(0) {
+		countFactor(1.0f),sizeFactor(1.0f),surfelSize(1.0f),maxSurfelSize(32.0), maxFrameTime(16.0f), 
+		debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(false), adaptive(false), foveated(false) {
+		foveatZones.push_back({0.5f, 2.0f});
 }
 SurfelRendererFixedSize::~SurfelRendererFixedSize() {}
 
@@ -92,8 +93,26 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 		meterPerPixel = meterPerPixelOriginal;
 	}	
 	
-	float surfelSize = this->sizeFactor;
-	float surfelRadius = std::min(surfelSize,this->maxSurfelSize) * meterPerPixel / 2.0f;
+	float pointSize = this->surfelSize;
+	if(foveated) {
+		const Geometry::Rect_f screenRect(context.getRenderingContext().getWindowClientArea());
+		auto screenCenter = screenRect.getCenter();
+		auto projRect = context.getProjectedRect(node);
+		if(!projRect.contains(screenCenter)) {
+			float distSqr = projRect.getCorner(Geometry::CORNER_xy).distanceSquared(screenCenter);
+			distSqr = std::min(distSqr, projRect.getCorner(Geometry::CORNER_Xy).distanceSquared(screenCenter));
+			distSqr = std::min(distSqr, projRect.getCorner(Geometry::CORNER_xY).distanceSquared(screenCenter));
+			distSqr = std::min(distSqr, projRect.getCorner(Geometry::CORNER_XY).distanceSquared(screenCenter));
+			float maxDistSqr = std::min(screenRect.getWidth(), screenRect.getHeight()) * 0.5f;
+			maxDistSqr *= maxDistSqr;
+			for(const auto& zone : foveatZones) {
+				if(distSqr > zone.first*zone.first*maxDistSqr)
+					pointSize = surfelSize * zone.second;
+			}
+		}
+	}
+	
+	float surfelRadius = std::min(pointSize,this->maxSurfelSize) * meterPerPixel / 2.0f;
 	uint32_t maxSurfelCount = surfelMesh.isUsingIndexData() ?  surfelMesh.getIndexCount() : surfelMesh.getVertexCount();
 	float minSurfelDistance = surfelMedianDist * std::sqrt(SURFEL_MEDIAN_COUNT / static_cast<float>(maxSurfelCount));
 
@@ -109,15 +128,15 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 
 	if(surfelPrefixLength > 0 && (!debugHideSurfels || deferredSurfels)) {
 		if(debugCameraEnabled)
-			surfelSize *= meterPerPixel/meterPerPixelOriginal;
-		surfelSize = std::min(surfelSize,this->maxSurfelSize);
+			pointSize *= meterPerPixel/meterPerPixelOriginal;
+		pointSize = std::min(pointSize*sizeFactor,this->maxSurfelSize);
 		
 		if(deferredSurfels) {
 			float camDistSqr = node->getWorldBB().getDistanceSquared(context.getCamera()->getWorldOrigin());
-			deferredSurfelQueue.emplace_back(camDistSqr, node, surfelPrefixLength, surfelSize);
+			deferredSurfelQueue.emplace_back(camDistSqr, node, surfelPrefixLength, pointSize);
 		} else {
 			renderingContext.setGlobalUniform({uniform_renderSurfels, true});
-			renderingContext.pushAndSetPointParameters( Rendering::PointParameters(surfelSize));
+			renderingContext.pushAndSetPointParameters( Rendering::PointParameters(pointSize));
 			renderingContext.pushAndSetMatrix_modelToCamera( renderingContext.getMatrix_worldToCamera() );
 			renderingContext.multMatrix_modelToCamera(node->getWorldTransformationMatrix());
 			context.displayMesh(&surfelMesh,	0, surfelPrefixLength );
@@ -133,18 +152,14 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 
 SurfelRendererFixedSize::stateResult_t SurfelRendererFixedSize::doEnableState(FrameContext & context, Node * node, const RenderParam & rp) {
 	deferredSurfelQueue.clear();
-	++frameNumber;
 		
-	if(adaptive && frameNumber >= 1 ) {
-		double avgFrameTime = frameTimer.getMilliseconds()/static_cast<double>(frameNumber);
-		if(avgFrameTime > maxFrameTime*1.1) {
-			sizeFactor = std::min(sizeFactor + 0.1f, maxSurfelSize);
-		} else if(avgFrameTime < maxFrameTime*0.7) {
-			sizeFactor = std::max(sizeFactor - 0.1f, 1.0f);
+	if(adaptive) {
+		float factor = frameTimer.getMilliseconds() / maxFrameTime;
+		if(factor > 1.1f || factor < 0.9f) {
+			surfelSize = std::min(std::max((3.0f*surfelSize + surfelSize*factor)/4.0f, 1.0f), maxSurfelSize);
 		}
 		//std::cout << "\r" << avgFrameTime << " " << sizeFactor << "                 " << std::flush;
 		frameTimer.reset();
-		frameNumber = 0;
 	}
 	
 	return NodeRendererState::doEnableState(context, node, rp);

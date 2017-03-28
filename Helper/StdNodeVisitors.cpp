@@ -22,6 +22,8 @@
 #include <Util/Graphics/Color.h>
 #include <Util/Macros.h>
 
+#include <limits>
+
 namespace MinSG {
 
 // ----------------------------------------------------------------------------------------------------
@@ -546,6 +548,64 @@ void moveStatesIntoLeaves(Node * root){
 
 	} visitor(root);
 	root->traverse(visitor);
+}
+
+// ----------------------------------------------------------------------------------------------------
+
+
+uint32_t getNodeLevel(Node * rootNode, Node * node) {
+	if(rootNode == nullptr || node == nullptr) {
+		return std::numeric_limits<uint32_t>::max();
+	}
+
+	struct Visitor : public NodeVisitor {
+		Visitor(Node* node) : level(0), nodeLevel(std::numeric_limits<uint32_t>::max()), node(node) { }
+		virtual ~Visitor() { }
+		uint32_t level;
+		uint32_t nodeLevel;
+		Node* node;
+
+		NodeVisitor::status enter(Node * _node) override {
+			if(node == _node) {
+				nodeLevel = level;
+				return EXIT_TRAVERSAL;
+			}
+			++level;
+			return CONTINUE_TRAVERSAL;
+		}
+		NodeVisitor::status leave(Node * _node) override {
+			--level;
+			return CONTINUE_TRAVERSAL;
+		}
+	} visitor(node);
+	rootNode->traverse(visitor);
+	return visitor.nodeLevel;
+}
+
+
+uint32_t getTreeDepth(Node * rootNode) {
+	if(rootNode == nullptr) {
+		return 0;
+	}
+
+	struct Visitor : public NodeVisitor {
+		Visitor() : level(0), maxLevel(0) { }
+		virtual ~Visitor() { }
+		uint32_t level;
+		uint32_t maxLevel;
+
+		NodeVisitor::status enter(Node * _node) override {
+			maxLevel = std::max(level, maxLevel);
+			++level;
+			return CONTINUE_TRAVERSAL;
+		}
+		NodeVisitor::status leave(Node * _node) override {
+			--level;
+			return CONTINUE_TRAVERSAL;
+		}
+	} visitor;
+	rootNode->traverse(visitor);
+	return visitor.maxLevel;
 }
 
 // --------------------

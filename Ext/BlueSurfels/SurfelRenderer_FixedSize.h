@@ -43,6 +43,9 @@ class SurfelRendererFixedSize : public NodeRendererState{
 				
 		float getSizeFactor()const		{	return sizeFactor;	}
 		void setSizeFactor(float f)		{	sizeFactor = f;	}
+				
+		float getSurfelSize()const		{	return surfelSize;	}
+		void setSurfelSize(float f)		{	surfelSize = f;	}
 		
 		float getMaxSurfelSize()const		{	return maxSurfelSize;	}
 		void setMaxSurfelSize(float f)		{	maxSurfelSize = f;	}
@@ -59,6 +62,16 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		bool isAdaptive() const	{	return adaptive;	}
 		void setAdaptive(bool b)	{	adaptive = b;	}
 		
+		bool isFoveated() const	{	return foveated;	}
+		void setFoveated(bool b)	{	foveated = b;	}
+		
+		const std::vector<std::pair<float, float>>& getFoveatZones()const {	return foveatZones;	}
+		void setFoveatZones(const std::vector<std::pair<float, float>>& zones) {	
+			foveatZones.clear();
+			foveatZones.assign(zones.begin(), zones.end()); 
+			std::sort(foveatZones.begin(), foveatZones.end());	
+		}
+		
 		float getMaxFrameTime() const		{	return maxFrameTime;	}
 		void setMaxFrameTime(float f)		{	maxFrameTime = f;	}
 		
@@ -69,14 +82,14 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 	private:			
-		float countFactor,sizeFactor,maxSurfelSize,maxFrameTime;
-		bool debugHideSurfels, debugCameraEnabled, deferredSurfels, adaptive;
-		uint64_t frameNumber;
+		float countFactor,sizeFactor,surfelSize,maxSurfelSize,maxFrameTime;
+		bool debugHideSurfels, debugCameraEnabled, deferredSurfels, adaptive, foveated;
 		Util::Reference<CameraNode> debugCamera;
 		// distance to camera, node, prefix length, size
 		typedef std::tuple<float,Node*,uint32_t,float> SurfelAssignment_t;
 		std::deque<SurfelAssignment_t> deferredSurfelQueue;
 		Util::Timer frameTimer;
+		std::vector<std::pair<float, float>> foveatZones;
 				
 		float getMedianDist(Node * node, Rendering::Mesh& mesh);
 };
