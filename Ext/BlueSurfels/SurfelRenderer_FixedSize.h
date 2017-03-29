@@ -65,6 +65,9 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		bool isFoveated() const	{	return foveated;	}
 		void setFoveated(bool b)	{	foveated = b;	}
 		
+		bool getDebugFoveated() const	{	return debugFoveated;	}
+		void setDebugFoveated(bool b)	{	debugFoveated = b;	}
+		
 		const std::vector<std::pair<float, float>>& getFoveatZones()const {	return foveatZones;	}
 		void setFoveatZones(const std::vector<std::pair<float, float>>& zones) {	
 			foveatZones.clear();
@@ -83,7 +86,7 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 	private:			
 		float countFactor,sizeFactor,surfelSize,maxSurfelSize,maxFrameTime;
-		bool debugHideSurfels, debugCameraEnabled, deferredSurfels, adaptive, foveated;
+		bool debugHideSurfels, debugCameraEnabled, deferredSurfels, adaptive, foveated, debugFoveated = false;
 		Util::Reference<CameraNode> debugCamera;
 		// distance to camera, node, prefix length, size
 		typedef std::tuple<float,Node*,uint32_t,float> SurfelAssignment_t;

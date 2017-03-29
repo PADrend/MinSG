@@ -20,8 +20,10 @@
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Shader/Uniform.h>
 #include <Rendering/Mesh/Mesh.h>
+#include <Rendering/Draw.h>
 
 #include <Geometry/Vec3.h>
+#include <Geometry/Vec2.h>
 
 #include <Util/StringIdentifier.h>
 #include <Util/GenericAttribute.h>
@@ -50,9 +52,23 @@ float SurfelRendererFixedSize::getMedianDist(Node * node, Rendering::Mesh& mesh)
 	return surfelMedianDist;
 };
 
+static Geometry::Vec2 closestRect(const Geometry::Rect& rect, const Geometry::Vec2& pos) {
+	Geometry::Vec2 out(pos);
+	if(pos.x() < rect.getMinX())
+		out.x(rect.getMinX());
+	else if(pos.x() > rect.getMaxX())
+		out.x(rect.getMaxX());
+	if(pos.y() < rect.getMinY())
+		out.y(rect.getMinY());
+	else if(pos.y() > rect.getMaxY())
+		out.y(rect.getMaxY());
+	return out;
+}
+
 SurfelRendererFixedSize::SurfelRendererFixedSize() : NodeRendererState(FrameContext::DEFAULT_CHANNEL),
 		countFactor(1.0f),sizeFactor(1.0f),surfelSize(1.0f),maxSurfelSize(32.0), maxFrameTime(16.0f), 
 		debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(false), adaptive(false), foveated(false) {
+		foveatZones.push_back({0.0f, 0.0f});
 		foveatZones.push_back({0.5f, 2.0f});
 }
 SurfelRendererFixedSize::~SurfelRendererFixedSize() {}
@@ -95,24 +111,27 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	
 	float pointSize = this->surfelSize;
 	if(foveated) {
-		const Geometry::Rect_f screenRect(context.getRenderingContext().getWindowClientArea());
-		auto screenCenter = screenRect.getCenter();
+		const auto viewport = context.getCamera()->getViewport();
+		Geometry::Vec2 vpCenter(viewport.getCenter());
 		auto projRect = context.getProjectedRect(node);
-		if(!projRect.contains(screenCenter)) {
-			float distSqr = projRect.getCorner(Geometry::CORNER_xy).distanceSquared(screenCenter);
-			distSqr = std::min(distSqr, projRect.getCorner(Geometry::CORNER_Xy).distanceSquared(screenCenter));
-			distSqr = std::min(distSqr, projRect.getCorner(Geometry::CORNER_xY).distanceSquared(screenCenter));
-			distSqr = std::min(distSqr, projRect.getCorner(Geometry::CORNER_XY).distanceSquared(screenCenter));
-			float maxDistSqr = std::min(screenRect.getWidth(), screenRect.getHeight()) * 0.5f;
+		
+		auto it = foveatZones.begin();
+		if(it != foveatZones.end()) 
+			vpCenter += {it->first * viewport.getWidth(),it->second * viewport.getHeight()}; // offset
+		auto closest = closestRect(projRect, vpCenter);
+		float distSqr = closest.distanceSquared(vpCenter);
+					
+		if(distSqr > 0) {
+			float maxDistSqr = std::min(viewport.getWidth(), viewport.getHeight()) * 0.5f;
 			maxDistSqr *= maxDistSqr;
-			for(const auto& zone : foveatZones) {
-				if(distSqr > zone.first*zone.first*maxDistSqr)
-					pointSize = surfelSize * zone.second;
+			for(++it; it != foveatZones.end(); ++it) {
+				if(distSqr > it->first*it->first*maxDistSqr)
+					pointSize = surfelSize * it->second;
 			}
 		}
 	}
 	
-	float surfelRadius = std::min(pointSize,this->maxSurfelSize) * meterPerPixel / 2.0f;
+	float surfelRadius = pointSize * meterPerPixel / 2.0f;
 	uint32_t maxSurfelCount = surfelMesh.isUsingIndexData() ?  surfelMesh.getIndexCount() : surfelMesh.getVertexCount();
 	float minSurfelDistance = surfelMedianDist * std::sqrt(SURFEL_MEDIAN_COUNT / static_cast<float>(maxSurfelCount));
 
@@ -129,7 +148,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	if(surfelPrefixLength > 0 && (!debugHideSurfels || deferredSurfels)) {
 		if(debugCameraEnabled)
 			pointSize *= meterPerPixel/meterPerPixelOriginal;
-		pointSize = std::min(pointSize*sizeFactor,this->maxSurfelSize);
+		//pointSize = std::min(pointSize*sizeFactor,this->maxSurfelSize);
 		
 		if(deferredSurfels) {
 			float camDistSqr = node->getWorldBB().getDistanceSquared(context.getCamera()->getWorldOrigin());
@@ -169,6 +188,28 @@ void SurfelRendererFixedSize::doDisableState(FrameContext & context, Node * node
 	NodeRendererState::doDisableState(context, node, rp);	
 	if(deferredSurfels && !debugHideSurfels) 
 		drawSurfels(context);
+		
+	if(foveated && debugFoveated) {
+		const auto viewport = context.getCamera()->getViewport();
+		Geometry::Vec2 vpCenter(viewport.getCenter());
+		
+		auto it = foveatZones.begin();
+		if(it != foveatZones.end()) 
+			vpCenter += {it->first * viewport.getWidth(),it->second * viewport.getHeight()}; // offset
+		
+		auto& rc = context.getRenderingContext(); 
+		Rendering::enable2DMode(rc, viewport);
+		rc.pushAndSetLighting(Rendering::LightingParameters());
+		
+		float rad = std::min(viewport.getWidth(), viewport.getHeight()) * 0.5f;
+		for(++it; it != foveatZones.end(); ++it) {
+			Geometry::Rect rect(vpCenter.x() - it->first*rad, viewport.getHeight() - vpCenter.y() - it->first*rad, it->first*2*rad, it->first*2*rad);
+			Rendering::drawWireframeRect(context.getRenderingContext(), rect, Util::Color4f(0,0,0.5,1));
+		}
+		
+		rc.popLighting();
+		Rendering::disable2DMode(rc);
+	}
 }
 
 void SurfelRendererFixedSize::drawSurfels(FrameContext & context, float minSize, float maxSize) const {
