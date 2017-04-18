@@ -149,6 +149,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 		if(debugCameraEnabled)
 			pointSize *= meterPerPixel/meterPerPixelOriginal;
 		//pointSize = std::min(pointSize*sizeFactor,this->maxSurfelSize);
+		pointSize *= sizeFactor;
 		
 		if(deferredSurfels) {
 			float camDistSqr = node->getWorldBB().getDistanceSquared(context.getCamera()->getWorldOrigin());
