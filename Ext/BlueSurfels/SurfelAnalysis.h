@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <algorithm>
+#include <cmath>
 
 namespace Rendering{
 class Mesh;
