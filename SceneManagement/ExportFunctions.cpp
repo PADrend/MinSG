@@ -1,7 +1,7 @@
 /*
 	This file is part of the MinSG library.
 	Copyright (C) 2007-2012 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2007-2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2007-2013 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	Copyright (C) 2007-2012 Ralf Petring <ralf@petring.net>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -24,9 +24,11 @@
 #include <Rendering/Serialization/Serialization.h>
 #include <Rendering/Serialization/GenericAttributeSerialization.h>
 
-namespace MinSG{
+#include <unordered_set>
 
-void SceneManagement::saveMeshesInSubtreeAsPLY(Node * rootNode, const std::string & s_dirName, bool saveRegisteredNodes/*=false*/) {
+namespace MinSG{
+	
+void saveMeshesInSubtree(Node * rootNode, const std::string & s_dirName, bool saveRegisteredNodes, const std::string& ext) {
 	float start = Util::Timer::now();
 	Util::FileName dirName = Util::FileName::createDirName(s_dirName);
 	const auto geoNodes = collectNodes<GeometryNode>(rootNode);
@@ -37,16 +39,27 @@ void SceneManagement::saveMeshesInSubtreeAsPLY(Node * rootNode, const std::strin
 	}
 	size_t counter = 0;
 	size_t successCounter = 0;
+	
+	std::unordered_set<Rendering::Mesh*> meshes;
+	meshes.reserve(geoNodes.size());
 	for(const auto & geoNode : geoNodes) {
+		if(geoNode->getMesh())
+			meshes.emplace(geoNode->getMesh());
+	}
+	
+	for(auto mesh : meshes) {
 		counter++;
-		Rendering::Mesh * mesh = geoNode->getMesh();
 
 		// skip node, if node has no mesh or mesh already has a corresponding file.
-		if(mesh == nullptr || (!(mesh->getFileName().empty()) && !saveRegisteredNodes)) {
+		if(!mesh->getFileName().empty() && !saveRegisteredNodes) {
 			continue;
 		}
 
-		Util::FileName fileName = Util::FileUtils::generateNewRandFilename(dirName, "mesh_", ".ply", 8);
+		Util::FileName fileName = Util::FileUtils::generateNewRandFilename(dirName, "mesh_", ext, 8);
+		if(saveRegisteredNodes && !mesh->getFileName().empty()) {
+			fileName.setFile(mesh->getFileName().getFile());
+			fileName.setEnding(ext);
+		}
 
 		Util::info << "\rExporting " << counter << "/" << numMeshes << "     ";
 		if(!Util::FileUtils::isFile(fileName)) {
@@ -59,38 +72,13 @@ void SceneManagement::saveMeshesInSubtreeAsPLY(Node * rootNode, const std::strin
 	}
 	Util::info << "\nExported " << successCounter << "/" << numMeshes << " in " << (Util::Timer::now() - start) << " sec.\n";
 }
+	
+void SceneManagement::saveMeshesInSubtreeAsPLY(Node * rootNode, const std::string & s_dirName, bool saveRegisteredNodes/*=false*/) {
+	saveMeshesInSubtree(rootNode, s_dirName, saveRegisteredNodes, ".ply");
+}
 
 void SceneManagement::saveMeshesInSubtreeAsMMF(Node * rootNode, const std::string & s_dirName, bool saveRegisteredNodes/*=false*/) {
-	float start = Util::Timer::now();
-	Util::FileName dirName = Util::FileName::createDirName(s_dirName);
-	const auto geoNodes = collectNodes<GeometryNode>(rootNode);
-	const size_t numMeshes = geoNodes.size();
-
-	if(!geoNodes.empty() && !Util::FileUtils::isDir(dirName)) {
-		Util::FileUtils::createDir(dirName);
-	}
-	size_t counter = 0;
-	size_t successCounter = 0;
-	for(const auto & geoNode : geoNodes) {
-		counter++;
-		Rendering::Mesh * mesh = geoNode->getMesh();
-
-		// skip node, if node has no mesh or mesh already has a corresponding file.
-		if(mesh == nullptr || (!(mesh->getFileName().empty()) && !saveRegisteredNodes))
-			continue;
-
-		Util::FileName fileName = Util::FileUtils::generateNewRandFilename(dirName, "mesh_", ".mmf", 8);
-
-		Util::info << "\rExporting " << counter << "/" << numMeshes << "     ";
-		if(!Util::FileUtils::isFile(fileName)) {
-			bool successful = Rendering::Serialization::saveMesh(mesh, fileName);
-			if(successful) {
-				successCounter++;
-				mesh->setFileName(fileName);
-			}
-		}
-	}
-	Util::info << "\nExported " << successCounter << "/" << numMeshes << " in " << (Util::Timer::now() - start) << " sec.\n";
+	saveMeshesInSubtree(rootNode, s_dirName, saveRegisteredNodes, ".mmf");
 }
 
 
