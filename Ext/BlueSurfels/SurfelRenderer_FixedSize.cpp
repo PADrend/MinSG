@@ -196,7 +196,7 @@ void SurfelRendererFixedSize::doDisableState(FrameContext & context, Node * node
 		
 		auto it = foveatZones.begin();
 		if(it != foveatZones.end()) 
-			vpCenter += {it->first * viewport.getWidth(),it->second * viewport.getHeight()}; // offset
+			vpCenter += {it->first * viewport.getWidth(),-it->second * viewport.getHeight()}; // offset
 		
 		auto& rc = context.getRenderingContext(); 
 		Rendering::enable2DMode(rc, viewport);
@@ -204,8 +204,9 @@ void SurfelRendererFixedSize::doDisableState(FrameContext & context, Node * node
 		
 		float rad = std::min(viewport.getWidth(), viewport.getHeight()) * 0.5f;
 		for(++it; it != foveatZones.end(); ++it) {
-			Geometry::Rect rect(vpCenter.x() - it->first*rad, viewport.getHeight() - vpCenter.y() - it->first*rad, it->first*2*rad, it->first*2*rad);
-			Rendering::drawWireframeRect(context.getRenderingContext(), rect, Util::Color4f(0,0,0.5,1));
+			//Geometry::Rect rect(vpCenter.x() - it->first*rad, viewport.getHeight() - vpCenter.y() - it->first*rad, it->first*2*rad, it->first*2*rad);
+			//Rendering::drawWireframeRect(context.getRenderingContext(), rect, Util::Color4f(0,0,0.5,1));
+			Rendering::drawWireframeCircle(context.getRenderingContext(), vpCenter, it->first*rad, Util::Color4f(0,0,0.5,1));
 		}
 		
 		rc.popLighting();
