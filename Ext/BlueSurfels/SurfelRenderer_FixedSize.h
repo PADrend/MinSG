@@ -20,6 +20,7 @@
 #include <Geometry/Vec3.h>
 
 #include <deque>
+#include <set>
 
 namespace Rendering {
 class Mesh;
@@ -78,7 +79,7 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		float getMaxFrameTime() const		{	return maxFrameTime;	}
 		void setMaxFrameTime(float f)		{	maxFrameTime = f;	}
 		
-		SurfelRendererFixedSize* clone()const	{	return new SurfelRendererFixedSize(*this);	}
+		SurfelRendererFixedSize* clone() const override	{	return new SurfelRendererFixedSize(*this);	}
 		
 		void drawSurfels(FrameContext & context, float minSize=0, float maxSize=1024) const;
 	protected:
@@ -90,7 +91,7 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		Util::Reference<CameraNode> debugCamera;
 		// distance to camera, node, prefix length, size
 		typedef std::tuple<float,Node*,uint32_t,float> SurfelAssignment_t;
-		std::deque<SurfelAssignment_t> deferredSurfelQueue;
+		std::set<SurfelAssignment_t> deferredSurfelQueue;
 		Util::Timer frameTimer;
 		std::vector<std::pair<float, float>> foveatZones;
 				

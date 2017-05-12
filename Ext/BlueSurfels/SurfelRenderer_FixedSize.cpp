@@ -50,7 +50,7 @@ float SurfelRendererFixedSize::getMedianDist(Node * node, Rendering::Mesh& mesh)
 		surfelMedianDist = surfelMedianAttr->toFloat();
 	}
 	return surfelMedianDist;
-};
+}
 
 static Geometry::Vec2 closestRect(const Geometry::Rect& rect, const Geometry::Vec2& pos) {
 	Geometry::Vec2 out(pos);
@@ -153,7 +153,8 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 		
 		if(deferredSurfels) {
 			float camDistSqr = node->getWorldBB().getDistanceSquared(context.getCamera()->getWorldOrigin());
-			deferredSurfelQueue.emplace_back(camDistSqr, node, surfelPrefixLength, pointSize);
+			deferredSurfelQueue.emplace(camDistSqr, node, surfelPrefixLength, pointSize);
+			//deferredSurfelQueue.emplace_back(camDistSqr, node, surfelPrefixLength, pointSize);
 		} else {
 			renderingContext.setGlobalUniform({uniform_renderSurfels, true});
 			renderingContext.pushAndSetPointParameters( Rendering::PointParameters(pointSize));
