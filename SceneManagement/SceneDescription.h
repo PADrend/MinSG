@@ -89,8 +89,13 @@ extern cStr_t NODE_TYPE_CAMERA;
 // NODE_TYPE = NODE_TYPE_CAMERA
 extern const Util::StringIdentifier ATTR_CAM_NEAR;
 extern const Util::StringIdentifier ATTR_CAM_FAR;
-extern const Util::StringIdentifier ATTR_CAM_ANGLE;
-extern const Util::StringIdentifier ATTR_CAM_RATIO;
+extern const Util::StringIdentifier ATTR_CAM_ANGLE; 
+extern const Util::StringIdentifier ATTR_CAM_RATIO; 
+extern const Util::StringIdentifier ATTR_CAM_FRUSTUM; // angles for persp. camera, clipping planes for ortho. camera
+extern const Util::StringIdentifier ATTR_CAM_VIEWPORT;
+extern const Util::StringIdentifier ATTR_CAM_TYPE;
+extern cStr_t CAM_TYPE_ORTHOGRAPHIC;
+extern cStr_t CAM_TYPE_PERSPECTIVE;
 
 // NODE_TYPE = NODE_TYPE_CLONE
 extern const Util::StringIdentifier ATTR_CLONE_SOURCE;

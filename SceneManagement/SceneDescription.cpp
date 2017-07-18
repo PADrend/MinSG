@@ -191,6 +191,11 @@ const Util::StringIdentifier ATTR_CAM_NEAR("near");
 const Util::StringIdentifier ATTR_CAM_FAR("far");
 const Util::StringIdentifier ATTR_CAM_ANGLE("angle");
 const Util::StringIdentifier ATTR_CAM_RATIO("ratio");
+const Util::StringIdentifier ATTR_CAM_FRUSTUM("frustum");
+const Util::StringIdentifier ATTR_CAM_VIEWPORT("viewport");
+const Util::StringIdentifier ATTR_CAM_TYPE("camera_type");
+cStr_t CAM_TYPE_ORTHOGRAPHIC = "orthographic";
+cStr_t CAM_TYPE_PERSPECTIVE = "perspective";
 
 const Util::StringIdentifier ATTR_LIGHT_TYPE("lighttype");
 cStr_t LIGHT_TYPE_POINT = "point";

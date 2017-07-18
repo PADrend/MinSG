@@ -106,17 +106,51 @@ static bool importCameraNode(ImportContext & ctxt, const std::string & nodeType,
 	if(nodeType != Consts::NODE_TYPE_CAMERA || parent == nullptr)
 		return false;
 
-	auto node = new CameraNode();
-
-	float angle = Util::StringUtils::toNumber<float>(d.getString(Consts::ATTR_CAM_ANGLE, "80.0"));
-	float ratio = Util::StringUtils::toNumber<float>(d.getString(Consts::ATTR_CAM_RATIO, "1.33"));
+	const std::string type = d.getString(Consts::ATTR_CAM_TYPE, Consts::CAM_TYPE_PERSPECTIVE);	
+	AbstractCameraNode* node;
+	CameraNodeOrtho* camOrtho = nullptr;
+	CameraNode* camPersp = nullptr;
+	if(type == Consts::CAM_TYPE_ORTHOGRAPHIC) {
+		camOrtho = new CameraNodeOrtho;
+		node = camOrtho;
+	} else {
+		camPersp = new CameraNode;
+		node = camPersp;
+	}
+	
+	Geometry::Rect_i viewport(0,0,1,1);
+	if(d.contains(Consts::ATTR_CAM_VIEWPORT)) {
+		int32_t x, y, w, h;
+		std::istringstream iss(d.getString(Consts::ATTR_CAM_VIEWPORT));
+		iss >> x >> y >> w >> h;
+		viewport.setPosition(x, y);
+		viewport.setSize(w, h);
+	} else {
+		float ratio = Util::StringUtils::toNumber<float>(d.getString(Consts::ATTR_CAM_RATIO, "1.33"));
+		viewport.setWidth(ratio);
+	}
+	node->setViewport(viewport);
+	
+	if(d.contains(Consts::ATTR_CAM_FRUSTUM)) {
+		float left, right, bottom, top;
+		std::istringstream iss(d.getString(Consts::ATTR_CAM_FRUSTUM));
+		iss >> left >> right >> bottom >> top;
+		if(camPersp)
+			camPersp->setAngles(left, right, bottom, top);
+		else if(camOrtho)
+			camOrtho->setClippingPlanes(left, right, bottom, top);
+	} else {
+		float angle = Util::StringUtils::toNumber<float>(d.getString(Consts::ATTR_CAM_ANGLE, "80.0"));
+		if(camPersp) {
+			if(viewport.getHeight() <= viewport.getWidth())
+				camPersp->applyVerticalAngle(angle);
+			else
+				camPersp->applyHorizontalAngle(angle);
+		}
+	}
+		
 	float nearPlane = Util::StringUtils::toNumber<float>(d.getString(Consts::ATTR_CAM_NEAR, "1.0"));
 	float farPlane = Util::StringUtils::toNumber<float>(d.getString(Consts::ATTR_CAM_FAR, "1000.0"));
-
-	// FIXME setCorrext viewport
-	node->setViewport(Geometry::Rect_i(0,0,ratio, 1));
-	// FIXME set left, right, top, bottom angle
-	node->applyVerticalAngle(angle);
 	node->setNearFar(nearPlane, farPlane);
 
 	ImporterTools::finalizeNode(ctxt, node, d);

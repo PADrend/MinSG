@@ -21,6 +21,8 @@
 #include "../../Core/Nodes/ListNode.h"
 #include "../../Core/Nodes/LightNode.h"
 #include "../../Core/Nodes/GeometryNode.h"
+#include "../../Core/Nodes/CameraNode.h"
+#include "../../Core/Nodes/CameraNodeOrtho.h"
 
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Serialization/Serialization.h>
@@ -112,10 +114,47 @@ static void describeLightNode(ExporterContext &,DescriptionMap & desc, Node * no
 	
 }
 
+static void describeCameraNode(ExporterContext &, DescriptionMap & desc, Node * node) {
+	auto cn = dynamic_cast<AbstractCameraNode*>(node);
+	
+	desc.setString(Consts::ATTR_CAM_NEAR, Util::StringUtils::toString(cn->getNearPlane()));
+	desc.setString(Consts::ATTR_CAM_FAR, Util::StringUtils::toString(cn->getFarPlane()));
+	
+	auto camPersp = dynamic_cast<CameraNode*>(node);
+	auto camOrtho = dynamic_cast<CameraNodeOrtho*>(node);
+	float left = -1, right = 1, bottom = -1, top = 1;
+	if(camPersp) {
+		camPersp->getAngles(left, right, bottom, top);
+		desc.setString(Consts::ATTR_CAM_TYPE, Consts::CAM_TYPE_PERSPECTIVE);
+	} else if(camOrtho) {
+		left = camOrtho->getLeftClippingPlane();
+		right = camOrtho->getRightClippingPlane();
+		bottom = camOrtho->getBottomClippingPlane();
+		top = camOrtho->getTopClippingPlane();
+		desc.setString(Consts::ATTR_CAM_TYPE, Consts::CAM_TYPE_ORTHOGRAPHIC);
+	}
+	
+	{
+		std::ostringstream ss;
+		ss << left << " " << right << " " << bottom << " " << top;
+		desc.setString(Consts::ATTR_CAM_FRUSTUM, ss.str());
+	}	
+	
+	{
+		auto vp = cn->getViewport();
+		std::ostringstream ss;
+		ss << vp.getX() << " " << vp.getY() << " " << vp.getWidth() << " " << vp.getHeight();
+		desc.setString(Consts::ATTR_CAM_VIEWPORT, ss.str());
+	}
+	
+}
+
 void initCoreNodeExporter() {
 	ExporterTools::registerNodeExporter(GeometryNode::getClassId(),&describeGeometryNode);
 	ExporterTools::registerNodeExporter(ListNode::getClassId(),&describeListNode);
 	ExporterTools::registerNodeExporter(LightNode::getClassId(),&describeLightNode);
+	ExporterTools::registerNodeExporter(CameraNode::getClassId(),&describeCameraNode);
+	ExporterTools::registerNodeExporter(CameraNodeOrtho::getClassId(),&describeCameraNode);
 }
 
 }
