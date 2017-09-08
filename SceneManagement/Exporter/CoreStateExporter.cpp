@@ -303,6 +303,7 @@ static void describeMaterialState(ExporterContext &,DescriptionMap & desc,State 
 	desc.setString(Consts::ATTR_MATERIAL_AMBIENT, Util::StringUtils::implode(n->getParameters().getAmbient().data(), n->getParameters().getAmbient().data() + 4, " "));
 	desc.setString(Consts::ATTR_MATERIAL_DIFFUSE, Util::StringUtils::implode(n->getParameters().getDiffuse().data(), n->getParameters().getDiffuse().data() + 4, " "));
 	desc.setString(Consts::ATTR_MATERIAL_SPECULAR, Util::StringUtils::implode(n->getParameters().getSpecular().data(), n->getParameters().getSpecular().data() + 4, " "));
+	desc.setString(Consts::ATTR_MATERIAL_EMISSION, Util::StringUtils::implode(n->getParameters().getEmission().data(), n->getParameters().getEmission().data() + 4, " "));
 	desc.setString(Consts::ATTR_MATERIAL_SHININESS, Util::StringUtils::toString(n->getParameters().getShininess()));
 
 }

@@ -65,7 +65,7 @@ std::vector<SurfelGenerator::Surfel> SurfelGenerator::extractSurfelsFromTextures
 	return surfels;
 }
 	
-SurfelGenerator::SurfelResult SurfelGenerator::buildBlueSurfels(const std::vector<Surfel> & surfels)const{
+SurfelGenerator::SurfelResult SurfelGenerator::buildBlueSurfels(const std::vector<Surfel> & surfels, int32_t startIndex)const{
 	if(parameters.benchmarkingEnabled)
 		benchmarkResults["num_initialSetSize"] = surfels.size();
 
@@ -123,8 +123,15 @@ SurfelGenerator::SurfelResult SurfelGenerator::buildBlueSurfels(const std::vecto
 	
 	// add initial point
 	{
-		auto initialPoints = _::extractRandomSurfelIds(freeSurfelIds,1);
-		size_t surfelId = initialPoints.front();
+		size_t surfelId;
+		if(startIndex < 0) {
+			auto initialPoints = _::extractRandomSurfelIds(freeSurfelIds,1);
+			surfelId = initialPoints.front();
+		} else {
+			surfelId = std::min<size_t>(startIndex, freeSurfelIds.size()-1);
+			freeSurfelIds[surfelId] = freeSurfelIds.back();
+			freeSurfelIds.pop_back();
+		}
 //		freeSurfelIds.erase(surfelId);
 		auto & surfel = surfels[surfelId];
 		mb->position(surfel.pos);
@@ -302,7 +309,7 @@ void SurfelGenerator::setVertexDescription(const Rendering::VertexDescription& v
 }
 
 
-SurfelGenerator::SurfelResult SurfelGenerator::createSurfelsFromMesh(Rendering::Mesh& mesh) const {
+SurfelGenerator::SurfelResult SurfelGenerator::createSurfelsFromMesh(Rendering::Mesh& mesh, int32_t startIndex) const {
 	auto vd = mesh.getVertexDescription();
 	if(	!vd.hasAttribute(Rendering::VertexAttributeIds::POSITION) ||
 			!vd.hasAttribute(Rendering::VertexAttributeIds::NORMAL) ||

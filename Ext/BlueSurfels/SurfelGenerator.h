@@ -97,7 +97,7 @@ class SurfelGenerator{
 													Util::PixelAccessor & size
 													)const;
 
-		SurfelResult buildBlueSurfels(const std::vector<Surfel> & allSurfels)const;
+		SurfelResult buildBlueSurfels(const std::vector<Surfel> & allSurfels, int32_t startIndex = -1)const;
 		
 		/*! Calculate a surfel-mesh from a set of bitmaps encoding the positions, normals, colors and size using the SurfelGenerator's current settings.
 			\param The bitmaps are given as Util::PixelAccessors parameters.
@@ -114,7 +114,7 @@ class SurfelGenerator{
 													Util::PixelAccessor & size
 													)const;
 		
-		SurfelResult createSurfelsFromMesh(Rendering::Mesh& mesh) const;
+		SurfelResult createSurfelsFromMesh(Rendering::Mesh& mesh, int32_t startIndex = -1) const;
 	private:
 		Parameters parameters;
 };

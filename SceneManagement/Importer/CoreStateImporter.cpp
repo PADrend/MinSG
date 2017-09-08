@@ -489,6 +489,12 @@ static bool importMaterialState(ImportContext & ctxt, const std::string & stateT
 		FAIL_IF(vecSpecular.size() != 4);
 		state->changeParameters().setSpecular(Util::Color4f(vecSpecular[0], vecSpecular[1], vecSpecular[2], vecSpecular[3]));
 	}
+	std::string strEmission = d.getString(Consts::ATTR_MATERIAL_EMISSION);
+	if(!strEmission.empty()) {
+		std::vector<float> vecEmission = Util::StringUtils::toFloats(strEmission);
+		FAIL_IF(vecEmission.size() != 4);
+		state->changeParameters().setEmission(Util::Color4f(vecEmission[0], vecEmission[1], vecEmission[2], vecEmission[3]));
+	}
 	std::string strShininess = d.getString(Consts::ATTR_MATERIAL_SHININESS);
 	if(!strShininess.empty()) {
 		float shininess = Util::StringUtils::toNumber<float>(strShininess);

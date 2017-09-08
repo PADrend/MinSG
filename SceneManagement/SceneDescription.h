@@ -181,6 +181,7 @@ extern const Util::StringIdentifier ATTR_COLOR_VALUE;
 extern const Util::StringIdentifier ATTR_MATERIAL_AMBIENT;
 extern const Util::StringIdentifier ATTR_MATERIAL_DIFFUSE;
 extern const Util::StringIdentifier ATTR_MATERIAL_SPECULAR;
+extern const Util::StringIdentifier ATTR_MATERIAL_EMISSION;
 extern const Util::StringIdentifier ATTR_MATERIAL_SHININESS;
 
 // ATTR_STATE_TYPE = STATE_TYPE_CULL_FACE

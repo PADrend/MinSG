@@ -89,6 +89,15 @@ class TriangleAccessor {
 		 */
 		Geometry::Triangle_f getTriangle() const;
 
+		/**
+		 * Return the index of the triangle inside the mesh.
+		 * 
+		 * @return The index of the triangle inside the mesh.
+		 */
+		uint32_t getTriangleIndex() const {
+			return triangleIndex;
+		}
+
 	private:
 		//! Mesh that contains the referenced triangle.
 		const Rendering::Mesh * mesh;

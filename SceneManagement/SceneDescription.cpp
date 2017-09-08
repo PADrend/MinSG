@@ -218,6 +218,7 @@ const Util::StringIdentifier ATTR_COLOR_VALUE("value");
 const Util::StringIdentifier ATTR_MATERIAL_AMBIENT("ambient");
 const Util::StringIdentifier ATTR_MATERIAL_DIFFUSE("diffuse");
 const Util::StringIdentifier ATTR_MATERIAL_SPECULAR("specular");
+const Util::StringIdentifier ATTR_MATERIAL_EMISSION("emission");
 const Util::StringIdentifier ATTR_MATERIAL_SHININESS("shininess");
 
 const Util::StringIdentifier ATTR_TRANSPARENY_USE_PREMULTIPLIED_ALPHA("use_premultimplied_alpha");
