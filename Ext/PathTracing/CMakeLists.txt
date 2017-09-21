@@ -1,5 +1,5 @@
 #
-# This file is part of the MinSG library.
+# This file is part of the MinSG library extension PathTracing.
 # Copyright (C) 2017 Sascha Brandt <sascha@brandt.graphics>
 #
 # This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -7,7 +7,9 @@
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
 minsg_add_sources(
+	Light.cpp
 	PathTracer.cpp
+	SurfacePoint.cpp
 )
 
 minsg_add_extension(MINSG_EXT_PATHTRACING "Defines if the MinSG extension PathTracing is built.")

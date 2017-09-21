@@ -13,6 +13,8 @@
 #endif
 
 #include "PathTracer.h"
+#include "Light.h"
+#include "SurfacePoint.h"
 
 #include "../../Core/Nodes/GeometryNode.h"
 #include "../../Core/Nodes/GroupNode.h"
@@ -61,6 +63,17 @@
 #include <deque>
 #include <limits>
 #include <unordered_set>
+#include <string.h>
+#include <iomanip>
+
+//#define LOGGING
+
+#ifdef LOGGING
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define LOG(msg) std::cout << std::setprecision(5) << __FILENAME__ << ":" << __LINE__ << ":" << __func__ << ": " << msg << std::endl;
+#else
+#define LOG(msg) 
+#endif
 
 namespace MinSG {
 namespace PathTracing {
@@ -71,334 +84,350 @@ using namespace TriangleTrees;
 using namespace RayCasting;
 using namespace Rendering;
 
-typedef RayCaster<float>::intersection_t Intersection_t;
-typedef RayCaster<float>::intersection_packet_t IntersectionPacket_t;
-typedef std::vector<Geometry::Ray3> RayVector_t;
-typedef std::vector<Emitter> LightVector_t;
-typedef LightParameters::lightType_t Light_t;
-
+static const auto idSolidGeoTree = NodeAttributeModifier::create("SolidGeoTree", NodeAttributeModifier::PRIVATE_ATTRIBUTE);
 static const auto idTriangleTree = NodeAttributeModifier::create("TriangleTree", NodeAttributeModifier::PRIVATE_ATTRIBUTE);
 typedef Util::WrapperAttribute<std::unique_ptr<const TriangleTree>> TriangleTreeWrapper_t;
 
-static bool hasTriangleTree(GeometryNode * node) {
-	return node->isAttributeSet(idTriangleTree);
-}
+//static bool hasTriangleTree(GeometryNode * node) {
+//	return node->isAttributeSet(idTriangleTree);
+//}
 
-static const TriangleTree * getTriangleTree(Node * node) {
+/*static const TriangleTree * getTriangleTree(Node * node) {
 	auto attr = node->getAttribute<TriangleTreeWrapper_t>(idTriangleTree);	
 	return attr->get().get();
-}
+}*/
 
 static void storeTriangleTree(Node * node, const TriangleTree * tree) {
 	node->setAttribute(idTriangleTree, new TriangleTreeWrapper_t(tree));
 }
 
-struct SurfaceProperties {
-	Geometry::Vec3 pos;
-	Geometry::Vec3 normal;
-	Geometry::Vec3 tangent;
-	Geometry::Vec2 texcoord;
-	Util::Color4f albedo;
-	Util::Color4f emission;
-};
-
-struct Emitter {
-	Emitter() {}
-	Emitter(GeometryNode* geometry, LightNode* light, Util::Color4f emission) : 
-		geometry(geometry), light(light), emission(emission) {}
-	GeometryNode* geometry = nullptr;
-	LightNode* light = nullptr;
-	Util::Color4f emission;
-};
-
-std::pair<uint32_t, Geometry::Triangle_f> getTriangleAtPoint(GeometryNode* geoNode, const Geometry::Vec3& pos) {
-	uint32_t tIdx = std::numeric_limits<uint32_t>::max();
-	Geometry::Triangle_f triangle({0,0,0},{0,0,0},{0,0,0});
-	float dist = 1;	
-	
-	const TriangleTree* triangleTree;
-	if(!hasTriangleTree(geoNode)) {
-		TriangleTrees::ABTreeBuilder treeBuilder(32, 0.5f);
-		triangleTree = treeBuilder.buildTriangleTree(geoNode->getMesh());
-		storeTriangleTree(geoNode, triangleTree);
-	} else {
-		triangleTree = getTriangleTree(geoNode);
-	}
-		
-	// TODO: check normals
-	std::deque<const TriangleTree*> queue{triangleTree};
-	while(!queue.empty()) {
-		const TriangleTree* node = queue.front();		
-		queue.pop_front();
-		
-		for(uint32_t i=0; i<node->getTriangleCount(); ++i) {
-			auto ta = node->getTriangle(i);
-			float d = ta.getTriangle().distanceSquared(pos);
-			if(d < dist) {
-				dist = d;
-				tIdx = ta.getTriangleIndex();
-				triangle = ta.getTriangle();
-			}
-		}
-		if(!node->isLeaf()) {
-			for(const auto* child : node->getChildren()) {
-				if(child->getBound().getDistanceSquared(pos) < bias) {
-					queue.push_back(child);
-				}
-			}
-		}
-	}
-	return std::make_pair(tIdx, triangle);
+static inline bool isBlack(const Util::Color4f& color) {
+	return color.r() == 0 && color.g() == 0 && color.b() == 0;
 }
 
-SurfaceProperties getSurfaceProperties(const Geometry::Ray3& ray, const Intersection_t& hit) {
-	SurfaceProperties surface;
-	if(!hit.first) {
-		WARN("PathTracer: Invalid intersection.");
-		return surface;
-	}
-	
-	auto geoNode = hit.first;
-	auto mesh = geoNode->getMesh();
-	
-	surface.pos = ray.getPoint(hit.second);
-	Geometry::Vec3 localPos = Transformations::worldPosToLocalPos(*geoNode, surface.pos);
-	uint32_t tIndex;
-	Geometry::Triangle_f triangle({0,0,0},{0,0,0},{0,0,0});
-	
-	std::tie(tIndex, triangle) = getTriangleAtPoint(geoNode, localPos);
-	
-	if(tIndex > mesh->getPrimitiveCount()) {
-		WARN("PathTracer: Could not find intersecting triangle.");
-		return surface;
-	}
-	auto bc = triangle.calcBarycentricCoordinates(localPos);
-	surface.normal = Transformations::localDirToWorldDir(*geoNode, triangle.calcNormal());
-	surface.tangent = triangle.getEdgeAB().getNormalized();
-	auto& vertexData = mesh->openVertexData();
-	
-	auto tAcc = MeshUtils::TriangleAccessor::create(mesh);
-	uint32_t t0,t1,t2;
-	std::tie(t0,t1,t2) = tAcc->getIndices(tIndex);	
-	
-	auto states = geoNode->getStates();
-	MaterialState* mat = nullptr;
-	TextureState* tex = nullptr;
-	// TODO: normal texture
-	for(uint32_t i=0; i<states.size(); ++i) {
-		auto gs = dynamic_cast<GroupState*>(states[i]);
-		auto ms = dynamic_cast<MaterialState*>(states[i]);
-		auto ts = dynamic_cast<TextureState*>(states[i]);
-		if(gs && gs->isActive()) {
-			for(auto s : gs->getStates())
-				states.push_back(s.get());
-		} else if(ms && ms->isActive()) {
-			mat = ms;
-		} else if(ts && ts->isActive() && ts->getTextureUnit() == 0) {
-			tex = ts;
-		}
-	}
-	
-	// sample texture
-	if(mesh->getVertexDescription().hasAttribute(VertexAttributeIds::TEXCOORD0)) {
-		auto tAcc = TexCoordAttributeAccessor::create(vertexData, VertexAttributeIds::TEXCOORD0);
-		auto tc0 = tAcc->getCoordinate(t0);
-		auto tc1 = tAcc->getCoordinate(t1);
-		auto tc2 = tAcc->getCoordinate(t2);
-		surface.texcoord = tc0 * bc.x() + tc1 * bc.y()  + tc2 * bc.z();
-	}
-	
-	if(mat) {
-		surface.albedo = mat->getParameters().getDiffuse();
-		surface.emission = mat->getParameters().getEmission();
-	} else if(mesh->getVertexDescription().hasAttribute(VertexAttributeIds::COLOR)) {
-		auto cAcc = ColorAttributeAccessor::create(vertexData, VertexAttributeIds::COLOR);
-		Util::Color4f col0 = cAcc->getColor4f(t0);
-		Util::Color4f col1 = cAcc->getColor4f(t1);
-		Util::Color4f col2 = cAcc->getColor4f(t2);		
-		surface.albedo = col0 * bc.x() + col1 * bc.y()  + col2 * bc.z();
-	} else {
-		surface.albedo = Util::Color4f(1,1,1,1);
-	}
-	
-	if(tex && tex->getTexture()->getLocalBitmap()) {
-		auto pAcc = Util::PixelAccessor::create(tex->getTexture()->getLocalBitmap());
-		// TODO: filtering
-		surface.albedo *= pAcc->readColor4f(
-			static_cast<int32_t>(surface.texcoord.x() * pAcc->getWidth()) % pAcc->getWidth(), 
-			static_cast<int32_t>(surface.texcoord.y() * pAcc->getHeight()) % pAcc->getHeight());
-	}	
-	
-	return surface;
-}
+
+class Tile {
+public:
+	static const uint32_t SIZE = 64;
+  Geometry::Vec2i offset;
+	uint32_t spp = 0;
+  std::array<std::array<Util::Color4f, SIZE>, SIZE> data;
+};
 
 PathTracer::PathTracer() {
 	std::random_device r;
 	setSeed(r());
-	reset();
 }
 
+PathTracer::~PathTracer() = default;  
 
-Geometry::Ray3 PathTracer::sampleHemisphere(const SurfaceProperties& surface, const Geometry::Ray3& ray) {
-	Geometry::Ray3 outRay;
-	outRay.setOrigin(surface.pos + surface.normal*bias);
-	//const float reflMean = (surface.albedo.r() + surface.albedo.g() + surface.albedo.b()) / 3.0f;
-	std::uniform_real_distribution<float> random(0, 1);
-	//if(random(rng) < reflMean) {
-		// cosine-weighted importance sample hemisphere
-		const float _2pr1 = M_PI * 2.0 * random(rng);
-		const float sr2 = std::sqrt(random(rng));
-		// make coord frame coefficients (z in normal direction)
-		const float x = std::cos(_2pr1) * sr2;
-		const float y = std::sin(_2pr1) * sr2;
-		const float z = std::sqrt(1.0f - (sr2 * sr2));
-		//auto normal = surface.normal.dot(ray.getDirection()) >= 0 ? surface.normal : -surface.normal;
-		
-		outRay.setDirection({
-			(surface.tangent * x) +
-			(surface.normal.cross(surface.tangent) * y) +
-			(surface.normal * z)
-		});
-	//}
-	return outRay;
-}
-
-std::pair<Geometry::Ray3,float> getLightRay(LightNode* light, const SurfaceProperties& surface) {
-	Geometry::Ray3 lightRay;
-	float dist;
-	auto lightPos = light->getWorldOrigin();
-	auto lightDir = Transformations::localDirToWorldDir(*light, {0,0,-1});
-	auto surfaceToLight = light->getType() == Light_t::DIRECTIONAL ? -lightDir : (lightPos - surface.pos).getNormalized();	
-	float cutoff = std::cos(Geometry::Convert::degToRad(light->getCutoff()));
-	if(surfaceToLight.dot(surface.normal) >= 0 && (light->getType() != Light_t::SPOT || lightDir.dot(-surfaceToLight) > cutoff)) {
-		lightRay.setDirection(surfaceToLight);
-		lightRay.setOrigin(surface.pos + surfaceToLight*bias);		
-	} 
-	if(light->getType() == Light_t::DIRECTIONAL) {
-		Geometry::Plane plane(light->getWorldOrigin(), Transformations::localDirToWorldDir(*light, {0,0,-1}));
-		dist = plane.planeTest(surface.pos);
-	} else {
-		dist = surface.pos.distance(light->getWorldOrigin());
-	}
-	return std::make_pair(lightRay, dist);
-}
-
-std::pair<Geometry::Ray3,float> sampleGeometryRay(GeometryNode* geo, const SurfaceProperties& surface, std::default_random_engine& rng) {
-	Geometry::Ray3 lightRay;
-	float dist;
-	std::uniform_real_distribution<float> random(0,1);
-	auto bb = geo->getWorldBB();
-	auto pos = bb.getMin() + Geometry::Vec3(random(rng)*bb.getExtentX(),random(rng)*bb.getExtentY(),random(rng)*bb.getExtentZ());
-	auto surfaceToLight = (pos - surface.pos).getNormalized();
-	if(surfaceToLight.dot(surface.normal) >= 0) {
-		lightRay.setDirection(surfaceToLight);
-		lightRay.setOrigin(surface.pos + surfaceToLight*bias);
-		dist = surface.pos.distance(pos);
-	}		
-	return std::make_pair(lightRay, dist);
-}
-
-Util::Color4f PathTracer::sampleDirectLight(GroupNode* scene, const std::vector<Emitter>& lights, const Geometry::Ray3& ray, const SurfaceProperties& surface) {
+Util::Color4f PathTracer::sampleLight(const Geometry::Ray3& ray, const SurfacePoint& surface) {
   static RayCaster<float> rayCaster;
 	Util::Color4f radiance;
-	Geometry::Ray3 lightRay;
-	float lightDist;
-	uint32_t startIdx = 0;
 	
-	// random direct light ray
-	std::uniform_int_distribution<uint32_t> randomLight(0, lights.size()-1);
-	startIdx = randomLight(rng);
-	Emitter emitter;
+	// random light
+	// TODO: better light importance sampling
+	Light* light = sceneLights[sample1D()*sceneLights.size()].get();
+	auto sample = sample3D();
+	auto lightSample = light->sampleIncidentRadiance(surface, sample);
+	LOG("Estimate direct: " << sample << " -> Li: " << lightSample.l << ", wi: " << lightSample.wi << ", pdf: " << lightSample.pdf);
+	
+	if(!isBlack(lightSample.l) && lightSample.pdf > 0) {
 		
-	for(uint32_t i=0; i<lights.size() && lightRay.getDirection().isZero(); ++i) {
-		emitter = lights[(startIdx + i)%lights.size()];
-		if(emitter.light)
-			std::tie(lightRay,lightDist) = getLightRay(emitter.light, surface);
-		else if(emitter.geometry)
-			std::tie(lightRay,lightDist) = sampleGeometryRay(emitter.geometry, surface, rng);
-	}
-	
-	if(!lightRay.getDirection().isZero()) {
-		auto hit = rayCaster.castRays(scene, {lightRay}).front();
-		float attenuation = 0;
-		if(emitter.light) {
-			auto light = emitter.light;
-			if(lightDist <= hit.second) {
-				attenuation = 1.0f / (light->getConstantAttenuation() + light->getLinearAttenuation() * lightDist + light->getQuadraticAttenuation() * lightDist * lightDist);
+		auto bsdf = surface.getBSDF(-ray.getDirection(), lightSample.wi);
+		bsdf.f *= std::abs(lightSample.wi.dot(surface.normal));
+		LOG("surf f*dot: " << bsdf.f << " pdf: " << bsdf.pdf << " normal: " << surface.normal);
+		
+		if(!isBlack(bsdf.f)) {
+			// test visibility
+			Geometry::Ray3 lightRay(surface.pos + surface.normal * bias, lightSample.wi);
+			auto hit = rayCaster.castRays(scene.get(), {lightRay}).front();
+			if(hit.second < lightSample.dist - bias) {
+				// Light source is not visible
+				lightSample.l.set(0, 0, 0, 1);
+				LOG("  shadow ray blocked");
+			} else {				
+				LOG("  shadow ray unoccluded");
 			}
-		} else if(emitter.geometry && emitter.geometry == hit.first) {
-			auto triangle = getTriangleAtPoint(emitter.geometry, lightRay.getOrigin() + lightRay.getDirection()*hit.second).second;
-			auto normal = Transformations::localDirToWorldDir(*emitter.geometry, triangle.calcNormal());
-			float cosArea = normal.dot(-lightRay.getDirection());// * triangle.calcArea() * emitter.geometry->getWorldTransformationSRT().getScale();
-			attenuation = cosArea / lightDist * lightDist;
-		}
-		radiance += emitter.emission * attenuation * surface.albedo * std::abs(lightRay.getDirection().dot(surface.normal)) / M_PI;
+			
+			if(!isBlack(lightSample.l)) {
+				if(light->isDeltaLight()) {
+					radiance += bsdf.f * lightSample.l / lightSample.pdf;
+				} else {
+					float weight = (lightSample.pdf * lightSample.pdf) / ( bsdf.pdf * bsdf.pdf + lightSample.pdf * lightSample.pdf);
+					radiance += bsdf.f * weight * lightSample.l / lightSample.pdf;
+					LOG("Ld: " << radiance << ", weight: " << weight);
+				}
+			}
+		}		
 	}
+	
+  // Sample BSDF with multiple importance sampling
+	/*if(!light->isDeltaLight()) {
+		auto bsdf = surface.sample(-ray.getDirection(), sample2D());
+		bsdf.f *= std::abs(bsdf.wi.dot(surface.normal));
+		LOG("  BSDF / phase sampling f: " << bsdf.f << ", scatteringPdf: " << bsdf.pdf);
+		if(!isBlack(bsdf.f) && bsdf.pdf > 0) {
+			float weight = (lightSample.pdf * lightSample.pdf) / ( bsdf.pdf * bsdf.pdf + lightSample.pdf * lightSample.pdf);
+			
+		}
+	}*/
 		
-	return radiance;
+	return radiance * sceneLights.size();
 }
 
-Util::Color4f PathTracer::getRadiance(GroupNode* scene, const std::vector<Emitter>& lights, const Geometry::Ray3& ray, uint32_t bounce) {	
+Util::Color4f PathTracer::getRadiance(const Geometry::Ray3& primaryRay) {	
   static RayCaster<float> rayCaster;
-	Util::Color4f radiance;
-	auto hit = rayCaster.castRays(scene, {ray}).front();
-	if(!hit.first)
-		return radiance;
+	Util::Color4f radiance(0,0,0,0), beta(1,1,1,1);
+	Geometry::Ray3 ray(primaryRay);	
 		
-	SurfaceProperties surface = getSurfaceProperties(ray, hit);
-	
-	// local emission for first hit
-	//if(bounce == 0) {
-		if(surface.normal.dot(-ray.getDirection()) > 0) // only emit in surface normal direction
-			radiance = surface.emission;
-	//}
-	
-	// get incoming direct light
-	radiance += sampleDirectLight(scene, lights, ray, surface);
-	
-	if(bounce >= maxBounces)
-		return radiance;
-	
-	// get reflection ray
-	const float reflMean = 1;//(surface.albedo.r() + surface.albedo.g() + surface.albedo.b()) / 3.0f;
-	auto reflRay = sampleHemisphere(surface, ray);
-	if(!reflRay.getDirection().isZero()) {
-		radiance += surface.albedo * reflMean * getRadiance(scene, lights, reflRay, bounce+1);
+	for(uint32_t bounces = 0; bounces <= maxBounces; ++bounces) {	
+		LOG("bounce " << bounces << ", current L = " << radiance << ", beta = " << beta << ", ray = (" << ray.getOrigin() << ", " << ray.getDirection() << ")");
+		
+		auto hit = rayCaster.castRays(scene.get(), {ray}).front();
+		if(!hit.first)
+			break;
+			
+		auto surface = SurfacePoint::getSurfaceAt(hit.first, ray.getPoint(hit.second));
+
+		// local emission for first hit
+		if(bounces == 0) {
+			if(surface.normal.dot(-ray.getDirection()) > 0) {
+				// only emit in surface normal direction
+				radiance += beta * surface.emission;
+				LOG("Added Le -> L = " << radiance);
+			}
+		}
+		
+		// get incoming direct light
+		auto Ld = beta * sampleLight(ray, surface);
+		LOG("Sampled direct lighting Ld = " << Ld);
+		radiance += Ld;
+		
+		// sample BSDF
+		auto bsdf = surface.sampleBSDF(-ray.getDirection(), sample2D());
+		LOG("Sampled BSDF, f = " << bsdf.f << ", pdf = " << bsdf.pdf << " surface = " << surface.albedo);
+		if(isBlack(bsdf.f) || bsdf.pdf == 0)
+			break;
+		beta *= bsdf.f * std::abs(bsdf.wi.dot(surface.normal)) / bsdf.pdf;
+		LOG("Updated beta = " << beta);
+			
+		// create reflection ray
+		ray.setOrigin(surface.pos + surface.normal * bias);
+		ray.setDirection(bsdf.wi);
+		
+		// TODO: terminate path with russian roulette
 	}
 	
 	return radiance;
 }
 
-void PathTracer::trace(AbstractCameraNode* camera, GroupNode* scene, Util::PixelAccessor& frameBuffer) {
-	
-	// build helper structures
-	for(auto node : MinSG::collectNodes<GeometryNode>(scene)) {		
-		if(!hasTriangleTree(node)) {
-			TriangleTrees::ABTreeBuilder treeBuilder(32, 0.5f);
-			auto triangleTree = treeBuilder.buildTriangleTree(node->getMesh());
-			storeTriangleTree(node, triangleTree);
-		} 
-	}		
-	
-	// collect lights
-	LightVector_t lights;
-	if(!emittersOnly) {
-		std::unordered_set<LightNode*> lightSet;
-		if(useGlobalLight) {
-			for(auto state : collectStatesUpwards<LightingState>(scene)) {
-				if(state->isActive() && state->getEnableLight())
-					lightSet.emplace(state->getLight());
+void PathTracer::download(Util::PixelAccessor& image, float gamma) {
+	if(finished) {
+		// wait for threads when finished
+		condition.notify_all();
+		for(auto& t : threads) t.join();
+		threads.clear();
+	}
+	{
+		std::lock_guard<std::mutex> lock(queueMutex);
+		
+		for(auto& tile : tileQueue) {
+			for(uint32_t y = 0; y < Tile::SIZE; ++y) {
+				for(uint32_t x = 0; x < Tile::SIZE; ++x) {
+					auto pixel = tile->data[x][y];
+					if(tile->spp > 0) {
+						pixel /= tile->spp;
+						pixel.a(1);
+					} else {
+						pixel.set(0,0,0,0);
+					}
+					
+					// gamma correction
+					if(gamma > 0) {
+						pixel.r(std::pow(pixel.r(),1.0/gamma));
+						pixel.g(std::pow(pixel.g(),1.0/gamma));
+						pixel.b(std::pow(pixel.b(),1.0/gamma));
+					}
+					
+					Geometry::Vec2i imageCoords = tile->offset + Geometry::Vec2i(x,y);
+					if(imageCoords.x() < image.getWidth() && imageCoords.y() < image.getHeight())
+						image.writeColor(imageCoords.x(), imageCoords.y(), pixel);
+				}
 			}
 		}
-		for(auto state : collectStates<LightingState>(scene)) {
+	}
+}
+
+void PathTracer::start() {
+	if(scene.isNull()) {
+		WARN("PathTracer: PathTracer has no scene.");
+		return;
+	}
+	if(camera.isNull()) {
+		WARN("PathTracer: PathTracer has no camera.");
+		return;
+	}
+	if(needsReset)
+		reset();
+	paused = false;
+	
+	if(threads.empty() || finished) {
+		threads.clear();
+		for(uint32_t i=0; i<threadCount; ++i)
+			threads.emplace_back(std::thread(std::bind(&PathTracer::doWork, this)));
+	}
+	condition.notify_all();
+}
+
+void PathTracer::pause() {
+	paused = true;
+}
+
+void PathTracer::reset() {
+	needsReset = false;
+	rng.seed(seed);
+	if(scene.isNull()) {
+		WARN("PathTracer: PathTracer has no scene.");
+		return;
+	}
+	if(camera.isNull()) {
+		WARN("PathTracer: PathTracer has no camera.");
+		return;
+	}
+	
+	// wait for all threads to finish
+	finished = true;
+	condition.notify_all();
+	for(auto& t : threads) t.join();
+	threads.clear();
+	finishedCount = 0;
+	spp = 0;
+	
+	// generate tiles in spiral pattern
+	Geometry::Vec2i tileDim(std::ceil(resolution.x()/Tile::SIZE), std::ceil(resolution.y()/Tile::SIZE));
+	uint32_t maxTileDim = std::max(tileDim.x(), tileDim.y()); 
+	
+	Geometry::Vec2i tileCoord(tileDim.x()/2, tileDim.y()/2);
+	uint32_t steps = 1;
+	Geometry::Vec2i dir(1,0);
+	
+	tileQueue.clear();
+	while(std::max(tileCoord.x(), tileCoord.y()) <= maxTileDim) {
+		for(uint32_t d=0;d<2;++d) {
+			for(uint32_t s=0;s<steps;++s) {
+				// Create Tile
+				Geometry::Vec2i offset = Geometry::Vec2(tileCoord) * Tile::SIZE;
+				if(offset.x() < resolution.x() && offset.y() < resolution.y()) {
+					auto tile = new Tile;
+					tile->offset = offset;
+					tileQueue.emplace_back(tile);
+				}
+				// move
+				tileCoord += dir;
+			}
+			// rotate right
+			dir.setValue(dir.y(), -dir.x());
+		}
+		++steps;
+	}
+	tileCount = tileQueue.size();
+	
+	finished = false;
+}
+
+void PathTracer::trace(Tile* tile) {	  
+  // generate primary rays
+  for(uint32_t ty=0; ty<Tile::SIZE; ++ty) {
+    for(uint32_t tx=0; tx<Tile::SIZE; ++tx) {
+			uint32_t x = tile->offset.x() + tx;
+			uint32_t y = tile->offset.y() + ty;
+			auto sample = sample3D();
+			sample.z(0);
+      auto worldToScreen = camera->getFrustum().getProjectionMatrix() * camera->getWorldTransformationMatrix().inverse();
+      Geometry::Vec3 win = Geometry::Vec3(x,y,0) + (antiAliasing ? sample : Geometry::Vec3(0.5f,0.5f,0));
+      Geometry::Rect vp(camera->getViewport());
+      Geometry::Vec3 target = Geometry::unProject<float>(win, worldToScreen, vp);
+      
+      Geometry::Ray3 ray;
+      ray.setOrigin(camera->getWorldOrigin());
+      ray.setDirection((target - camera->getWorldOrigin()).getNormalized());
+			
+			Util::Color4f radiance = getRadiance(ray);
+			tile->data[tx][ty] += radiance;
+    }
+  }
+	
+	++tile->spp;	
+	if(tile->spp > maxSamples) {
+		++finishedCount;
+		if(finishedCount >= tileCount) {
+			finished = true;
+			condition.notify_all();
+		}
+		return;
+	}
+	auto tmp = tile->spp-1;
+	spp.compare_exchange_strong(tmp, tmp+1);
+}
+
+void PathTracer::doWork() {
+	while(true) {
+		std::unique_ptr<Tile> tile;
+		{
+			std::unique_lock<std::mutex> lock(queueMutex);
+			while(!finished && paused && tileQueue.empty()) {
+				condition.wait(lock);
+			}
+			if(finished)
+				return;
+				
+			tile = std::move(tileQueue.front());
+			tileQueue.pop_front();
+		}
+		
+		trace(tile.get());
+		
+		{
+			std::lock_guard<std::mutex> lock(queueMutex);
+			tileQueue.emplace_back(std::move(tile));
+		}
+		condition.notify_one();
+	}
+}
+
+void PathTracer::setCamera(AbstractCameraNode* camera_) {
+	camera = camera_;
+	needsReset = true;
+}
+
+void PathTracer::setScene(GroupNode* scene_) {
+  static RayCaster<float> rayCaster;
+  scene = scene_;
+	needsReset = true;
+	
+	// create lights from scene
+	sceneLights.clear();
+	std::unordered_set<LightNode*> lightSet;
+	
+	// find global light sources
+	if(useGlobalLight) {
+		for(auto state : collectStatesUpwards<LightingState>(scene.get())) {
 			if(state->isActive() && state->getEnableLight())
 				lightSet.emplace(state->getLight());
 		}
-		for(auto light : lightSet) {
-			lights.emplace_back(nullptr, light, light->getDiffuseLightColor());
-		}
 	}
-	for(auto geoNode : collectNodes<GeometryNode>(scene)) {
+	// find active MinSG light nodes
+	for(auto state : collectStates<LightingState>(scene.get())) {
+		if(state->isActive() && state->getEnableLight())
+			lightSet.emplace(state->getLight());
+	}
+	for(auto light : lightSet) {
+		sceneLights.emplace_back(new MinSGLight(light));
+	}
+	
+	// find geometry nodes with emissive material
+	for(auto geoNode : collectNodes<GeometryNode>(scene.get())) {
 		auto states = geoNode->getStates();		
 		for(uint32_t i=0; i<states.size(); ++i) {
 			auto gs = dynamic_cast<GroupState*>(states[i]);
@@ -409,46 +438,43 @@ void PathTracer::trace(AbstractCameraNode* camera, GroupNode* scene, Util::Pixel
 			} else if(ms && ms->isActive()) {
 				auto emission = ms->getParameters().getEmission();
 				if((emission.r() + emission.g() + emission.b()) > 0) {
-					lights.emplace_back(geoNode, nullptr, emission);
+					sceneLights.emplace_back(new DiffuseAreaLight(geoNode, emission));
 					break;
 				}
 			} 
 		}
 	}
-  
-  // generate primary rays
-	//std::uniform_real_distribution<float> jitter(-0.5f,0.5f);
-	std::normal_distribution<float> jitter(0.0f,0.25f);
-  RayVector_t rays;
-  for(uint32_t y=0; y<frameBuffer.getHeight(); ++y) {
-    for(uint32_t x=0; x<frameBuffer.getWidth(); ++x) {
-      auto worldToScreen = camera->getFrustum().getProjectionMatrix() * camera->getWorldTransformationMatrix().inverse();
-      Geometry::Vec3 win = antiAliasing ? Geometry::Vec3(x + jitter(rng),y + jitter(rng),0) : Geometry::Vec3(x,y,0);
-      Geometry::Rect vp(camera->getViewport());
-      Geometry::Vec3 target = Geometry::unProject<float>(win, worldToScreen, vp);
-      
-      Geometry::Ray3 ray;
-      ray.setOrigin(camera->getWorldOrigin());
-      ray.setDirection((target - camera->getWorldOrigin()).getNormalized());
-      rays.push_back(ray);
-    }
-  }
 	
-  for(uint32_t y=0; y<frameBuffer.getHeight(); ++y) {
-    for(uint32_t x=0; x<frameBuffer.getWidth(); ++x) {
-      uint32_t index = y*frameBuffer.getWidth() + x;
-			auto oldColor = frameBuffer.readColor4f(x, y);
-			Util::Color4f radiance = getRadiance(scene, lights, rays[index], 0);
-			Util::Color4f accum(radiance, oldColor, spp/(spp+1.0f));
-			frameBuffer.writeColor(x, y, accum);				
-    }
-  }
-	++spp;
+	// build helper structures
+	scene->unsetAttribute(idSolidGeoTree);
+	rayCaster.castRays(scene.get(), {});
+	for(auto node : MinSG::collectNodes<GeometryNode>(scene.get())) {		
+		scene->unsetAttribute(idTriangleTree);
+		//if(!hasTriangleTree(node)) {
+			TriangleTrees::ABTreeBuilder treeBuilder(32, 0.5f);
+			auto triangleTree = treeBuilder.buildTriangleTree(node->getMesh());
+			storeTriangleTree(node, triangleTree);
+		//} 
+	}	
+	
+	// TODO: ensure that all mesh & texture data is downloaded
 }
 
-void PathTracer::reset() {
-  spp = 0;
-	rng.seed(seed);
+float PathTracer::sample1D() {
+	static std::uniform_real_distribution<float> sampler(0,1);
+	return sampler(rng);
+}
+
+Geometry::Vec2 PathTracer::sample2D() {
+	static std::uniform_real_distribution<float> sampler(0,1);
+	return {sampler(rng), sampler(rng)};
+	//return {0.5, 0.5};
+}
+
+Geometry::Vec3 PathTracer::sample3D() {
+	static std::uniform_real_distribution<float> sampler(0,1);
+	return {sampler(rng), sampler(rng), sampler(rng)};
+	//return {0.5, 0.5, 0.5};
 }
 
 }
