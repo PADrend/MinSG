@@ -61,7 +61,7 @@ Light::SampleResult MinSGLight::sampleIncidentRadiance(const SurfacePoint& surfa
   
   if(node->getType() == LightParameters::lightType_t::SPOT) {
     float spotDot = result.wi.dot(-lightDir);
-    attenuation *= spotDot < Geometry::Convert::degToRad(node->getCutoff()) ? std::pow(spotDot, node->getExponent()) : 0;
+    attenuation *= spotDot >= node->getParameters().cosCutoff ? std::pow(spotDot, node->getExponent()) : 0;
   }
   
   result.l = (node->getAmbientLightColor() + node->getDiffuseLightColor()) * attenuation;
@@ -73,13 +73,15 @@ Light::SampleResult MinSGLight::sampleIncidentRadiance(const SurfacePoint& surfa
  /*******************************************************
   * DiffuseAreaLight
   *******************************************************/
-DiffuseAreaLight::DiffuseAreaLight(GeometryNode* node, Util::Color4f emission) : Light(), node(node), emission(emission) {}
+DiffuseAreaLight::DiffuseAreaLight(GeometryNode* node, Util::Color4f emission) : Light(), node(node), emission(emission) {
+  tAcc = MeshUtils::TriangleAccessor::create(node->getMesh());
+}
 
 Light::SampleResult DiffuseAreaLight::sampleIncidentRadiance(const SurfacePoint& surface, const Geometry::Vec3 &sample) const {
   SampleResult result;
   auto mesh = node->getMesh();
-  auto ta = MeshUtils::TriangleAccessor::create(mesh);
-  auto t = ta->getTriangle(sample.z() * mesh->getPrimitiveCount());
+  //auto ta = MeshUtils::TriangleAccessor::create(mesh);
+  auto t = tAcc->getTriangle(sample.z() * mesh->getPrimitiveCount());
   //float su0 = std::sqrt(sample.x());
   //Geometry::Vec2 b(1-su0, sample.y() * su0);
   //Geometry::Vec3 p = t.getVertexA() * b.x() + t.getVertexB() * b.y() + t.getVertexC() * (1.0f - b.x() - b.y());

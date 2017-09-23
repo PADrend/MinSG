@@ -20,6 +20,12 @@
 
 #include <cstdint>
 
+namespace Rendering {
+namespace MeshUtils {
+class TriangleAccessor;
+} 
+} 
+
 namespace MinSG {
 class LightNode;
 class GeometryNode;
@@ -57,6 +63,7 @@ public:
   virtual SampleResult sampleIncidentRadiance(const SurfacePoint& surface, const Geometry::Vec3& sample) const;
 private:
   Util::Reference<GeometryNode> node;
+  Util::Reference<Rendering::MeshUtils::TriangleAccessor> tAcc;
   Util::Color4f emission;
 };
 

@@ -149,7 +149,7 @@ BSDFSample SurfacePoint::sampleBSDF(const Geometry::Vec3 &woWorld, const Geometr
 	return getBSDF(woWorld, localToWorld(wi));
 }
 
-SurfacePoint SurfacePoint::getSurfaceAt(GeometryNode* node, const Geometry::Vec3& pos) {
+SurfacePoint getSurfaceAt(GeometryNode* node, const Geometry::Vec3& pos) {
 	SurfacePoint surface;
 	
 	auto mesh = node->getMesh();

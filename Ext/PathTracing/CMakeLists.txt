@@ -7,10 +7,14 @@
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
 minsg_add_sources(
+	ExtTriangle.cpp
 	Light.cpp
+	Material.cpp
 	PathTracer.cpp
+	RayCaster.cpp
 	SurfacePoint.cpp
+	TreeBuilder.cpp
 )
 
 minsg_add_extension(MINSG_EXT_PATHTRACING "Defines if the MinSG extension PathTracing is built.")
-minsg_add_dependencies(MINSG_EXT_PATHTRACING MINSG_EXT_RAYCASTING)
+minsg_add_dependencies(MINSG_EXT_PATHTRACING MINSG_EXT_TRIANGLETREES)

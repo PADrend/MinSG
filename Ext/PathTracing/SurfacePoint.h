@@ -46,8 +46,6 @@ public:
   
   BSDFSample getBSDF(const Geometry::Vec3 &woWorld, const Geometry::Vec3 &wiWorld) const;
   BSDFSample sampleBSDF(const Geometry::Vec3 &woWorld, const Geometry::Vec2& sample) const;
-  
-  static SurfacePoint getSurfaceAt(GeometryNode* node, const Geometry::Vec3& pos);
 };
   
 }
