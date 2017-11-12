@@ -9,6 +9,7 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 
 #include "LP.h"
+#include <functional>
 #include <iostream>
 #include <list>
 #include <mutex>
