@@ -18,6 +18,7 @@
 #include <Rendering/Mesh/MeshVertexData.h>
 #include <Rendering/Mesh/VertexDescription.h>
 #include <condition_variable>
+#include <functional>
 #include <mutex>
 #include <stdexcept>
 #include <thread>
