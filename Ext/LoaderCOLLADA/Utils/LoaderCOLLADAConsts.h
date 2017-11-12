@@ -11,14 +11,12 @@
 #ifndef MINSG_LOADERCOLLADA_UTILS_LOADERCOLLADACONSTS_H
 #define MINSG_LOADERCOLLADA_UTILS_LOADERCOLLADACONSTS_H
 
-#include <Util/StringIdentifier.h>
-
 #include <Util/GenericAttribute.h>
-
-#include <unordered_map>
-#include <string>
-
 #include <Util/Macros.h>
+#include <Util/StringIdentifier.h>
+#include <functional>
+#include <string>
+#include <unordered_map>
 
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF(-Wignored-qualifiers)
