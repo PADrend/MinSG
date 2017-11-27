@@ -85,14 +85,15 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 		debugCamera->setWorldTransformation(context.getCamera()->getWorldTransformationSRT());
 	}
 	
-	// get surfel mesh
-	auto surfelAttribute = dynamic_cast<Util::ReferenceAttribute<Rendering::Mesh>*>(node->findAttribute( SURFEL_ATTRIBUTE ));
-	if( !surfelAttribute || !surfelAttribute->get())
-		return NodeRendererResult::PASS_ON;
-	Rendering::Mesh& surfelMesh = *surfelAttribute->get();
+	Rendering::Mesh* surfelMesh;
+	uint32_t maxSurfelCount;
+	float surfelMedianDist;
+	// get surfels
+	std::tie(surfelMesh, maxSurfelCount, surfelMedianDist) = getSurfelsForNode(context, node);
 	
-	// get median distance between surfels at a fixed prefix length 
-	float surfelMedianDist = getMedianDist(node, surfelMesh);
+	if( !surfelMesh )
+		return NodeRendererResult::PASS_ON;
+	
 
 	// calculate the projected distance between two adjacent pixels in screen space
 	float meterPerPixelOriginal = getMeterPerPixel(context, node);
@@ -132,7 +133,6 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	}
 	
 	float surfelRadius = pointSize * meterPerPixel / 2.0f;
-	uint32_t maxSurfelCount = surfelMesh.isUsingIndexData() ?  surfelMesh.getIndexCount() : surfelMesh.getVertexCount();
 	float minSurfelDistance = surfelMedianDist * std::sqrt(SURFEL_MEDIAN_COUNT / static_cast<float>(maxSurfelCount));
 
 	// Calculate the surfel prefix length based on the estimated median distance between surfels and the coverage of one surfel
@@ -160,7 +160,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 			renderingContext.pushAndSetPointParameters( Rendering::PointParameters(pointSize));
 			renderingContext.pushAndSetMatrix_modelToCamera( renderingContext.getMatrix_worldToCamera() );
 			renderingContext.multMatrix_modelToCamera(node->getWorldTransformationMatrix());
-			context.displayMesh(&surfelMesh,	0, surfelPrefixLength );
+			context.displayMesh(surfelMesh,	0, surfelPrefixLength );
 			renderingContext.popMatrix_modelToCamera();
 			renderingContext.popPointParameters();
 			renderingContext.setGlobalUniform({uniform_renderSurfels, false});
@@ -213,6 +213,22 @@ void SurfelRendererFixedSize::doDisableState(FrameContext & context, Node * node
 		rc.popLighting();
 		Rendering::disable2DMode(rc);
 	}
+}
+
+SurfelRendererFixedSize::Surfels_t SurfelRendererFixedSize::getSurfelsForNode(FrameContext & context, Node * node) {
+	// get surfel mesh
+	auto surfelAttribute = dynamic_cast<Util::ReferenceAttribute<Rendering::Mesh>*>(node->findAttribute( SURFEL_ATTRIBUTE ));		
+	if(surfelAttribute && surfelAttribute->get()) {
+		Rendering::Mesh* surfelMesh = surfelAttribute->get();		
+		
+		uint32_t maxSurfelCount = surfelMesh->isUsingIndexData() ? surfelMesh->getIndexCount() : surfelMesh->getVertexCount();
+		
+		// get median distance between surfels at a fixed prefix length 
+		float surfelMedianDist = getMedianDist(node, *surfelMesh);
+		
+		return {surfelMesh, maxSurfelCount, surfelMedianDist};
+	}
+	return {nullptr, 0, 0};
 }
 
 void SurfelRendererFixedSize::drawSurfels(FrameContext & context, float minSize, float maxSize) const {

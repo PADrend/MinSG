@@ -30,7 +30,7 @@ namespace MinSG{
 
 namespace BlueSurfels {
 	
-class SurfelRendererFixedSize : public NodeRendererState{
+class SurfelRendererFixedSize : public NodeRendererState {
 	PROVIDES_TYPE_NAME(SurfelRendererFixedSize)
 	public:
 		SurfelRendererFixedSize();
@@ -85,6 +85,12 @@ class SurfelRendererFixedSize : public NodeRendererState{
 	protected:
 		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		
+		// (mesh, surfel count, median distance)
+		typedef std::tuple<Rendering::Mesh*, uint32_t, float> Surfels_t; 
+		virtual Surfels_t getSurfelsForNode(FrameContext & context, Node * node);
+				
+		float getMedianDist(Node * node, Rendering::Mesh& mesh);
 	private:			
 		float countFactor,sizeFactor,surfelSize,maxSurfelSize,maxFrameTime;
 		bool debugHideSurfels, debugCameraEnabled, deferredSurfels, adaptive, foveated, debugFoveated = false;
@@ -94,8 +100,6 @@ class SurfelRendererFixedSize : public NodeRendererState{
 		std::set<SurfelAssignment_t> deferredSurfelQueue;
 		Util::Timer frameTimer;
 		std::vector<std::pair<float, float>> foveatZones;
-				
-		float getMedianDist(Node * node, Rendering::Mesh& mesh);
 };
 }
 
