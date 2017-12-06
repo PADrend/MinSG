@@ -43,26 +43,17 @@ ShadowState::ShadowState(uint16_t textureSize) :
 		texSize(textureSize),
 		shadowTexture(new TextureState(Rendering::TextureUtils::createDepthTexture(texSize, texSize).get())),
 		fbo(new Rendering::FBO),
-		light(nullptr) {
+		light(nullptr),
+		camera(new CameraNode),
+		staticShadow(false),
+		needsUpdate(true) {
 	shadowTexture->setTextureUnit(6);
 }
 
-ShadowState::~ShadowState() {
-}
-
-State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * node, const RenderParam & rp) {
-	if (light == nullptr) {
-		return State::STATE_SKIPPED;
-	}
-
+void ShadowState::updateShadowMap(FrameContext & context, Node * node, const RenderParam & rp) {
 	const Geometry::Vec3f camPos = light->getWorldOrigin();
 	const Geometry::Box & box = node->getWorldBB();
 	const Geometry::Vec3f boxCenter = box.getCenter();
-
-	// ##### Fit bounding box into frustum #####
-	if(box.contains(camPos)) {
-		return State::STATE_SKIPPED;
-	}
 
 	const Geometry::Vec3f camDir = (boxCenter - camPos).getNormalized();
 
@@ -85,7 +76,6 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	const Geometry::Vec3f camRight = camDir.cross(orthoNormal).normalize();
 	const Geometry::Vec3f camUp = camRight.cross(camDir).normalize();
 
-	Util::Reference<CameraNode> camera = new CameraNode;
 	camera->setRelTransformation(Geometry::SRT(camPos, -camDir, camUp));
 
 	// Calculate minimum and maximum distance of all bounding box corners to camera.
@@ -177,10 +167,29 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	texMatrix.scale(0.5f);
 	texMatrix *= lightProjectionMatrix;
 	texMatrix *= lightModelViewMatrix;
+	
+	needsUpdate = false;
+}
+
+State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * node, const RenderParam & rp) {
+	if (light == nullptr) {
+		return State::STATE_SKIPPED;
+	}
+
+	const Geometry::Vec3f camPos = light->getWorldOrigin();
+	const Geometry::Box & box = node->getWorldBB();
+
+	// ##### Fit bounding box into frustum #####
+	if(box.contains(camPos)) {
+		return State::STATE_SKIPPED;
+	}	
 
 	if (rp.getFlag(SHOW_META_OBJECTS)) {
 		context.displayNode(camera.get(), rp);
 	}
+	
+	if(!staticShadow || needsUpdate)
+		updateShadowMap(context, node, rp);
 
 	Rendering::Shader * shader = context.getRenderingContext().getActiveShader();
 	if(shader != nullptr) {
@@ -205,7 +214,7 @@ void ShadowState::doDisableState(FrameContext & context, Node * node, const Rend
 ShadowState * ShadowState::clone() const {
 	// Implementation cannot be prevented.
 	FAIL();
-	return nullptr;;
+	return nullptr;
 }
 
 }

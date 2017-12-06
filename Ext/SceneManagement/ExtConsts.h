@@ -200,6 +200,7 @@ extern const Util::StringIdentifier ATTR_VALREGION_VALUE_TYPE;
 extern cStr_t STATE_TYPE_SHADOW_STATE;
 extern const Util::StringIdentifier ATTR_SHADOW_TEXTURE_SIZE;
 extern const Util::StringIdentifier ATTR_SHADOW_LIGHT_NODE;
+extern const Util::StringIdentifier ATTR_SHADOW_STATIC;
 //	@}
 // ------------------------------------------------------------
 

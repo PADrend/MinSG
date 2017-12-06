@@ -305,6 +305,7 @@ static bool importShadowState(ImportContext & ctxt, const std::string & stateTyp
 
 	auto state = new ShadowState(d.getUInt(Consts::ATTR_SHADOW_TEXTURE_SIZE));
 	state->setLight(dynamic_cast<LightNode*>(ctxt.sceneManager.getRegisteredNode(d.getString(Consts::ATTR_SHADOW_LIGHT_NODE))));
+	state->setStatic(d.getBool(Consts::ATTR_SHADOW_STATIC, false));
 
 	ImporterTools::finalizeState(ctxt, state, d);
 	parent->addState(state);

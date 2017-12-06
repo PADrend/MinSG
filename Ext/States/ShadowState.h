@@ -24,6 +24,7 @@ class FrameContext;
 class LightNode;
 class Node;
 class TextureState;
+class CameraNode;
 
 /**
  * Node to create a shadow map from the attached scene graph subtree.
@@ -35,7 +36,7 @@ class ShadowState : public State {
 	PROVIDES_TYPE_NAME(ShadowState)
 	public:
 		ShadowState(uint16_t textureSize);
-		virtual ~ShadowState();
+		virtual ~ShadowState() = default;
 
 		ShadowState * clone() const override;
 
@@ -45,7 +46,8 @@ class ShadowState : public State {
 		 * @param lightNode MinSG light node.
 		 */
 		void setLight(LightNode * lightNode) {
-			light = lightNode;
+			light = lightNode; 
+			needsUpdate = true;
 		}
 
 
@@ -69,6 +71,13 @@ class ShadowState : public State {
 
 		uint16_t getTextureSize() const { return texSize; }
 
+		bool isStatic() const { return staticShadow; }
+		void setStatic(bool value) { 
+			staticShadow = value; 
+			needsUpdate = true; 
+		}
+		
+		void update() { needsUpdate = true; }
 	private:
 		//! Texture matrix for shadow projection.
 		Geometry::Matrix4x4f texMatrix;
@@ -84,13 +93,23 @@ class ShadowState : public State {
 
 		//! The light node to create shadow map for.
 		LightNode * light;
+		
+		//! The camera node to use for shadow map rendering.
+		Util::Reference<CameraNode> camera;
+		
+		//! Prevents the shadow map to be generated each frame (for static scenes).
+		bool staticShadow;
+		
+		//! Indicates if an update of the shadow map is needed.
+		bool needsUpdate;
 
 		//! Prevent usage.
-		ShadowState(const ShadowState &);
+		ShadowState(const ShadowState &) = delete;
 
 		//! Prevent usage.
-		ShadowState & operator=(const ShadowState &);
+		ShadowState & operator=(const ShadowState &) = delete;
 
+		void updateShadowMap(FrameContext & context, Node * node, const RenderParam & rp);
 		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 };

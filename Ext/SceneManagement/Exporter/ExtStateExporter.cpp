@@ -102,6 +102,7 @@ static void describeShadowState(ExporterContext & ctx,DescriptionMap & desc,Stat
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SHADOW_STATE);
 	desc.setValue(Consts::ATTR_SHADOW_LIGHT_NODE, Util::GenericAttribute::createString(ctx.sceneManager.getNodeId(ss->getLight()).toString()));
 	desc.setValue(Consts::ATTR_SHADOW_TEXTURE_SIZE, Util::GenericAttribute::createNumber<uint16_t>(ss->getTextureSize()));
+	desc.setValue(Consts::ATTR_SHADOW_STATIC, Util::GenericAttribute::createBool(ss->isStatic()));
 }
 
 #ifdef MINSG_EXT_BLUE_SURFELS
