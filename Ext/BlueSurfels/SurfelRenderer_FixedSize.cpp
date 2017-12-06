@@ -69,7 +69,7 @@ SurfelRendererFixedSize::SurfelRendererFixedSize() : NodeRendererState(FrameCont
 		countFactor(1.0f),sizeFactor(1.0f),surfelSize(1.0f),maxSurfelSize(32.0), maxFrameTime(16.0f), 
 		debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(false), adaptive(false), foveated(false) {
 		foveatZones.push_back({0.0f, 0.0f});
-		foveatZones.push_back({0.5f, 2.0f});
+		foveatZones.push_back({0.5f, 0.5f});
 }
 SurfelRendererFixedSize::~SurfelRendererFixedSize() {}
 
@@ -111,6 +111,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	}	
 	
 	float pointSize = this->surfelSize;
+	float cFactor = this->countFactor;
 	if(foveated) {
 		const auto viewport = context.getCamera()->getViewport();
 		Geometry::Vec2 vpCenter(viewport.getCenter());
@@ -127,7 +128,8 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 			maxDistSqr *= maxDistSqr;
 			for(++it; it != foveatZones.end(); ++it) {
 				if(distSqr > it->first*it->first*maxDistSqr)
-					pointSize = surfelSize * it->second;
+					cFactor = std::min(countFactor, countFactor * it->second);
+					//pointSize = surfelSize * it->second;
 			}
 		}
 	}
@@ -136,7 +138,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	float minSurfelDistance = surfelMedianDist * std::sqrt(SURFEL_MEDIAN_COUNT / static_cast<float>(maxSurfelCount));
 
 	// Calculate the surfel prefix length based on the estimated median distance between surfels and the coverage of one surfel
-	uint32_t surfelPrefixLength = (SURFEL_MEDIAN_COUNT * surfelMedianDist * surfelMedianDist / (surfelRadius * surfelRadius)) * this->countFactor;
+	uint32_t surfelPrefixLength = (SURFEL_MEDIAN_COUNT * surfelMedianDist * surfelMedianDist / (surfelRadius * surfelRadius)) * cFactor;
 
 	bool renderOriginal = surfelPrefixLength > maxSurfelCount && minSurfelDistance > surfelRadius;
 	if(renderOriginal) {
