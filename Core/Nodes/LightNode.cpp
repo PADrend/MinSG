@@ -93,6 +93,8 @@ void LightNode::removeMetaMesh() {
 void LightNode::switchOn(FrameContext & context) {
 	validateParameters();
 	lightNumber = context.getRenderingContext().enableLight(parameters);
+	if(lightNumber == INVALID_LIGHT_NUMBER)
+		deactivate();
 }
 
 void LightNode::switchOff(FrameContext & context) {
