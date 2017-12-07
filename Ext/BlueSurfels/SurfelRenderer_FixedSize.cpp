@@ -69,7 +69,8 @@ SurfelRendererFixedSize::SurfelRendererFixedSize() : NodeRendererState(FrameCont
 		countFactor(1.0f),sizeFactor(1.0f),surfelSize(1.0f),maxSurfelSize(32.0), maxFrameTime(16.0f), 
 		debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(false), adaptive(false), foveated(false) {
 		foveatZones.push_back({0.0f, 0.0f});
-		foveatZones.push_back({0.5f, 0.5f});
+		foveatZones.push_back({0.25f, 1.0f});
+		foveatZones.push_back({1.0f, 0.5f});
 }
 SurfelRendererFixedSize::~SurfelRendererFixedSize() {}
 
@@ -120,17 +121,28 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 		auto it = foveatZones.begin();
 		if(it != foveatZones.end()) 
 			vpCenter += {it->first * viewport.getWidth(),it->second * viewport.getHeight()}; // offset
-		auto closest = closestRect(projRect, vpCenter);
-		float distSqr = closest.distanceSquared(vpCenter);
+		float dist = closestRect(projRect, vpCenter).distance(vpCenter);
 					
-		if(distSqr > 0) {
-			float maxDistSqr = std::min(viewport.getWidth(), viewport.getHeight()) * 0.5f;
-			maxDistSqr *= maxDistSqr;
+		if(dist > 0) {
+			float maxDist = std::sqrt(viewport.getWidth()*viewport.getWidth() + viewport.getHeight()*viewport.getHeight()) * 0.5f;
+			float z1 = 0;
+			float z2 = maxDist;
+			float c1 = pointSize;
+			float c2 = maxSurfelSize;
 			for(++it; it != foveatZones.end(); ++it) {
-				if(distSqr > it->first*it->first*maxDistSqr)
-					cFactor = std::min(countFactor, countFactor * it->second);
-					//pointSize = surfelSize * it->second;
+				if(dist < it->first * maxDist) {
+					z2 = it->first * maxDist;
+					c2 = it->second * pointSize;
+					break;
+				} else {
+					z1 = it->first * maxDist;
+					c1 = it->second * pointSize;
+				}
 			}
+			float a = std::min((dist-z1) / (z2-z1), 1.0f);
+			//cFactor = (1.0f - a) * c1 + a * c2;
+			pointSize = (1.0f - a) * c1 + a * c2;
+			//std::cout << "\ra= " << a << ", z1=(" << z1 << "," << c1 << "), z2=(" << z2 << "," << c2 << "), d=" << dist << ", f=" << cFactor << "             " << std::flush;
 		}
 	}
 	
@@ -146,8 +158,11 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 		surfelPrefixLength = maxSurfelCount - diff;
 	}
 	surfelPrefixLength = std::min(surfelPrefixLength,maxSurfelCount);
+	
+	if(debugHideSurfels && !renderOriginal)
+		return NodeRendererResult::NODE_HANDLED;
 
-	if(surfelPrefixLength > 0 && (!debugHideSurfels || deferredSurfels)) {
+	if(surfelPrefixLength > 0) {
 		if(debugCameraEnabled)
 			pointSize *= meterPerPixel/meterPerPixelOriginal;
 		//pointSize = std::min(pointSize*sizeFactor,this->maxSurfelSize);
@@ -167,10 +182,8 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 			renderingContext.popPointParameters();
 			renderingContext.setGlobalUniform({uniform_renderSurfels, false});
 		}
-
-		return renderOriginal ? NodeRendererResult::PASS_ON : NodeRendererResult::NODE_HANDLED;
 	}
-	return (debugHideSurfels && !renderOriginal) ? NodeRendererResult::NODE_HANDLED : NodeRendererResult::PASS_ON;
+	return renderOriginal ? NodeRendererResult::PASS_ON : NodeRendererResult::NODE_HANDLED;
 }
 
 SurfelRendererFixedSize::stateResult_t SurfelRendererFixedSize::doEnableState(FrameContext & context, Node * node, const RenderParam & rp) {
@@ -205,7 +218,7 @@ void SurfelRendererFixedSize::doDisableState(FrameContext & context, Node * node
 		Rendering::enable2DMode(rc, viewport);
 		rc.pushAndSetLighting(Rendering::LightingParameters());
 		
-		float rad = std::min(viewport.getWidth(), viewport.getHeight()) * 0.5f;
+		float rad = std::sqrt(viewport.getWidth()*viewport.getWidth() + viewport.getHeight()*viewport.getHeight()) * 0.5f;
 		for(++it; it != foveatZones.end(); ++it) {
 			//Geometry::Rect rect(vpCenter.x() - it->first*rad, viewport.getHeight() - vpCenter.y() - it->first*rad, it->first*2*rad, it->first*2*rad);
 			//Rendering::drawWireframeRect(context.getRenderingContext(), rect, Util::Color4f(0,0,0.5,1));
