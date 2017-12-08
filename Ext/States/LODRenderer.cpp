@@ -8,23 +8,19 @@
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
 #include "LODRenderer.h"
-
 #include "../../Core/FrameContext.h"
 #include "../../Core/Nodes/GeometryNode.h"
-#include "../../../Rendering/RenderingContext/RenderingContext.h"
-#include "../../../Rendering/Mesh/Mesh.h"
-#include "../../../Geometry/Rect.h"
 #include "../../Helper/StdNodeVisitors.h"
-
-#include <Util/StringIdentifier.h>
+#include <Geometry/Rect.h>
+#include <Rendering/Draw.h>
+#include <Rendering/Mesh/Mesh.h>
+#include <Rendering/MeshUtils/Simplification.h>
+#include <Rendering/RenderingContext/RenderingContext.h>
 #include <Util/GenericAttribute.h>
 #include <Util/Graphics/ColorLibrary.h>
-
-#include <Rendering/Draw.h>
-#include <Rendering/MeshUtils/Simplification.h>
-
-#include <cassert>
+#include <Util/StringIdentifier.h>
 #include <array>
+#include <cassert>
 
 namespace MinSG{
 
