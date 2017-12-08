@@ -162,7 +162,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	if(debugHideSurfels && !renderOriginal)
 		return NodeRendererResult::NODE_HANDLED;
 
-	if(surfelPrefixLength > 0) {
+	if(surfelPrefixLength > 0 && !debugHideSurfels) {
 		if(debugCameraEnabled)
 			pointSize *= meterPerPixel/meterPerPixelOriginal;
 		//pointSize = std::min(pointSize*sizeFactor,this->maxSurfelSize);
