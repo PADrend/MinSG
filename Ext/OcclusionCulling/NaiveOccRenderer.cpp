@@ -111,8 +111,9 @@ State::stateResult_t NaiveOccRenderer::doEnableState(FrameContext & context,Node
 			bool nodeIsVisible = false;
 			
 			const Geometry::Box worldBoundingBox = node.getWorldBB();
-			if(camera.testBoxFrustumIntersection( node.getWorldBB()) == Geometry::Frustum::OUTSIDE )
+			if (camera.testBoxFrustumIntersection(node.getWorldBB()) == Geometry::Frustum::intersection_t::OUTSIDE) {
 				continue;
+			}
 			
 			Geometry::Box enlargedBox = worldBoundingBox;
 			enlargedBox.resizeAbs( bbEnlargement );

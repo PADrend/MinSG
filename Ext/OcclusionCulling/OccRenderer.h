@@ -13,6 +13,7 @@
 
 #include "../../Core/States/State.h"
 #include "../../Helper/DistanceSorting.h"
+#include <Geometry/Frustum.h>
 #include <Util/GenericAttribute.h>
 #include <queue>
 
@@ -39,11 +40,15 @@ class OccRenderer : public State {
 			private:
 				unsigned int visibleFrameNumber;
 				unsigned int processedFrameNumber;
-//                unsigned int actualSubtreeSize;
 				unsigned int actualSubtreeComplexity;
-				int actualFrustumStatus;
+				Geometry::Frustum::intersection_t actualFrustumStatus;
 			public:
-				NodeInfo():visibleFrameNumber(0),processedFrameNumber(0)/*,actualSubtreeSize(0)*/,actualSubtreeComplexity(0),actualFrustumStatus(0){}
+				NodeInfo() : 
+						visibleFrameNumber(0),
+						processedFrameNumber(0),
+						actualSubtreeComplexity(0),
+						actualFrustumStatus(Geometry::Frustum::intersection_t::INSIDE) {
+				}
 				virtual ~NodeInfo(){}
 				// ---|> GenericAttribute
 				NodeInfo * clone()const override{
@@ -59,8 +64,12 @@ class OccRenderer : public State {
 				unsigned int getActualSubtreeComplexity()const			{	return actualSubtreeComplexity;	}
 				void increaseActualSubtreeComplexity(unsigned int c)	{	actualSubtreeComplexity+=c;	}
 				void setActualSubtreeComplexity(unsigned int f)			{	actualSubtreeComplexity=f;	}
-				int getActualFrustumStatus()const						{	return actualFrustumStatus;	}
-				void setActualFrustumStatus(int f)						{	actualFrustumStatus=f;	}
+				Geometry::Frustum::intersection_t getActualFrustumStatus() const {
+					return actualFrustumStatus;
+				}
+				void setActualFrustumStatus(Geometry::Frustum::intersection_t status) {
+					actualFrustumStatus = status;
+				}
 		};
 		// -----
 

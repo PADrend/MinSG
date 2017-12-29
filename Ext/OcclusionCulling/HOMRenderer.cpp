@@ -172,7 +172,7 @@ void HOMRenderer::selectOccluders(std::deque<SelectedOccluder> & occluders, Abst
 		// Check if occluder is in the viewing frustum.
 		// Do not add occluder if the camera is inside it.
 		const Geometry::Box & bb = occluder->getWorldBB();
-		if (camera->testBoxFrustumIntersection(bb) != Geometry::Frustum::OUTSIDE && !bb.contains(camera->getWorldOrigin())) {
+		if (camera->testBoxFrustumIntersection(bb) != Geometry::Frustum::intersection_t::OUTSIDE && !bb.contains(camera->getWorldOrigin())) {
 			float minDistance = std::numeric_limits<float>::max();
 			float maxDistance = 0.0f;
 			for (uint_fast8_t i = 0; i < 8; ++i) {
@@ -306,8 +306,8 @@ State::stateResult_t HOMRenderer::doEnableState(FrameContext & context,
 
 	// 1. Construction of the Occlusion Map Hierarchy
 	// - View-frustum culling
-	int t = oldCamera->testBoxFrustumIntersection(rootNode->getWorldBB());
-	if (t == Geometry::Frustum::OUTSIDE) {
+	const auto t = oldCamera->testBoxFrustumIntersection(rootNode->getWorldBB());
+	if (t == Geometry::Frustum::intersection_t::OUTSIDE) {
 		return State::STATE_SKIP_RENDERING;
 	}
 
@@ -486,7 +486,7 @@ int HOMRenderer::process(Node * node,
 	// 2. Visibility Culling with Hierarchical Occlusion Maps
 
 	// - View-frustum Culling
-	if (camera->testBoxFrustumIntersection(worldBB) == Geometry::Frustum::OUTSIDE) {
+	if (camera->testBoxFrustumIntersection(worldBB) == Geometry::Frustum::intersection_t::OUTSIDE) {
 		return NodeVisitor::BREAK_TRAVERSAL;
 	}
 

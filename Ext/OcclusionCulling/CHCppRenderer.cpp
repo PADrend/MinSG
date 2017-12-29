@@ -174,7 +174,7 @@ State::stateResult_t CHCppRenderer::performCulling(FrameContext & frameContext, 
 			NodeInfo * nodeInfo = getNodeInfo(node, chcppContext);
 
 			// if node is inside view frustum
-			if(frameContext.getCamera()->testBoxFrustumIntersection( node->getWorldBB()) != Geometry::Frustum::OUTSIDE)
+			if(frameContext.getCamera()->testBoxFrustumIntersection( node->getWorldBB()) != Geometry::Frustum::intersection_t::OUTSIDE)
 			{
 				if(!handleCameraInBox(frameContext, node, nodeInfo, childParam, distanceQueue,chcppContext))
 				{
