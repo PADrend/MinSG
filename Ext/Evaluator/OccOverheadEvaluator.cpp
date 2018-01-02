@@ -138,7 +138,7 @@ void OccOverheadEvaluator::measure(FrameContext & context,Node & node,const Geom
 				// else collect the geometry children and break the traversal.
 				GeometryNode * gn=dynamic_cast<GeometryNode *>(_node);
 				if(gn){
-					if(frameContext.getCamera()->testBoxFrustumIntersection( _node->getWorldBB()) != Geometry::Frustum::OUTSIDE)
+					if(frameContext.getCamera()->testBoxFrustumIntersection( _node->getWorldBB()) != Geometry::Frustum::intersection_t::OUTSIDE)
 						geoNodes.push_back(gn);
 				}
 				return BREAK_TRAVERSAL;

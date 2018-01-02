@@ -78,17 +78,17 @@ struct NodeCompareBySide {
 	 */
 	bool operator()(Node * node1, Node * node2) const {
 		switch (side) {
-			case Geometry::SIDE_X_POS:
+			case Geometry::side_t::X_POS:
 				return node1->getWorldBB().getMaxX() > node2->getWorldBB().getMaxX();
-			case Geometry::SIDE_X_NEG:
+			case Geometry::side_t::X_NEG:
 				return node1->getWorldBB().getMinX() < node2->getWorldBB().getMinX();
-			case Geometry::SIDE_Y_POS:
+			case Geometry::side_t::Y_POS:
 				return node1->getWorldBB().getMaxY() > node2->getWorldBB().getMaxY();
-			case Geometry::SIDE_Y_NEG:
+			case Geometry::side_t::Y_NEG:
 				return node1->getWorldBB().getMinY() < node2->getWorldBB().getMinY();
-			case Geometry::SIDE_Z_POS:
+			case Geometry::side_t::Z_POS:
 				return node1->getWorldBB().getMaxZ() > node2->getWorldBB().getMaxZ();
-			case Geometry::SIDE_Z_NEG:
+			case Geometry::side_t::Z_NEG:
 				return node1->getWorldBB().getMinZ() < node2->getWorldBB().getMinZ();
 			default:
 				FAIL();
@@ -396,36 +396,36 @@ bool ColorCubeGenerator::prepareCamera(FrameContext& context, const Box& _box, G
 	camera->resetRelTransformation();
 	camera->setRelOrigin(box.getCenter());
 	switch(side){
-		case Geometry::SIDE_X_POS:
+		case Geometry::side_t::X_POS:
 			camera->rotateRel(Geometry::Angle::deg(90.0f), Geometry::Vec3(0, 1, 0));
 			if(box.getExtentY() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentX() == 0) box.resizeAbs(0.1,0,0); // depth equal zero
 			box.resizeRel(1.01,1,1);
 			break;
-		case Geometry::SIDE_X_NEG:
+		case Geometry::side_t::X_NEG:
 			camera->rotateRel(Geometry::Angle::deg(-90.0f), Geometry::Vec3(0, 1, 0));
 			if(box.getExtentY() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentX() == 0) box.resizeAbs(0.1,0,0); // depth equal zero
 			box.resizeRel(1.01,1,1);
 			break;
-		case Geometry::SIDE_Y_POS:
+		case Geometry::side_t::Y_POS:
 			camera->rotateRel(Geometry::Angle::deg(-90.0f), Geometry::Vec3(1, 0, 0));
 			if(box.getExtentX() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentY() == 0) box.resizeAbs(0,0.1,0); // depth equal zero
 			box.resizeRel(1,1.01,1);
 			break;
-		case Geometry::SIDE_Y_NEG:
+		case Geometry::side_t::Y_NEG:
 			camera->rotateRel(Geometry::Angle::deg(90.0f), Geometry::Vec3(1, 0, 0));
 			if(box.getExtentX() == 0 || box.getExtentZ() == 0) return false; // width or height equal zero
 			if(box.getExtentY() == 0) box.resizeAbs(0,0.1,0); // depth equal zero
 			box.resizeRel(1,1.01,1);
 			break;
-		case Geometry::SIDE_Z_POS:
+		case Geometry::side_t::Z_POS:
 			if(box.getExtentX() == 0 || box.getExtentY() == 0) return false; // width or height equal zero
 			if(box.getExtentZ() == 0) box.resizeAbs(0,0,0.1); // depth equal zero
 			box.resizeRel(1,1,1.01);
 			break;
-		case Geometry::SIDE_Z_NEG:
+		case Geometry::side_t::Z_NEG:
 			camera->rotateRel(Geometry::Angle::deg(180.0f), Geometry::Vec3(0, 1, 0));
 			if(box.getExtentX() == 0 || box.getExtentY() == 0) return false; // width or height equal zero
 			if(box.getExtentZ() == 0) box.resizeAbs(0,0,0.1); // depth equal zero

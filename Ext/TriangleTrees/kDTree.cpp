@@ -90,11 +90,11 @@ void kDTree::calculateSplittingPlane(uint32_t & numFirstChild, uint32_t & numSec
 	unsigned char splitDimension = getSplitDimension();
 	const uint32_t size = sorted[splitDimension].size();
 	uint32_t half = size / 2; // Integer division = floor
-	splitValue = triangleStorage->at(sorted[splitDimension][half]).getMax(static_cast<Geometry::dimension_t>(splitDimension));
+	splitValue = triangleStorage->at(sorted[splitDimension][half]).getMax(splitDimension);
 	// The loop handles the case when there are equal values.
 	// The split value remains the same.
 	while (half >= 1
-			&& !(triangleStorage->at(sorted[splitDimension][half - 1]).getMax(static_cast<Geometry::dimension_t>(splitDimension)) < splitValue)) {
+			&& !(triangleStorage->at(sorted[splitDimension][half - 1]).getMax(splitDimension) < splitValue)) {
 		--half;
 	}
 
@@ -185,7 +185,7 @@ void kDTree::split() {
 				continue;
 			}
 			// Always using smaller!
-			if (triangle.getMax(static_cast<Geometry::dimension_t>(splitDimension)) < splitValue) {
+			if (triangle.getMax(splitDimension) < splitValue) {
 				firstChild->sorted[dim].push_back(index);
 #ifndef NDEBUG
 				++firstCount;
@@ -239,8 +239,8 @@ COMPILER_WARN_POP
 
 bool kDTree::needCut(const TriangleAccessor & triangle, unsigned char splitDimension, float splitValue, float & minPos, float & maxPos) {
 	// Get the extremal positions.
-	minPos = triangle.getMin(static_cast<Geometry::dimension_t>(splitDimension));
-	maxPos = triangle.getMax(static_cast<Geometry::dimension_t>(splitDimension));
+	minPos = triangle.getMin(splitDimension);
+	maxPos = triangle.getMax(splitDimension);
 	// If both extremal positions lie on the same side of the splitting plane
 	// no cut is needed.
 	return ((minPos < splitValue) ^ (maxPos < splitValue));

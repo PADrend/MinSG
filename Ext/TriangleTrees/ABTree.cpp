@@ -46,7 +46,7 @@ void ABTree::calculateSplittingPlane(uint32_t & numFirstChild, uint32_t & numSec
 		float sum = 0.0f;
 		float squareSum = 0.0f;
 		for (uint_fast32_t i = 0; i < size; ++i) {
-			float value = triangleStorage->at(sorted[dim][i]).getMax(static_cast<Geometry::dimension_t>(dim));
+			float value = triangleStorage->at(sorted[dim][i]).getMax(dim);
 			sum += value;
 			squareSum += value * value;
 		}

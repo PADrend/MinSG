@@ -80,7 +80,7 @@ void Octree::split() {
 		const Geometry::Vec3 center = (Geometry::Vec3f(triangle.getVertexPosition(0))
 										+ Geometry::Vec3f(triangle.getVertexPosition(1))
 										+ Geometry::Vec3f(triangle.getVertexPosition(2))) / 3;
-		const Geometry::corner_t corner = looseBound.getOctant(center);
+		const auto corner = static_cast<size_t>(looseBound.getOctant(center));
 		if(children[corner]->contains(triangle)) {
 			children[corner]->triangleStorage.push_back(triangle);
 		} else {

@@ -94,19 +94,19 @@ int test_cost_evaluator(Util::UI::Window * window) {
 	camera->setClippingPlanes(-countHalf, countHalf, -countHalf, countHalf);
 
 	std::vector<Geometry::SRTf> cameraSrts(6);
-	cameraSrts[Geometry::SIDE_X_POS] = Geometry::SRTf(Geometry::Vec3f(count + 1.0f, countHalf, countHalf), Geometry::Vec3f(1, 0, 0), Geometry::Vec3f(0, 1, 0));
-	cameraSrts[Geometry::SIDE_X_NEG] = Geometry::SRTf(Geometry::Vec3f(-1.0f, countHalf, countHalf), Geometry::Vec3f(-1, 0, 0), Geometry::Vec3f(0, 1, 0));
-	cameraSrts[Geometry::SIDE_Y_POS] = Geometry::SRTf(Geometry::Vec3f(countHalf, count + 1.0f, countHalf), Geometry::Vec3f(0, 1, 0), Geometry::Vec3f(0, 0, 1));
-	cameraSrts[Geometry::SIDE_Y_NEG] = Geometry::SRTf(Geometry::Vec3f(countHalf, -1.0f, countHalf), Geometry::Vec3f(0, -1, 0), Geometry::Vec3f(0, 0, 1));
-	cameraSrts[Geometry::SIDE_Z_POS] = Geometry::SRTf(Geometry::Vec3f(countHalf, countHalf, count + 1.0f), Geometry::Vec3f(0, 0, 1), Geometry::Vec3f(0, 1, 0));
-	cameraSrts[Geometry::SIDE_Z_NEG] = Geometry::SRTf(Geometry::Vec3f(countHalf, countHalf, -1.0f), Geometry::Vec3f(0, 0, -1), Geometry::Vec3f(0, 1, 0));
+	cameraSrts[static_cast<size_t>(Geometry::side_t::X_POS)] = Geometry::SRTf(Geometry::Vec3f(count + 1.0f, countHalf, countHalf), Geometry::Vec3f(1, 0, 0), Geometry::Vec3f(0, 1, 0));
+	cameraSrts[static_cast<size_t>(Geometry::side_t::X_NEG)] = Geometry::SRTf(Geometry::Vec3f(-1.0f, countHalf, countHalf), Geometry::Vec3f(-1, 0, 0), Geometry::Vec3f(0, 1, 0));
+	cameraSrts[static_cast<size_t>(Geometry::side_t::Y_POS)] = Geometry::SRTf(Geometry::Vec3f(countHalf, count + 1.0f, countHalf), Geometry::Vec3f(0, 1, 0), Geometry::Vec3f(0, 0, 1));
+	cameraSrts[static_cast<size_t>(Geometry::side_t::Y_NEG)] = Geometry::SRTf(Geometry::Vec3f(countHalf, -1.0f, countHalf), Geometry::Vec3f(0, -1, 0), Geometry::Vec3f(0, 0, 1));
+	cameraSrts[static_cast<size_t>(Geometry::side_t::Z_POS)] = Geometry::SRTf(Geometry::Vec3f(countHalf, countHalf, count + 1.0f), Geometry::Vec3f(0, 0, 1), Geometry::Vec3f(0, 1, 0));
+	cameraSrts[static_cast<size_t>(Geometry::side_t::Z_NEG)] = Geometry::SRTf(Geometry::Vec3f(countHalf, countHalf, -1.0f), Geometry::Vec3f(0, 0, -1), Geometry::Vec3f(0, 1, 0));
 
 	std::vector<MinSG::VisibilitySubdivision::VisibilityVector> results;
 	results.reserve(6);
 
 	// Measurements
 	for(const auto & cameraSrt : cameraSrts) {
-		camera->setSRT(cameraSrt);
+		camera->setRelTransformation(cameraSrt);
 		frameContext.setCamera(camera.get());
 		Rendering::RenderingContext::clearScreen(Util::Color4f(0.5f, 0.5f, 0.5f, 1.0f));
 
@@ -131,17 +131,17 @@ int test_cost_evaluator(Util::UI::Window * window) {
 	for(uint_fast32_t x = 0; x < count; ++x) {
 		for(uint_fast32_t y = 0; y < count; ++y) {
 			MinSG::GeometryNode * geoNode = nodes[x * count + y].get();
-			const auto leftBenefits = results[Geometry::SIDE_X_NEG].getBenefits(geoNode);
+			const auto leftBenefits = results[static_cast<size_t>(Geometry::side_t::X_NEG)].getBenefits(geoNode);
 			assert(leftBenefits == ((x == 0) ? numPixels : 0)); // left => only first column visible
-			const auto bottomBenefits = results[Geometry::SIDE_Y_NEG].getBenefits(geoNode);
+			const auto bottomBenefits = results[static_cast<size_t>(Geometry::side_t::Y_NEG)].getBenefits(geoNode);
 			assert(bottomBenefits == ((y == 0) ? numPixels : 0)); // bottom => only first row visible
-			const auto backBenefits = results[Geometry::SIDE_Z_NEG].getBenefits(geoNode);
+			const auto backBenefits = results[static_cast<size_t>(Geometry::side_t::Z_NEG)].getBenefits(geoNode);
 			assert(backBenefits == numPixels); // back => everything visible
-			const auto rightBenefits = results[Geometry::SIDE_X_POS].getBenefits(geoNode);
+			const auto rightBenefits = results[static_cast<size_t>(Geometry::side_t::X_POS)].getBenefits(geoNode);
 			assert(rightBenefits == ((x == count - 1) ? numPixels : 0)); // right => only last column visible
-			const auto topBenefits = results[Geometry::SIDE_Y_POS].getBenefits(geoNode);
+			const auto topBenefits = results[static_cast<size_t>(Geometry::side_t::Y_POS)].getBenefits(geoNode);
 			assert(topBenefits == ((y == count - 1) ? numPixels : 0)); // top => only last row visible
-			const auto frontBenefits = results[Geometry::SIDE_Z_POS].getBenefits(geoNode);
+			const auto frontBenefits = results[static_cast<size_t>(Geometry::side_t::Z_POS)].getBenefits(geoNode);
 			assert(frontBenefits == numPixels); // front => everything visible
 		}
 	}

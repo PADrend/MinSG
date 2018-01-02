@@ -315,7 +315,7 @@ bool VisibilitySubdivisionRenderer::renderCellSubset(FrameContext & context, cel
 		for(const auto & objectRatioPair : displayObjects) {
 			object_ptr o = objectRatioPair.second;
 			Geometry::Frustum::intersection_t result = frustum.isBoxInFrustum(o->getWorldBB());
-			if (result == Geometry::Frustum::INSIDE || result == Geometry::Frustum::INTERSECT) {
+			if (result == Geometry::Frustum::intersection_t::INSIDE || result == Geometry::Frustum::intersection_t::INTERSECT) {
 				if(renderedTriangles >= budgetBegin) {
 					context.displayNode(o, 0);
 				}

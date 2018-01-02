@@ -226,7 +226,7 @@ State::stateResult_t AlgoSelector::doEnableState(FrameContext & fc, Node * /*nod
 	uint32_t usedNodeCount = 0;
 	
     for(uint32_t i = 0; i < asContext.nodeCount; ++i){
-        bool b = fc.getCamera()->getFrustum().isBoxInFrustum(asContext.storage->getNode(i)->getWorldBB()) != Geometry::Frustum::OUTSIDE;
+        bool b = fc.getCamera()->getFrustum().isBoxInFrustum(asContext.storage->getNode(i)->getWorldBB()) != Geometry::Frustum::intersection_t::OUTSIDE;
         asContext.nodesInFrustum[i] = b;
         if(b)
             magnsInFrustum++;
