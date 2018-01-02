@@ -30,7 +30,7 @@ inline bool conditionalFrustumTest(const Geometry::Frustum & frustum,
 								   const Geometry::Box & box,
 								   const RenderParam & rp) {
 	return !rp.getFlag(FRUSTUM_CULLING) 
-				|| (frustum.isBoxInFrustum(box) != Geometry::Frustum::OUTSIDE);
+				|| (frustum.isBoxInFrustum(box) != Geometry::Frustum::intersection_t::OUTSIDE);
 }
 
 }

@@ -193,14 +193,15 @@ std::deque<_T *> collectNodesInFrustum(Node * root, const Geometry::Frustum & fr
 				}else if (insideFrustum > 0) {
 					++insideFrustum;
 				} else {
-					const Geometry::Frustum::intersection_t result = frustum.isBoxInFrustum(node->getWorldBB());
-                    if (result == Geometry::Frustum::INSIDE ) {
+					const auto result = frustum.isBoxInFrustum(node->getWorldBB());
+					if (result == Geometry::Frustum::intersection_t::INSIDE) {
 						++insideFrustum;
-					} else if(result == Geometry::Frustum::INTERSECT){
-                        if(!includeIntersectingNodes)
-                            return CONTINUE_TRAVERSAL;
-					}else{
-                        return BREAK_TRAVERSAL;
+					} else if (result == Geometry::Frustum::intersection_t::INTERSECT) {
+						if (!includeIntersectingNodes) {
+							return CONTINUE_TRAVERSAL;
+						}
+					} else {
+						return BREAK_TRAVERSAL;
 					}
 				}
 				_T * n = dynamic_cast<_T*> (node);

@@ -75,15 +75,15 @@ void OccRenderer::updateNodeInformation(FrameContext & context,Node * rootNode)c
 			info->setActualSubtreeComplexity(0);
 
 			// the current subtree is completely inside the frustum, so we need not to test inside this subtree
-			if(insideFrustum>0){
-				info->setActualFrustumStatus(Geometry::Frustum::INSIDE);
+			if (insideFrustum > 0) {
+				info->setActualFrustumStatus(Geometry::Frustum::intersection_t::INSIDE);
 				insideFrustum++;
-			}else{
-				int i=camera->testBoxFrustumIntersection( node->getWorldBB());
+			} else {
+				const auto i=camera->testBoxFrustumIntersection( node->getWorldBB());
 				info->setActualFrustumStatus(i);
-				if(i==Geometry::Frustum::OUTSIDE){
+				if (i == Geometry::Frustum::intersection_t::OUTSIDE) {
 					return NodeVisitor::BREAK_TRAVERSAL;
-				}else if(i==Geometry::Frustum::INSIDE){
+				} else if (i == Geometry::Frustum::intersection_t::INSIDE) {
 					insideFrustum++;
 				}
 			}
@@ -276,8 +276,9 @@ State::stateResult_t OccRenderer::performCulling(FrameContext & context,Node * r
 			}
 
 			// !IS_INSIDE_FRUSTUM(node)
-			if ( nodeInfo->getActualFrustumStatus()== Geometry::Frustum::OUTSIDE)
+			if (nodeInfo->getActualFrustumStatus() == Geometry::Frustum::intersection_t::OUTSIDE) {
 				continue;
+			}
 
 			// [MODE_OPT_CULLING] For optimal culling, skip all unnecessary tests
 			if(mode==MODE_OPT_CULLING && nodeInfo->getVisibleFrameNumber() == (frameNumber-1)){
@@ -347,7 +348,7 @@ void OccRenderer::processNode(FrameContext & context,Node * node,NodeInfo * node
 		const auto children = getChildNodes(node);
 		for(auto & child : children){
 			NodeInfo * i=getNodeInfo(child);
-			if( rp.getFlag(FRUSTUM_CULLING) && i->getActualFrustumStatus()==Geometry::Frustum::OUTSIDE) //context.getCamera()->testBoxFrustumIntersection( (*it)->getWorldBB()) == Frustum::OUTSIDE )
+			if( rp.getFlag(FRUSTUM_CULLING) && i->getActualFrustumStatus()==Geometry::Frustum::intersection_t::OUTSIDE) //context.getCamera()->testBoxFrustumIntersection( (*it)->getWorldBB()) == Frustum::OUTSIDE )
 				continue;
 			if( i->getActualSubtreeComplexity() == 0){
 				continue;

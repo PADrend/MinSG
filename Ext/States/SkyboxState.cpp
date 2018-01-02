@@ -33,18 +33,18 @@ SkyboxState * SkyboxState::createSkybox(const std::string & filename) {
 	auto sb = new SkyboxState;
 
 	s = Util::StringUtils::replaceAll(filename, "?", "TOP");
-	sb->setTexture(SIDE_Y_POS, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
+	sb->setTexture(Geometry::side_t::Y_POS, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	s = Util::StringUtils::replaceAll(filename, "?", "BOTTOM");
-	sb->setTexture(SIDE_Y_NEG, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
+	sb->setTexture(Geometry::side_t::Y_NEG, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	s = Util::StringUtils::replaceAll(filename, "?", "LEFT");
-	sb->setTexture(SIDE_X_NEG, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
+	sb->setTexture(Geometry::side_t::X_NEG, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	s = Util::StringUtils::replaceAll(filename, "?", "RIGHT");
-	sb->setTexture(SIDE_X_POS, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
+	sb->setTexture(Geometry::side_t::X_POS, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	// FIXME: Texture file names and Box side names are not the same.
 	s = Util::StringUtils::replaceAll(filename, "?", "BACK");
-	sb->setTexture(SIDE_Z_POS, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
+	sb->setTexture(Geometry::side_t::Z_POS, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 	s = Util::StringUtils::replaceAll(filename, "?", "FRONT");
-	sb->setTexture(SIDE_Z_NEG, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
+	sb->setTexture(Geometry::side_t::Z_NEG, Serialization::loadTexture(Util::FileName(s)).detachAndDecrease());
 
 	return sb;
 }
@@ -65,7 +65,7 @@ SkyboxState::SkyboxState(const SkyboxState & source) :
 }
 
 void SkyboxState::setTexture(Geometry::side_t side, Rendering::Texture * texture) {
-	textures[side] = texture;
+	textures[static_cast<std::size_t>(side)] = texture;
 }
 
 SkyboxState * SkyboxState::clone() const {

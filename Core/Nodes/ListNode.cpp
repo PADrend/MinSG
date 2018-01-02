@@ -67,11 +67,11 @@ void ListNode::doDisplay(FrameContext & context, const RenderParam & rp) {
 
 	if (rp.getFlag(FRUSTUM_CULLING)) {
 		for(const auto & child : children) {
-			int t = context.getCamera()->testBoxFrustumIntersection(child->getWorldBB());
+			const auto t = context.getCamera()->testBoxFrustumIntersection(child->getWorldBB());
 
-			if (t == Geometry::Frustum::INSIDE) {
+			if (t == Geometry::Frustum::intersection_t::INSIDE) {
 				context.displayNode(child.get(), rp - FRUSTUM_CULLING);
-			} else if (t == Geometry::Frustum::INTERSECT) {
+			} else if (t == Geometry::Frustum::intersection_t::INTERSECT) {
 				context.displayNode(child.get(), rp);
 			}
 		}
