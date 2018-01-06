@@ -146,7 +146,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 		}
 	}
 	
-	float surfelRadius = pointSize * meterPerPixel / 2.0f;
+	float surfelRadius = sizeToRadius(pointSize, meterPerPixel);
 	float minSurfelDistance = surfelMedianDist * std::sqrt(SURFEL_MEDIAN_COUNT / static_cast<float>(maxSurfelCount));
 
 	// Calculate the surfel prefix length based on the estimated median distance between surfels and the coverage of one surfel
@@ -158,6 +158,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 		surfelPrefixLength = maxSurfelCount - diff;
 	}
 	surfelPrefixLength = std::min(surfelPrefixLength,maxSurfelCount);
+	renderOriginal |= surfelPrefixLength == 0;
 	
 	if(debugHideSurfels && !renderOriginal)
 		return NodeRendererResult::NODE_HANDLED;
