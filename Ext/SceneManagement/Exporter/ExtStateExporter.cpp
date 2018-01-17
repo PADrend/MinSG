@@ -124,6 +124,7 @@ static void describeSurfelRendererFixedSize(ExporterContext &,DescriptionMap & d
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_TIME, Util::GenericAttribute::createNumber(renderer->getMaxFrameTime()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_ADAPTIVE, Util::GenericAttribute::createBool(renderer->isAdaptive()));
 	desc.setValue(Consts::ATTR_SURFEL_RENDERER_FOVEATED, Util::GenericAttribute::createBool(renderer->isFoveated()));
+	desc.setValue(Consts::ATTR_SURFEL_RENDERER_BLENDFACTOR, Util::GenericAttribute::createNumber(renderer->getBlendFactor()));
 	std::ostringstream zoneStream;
 	auto zones = renderer->getFoveatZones();
 	auto it = zones.begin();

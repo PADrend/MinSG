@@ -149,11 +149,19 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 float getMeterPerPixel(MinSG::FrameContext & context, MinSG::Node * node) {
   static const Geometry::Vec3 X_AXIS(1,0,0);
   static const Geometry::Vec3 Z_AXIS(0,0,1);
-  //auto centerWorld = Transformations::localPosToWorldPos(*node, node->getBB().getCenter() );
-  auto camDir = Transformations::localDirToWorldDir(*context.getCamera(), -Z_AXIS ).normalize() * context.getCamera()->getNearPlane();
-  auto closestPoint = node->getWorldBB().getClosestPoint(context.getCamera()->getWorldOrigin() + camDir);
+	auto cam = context.getCamera();
+  auto centerWorld = Transformations::localPosToWorldPos(*node, node->getBB().getCenter() );
+  //auto camDir = Transformations::localDirToWorldDir(*cam, -Z_AXIS ).normalize();
+  //auto closestPoint = node->getWorldBB().getClosestPoint(context.getCamera()->getWorldOrigin() + camDir);
+  auto camDir = centerWorld-cam->getWorldOrigin();
+	if(camDir.isZero())
+		camDir = Transformations::localDirToWorldDir(*cam, -Z_AXIS ).normalize();
+	else
+		camDir.normalize();
+	auto camDist = std::max(0.0f, centerWorld.distance(cam->getWorldOrigin()) - node->getWorldBB().getExtentMax()*0.5f);
+	auto closestPoint = cam->getWorldOrigin() + camDir*(camDist + cam->getNearPlane());
 	
-	auto oneMeterVector = Transformations::localDirToWorldDir(*context.getCamera(), X_AXIS ).normalize()*0.1;
+	auto oneMeterVector = Transformations::localDirToWorldDir(*cam, X_AXIS ).normalize()*0.1;
 	auto screenPos1 = context.convertWorldPosToScreenPos(closestPoint);
 	auto screenPos2 = context.convertWorldPosToScreenPos(closestPoint+oneMeterVector);
 	float d = screenPos1.distance(screenPos2)*10;

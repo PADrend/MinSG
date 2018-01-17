@@ -79,6 +79,9 @@ class SurfelRendererFixedSize : public NodeRendererState {
 		float getMaxFrameTime() const		{	return maxFrameTime;	}
 		void setMaxFrameTime(float f)		{	maxFrameTime = f;	}
 		
+		float getBlendFactor() const		{	return blendFactor;	}
+		void setBlendFactor(float f)		{	blendFactor = f;	}
+		
 		SurfelRendererFixedSize* clone() const override	{	return new SurfelRendererFixedSize(*this);	}
 		
 		void drawSurfels(FrameContext & context, float minSize=0, float maxSize=1024) const;
@@ -92,7 +95,7 @@ class SurfelRendererFixedSize : public NodeRendererState {
 				
 		float getMedianDist(Node * node, Rendering::Mesh& mesh);
 	private:			
-		float countFactor,sizeFactor,surfelSize,maxSurfelSize,maxFrameTime;
+		float countFactor,sizeFactor,surfelSize,maxSurfelSize,maxFrameTime,blendFactor;
 		bool debugHideSurfels, debugCameraEnabled, deferredSurfels, adaptive, foveated, debugFoveated = false;
 		Util::Reference<CameraNode> debugCamera;
 		// distance to camera, node, prefix length, size

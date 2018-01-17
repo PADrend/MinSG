@@ -66,11 +66,11 @@ static Geometry::Vec2 closestRect(const Geometry::Rect& rect, const Geometry::Ve
 }
 
 SurfelRendererFixedSize::SurfelRendererFixedSize() : NodeRendererState(FrameContext::DEFAULT_CHANNEL),
-		countFactor(1.0f),sizeFactor(1.0f),surfelSize(1.0f),maxSurfelSize(32.0), maxFrameTime(16.0f), 
+		countFactor(1.0f),sizeFactor(1.0f),surfelSize(2.0f),maxSurfelSize(8.0), maxFrameTime(16.0f), blendFactor(0.3), 
 		debugHideSurfels(false), debugCameraEnabled(false), deferredSurfels(false), adaptive(false), foveated(false) {
 		foveatZones.push_back({0.0f, 0.0f});
-		foveatZones.push_back({0.25f, 1.0f});
-		foveatZones.push_back({1.0f, 0.5f});
+		foveatZones.push_back({0.25f, 2.0f});
+		foveatZones.push_back({1.0f, 4.0f});
 }
 SurfelRendererFixedSize::~SurfelRendererFixedSize() {}
 
@@ -155,7 +155,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	bool renderOriginal = surfelPrefixLength > maxSurfelCount && minSurfelDistance > surfelRadius;
 	if(renderOriginal) {
 		uint32_t diff = std::min(maxSurfelCount, surfelPrefixLength - maxSurfelCount);
-		surfelPrefixLength = maxSurfelCount - diff;
+		surfelPrefixLength = (maxSurfelCount - diff) * blendFactor;
 	}
 	surfelPrefixLength = std::min(surfelPrefixLength,maxSurfelCount);
 	renderOriginal |= surfelPrefixLength == 0;

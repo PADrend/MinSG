@@ -74,6 +74,7 @@ const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_TIME("surfelMaxFrameTime")
 const Util::StringIdentifier ATTR_SURFEL_RENDERER_ADAPTIVE("surfelAdaptive");
 const Util::StringIdentifier ATTR_SURFEL_RENDERER_FOVEATED("surfelFoveated");
 const Util::StringIdentifier ATTR_SURFEL_RENDERER_FOVEAT_ZONES("surfelFoveatZones");
+const Util::StringIdentifier ATTR_SURFEL_RENDERER_BLENDFACTOR("surfelBlendFactor");
 #endif
 
 // ---------------------------------------------------------------------------

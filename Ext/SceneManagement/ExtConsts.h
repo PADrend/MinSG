@@ -90,6 +90,7 @@ extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_TIME;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_ADAPTIVE;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_FOVEATED;
 extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_FOVEAT_ZONES;
+extern const Util::StringIdentifier ATTR_SURFEL_RENDERER_BLENDFACTOR;
 #endif
 // @}
 // ------------------------------------------------------------

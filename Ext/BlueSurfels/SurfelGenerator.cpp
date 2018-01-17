@@ -230,7 +230,7 @@ SurfelGenerator::SurfelResult SurfelGenerator::buildBlueSurfels(const std::vecto
 			
 		sortedSubset.clear();
 		if( (round%500) == 0){
-			std::cout << "Round:"<<round<<" #Samples:"<< surfelCount<<" : "<<tRound.getMilliseconds()<<" ms; samplesPerRound "<<samplesPerRound<<" accept:"<<acceptSamples<<"\n";
+			//std::cout << "Round:"<<round<<" #Samples:"<< surfelCount<<" : "<<tRound.getMilliseconds()<<" ms; samplesPerRound "<<samplesPerRound<<" accept:"<<acceptSamples<<"\n";
 			samplesPerRound = std::max(samplesPerRound*0.5f,20.0f);
 			acceptSamples = std::min( static_cast<unsigned int>(samplesPerRound*0.3), acceptSamples+1);
 			tRound.reset();
