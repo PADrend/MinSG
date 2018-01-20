@@ -332,8 +332,10 @@ void addAttributes(ImportContext & ctxt, const DescriptionArray * subDescription
 					attr = Util::JSON_Parser::parse(value);
 				}else if(attrType == Consts::ATTRIBUTE_TYPE_GENERIC) {
 					static const Util::StringIdentifier CONTEXT_DATA_SCENEMANAGER("SceneManager");
+					static const Util::StringIdentifier CONTEXT_FILE_LOCATOR("FileLocator");
 					std::unique_ptr<Util::GenericAttributeMap> context(new Util::GenericAttributeMap);
 					context->setValue(CONTEXT_DATA_SCENEMANAGER, new Util::WrapperAttribute<SceneManager &>(ctxt.sceneManager));
+					context->setValue(CONTEXT_FILE_LOCATOR, new Util::WrapperAttribute<Util::FileLocator &>(ctxt.fileLocator));					
 					attr = Util::GenericAttributeSerialization::unserialize(value, context.get());
 				}else {
 					WARN(std::string("Unable to import an attribute of unsupported type: '")+attrType+'\'');
