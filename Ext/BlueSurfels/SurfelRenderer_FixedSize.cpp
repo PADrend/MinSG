@@ -1,7 +1,7 @@
 /*
 	This file is part of the MinSG library extension BlueSurfels.
 	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
-	Copyright (C) 2016-2017 Sascha Brandt <myeti@mail.uni-paderborn.de>
+	Copyright (C) 2016-2018 Sascha Brandt <sascha@brandt.graphics>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the
@@ -92,7 +92,7 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 	// get surfels
 	std::tie(surfelMesh, maxSurfelCount, surfelMedianDist) = getSurfelsForNode(context, node);
 	
-	if( !surfelMesh )
+	if( !surfelMesh || node->getWorldBB().contains(context.getCamera()->getWorldOrigin()))
 		return NodeRendererResult::PASS_ON;
 	
 
@@ -151,14 +151,16 @@ NodeRendererResult SurfelRendererFixedSize::displayNode(FrameContext & context, 
 
 	// Calculate the surfel prefix length based on the estimated median distance between surfels and the coverage of one surfel
 	uint32_t surfelPrefixLength = (SURFEL_MEDIAN_COUNT * surfelMedianDist * surfelMedianDist / (surfelRadius * surfelRadius)) * cFactor;
-
+	
+	//std::cout << "r=" << surfelRadius << ", mpp=" << meterPerPixel << ", minDist=" << minSurfelDistance << ", maxSurfels=" << maxSurfelCount << ", prefix=" << surfelPrefixLength << std::endl;
+		
 	bool renderOriginal = surfelPrefixLength > maxSurfelCount && minSurfelDistance > surfelRadius;
 	if(renderOriginal) {
 		uint32_t diff = std::min(maxSurfelCount, surfelPrefixLength - maxSurfelCount);
 		surfelPrefixLength = (maxSurfelCount - diff) * blendFactor;
 	}
 	surfelPrefixLength = std::min(surfelPrefixLength,maxSurfelCount);
-	renderOriginal |= surfelPrefixLength == 0;
+	//renderOriginal |= surfelPrefixLength == 0;
 	
 	if(debugHideSurfels && !renderOriginal)
 		return NodeRendererResult::NODE_HANDLED;

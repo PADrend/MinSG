@@ -94,7 +94,7 @@ class SurfelRendererFixedSize : public NodeRendererState {
 		virtual Surfels_t getSurfelsForNode(FrameContext & context, Node * node);
 				
 		float getMedianDist(Node * node, Rendering::Mesh& mesh);
-	private:			
+	private:
 		float countFactor,sizeFactor,surfelSize,maxSurfelSize,maxFrameTime,blendFactor;
 		bool debugHideSurfels, debugCameraEnabled, deferredSurfels, adaptive, foveated, debugFoveated = false;
 		Util::Reference<CameraNode> debugCamera;

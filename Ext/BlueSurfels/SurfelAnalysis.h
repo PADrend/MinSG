@@ -1,6 +1,7 @@
 /*
 	This file is part of the MinSG library extension BlueSurfels.
-	Copyright (C) 2014 Claudius J�hn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2016-2018 Sascha Brandt <sascha@brandt.graphics>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 

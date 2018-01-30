@@ -1,6 +1,7 @@
 /*
 	This file is part of the MinSG library extension BlueSurfels.
-	Copyright (C) 2014 Claudius J�hn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2016-2018 Sascha Brandt <sascha@brandt.graphics>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -20,6 +21,8 @@
 #include <Geometry/Point.h>
 #include <Geometry/PointOctree.h>
 #include <Geometry/Box.h>
+#include <Geometry/Plane.h>
+#include <Geometry/Tools.h>
 
 
 namespace MinSG{
@@ -149,23 +152,26 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 float getMeterPerPixel(MinSG::FrameContext & context, MinSG::Node * node) {
   static const Geometry::Vec3 X_AXIS(1,0,0);
   static const Geometry::Vec3 Z_AXIS(0,0,1);
-	auto cam = context.getCamera();
-  auto centerWorld = Transformations::localPosToWorldPos(*node, node->getBB().getCenter() );
-  //auto camDir = Transformations::localDirToWorldDir(*cam, -Z_AXIS ).normalize();
-  //auto closestPoint = node->getWorldBB().getClosestPoint(context.getCamera()->getWorldOrigin() + camDir);
-  auto camDir = centerWorld-cam->getWorldOrigin();
-	if(camDir.isZero())
-		camDir = Transformations::localDirToWorldDir(*cam, -Z_AXIS ).normalize();
-	else
-		camDir.normalize();
-	auto camDist = std::max(0.0f, centerWorld.distance(cam->getWorldOrigin()) - node->getWorldBB().getExtentMax()*0.5f);
-	auto closestPoint = cam->getWorldOrigin() + camDir*(camDist + cam->getNearPlane());
-	
-	auto oneMeterVector = Transformations::localDirToWorldDir(*cam, X_AXIS ).normalize()*0.1;
-	auto screenPos1 = context.convertWorldPosToScreenPos(closestPoint);
-	auto screenPos2 = context.convertWorldPosToScreenPos(closestPoint+oneMeterVector);
-	float d = screenPos1.distance(screenPos2)*10;
-	return  1/(d!=0?d:1) / node->getWorldTransformationSRT().getScale();		
+	const auto camera = context.getCamera();
+	const Geometry::Rect viewport(camera->getViewport());
+	// get world position of node & camera
+	const auto node_pos_ws = node->getWorldBB().getCenter();
+	const auto cam_pos_ws = camera->getWorldOrigin();
+	// get camera direction
+	const auto cam_dir_ws = Transformations::localDirToWorldDir(*camera, -Z_AXIS ).normalize();
+	// get planes defined by camera/node origin & camera direction
+	const Geometry::Plane cameraPlane(cam_pos_ws, cam_dir_ws);
+	const Geometry::Plane nodePlane(node_pos_ws, cam_dir_ws);
+	// get approximate radius of bounding sphere
+	const float bs_radius = node->getWorldBB().getExtentMax() * 0.5f;	
+	const float dist_c2n = std::max(camera->getNearPlane(), nodePlane.getOffset() - cameraPlane.getOffset() - bs_radius);	
+	if(dist_c2n > camera->getFarPlane())
+		return std::numeric_limits<float>::max();
+	// compute 1m vector in clipping space located at node
+	const auto one_meter_vector_ss = Geometry::project(Geometry::Vec3{1,0,-dist_c2n}, camera->getFrustum().getProjectionMatrix(), viewport);
+	const float scale = node->getWorldTransformationSRT().getScale();
+	const float pixel_per_meter = (one_meter_vector_ss.x() - viewport.getWidth()/2) * scale;	
+	return pixel_per_meter > 0 ? 1.0f/pixel_per_meter : std::numeric_limits<float>::max();
 }
 
 }
