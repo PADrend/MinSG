@@ -179,7 +179,7 @@ NodeRendererResult SurfelRendererBudget::displayNode(FrameContext & context, Nod
   	// get median distance between surfels at a fixed prefix length 
   	assignment.medianDist = getMedianDist(node, surfels);		
   	// calculate the projected distance between two adjacent pixels in screen space
-  	assignment.mpp = getMeterPerPixel(context, node);
+  	assignment.mpp = getMeterPerPixel(context.getCamera(), node);
       	
     // compute max. prefix, i.e. number of surfels that cover the object with size 1
   	float minRadius = sizeToRadius(1, assignment.mpp); 
@@ -257,7 +257,7 @@ NodeRendererResult SurfelRendererBudget::displayNode(FrameContext & context, Nod
           BudgetAssignment& a = getAssignment(child);   
         	a.surfelCount = s->isUsingIndexData() ? s->getIndexCount() : s->getVertexCount();	
           a.medianDist = getMedianDist(child, s);		
-        	a.mpp = getMeterPerPixel(context, child);
+        	a.mpp = getMeterPerPixel(context.getCamera(), child);
           uint32_t minPrefix = getPrefixForRadius(sizeToRadius(assignment.minSize, a.mpp), a.medianDist, SURFEL_MEDIAN_COUNT, a.surfelCount);
           double cost = static_cast<double>(minPrefix) * surfelCostFactor; // TODO: incororate surfel size
           assignment.expansionCost += cost; 

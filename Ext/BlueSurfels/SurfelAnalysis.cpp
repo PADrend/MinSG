@@ -149,10 +149,9 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 }
 
 
-float getMeterPerPixel(MinSG::FrameContext & context, MinSG::Node * node) {
+float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node) {
   static const Geometry::Vec3 X_AXIS(1,0,0);
   static const Geometry::Vec3 Z_AXIS(0,0,1);
-	const auto camera = context.getCamera();
 	const Geometry::Rect viewport(camera->getViewport());
 	// get world position of node & camera
 	const auto node_pos_ws = node->getWorldBB().getCenter();

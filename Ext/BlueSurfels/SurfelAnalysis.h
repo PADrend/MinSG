@@ -24,6 +24,7 @@ class Mesh;
 namespace MinSG{
 class FrameContext;
 class Node;
+class AbstractCameraNode;
 namespace BlueSurfels {
 
 std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh);
@@ -31,7 +32,7 @@ std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefix
 
 float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
 
-float getMeterPerPixel(MinSG::FrameContext & context, MinSG::Node * node);
+float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node);
 
 inline uint32_t getPrefixForRadius(float radius, float medianDist, uint32_t medianCount, uint32_t maxCount) {
   return radius > 0 ? std::min<uint32_t>(medianCount * medianDist * medianDist / (radius * radius), maxCount) : 0;
