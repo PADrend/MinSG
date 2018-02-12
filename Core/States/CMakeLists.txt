@@ -14,6 +14,7 @@ minsg_add_sources(
 	LightingState.cpp
 	MaterialState.cpp
 	NodeRendererState.cpp
+	PointParameterState.cpp
 	PolygonModeState.cpp
 	ShaderState.cpp
 	ShaderUniformState.cpp
