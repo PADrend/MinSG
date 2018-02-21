@@ -14,7 +14,7 @@
 #include "../../Core/Statistics.h"
 #include <Util/Graphics/Color.h>
 #include <Util/References.h>
-#include <array>
+#include <vector>
 #include <string>
 
 namespace Util {
@@ -54,6 +54,7 @@ class StatChart{
 		int getRowCount()const						{	return dataRows.size();	}
 
 		void setRange(Statistics::eventType_t type,float range){
+			if(dataRows.size() <= type) dataRows.resize(type+1);
 			dataRows[type].range=range;
 			dataRows[type].scale=getHeight()/range;
 		}
@@ -61,12 +62,14 @@ class StatChart{
 			return dataRows[type].range;
 		}
 		void setColor(Statistics::eventType_t type,const Util::Color4ub & color){
+			if(dataRows.size() <= type) dataRows.resize(type+1);
 			dataRows[type].color=color;
 		}
 		const Util::Color4ub & getColor(Statistics::eventType_t type)const{
 			return dataRows[type].color;
 		}
 		void setDescription(Statistics::eventType_t type,const std::string & description){
+			if(dataRows.size() <= type) dataRows.resize(type+1);
 			dataRows[type].description=description;
 		}
 		std::string getDescription(Statistics::eventType_t type)const{
@@ -78,7 +81,7 @@ class StatChart{
 		Util::Reference<Util::Bitmap> bitmap;
 
 		float timeRange;
-		std::array<DataRow, Statistics::MAX_NUM_EVENT_TYPES> dataRows;
+		std::vector<DataRow> dataRows;
 };
 }
 #endif // STATCHART_H

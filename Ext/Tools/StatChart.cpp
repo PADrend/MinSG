@@ -14,7 +14,7 @@
 namespace MinSG {
 
 StatChart::StatChart(uint32_t width, uint32_t height, float _timeRange/*=50.0*/) :
-	bitmap(new Util::Bitmap(width, height, Util::PixelFormat::RGBA)), timeRange(_timeRange), dataRows() {
+	bitmap(new Util::Bitmap(width, height, Util::PixelFormat::RGBA)), timeRange(_timeRange), dataRows(Statistics::MAX_NUM_EVENT_TYPES) {
 
 	setDescription(Statistics::EVENT_TYPE_GEOMETRY, "Geometry (#polygons)");
 	setColor(Statistics::EVENT_TYPE_GEOMETRY, Util::Color4ub(0, 0, 0xff, 0xa0));
