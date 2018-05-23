@@ -82,6 +82,7 @@ cStr_t STATE_TYPE_CULL_FACE="cull_face";
 cStr_t STATE_TYPE_GROUP="group";
 cStr_t STATE_TYPE_MATERIAL="material";
 cStr_t STATE_TYPE_POLYGON_MODE="polygon_mode";
+cStr_t STATE_TYPE_POINT_PARAMETER="point_parameter";
 cStr_t STATE_TYPE_SHADER="shader";
 cStr_t STATE_TYPE_STATEFULSHADER="statefulShader";
 cStr_t STATE_TYPE_TEXTURE="texture";
@@ -226,6 +227,8 @@ const Util::StringIdentifier ATTR_TRANSPARENY_USE_PREMULTIPLIED_ALPHA("use_premu
 const Util::StringIdentifier ATTR_CULL_FACE("faces");
 const Util::StringIdentifier ATTR_POLYGON_MODE("polygon_mode");
 const Util::StringIdentifier ATTR_POLYGON_MODE_OLD("mode");
+
+const Util::StringIdentifier ATTR_POINT_SIZE("point_size");
 
 }
 

@@ -132,6 +132,7 @@ extern cStr_t STATE_TYPE_CULL_FACE;
 extern cStr_t STATE_TYPE_GROUP;
 extern cStr_t STATE_TYPE_MATERIAL;
 extern cStr_t STATE_TYPE_POLYGON_MODE;
+extern cStr_t STATE_TYPE_POINT_PARAMETER;
 extern cStr_t STATE_TYPE_SHADER;
 extern cStr_t STATE_TYPE_STATEFULSHADER; // ext
 extern cStr_t STATE_TYPE_TEXTURE;
@@ -191,6 +192,9 @@ extern const Util::StringIdentifier ATTR_CULL_FACE;
 extern const Util::StringIdentifier ATTR_POLYGON_MODE;
 extern const Util::StringIdentifier ATTR_POLYGON_MODE_OLD;
 
+
+// ATTR_STATE_TYPE = STATE_TYPE_POINT_PARAMETER
+extern const Util::StringIdentifier ATTR_POINT_SIZE;
 //	@}
 
 // 	------------------------------------------------------

@@ -21,6 +21,7 @@
 #include "../../Core/States/TextureState.h"
 #include "../../Core/States/GroupState.h"
 #include "../../Core/States/PolygonModeState.h"
+#include "../../Core/States/PointParameterState.h"
 #include "../../Core/States/AlphaTestState.h"
 #include "../../Core/States/CullFaceState.h"
 #include "../../Core/States/MaterialState.h"
@@ -281,6 +282,12 @@ static void describePolygonModeState(ExporterContext &,DescriptionMap & desc,Sta
 	desc.setString(Consts::ATTR_POLYGON_MODE, Util::StringUtils::toString(static_cast<signed>(n->getParameters().getMode())));
 }
 
+static void describePointParameterState(ExporterContext &,DescriptionMap & desc,State * state) {
+	auto n = dynamic_cast<PointParameterState *>(state);
+	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_POINT_PARAMETER);
+	desc.setString(Consts::ATTR_POINT_SIZE, Util::StringUtils::toString(n->getParameters().getSize()));
+}
+
 static void describeLightingState(ExporterContext & ctxt,DescriptionMap & desc,State * state) {
 	auto ls = dynamic_cast<LightingState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_LIGHTING_STATE);
@@ -329,6 +336,7 @@ void initCoreStateExporter() {
 	ExporterTools::registerStateExporter(LightingState::getClassId(),&describeLightingState);
 	ExporterTools::registerStateExporter(MaterialState::getClassId(),&describeMaterialState);
 	ExporterTools::registerStateExporter(PolygonModeState::getClassId(),&describePolygonModeState);
+	ExporterTools::registerStateExporter(PointParameterState::getClassId(),&describePointParameterState);
 	ExporterTools::registerStateExporter(ShaderState::getClassId(),&describeShaderState);
 	ExporterTools::registerStateExporter(ShaderUniformState::getClassId(),&describeShaderUniformState);
 	ExporterTools::registerStateExporter(TextureState::getClassId(),&describeTextureState);

@@ -25,6 +25,7 @@
 #include "../../Core/States/TransparencyRenderer.h"
 #include "../../Core/States/LightingState.h"
 #include "../../Core/States/PolygonModeState.h"
+#include "../../Core/States/PointParameterState.h"
 #include "../../Core/States/AlphaTestState.h"
 #include "../../Core/States/CullFaceState.h"
 #include "../../Core/States/GroupState.h"
@@ -396,6 +397,18 @@ static bool importPolygonModeState(ImportContext & ctxt, const std::string & sta
 	return true;
 }
 
+static bool importPointParameterState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
+	if(stateType != Consts::STATE_TYPE_POINT_PARAMETER || !parent)
+		return false;
+
+	auto state = new PointParameterState();
+	state->changeParameters().setSize(d.getFloat(Consts::ATTR_POINT_SIZE, 1.0f));
+
+	ImporterTools::finalizeState(ctxt, state, d);
+	parent->addState(state);
+	return true;
+}
+
 static bool importGroupState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_GROUP || !parent)
 		return false;
@@ -587,6 +600,7 @@ void initCoreStateImporter() {
 	ImporterTools::registerStateImporter(&importTransparencyRenderer);
 	ImporterTools::registerStateImporter(&importLightingState);
 	ImporterTools::registerStateImporter(&importPolygonModeState);
+	ImporterTools::registerStateImporter(&importPointParameterState);
 	ImporterTools::registerStateImporter(&importGroupState);
 	ImporterTools::registerStateImporter(&importAlphaTestState);
 	ImporterTools::registerStateImporter(&importCullFaceState);
