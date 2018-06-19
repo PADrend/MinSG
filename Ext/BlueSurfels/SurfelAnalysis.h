@@ -9,8 +9,8 @@
 */
 #ifdef MINSG_EXT_BLUE_SURFELS
 
-#ifndef SURFEL_ANALYSIS_H_
-#define SURFEL_ANALYSIS_H_
+#ifndef MINSG_EXT_BLUESURFELS_SURFEL_ANALYSIS_H_
+#define MINSG_EXT_BLUESURFELS_SURFEL_ANALYSIS_H_
 
 #include <vector>
 #include <cstddef>
@@ -34,6 +34,8 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 
 float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node);
 
+float computeSurfelSurface(Rendering::Mesh* mesh);
+
 inline uint32_t getPrefixForRadius(float radius, float medianDist, uint32_t medianCount, uint32_t maxCount) {
   return radius > 0 ? std::min<uint32_t>(medianCount * medianDist * medianDist / (radius * radius), maxCount) : 0;
 }
@@ -50,8 +52,9 @@ inline float sizeToRadius(float size, float mpp) {
 	return size * mpp * 0.5f;
 }
 
+
 }
 }
 
-#endif // SURFEL_ANALYSIS_H_
+#endif // MINSG_EXT_BLUESURFELS_SURFEL_ANALYSIS_H_
 #endif // MINSG_EXT_BLUE_SURFELS

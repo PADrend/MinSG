@@ -1,6 +1,7 @@
 /*
 	This file is part of the MinSG library extension BlueSurfels.
-	Copyright (C) 2014 Claudius J�hn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2016-2018 Sascha Brandt <sascha@brandt.graphics>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -8,48 +9,52 @@
 */
 #ifdef MINSG_EXT_BLUE_SURFELS
 
-#ifndef SURFEL_RENDERER
-#define SURFEL_RENDERER
+#ifndef MINSG_EXT_BLUESURFELS_SURFEL_RENDERER_H_
+#define MINSG_EXT_BLUESURFELS_SURFEL_RENDERER_H_
 
 #include "../../Core/States/NodeRendererState.h"
 
-#include <Geometry/Vec3.h>
+#include <Geometry/Matrix4x4.h>
 
-namespace MinSG{
+#include <memory>
+#include <functional>
 
+namespace MinSG {
 namespace BlueSurfels {
-	
-class SurfelRenderer : public NodeRendererState{
+class AbstractSurfelStrategy;
+
+/**
+ *  [SurfelRenderer] ---|> [NodeRendererState]
+ */
+class SurfelRenderer : public MinSG::NodeRendererState {
 	PROVIDES_TYPE_NAME(SurfelRenderer)
 	public:
+
 		SurfelRenderer();
-		SurfelRenderer(const SurfelRenderer&) = default;
+		SurfelRenderer(const SurfelRenderer&) = delete;
 		virtual ~SurfelRenderer();
-		
-		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-		float getCountFactor()const		{	return countFactor;	}
-		float getMaxSideLength()const	{	return maxSideLength;	}
-		float getMinSideLength()const	{	return minSideLength;	}
-		float getSizeFactor()const		{	return sizeFactor;	}
-		float getMaxSurfelSize()const		{	return maxSurfelSize;	}
+		/// ---|> [State]
+		SurfelRenderer* clone() const override;
+	protected:
+		stateResult_t doEnableState(MinSG::FrameContext& context, MinSG::Node* node, const MinSG::RenderParam& rp) override;
+		void doDisableState(MinSG::FrameContext& context, MinSG::Node* node, const MinSG::RenderParam& rp) override;
+		MinSG::NodeRendererResult displayNode(MinSG::FrameContext& context, MinSG::Node* node, const MinSG::RenderParam& rp) override;
+	public:
 
-		void setCountFactor(float f)	{	countFactor = f;	}
-		void setMaxSideLength(float f)	{	maxSideLength = f;	}
-		void setMinSideLength(float f)	{	minSideLength = f;	}
-		void setSizeFactor(float f)		{	sizeFactor = f;	}
-		void setMaxSurfelSize(float f)		{	maxSurfelSize = f;	}
-		
-		SurfelRenderer* clone()const	{	return new SurfelRenderer(*this);	}
-	private:
-		float minSideLength,maxSideLength,countFactor,sizeFactor,maxSurfelSize;
-		float projectionScale;
-		Geometry::Vec3 cameraOrigin;
+	void addSurfelStrategy(AbstractSurfelStrategy* strategy);
+	void removeSurfelStrategy(AbstractSurfelStrategy* strategy);
+	void clearSurfelStrategies();
+	std::vector<AbstractSurfelStrategy*> getSurfelStrategies() const;
+	
+	void drawSurfels(MinSG::FrameContext& context);
+  private:
+		struct Data;
+		std::unique_ptr<Data> data;
 };
-}
 
 }
+}
 
-#endif // SURFEL_RENDERER
+#endif // SurfelRenderer_H
 #endif // MINSG_EXT_BLUE_SURFELS

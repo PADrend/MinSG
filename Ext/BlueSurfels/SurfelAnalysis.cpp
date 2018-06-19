@@ -150,27 +150,30 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 
 
 float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node) {
-  static const Geometry::Vec3 X_AXIS(1,0,0);
   static const Geometry::Vec3 Z_AXIS(0,0,1);
 	const Geometry::Rect viewport(camera->getViewport());
-	// get world position of node & camera
-	const auto node_pos_ws = node->getWorldBB().getCenter();
-	const auto cam_pos_ws = camera->getWorldOrigin();
-	// get camera direction
-	const auto cam_dir_ws = Transformations::localDirToWorldDir(*camera, -Z_AXIS ).normalize();
-	// get planes defined by camera/node origin & camera direction
-	const Geometry::Plane cameraPlane(cam_pos_ws, cam_dir_ws);
-	const Geometry::Plane nodePlane(node_pos_ws, cam_dir_ws);
 	// get approximate radius of bounding sphere
-	const float bs_radius = node->getWorldBB().getExtentMax() * 0.5f;	
-	const float dist_c2n = std::max(camera->getNearPlane(), nodePlane.getOffset() - cameraPlane.getOffset() - bs_radius);	
-	if(dist_c2n > camera->getFarPlane())
-		return std::numeric_limits<float>::max();
+	const float bs_radius = node->getWorldBB().getExtentMax() * 0.5f;
+  const auto cam_pos_ws = camera->getWorldOrigin();
+  const auto node_pos_ws = node->getWorldBB().getCenter();
+  float dist_ws = (cam_pos_ws - node_pos_ws).dot(camera->getWorldTransformationSRT().getDirVector());
+  dist_ws = camera->getFrustum().isOrthogonal() ? 1 : std::max(camera->getNearPlane(), dist_ws - camera->getNearPlane() - bs_radius);
+  
+  const auto l = camera->getFrustum().getLeft();
+  const auto r = camera->getFrustum().getRight();
+  const auto n = camera->getNearPlane();
+  
 	// compute 1m vector in clipping space located at node
-	const auto one_meter_vector_ss = Geometry::project(Geometry::Vec3{1,0,-dist_c2n}, camera->getFrustum().getProjectionMatrix(), viewport);
+  const float one_meter_ss = 2*n / ((r-l) * dist_ws);
 	const float scale = node->getWorldTransformationSRT().getScale();
-	const float pixel_per_meter = (one_meter_vector_ss.x() - viewport.getWidth()/2) * scale;	
+	const float pixel_per_meter = one_meter_ss * viewport.getWidth() * 0.5 * scale;
 	return pixel_per_meter > 0 ? 1.0f/pixel_per_meter : std::numeric_limits<float>::max();
+}
+
+float computeSurfelSurface(Rendering::Mesh* mesh) {
+  uint32_t medianCount = std::min(1000U, mesh->getVertexCount());  
+  float median = getMedianOfNthClosestNeighbours(*mesh, medianCount, 2);
+  return static_cast<float>(medianCount) * median * median;  
 }
 
 }

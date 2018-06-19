@@ -42,8 +42,7 @@
 
 #ifdef MINSG_EXT_BLUE_SURFELS
 #include "../../BlueSurfels/SurfelRenderer.h"
-#include "../../BlueSurfels/SurfelRenderer_FixedSize.h"
-#include "../../BlueSurfels/SurfelRenderer_Budget.h"
+#include "../../BlueSurfels/Strategies/AbstractSurfelStrategy.h"
 #endif // MINSG_EXT_BLUE_SURFELS
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
@@ -86,61 +85,25 @@ static T * convertToTNode(Node * node) {
 }
 
 #ifdef MINSG_EXT_BLUE_SURFELS
+
 static bool importSurfelRenderer(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parent) {
 	if(type != Consts::STATE_TYPE_SURFEL_RENDERER) 
 		return false;
 	
-	Util::Reference<BlueSurfels::SurfelRenderer> renderer = new BlueSurfels::SurfelRenderer;
-	renderer->setCountFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, 2.0f));
-	renderer->setMaxSideLength(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_SIZE, 200.0f));
-	renderer->setMinSideLength(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MIN_SIZE, 100.0f));
-	renderer->setSizeFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, 2.0f));
-	
-	ImporterTools::finalizeState(ctxt, renderer.get(), d);
-	parent->addState(renderer.get());
-	return true;
-}
-static bool importSurfelRendererFixedSize(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parent) {
-	if(type != Consts::STATE_TYPE_SURFEL_RENDERER2 && type != Consts::STATE_TYPE_SURFEL_RENDERER_FIXED_SIZE) 
-		return false;
-	
-	Util::Reference<BlueSurfels::SurfelRendererFixedSize> renderer = new BlueSurfels::SurfelRendererFixedSize;
-	renderer->setCountFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, 1.0f));
-	renderer->setSizeFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, 1.0f));
-	renderer->setSurfelSize(d.getFloat(Consts::ATTR_SURFEL_RENDERER_SURFEL_SIZE, 1.0f));
-	renderer->setMaxSurfelSize(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, 32.0f));
-	renderer->setMaxFrameTime(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_TIME, 16.0f));
-	renderer->setBlendFactor(d.getFloat(Consts::ATTR_SURFEL_RENDERER_BLENDFACTOR, 1.0f));
-	renderer->setAdaptive(d.getBool(Consts::ATTR_SURFEL_RENDERER_ADAPTIVE, false));
-	renderer->setFoveated(d.getBool(Consts::ATTR_SURFEL_RENDERER_FOVEATED, false));
-	auto attr = d.getValue(Consts::ATTR_SURFEL_RENDERER_FOVEAT_ZONES);
-	if(attr) {
-		auto zones = renderer->getFoveatZones();
-		zones.clear();
-		auto values = Util::StringUtils::toFloats(attr->toString());
-		for(uint32_t i=1; i<values.size(); i+=2) {
-			zones.push_back({values[i-1], values[i]});
-		}
-		renderer->setFoveatZones(zones);
+	Util::Reference<BlueSurfels::SurfelRenderer> state = new BlueSurfels::SurfelRenderer;
+	const DescriptionArray* children = dynamic_cast<const DescriptionArray*>(d.getValue(Consts::CHILDREN));
+
+	for(const auto* child : ImporterTools::filterElements(BlueSurfels::TYPE_STRATEGY, children)) {
+		auto* strategy = BlueSurfels::importStrategy(child);
+		if(strategy)
+			state->addSurfelStrategy(strategy);
 	}
-	
-	ImporterTools::finalizeState(ctxt, renderer.get(), d);
-	parent->addState(renderer.get());
+
+	ImporterTools::finalizeState(ctxt, state.get(), d);
+	parent->addState(state.get());
 	return true;
 }
-static bool importSurfelRendererBudget(ImportContext & ctxt, const std::string & type, const DescriptionMap & d, Node * parent) {
-	if(type != Consts::STATE_TYPE_SURFEL_RENDERER_BUDGET) 
-		return false;
-	
-	Util::Reference<BlueSurfels::SurfelRendererBudget> renderer = new BlueSurfels::SurfelRendererBudget;
-	renderer->setBudget(d.getDouble(Consts::ATTR_SURFEL_RENDERER_BUDGET, 1e+6));
-	renderer->setMaxIncrement(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_INCR, 1000));
-	renderer->setMaxSurfelSize(d.getFloat(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, 32.0f));
-	
-	ImporterTools::finalizeState(ctxt, renderer.get(), d);
-	parent->addState(renderer.get());
-	return true;
-}
+
 #endif // MINSG_EXT_BLUE_SURFELS
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
@@ -418,8 +381,6 @@ void initExtStateImporter() {
 
 #ifdef MINSG_EXT_BLUE_SURFELS
 	ImporterTools::registerStateImporter(&importSurfelRenderer);
-	ImporterTools::registerStateImporter(&importSurfelRendererFixedSize);
-	ImporterTools::registerStateImporter(&importSurfelRendererBudget);
 #endif
 
 #ifdef MINSG_EXT_COLORCUBES

@@ -59,22 +59,6 @@ const Util::StringIdentifier ATTR_MIRROR_TEXTURE_SIZE("texture_size");
 // BlueSurfels
 #ifdef MINSG_EXT_BLUE_SURFELS
 cStr_t STATE_TYPE_SURFEL_RENDERER = "SurfelRenderer";
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_COUNT_FACTOR("countFactor");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_SIZE_FACTOR("sizeFactor");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_MIN_SIZE("minSize");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_SIZE("maxSize");
-cStr_t STATE_TYPE_SURFEL_RENDERER2 = "SurfelRenderer2";
-cStr_t STATE_TYPE_SURFEL_RENDERER_FIXED_SIZE = "SurfelRendererFixedSize";
-cStr_t STATE_TYPE_SURFEL_RENDERER_BUDGET = "SurfelRendererBudget";
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE("maxSurfelSize");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_SURFEL_SIZE("surfelSize");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_BUDGET("surfelBudget");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_INCR("surfelMaxIncrement");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_MAX_TIME("surfelMaxFrameTime");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_ADAPTIVE("surfelAdaptive");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_FOVEATED("surfelFoveated");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_FOVEAT_ZONES("surfelFoveatZones");
-const Util::StringIdentifier ATTR_SURFEL_RENDERER_BLENDFACTOR("surfelBlendFactor");
 #endif
 
 // ---------------------------------------------------------------------------

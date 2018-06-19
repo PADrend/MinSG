@@ -28,8 +28,7 @@
 
 #ifdef MINSG_EXT_BLUE_SURFELS
 #include "../../BlueSurfels/SurfelRenderer.h"
-#include "../../BlueSurfels/SurfelRenderer_FixedSize.h"
-#include "../../BlueSurfels/SurfelRenderer_Budget.h"
+#include "../../BlueSurfels/Strategies/AbstractSurfelStrategy.h"
 #endif // MINSG_EXT_BLUE_SURFELS
 
 #ifdef MINSG_EXT_SKELETAL_ANIMATION
@@ -106,41 +105,11 @@ static void describeShadowState(ExporterContext & ctx,DescriptionMap & desc,Stat
 }
 
 #ifdef MINSG_EXT_BLUE_SURFELS
-static void describeSurfelRenderer(ExporterContext &,DescriptionMap & desc,State * state) {
-	auto renderer = dynamic_cast<BlueSurfels::SurfelRenderer *>(state);
+static void describeSurfelRenderer(ExporterContext &,DescriptionMap & desc,State * state) {	
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SURFEL_RENDERER);
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, Util::GenericAttribute::createNumber(renderer->getCountFactor()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_SIZE, Util::GenericAttribute::createNumber(renderer->getMaxSideLength()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MIN_SIZE, Util::GenericAttribute::createNumber(renderer->getMinSideLength()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, Util::GenericAttribute::createNumber(renderer->getSizeFactor()));
-}
-static void describeSurfelRendererFixedSize(ExporterContext &,DescriptionMap & desc,State * state) {
-	auto renderer = dynamic_cast<BlueSurfels::SurfelRendererFixedSize *>(state);
-	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SURFEL_RENDERER_FIXED_SIZE);
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_COUNT_FACTOR, Util::GenericAttribute::createNumber(renderer->getCountFactor()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_SIZE_FACTOR, Util::GenericAttribute::createNumber(renderer->getSizeFactor()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_SURFEL_SIZE, Util::GenericAttribute::createNumber(renderer->getSurfelSize()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, Util::GenericAttribute::createNumber(renderer->getMaxSurfelSize()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_TIME, Util::GenericAttribute::createNumber(renderer->getMaxFrameTime()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_ADAPTIVE, Util::GenericAttribute::createBool(renderer->isAdaptive()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_FOVEATED, Util::GenericAttribute::createBool(renderer->isFoveated()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_BLENDFACTOR, Util::GenericAttribute::createNumber(renderer->getBlendFactor()));
-	std::ostringstream zoneStream;
-	auto zones = renderer->getFoveatZones();
-	auto it = zones.begin();
-	if(it != zones.end()) {
-		zoneStream << it->first << " " << it->second;
-		for(++it; it!=zones.end(); ++it)
-			zoneStream << " " << it->first << " " << it->second;
-	}
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_FOVEAT_ZONES, Util::GenericAttribute::createString(zoneStream.str()));
-}
-static void describeSurfelRendererBudget(ExporterContext &,DescriptionMap & desc,State * state) {
-	auto renderer = dynamic_cast<BlueSurfels::SurfelRendererBudget *>(state);
-	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SURFEL_RENDERER_BUDGET);
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_SURFEL_SIZE, Util::GenericAttribute::createNumber(renderer->getMaxSurfelSize()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_BUDGET, Util::GenericAttribute::createNumber(renderer->getBudget()));
-	desc.setValue(Consts::ATTR_SURFEL_RENDERER_MAX_INCR, Util::GenericAttribute::createNumber(renderer->getMaxIncrement()));
+  for(auto strategy : dynamic_cast<BlueSurfels::SurfelRenderer*>(state)->getSurfelStrategies()) {
+    ExporterTools::addChildEntry(desc, BlueSurfels::exportStrategy(strategy));
+  }
 }
 #endif // MINSG_EXT_BLUE_SURFELS
 
@@ -224,8 +193,6 @@ void initExtStateExporter() {
 
 #ifdef MINSG_EXT_BLUE_SURFELS
 	ExporterTools::registerStateExporter(BlueSurfels::SurfelRenderer::getClassId(),&describeSurfelRenderer);
-	ExporterTools::registerStateExporter(BlueSurfels::SurfelRendererFixedSize::getClassId(),&describeSurfelRendererFixedSize);
-	ExporterTools::registerStateExporter(BlueSurfels::SurfelRendererBudget::getClassId(),&describeSurfelRendererBudget);
 #endif // MINSG_EXT_BLUE_SURFELS
 
 #ifdef MINSG_EXT_MULTIALGORENDERING
