@@ -12,4 +12,4 @@ minsg_add_sources(
 	Waypoint.cpp
 )
 
-minsg_add_extension(MINSG_EXT_WAYPOINTS "Defines if the MinSG extension Waypoints is built.")
+minsg_add_extension(MINSG_EXT_WAYPOINTS "Defines if the MinSG extension Waypoints is built." ON)

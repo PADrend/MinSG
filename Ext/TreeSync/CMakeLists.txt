@@ -10,4 +10,4 @@ minsg_add_sources(
 	Server.cpp
 )
 
-minsg_add_extension(MINSG_EXT_TREE_SYNC "Defines if the MinSG extension TreeSync is built.")
+minsg_add_extension(MINSG_EXT_TREE_SYNC "Defines if the MinSG extension TreeSync is built." ON)

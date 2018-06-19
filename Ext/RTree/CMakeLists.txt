@@ -10,4 +10,4 @@ minsg_add_sources(
 	RTree.cpp
 )
 
-minsg_add_extension(MINSG_EXT_RTREE "Defines if the MinSG extension RTree is built.")
+minsg_add_extension(MINSG_EXT_RTREE "Defines if the MinSG extension RTree is built." ON)

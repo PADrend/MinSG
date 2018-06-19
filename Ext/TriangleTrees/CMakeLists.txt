@@ -22,4 +22,4 @@ minsg_add_sources(
 	TriangleTree.cpp
 )
 
-minsg_add_extension(MINSG_EXT_TRIANGLETREES "Defines if the MinSG extension for trees (e.g. k-D-tree, octree), which work on triangles, is built.")
+minsg_add_extension(MINSG_EXT_TRIANGLETREES "Defines if the MinSG extension for trees (e.g. k-D-tree, octree), which work on triangles, is built." ON)

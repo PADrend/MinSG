@@ -15,4 +15,4 @@ minsg_add_sources(
 	SSIMComparator.cpp
 )
 
-minsg_add_extension(MINSG_EXT_IMAGECOMPARE "Defines if the MinSG extension for image comparison is built.")
+minsg_add_extension(MINSG_EXT_IMAGECOMPARE "Defines if the MinSG extension for image comparison is built." ON)

@@ -19,4 +19,4 @@ minsg_add_sources(
 	VisibilityEvaluator.cpp
 )
 
-minsg_add_extension(MINSG_EXT_EVALUATORS "Defines if the MinSG extension Evaluators is built.")
+minsg_add_extension(MINSG_EXT_EVALUATORS "Defines if the MinSG extension Evaluators is built." ON)

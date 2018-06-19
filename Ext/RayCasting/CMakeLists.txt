@@ -10,7 +10,7 @@ minsg_add_sources(
 	RayCaster.cpp
 )
 
-minsg_add_extension(MINSG_EXT_RAYCASTING "Defines if the MinSG extension RayCasting is built.")
+minsg_add_extension(MINSG_EXT_RAYCASTING "Defines if the MinSG extension RayCasting is built." ON)
 minsg_add_extension(MINSG_EXT_RAYCASTING_PROFILING "Defines if profiling information is generated for the MinSG extension RayCasting.")
 minsg_add_dependencies(MINSG_EXT_RAYCASTING MINSG_EXT_TRIANGLETREES)
 minsg_add_dependencies(MINSG_EXT_RAYCASTING_PROFILING MINSG_EXT_RAYCASTING)

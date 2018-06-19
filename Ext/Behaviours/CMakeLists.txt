@@ -16,6 +16,3 @@ minsg_add_sources(
 	SRTBehaviour.cpp
 	TimedBehaviourDecorator.cpp
 )
-
-minsg_add_extension(MINSG_EXT_SOUND "Defines if the MinSG extension Sound is built.")
-minsg_add_dependencies(MINSG_EXT_SOUND MINSG_HAVE_LIB_SOUND)

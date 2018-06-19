@@ -17,7 +17,7 @@ endfunction()
 # Define a build option for a MinSG extension
 #
 function(minsg_add_extension extension description)
-	option(${extension} ${description})
+	option(${extension} ${description} ${ARGN})
 	if(${extension})
 		append_property(MINSG_COMPILE_DEFINITIONS ${extension})
 	endif()
