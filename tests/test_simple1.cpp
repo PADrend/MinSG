@@ -106,7 +106,7 @@ int test_simple1(Util::UI::Window * window, Util::UI::EventContext & eventContex
 
 	// ---------------------------------------------------------------------------------------------
 
-	Rendering::RenderingContext::clearScreen(Util::Color4f(0.5f, 0.5f, 0.5f, 0.5f));
+	fc.getRenderingContext().clearScreen(Util::Color4f(0.5f, 0.5f, 0.5f, 0.5f));
 
 	// ----
 	GET_GL_ERROR();
@@ -158,7 +158,7 @@ int test_simple1(Util::UI::Window * window, Util::UI::EventContext & eventContex
 
 
 		// clear screen
-		Rendering::RenderingContext::clearScreen(Util::Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+		fc.getRenderingContext().clearScreen(Util::Color4f(0.0f, 0.0f, 0.0f, 1.0f));
 
 
 		// enable Camera

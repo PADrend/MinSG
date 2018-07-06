@@ -108,7 +108,7 @@ int test_cost_evaluator(Util::UI::Window * window) {
 	for(const auto & cameraSrt : cameraSrts) {
 		camera->setRelTransformation(cameraSrt);
 		frameContext.setCamera(camera.get());
-		Rendering::RenderingContext::clearScreen(Util::Color4f(0.5f, 0.5f, 0.5f, 1.0f));
+		frameContext.getRenderingContext().clearScreen(Util::Color4f(0.5f, 0.5f, 0.5f, 1.0f));
 
 		MinSG::VisibilitySubdivision::CostEvaluator evaluator(MinSG::Evaluators::Evaluator::SINGLE_VALUE);
 		evaluator.beginMeasure();

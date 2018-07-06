@@ -117,7 +117,7 @@ int test_load_scene(Util::UI::Window * window, Util::UI::EventContext & eventCon
 
 		// Rendering
 		frameContext.beginFrame();
-		Rendering::RenderingContext::clearScreen(Util::Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+		frameContext.getRenderingContext().clearScreen(Util::Color4f(0.0f, 0.0f, 0.0f, 1.0f));
 		frameContext.setCamera(camera);
 		root->display(frameContext, MinSG::FRUSTUM_CULLING);
 		frameContext.endFrame();
