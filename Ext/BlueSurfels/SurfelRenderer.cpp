@@ -41,14 +41,16 @@ static const Util::StringIdentifier SURFEL_ATTRIBUTE("surfels");
 static const Util::StringIdentifier SURFEL_MEDIAN_ATTRIBUTE("surfelMedianDist");
 static const Util::StringIdentifier SURFEL_SURFACE_ATTRIBUTE("surfelSurface");
 static const Uniform::UniformName UNIFORM_SURFEL_RADIUS("sg_surfelRadius");
+static const Uniform::UniformName UNIFORM_SURFEL_SURFACE("sg_surfelSurface");
 
 struct SurfelDrawCommand {
-  SurfelDrawCommand(const Matrix4x4& t, const Mesh* m, uint32_t c, float s, float r) : transform(t), mesh(m), count(c), size(s), radius(r) {}
+  SurfelDrawCommand(const Matrix4x4& t, const Mesh* m, uint32_t c, float s, float r, float a) : transform(t), mesh(m), count(c), size(s), radius(r), surface(a) {}
   const Matrix4x4 transform;
   const Mesh* mesh;
   const uint32_t count;
   const float size;
   const float radius;
+  const float surface;
 };
 
 struct SurfelRenderer::Data {
@@ -131,7 +133,7 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext& context, Node* node
   
   if(surfel.prefix > 0) {
     // TODO: put matrices directly into matrix buffer
-    data->commands.emplace_back(surfel.surfelToCamera, surfel.mesh, surfel.prefix, surfel.pointSize, radius);
+    data->commands.emplace_back(surfel.surfelToCamera, surfel.mesh, surfel.prefix, surfel.pointSize, radius, surfel.surface);
   }
 
   return breakTraversal ? NodeRendererResult::NODE_HANDLED : NodeRendererResult::PASS_ON;
@@ -173,6 +175,7 @@ void SurfelRenderer::drawSurfels(FrameContext & context) {
     // TODO: use mutli-draw-indirect
     for(auto& cmd : data->commands) {
       rc.setGlobalUniform({UNIFORM_SURFEL_RADIUS, cmd.radius});
+      rc.setGlobalUniform({UNIFORM_SURFEL_SURFACE, cmd.surface});
   		rc.setPointParameters(Rendering::PointParameters(cmd.size));
       rc.setMatrix_modelToCamera(cmd.transform);
   		context.displayMesh(const_cast<Mesh*>(cmd.mesh), 0, cmd.count);

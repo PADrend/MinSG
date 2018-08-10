@@ -153,9 +153,9 @@ float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node) {
   static const Geometry::Vec3 Z_AXIS(0,0,1);
 	const Geometry::Rect viewport(camera->getViewport());
 	// get approximate radius of bounding sphere
-	const float bs_radius = node->getWorldBB().getExtentMax() * 0.5f;
+	const float bs_radius = 0.0f;//node->getWorldBB().getExtentMax() * 0.5f;
   const auto cam_pos_ws = camera->getWorldOrigin();
-  const auto node_pos_ws = node->getWorldBB().getCenter();
+  const auto node_pos_ws = node->getWorldBB().getClosestPoint(cam_pos_ws);//node->getWorldBB().getCenter();
   float dist_ws = (cam_pos_ws - node_pos_ws).dot(camera->getWorldTransformationSRT().getDirVector());
   dist_ws = camera->getFrustum().isOrthogonal() ? 1 : std::max(camera->getNearPlane(), dist_ws - camera->getNearPlane() - bs_radius);
   
