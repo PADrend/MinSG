@@ -28,7 +28,12 @@ namespace BlueSurfels {
 class GreedyCluster : public AbstractSurfelSampler {
 	PROVIDES_TYPE_NAME(GreedyCluster)
 public:
-  virtual Rendering::Mesh* sampleSurfels(Rendering::Mesh* sourceMesh);	
+  virtual Rendering::Mesh* sampleSurfels(Rendering::Mesh* sourceMesh);
+	
+	void setMinRadius(float r) { minRadius = r; }
+	float getMinRadius() const { return minRadius; }
+private:
+	float minRadius = 0;
 };
 
 } /* BlueSurfels */

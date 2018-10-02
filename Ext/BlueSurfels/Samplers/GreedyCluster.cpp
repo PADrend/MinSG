@@ -71,7 +71,7 @@ Rendering::Mesh* GreedyCluster::sampleSurfels(Rendering::Mesh* sourceMesh) {
   std::vector<HeapHandle_t> farthestElements(targetCount);
   std::vector<uint32_t> result;
   result.reserve(targetCount);
-  
+    
 	Heap_t farthestHeap;
   uint32_t remainingSamples = sampleCount-1;
     
@@ -121,6 +121,9 @@ Rendering::Mesh* GreedyCluster::sampleSurfels(Rendering::Mesh* sourceMesh) {
     uint32_t index = q->data.index;
     uint32_t surfelIndex = result.size();
     auto pos = q->data.pos;
+    
+    if(radius < minRadius)
+      break;
     
     octreeTimer.reset();
     friends.clear();
