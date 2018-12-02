@@ -31,8 +31,8 @@ bool AdaptiveStrategy::prepare(MinSG::FrameContext& context, MinSG::Node* node) 
 	
 bool AdaptiveStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel) {  
   surfel.pointSize = size;
-	float r = MinSG::BlueSurfels::sizeToRadius(surfel.pointSize, surfel.mpp);
-  surfel.prefix = static_cast<uint32_t>(surfel.surface / (r*r));
+	float r = sizeToRadius(surfel.pointSize, surfel.mpp);
+  surfel.prefix = getPrefixForRadius(r, surfel.packing);
   if(surfel.prefix > surfel.maxPrefix) {
     surfel.prefix = 0;
     return false;

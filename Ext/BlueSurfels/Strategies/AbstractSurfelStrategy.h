@@ -41,7 +41,7 @@ namespace BlueSurfels {
 struct SurfelObject {
 	Rendering::Mesh* mesh;
 	uint32_t maxPrefix;
-	float surface;
+	float packing;
 	Geometry::Matrix4x4 surfelToCamera;
 	float mpp;
 	uint32_t prefix;

@@ -37,20 +37,17 @@ namespace BlueSurfels {
 using namespace Rendering;
 using namespace Geometry;
 
-static const Util::StringIdentifier SURFEL_ATTRIBUTE("surfels");
-static const Util::StringIdentifier SURFEL_MEDIAN_ATTRIBUTE("surfelMedianDist");
-static const Util::StringIdentifier SURFEL_SURFACE_ATTRIBUTE("surfelSurface");
 static const Uniform::UniformName UNIFORM_SURFEL_RADIUS("sg_surfelRadius");
-static const Uniform::UniformName UNIFORM_SURFEL_SURFACE("sg_surfelSurface");
+static const Uniform::UniformName UNIFORM_SURFEL_PACKING("sg_surfelPacking");
 
 struct SurfelDrawCommand {
-  SurfelDrawCommand(const Matrix4x4& t, const Mesh* m, uint32_t c, float s, float r, float a) : transform(t), mesh(m), count(c), size(s), radius(r), surface(a) {}
+  SurfelDrawCommand(const Matrix4x4& t, const Mesh* m, uint32_t c, float s, float r, float a) : transform(t), mesh(m), count(c), size(s), radius(r), packing(a) {}
   const Matrix4x4 transform;
   const Mesh* mesh;
   const uint32_t count;
   const float size;
   const float radius;
-  const float surface;
+  const float packing;
 };
 
 struct SurfelRenderer::Data {
@@ -58,20 +55,6 @@ struct SurfelRenderer::Data {
   std::vector<SurfelDrawCommand> commands;
   bool skipRendering = false;
 };
-
-static float getSurfelSurface(Node * node, Rendering::Mesh* mesh) {
-  auto surfelSurfaceAttr = node->findAttribute(SURFEL_SURFACE_ATTRIBUTE);
-	if(surfelSurfaceAttr)
-    return surfelSurfaceAttr->toFloat();
-  
-  // try to find deprecated 'surfelMedianDist' attribute & compute surface 
-	auto surfelMedianAttr = node->findAttribute(SURFEL_MEDIAN_ATTRIBUTE);
-  uint32_t medianCount = std::min(1000U, mesh->getVertexCount());
-  float median = surfelMedianAttr ? surfelMedianAttr->toFloat() : BlueSurfels::getMedianOfNthClosestNeighbours(*mesh, medianCount, 2);
-  float surface = static_cast<float>(medianCount) * median * median;  
-  node->setAttribute(SURFEL_SURFACE_ATTRIBUTE, Util::GenericAttribute::createNumber(surface));
-  return surface;
-}
 
 static bool compareStrategies(const Util::Reference<AbstractSurfelStrategy>& s1, const Util::Reference<AbstractSurfelStrategy>& s2) {
   return s1->getPriority() > s2->getPriority();
@@ -108,18 +91,17 @@ void SurfelRenderer::doDisableState(FrameContext& context, Node* node, const Ren
 NodeRendererResult SurfelRenderer::displayNode(FrameContext& context, Node* node, const RenderParam & /*rp*/) {
 	if(!node->isActive())
 		return NodeRendererResult::NODE_HANDLED;
-
-	auto surfelAttribute = dynamic_cast<Util::ReferenceAttribute<Rendering::Mesh>*>(node->findAttribute( SURFEL_ATTRIBUTE ));
-	if(!surfelAttribute || !surfelAttribute->get())
+	
+	Rendering::Mesh* mesh = getSurfels(node);
+	if(!mesh)
 		return NodeRendererResult::PASS_ON;
-
-	Rendering::Mesh* mesh = surfelAttribute->get();
+		
 	uint32_t maxPrefix = mesh->isUsingIndexData() ? mesh->getIndexCount() : mesh->getVertexCount();
-	float surface = getSurfelSurface(node, mesh);
+	float packing = getSurfelPacking(node, mesh);
 	float mpp = getMeterPerPixel(context.getCamera(), node);
   auto surfelToCamera = context.getRenderingContext().getMatrix_worldToCamera() * node->getWorldTransformationMatrix();
 
-  SurfelObject surfel{mesh, maxPrefix, surface, surfelToCamera, mpp, maxPrefix, 1};
+  SurfelObject surfel{mesh, maxPrefix, packing, surfelToCamera, mpp, maxPrefix, 1};
 
   bool breakTraversal = false;
   for(auto& strategy : data->strategies) {
@@ -128,12 +110,12 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext& context, Node* node
   }
   surfel.prefix = std::min(surfel.prefix, surfel.maxPrefix);
   surfel.pointSize = std::max(surfel.pointSize, 1.0f);
-	float radius = MinSG::BlueSurfels::sizeToRadius(surfel.pointSize, surfel.mpp);
-	//float radius = std::sqrt(surfel.surface/static_cast<float>(surfel.prefix));
+	float radius = sizeToRadius(surfel.pointSize, surfel.mpp);
+	//float radius = std::sqrt(surfel.packing/static_cast<float>(surfel.prefix));
   
   if(surfel.prefix > 0) {
     // TODO: put matrices directly into matrix buffer
-    data->commands.emplace_back(surfel.surfelToCamera, surfel.mesh, surfel.prefix, surfel.pointSize, radius, surfel.surface);
+    data->commands.emplace_back(surfel.surfelToCamera, surfel.mesh, surfel.prefix, surfel.pointSize, radius, surfel.packing);
   }
 
   return breakTraversal ? NodeRendererResult::NODE_HANDLED : NodeRendererResult::PASS_ON;
@@ -175,7 +157,7 @@ void SurfelRenderer::drawSurfels(FrameContext & context) {
     // TODO: use mutli-draw-indirect
     for(auto& cmd : data->commands) {
       rc.setGlobalUniform({UNIFORM_SURFEL_RADIUS, cmd.radius});
-      rc.setGlobalUniform({UNIFORM_SURFEL_SURFACE, cmd.surface});
+      rc.setGlobalUniform({UNIFORM_SURFEL_PACKING, cmd.packing});
   		rc.setPointParameters(Rendering::PointParameters(cmd.size));
       rc.setMatrix_modelToCamera(cmd.transform);
   		context.displayMesh(const_cast<Mesh*>(cmd.mesh), 0, cmd.count);

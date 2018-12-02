@@ -24,10 +24,15 @@
 #include <Geometry/Plane.h>
 #include <Geometry/Tools.h>
 
+#include <algorithm>
 
 namespace MinSG{
 namespace BlueSurfels {
-
+	
+static const Util::StringIdentifier SURFEL_ATTRIBUTE("surfels");
+static const Util::StringIdentifier SURFEL_PACKING_ATTRIBUTE("surfelPacking");
+static const Util::StringIdentifier SURFEL_SURFACE_ATTRIBUTE("surfelSurface");
+static const Util::StringIdentifier SURFEL_MEDIAN_ATTRIBUTE("surfelMedianDist");
 
 std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh){
 
@@ -148,7 +153,6 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 	return nThClosestDistances[ nThClosestDistances.size()*0.5 ];
 }
 
-
 float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node) {
   static const Geometry::Vec3 Z_AXIS(0,0,1);
 	const Geometry::Rect viewport(camera->getViewport());
@@ -170,10 +174,52 @@ float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node) {
 	return pixel_per_meter > 0 ? 1.0f/pixel_per_meter : std::numeric_limits<float>::max();
 }
 
-float computeSurfelSurface(Rendering::Mesh* mesh) {
-  uint32_t medianCount = std::min(1000U, mesh->getVertexCount());  
-  float median = getMedianOfNthClosestNeighbours(*mesh, medianCount, 2);
-  return static_cast<float>(medianCount) * median * median;  
+float computeSurfelPacking(Rendering::Mesh* mesh) {
+	if(!mesh) return 0;
+	uint32_t count = std::min(1000u, mesh->getVertexCount());
+	//float r = getMedianOfNthClosestNeighbours(*mesh, count, 1);
+	auto dist = getMinimalVertexDistances(*mesh, count);
+	float r = *std::min_element(dist.begin(), dist.end());
+  return r * r * static_cast<float>(count);
+}
+
+float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels) {
+	if(!surfels)
+		return 0;
+	if(node->isInstance())
+		node = node->getPrototype();
+		
+  auto surfelPackingAttr = node->findAttribute(SURFEL_PACKING_ATTRIBUTE);
+	if(surfelPackingAttr)
+    return surfelPackingAttr->toFloat();
+		
+	auto surfelSurfaceAttr = node->findAttribute(SURFEL_SURFACE_ATTRIBUTE);
+	if(surfelSurfaceAttr) {
+		float packing = surfelSurfaceAttr->toFloat();
+		node->unsetAttribute(SURFEL_SURFACE_ATTRIBUTE);
+		node->setAttribute(SURFEL_PACKING_ATTRIBUTE, Util::GenericAttribute::createNumber(packing));
+		return packing;
+	}
+	
+	// try to find deprecated 'surfelMedianDist' attribute & compute surface 
+	auto surfelMedianAttr = node->findAttribute(SURFEL_MEDIAN_ATTRIBUTE);
+	if(surfelMedianAttr) {
+		uint32_t medianCount = std::min(1000U, surfels->getVertexCount());
+		float median = surfelMedianAttr->toFloat();
+		float packing = static_cast<float>(medianCount) * median * median;  
+		node->unsetAttribute(SURFEL_MEDIAN_ATTRIBUTE);
+		node->setAttribute(SURFEL_PACKING_ATTRIBUTE, Util::GenericAttribute::createNumber(packing));
+		return packing;
+	}
+
+	float packing = computeSurfelPacking(surfels);
+	node->setAttribute(SURFEL_PACKING_ATTRIBUTE, Util::GenericAttribute::createNumber(packing));
+	return packing;
+}
+
+Rendering::Mesh* getSurfels(MinSG::Node * node) {
+	auto surfelAttribute = dynamic_cast<Util::ReferenceAttribute<Rendering::Mesh>*>(node->findAttribute( SURFEL_ATTRIBUTE ));
+	return surfelAttribute ? surfelAttribute->get() : nullptr;
 }
 
 }

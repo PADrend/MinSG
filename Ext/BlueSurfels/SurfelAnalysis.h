@@ -12,6 +12,9 @@
 #ifndef MINSG_EXT_BLUESURFELS_SURFEL_ANALYSIS_H_
 #define MINSG_EXT_BLUESURFELS_SURFEL_ANALYSIS_H_
 
+#define M_2SQRT3 1.7320508075688772935274463415059
+#define DEFAULT_PACKING_QUALITY 0.74
+
 #include <vector>
 #include <cstddef>
 #include <cstdint>
@@ -32,16 +35,20 @@ std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefix
 
 float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
 
-float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node);
+float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node* node);
 
-float computeSurfelSurface(Rendering::Mesh* mesh);
+float computeSurfelPacking(Rendering::Mesh* mesh);
 
-inline uint32_t getPrefixForRadius(float radius, float medianDist, uint32_t medianCount, uint32_t maxCount) {
-  return radius > 0 ? std::min<uint32_t>(medianCount * medianDist * medianDist / (radius * radius), maxCount) : 0;
+float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels);
+
+Rendering::Mesh* getSurfels(MinSG::Node * node);
+
+inline uint32_t getPrefixForRadius(float radius, float packing) {
+	return radius > 0 ? packing/(radius*radius) : 0;
 }
 
-inline float getRadiusForPrefix(uint32_t prefixLength, float medianDist, uint32_t medianCount) {
-	return prefixLength > 0 ? medianDist * std::sqrt(static_cast<float>(medianCount) / static_cast<float>(prefixLength)) : 0;
+inline float getRadiusForPrefix(uint32_t prefix, float packing) {
+	return prefix > 0 ? std::sqrt(packing / static_cast<float>(prefix)) : 0;
 }
 
 inline float radiusToSize(float radius, float mpp) {
@@ -51,7 +58,6 @@ inline float radiusToSize(float radius, float mpp) {
 inline float sizeToRadius(float size, float mpp) {
 	return size * mpp * 0.5f;
 }
-
 
 }
 }

@@ -36,8 +36,8 @@ namespace BlueSurfels {
     
 bool FixedSizeStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel) {
   surfel.pointSize = getSize();
-	float r = MinSG::BlueSurfels::sizeToRadius(surfel.pointSize, surfel.mpp);
-  surfel.prefix = static_cast<uint32_t>(surfel.surface / (r*r));
+	float r = sizeToRadius(surfel.pointSize, surfel.mpp);
+  surfel.prefix = getPrefixForRadius(r, surfel.packing);
   if(surfel.prefix > surfel.maxPrefix) {
     surfel.prefix = 0;
     return false;
@@ -68,8 +68,7 @@ bool FactorStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, Sur
 
 bool BlendStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel) {  
 	float r = MinSG::BlueSurfels::sizeToRadius(surfel.pointSize, surfel.mpp);
-  surfel.prefix = static_cast<uint32_t>(surfel.surface / (r*r));
-  
+  surfel.prefix = getPrefixForRadius(r, surfel.packing);  
   if(surfel.prefix > surfel.maxPrefix) {
     if(getBlend() > 0.0f) {
       uint32_t diff = std::min<uint32_t>((surfel.prefix - surfel.maxPrefix) / getBlend(), surfel.maxPrefix);
