@@ -12,5 +12,5 @@ minsg_add_sources(
 	VisibilityMerge.cpp
 )
 
-minsg_add_extension(MINSG_EXT_VISIBILITYMERGE "Defines if the MinSG extension VisibilityMerge is built.")
+minsg_add_extension(MINSG_EXT_VISIBILITYMERGE "Defines if the MinSG extension VisibilityMerge is built." ${MINSG_RECOMMENDED_EXT})
 minsg_add_dependencies(MINSG_EXT_VISIBILITYMERGE MINSG_EXT_VISIBILITY_SUBDIVISION)

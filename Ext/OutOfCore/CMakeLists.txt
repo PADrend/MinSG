@@ -21,4 +21,4 @@ minsg_add_sources(
 	OutOfCore.cpp
 )
 
-minsg_add_extension(MINSG_EXT_OUTOFCORE "Defines if the MinSG extension for external memory algorithms is built.")
+minsg_add_extension(MINSG_EXT_OUTOFCORE "Defines if the MinSG extension for external memory algorithms is built." ${MINSG_RECOMMENDED_EXT})

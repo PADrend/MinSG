@@ -15,4 +15,4 @@ add_subdirectory(Joints)
 add_subdirectory(Renderer)
 add_subdirectory(Util)
 
-minsg_add_extension(MINSG_EXT_SKELETAL_ANIMATION "Defines if the MinSG extension for skeletal animation is built.")
+minsg_add_extension(MINSG_EXT_SKELETAL_ANIMATION "Defines if the MinSG extension for skeletal animation is built." ${MINSG_RECOMMENDED_EXT})

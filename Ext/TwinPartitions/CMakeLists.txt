@@ -11,4 +11,4 @@ minsg_add_sources(
 	TwinPartitionsRenderer.cpp
 )
 
-minsg_add_extension(MINSG_EXT_TWIN_PARTITIONS "Defines if the MinSG extension Twin Partitions is built.")
+minsg_add_extension(MINSG_EXT_TWIN_PARTITIONS "Defines if the MinSG extension Twin Partitions is built." ${MINSG_RECOMMENDED_EXT})

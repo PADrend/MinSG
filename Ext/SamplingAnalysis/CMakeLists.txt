@@ -10,4 +10,4 @@ minsg_add_sources(
 	SamplingAnalysis.cpp
 )
 
-minsg_add_extension(MINSG_EXT_SAMPLING_ANALYSIS "Defines if the MinSG extension SamplingAnalysis is built.")
+minsg_add_extension(MINSG_EXT_SAMPLING_ANALYSIS "Defines if the MinSG extension SamplingAnalysis is built." ${MINSG_RECOMMENDED_EXT})

@@ -11,4 +11,4 @@ minsg_add_sources(
 	Statistics.cpp
 )
 
-minsg_add_extension(MINSG_EXT_PIPELINESTATISTICS "Defines if the MinSG extension Pipeline Statistics is built.")
+minsg_add_extension(MINSG_EXT_PIPELINESTATISTICS "Defines if the MinSG extension Pipeline Statistics is built." ${MINSG_RECOMMENDED_EXT})

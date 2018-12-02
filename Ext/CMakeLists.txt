@@ -6,6 +6,9 @@
 # You should have received a copy of the MPL along with this library; see the
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
+
+#set(MINSG_BUILD_EXTENSIONS ON)
+
 add_subdirectory(AdaptiveGlobalVisibilitySampling)
 add_subdirectory(Behaviours)
 add_subdirectory(BlueSurfels)

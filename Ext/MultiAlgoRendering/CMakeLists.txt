@@ -18,5 +18,5 @@ minsg_add_sources(
 	SurfelRenderer.cpp
 )
 
-minsg_add_extension(MINSG_EXT_MULTIALGORENDERING "Defines if the MinSG extension Multiple Algorithm Rendering is built.")
+minsg_add_extension(MINSG_EXT_MULTIALGORENDERING "Defines if the MinSG extension Multiple Algorithm Rendering is built." ${MINSG_RECOMMENDED_EXT})
 minsg_add_dependencies(MINSG_EXT_MULTIALGORENDERING MINSG_HAVE_LIB_LPSOLVE MINSG_EXT_BLUE_SURFELS MINSG_EXT_COLORCUBES MINSG_EXT_SVS)

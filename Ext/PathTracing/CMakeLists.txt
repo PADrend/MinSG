@@ -16,5 +16,5 @@ minsg_add_sources(
 	TreeBuilder.cpp
 )
 
-minsg_add_extension(MINSG_EXT_PATHTRACING "Defines if the MinSG extension PathTracing is built.")
+minsg_add_extension(MINSG_EXT_PATHTRACING "Defines if the MinSG extension PathTracing is built." ${MINSG_RECOMMENDED_EXT})
 minsg_add_dependencies(MINSG_EXT_PATHTRACING MINSG_EXT_TRIANGLETREES)

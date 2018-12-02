@@ -12,4 +12,4 @@ minsg_add_sources(
 	ColorCubeRenderer.cpp
 )
 
-minsg_add_extension(MINSG_EXT_COLORCUBES "Defines if the MinSG extension ColorCubes is built.")
+minsg_add_extension(MINSG_EXT_COLORCUBES "Defines if the MinSG extension ColorCubes is built." ${MINSG_RECOMMENDED_EXT})

@@ -12,5 +12,5 @@ minsg_add_sources(
 	Helper.cpp
 )
 
-minsg_add_extension(MINSG_EXT_TRIANGULATION "Defines if the MinSG extension Triangulation is built (based on external library detri).")
+minsg_add_extension(MINSG_EXT_TRIANGULATION "Defines if the MinSG extension Triangulation is built (based on external library detri)." ${MINSG_RECOMMENDED_EXT})
 minsg_add_dependencies(MINSG_EXT_TRIANGULATION MINSG_HAVE_LIB_DETRI)

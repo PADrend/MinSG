@@ -17,5 +17,5 @@ minsg_add_sources(
 
 )
 
-minsg_add_extension(MINSG_EXT_PHYSICS "physic experiments" )
+minsg_add_extension(MINSG_EXT_PHYSICS "physic experiments" ${MINSG_RECOMMENDED_EXT})
 minsg_add_dependencies(MINSG_EXT_PHYSICS MINSG_HAVE_LIB_BULLET)

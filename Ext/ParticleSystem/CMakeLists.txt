@@ -13,4 +13,4 @@ minsg_add_sources(
 	ParticleSystemNode.cpp
 )
 
-minsg_add_extension(MINSG_EXT_PARTICLE "Defines if the MinSG extension ParticleSystem is built.")
+minsg_add_extension(MINSG_EXT_PARTICLE "Defines if the MinSG extension ParticleSystem is built." ${MINSG_RECOMMENDED_EXT})
