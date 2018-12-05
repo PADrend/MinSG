@@ -177,9 +177,9 @@ float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node) {
 float computeSurfelPacking(Rendering::Mesh* mesh) {
 	if(!mesh) return 0;
 	uint32_t count = std::min(1000u, mesh->getVertexCount());
-	//float r = getMedianOfNthClosestNeighbours(*mesh, count, 1);
-	auto dist = getMinimalVertexDistances(*mesh, count);
-	float r = *std::min_element(dist.begin(), dist.end());
+	float r = getMedianOfNthClosestNeighbours(*mesh, count, 1);
+	//auto dist = getMinimalVertexDistances(*mesh, count);
+	//float r = *std::min_element(dist.begin(), dist.end());
   return r * r * static_cast<float>(count);
 }
 
