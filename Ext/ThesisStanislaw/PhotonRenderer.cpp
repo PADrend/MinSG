@@ -93,7 +93,7 @@ bool PhotonRenderer::gatherLight(FrameContext & context, const RenderParam & rp)
   rc.applyChanges();
   
   for(int32_t i = 0; i < _photonSampler->getPhotonNumber(); i++){
-    _fbo->setDrawBuffers(2);
+    _fbo->setDrawBuffers(rc, 2);
     rc.pushAndSetShader(_indirectLightShader.get());
     _lightPatchRenderer->bindTBO(rc, true, false);
     _photonSampler->bindPhotonBuffer(1);
@@ -110,7 +110,7 @@ bool PhotonRenderer::gatherLight(FrameContext & context, const RenderParam & rp)
     rc.popShader();    
     
     // Accumulate all pixel values in one photon 
-    _fbo->setDrawBuffers(0);
+    _fbo->setDrawBuffers(rc, 0);
     rc.pushAndSetShader(_accumulationShader.get());
     _accumulationShader->setUniform(rc, Rendering::Uniform("photonID", i));
     _accumulationShader->setUniform(rc, Rendering::Uniform("samplingWidth", static_cast<int>(_samplingWidth)));

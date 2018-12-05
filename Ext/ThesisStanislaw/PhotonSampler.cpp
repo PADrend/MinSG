@@ -101,7 +101,7 @@ void PhotonSampler::initializeSamplePointMesh() {
 void PhotonSampler::computePhotonMatrices(FrameContext & context){
   auto& rc = context.getRenderingContext();
   rc.pushAndSetFBO(_photonMatrixFBO.get());
-  _photonMatrixFBO->setDrawBuffers(1);
+  _photonMatrixFBO->setDrawBuffers(rc, 1);
   rc.pushAndSetShader(_photonMatrixShader.get());
   rc.clearDepth(1.f);
   rc.clearColor(Util::Color4f(0.f, 0.f, 0.f));
@@ -181,7 +181,7 @@ bool PhotonSampler::computePhotonSamples(FrameContext & context, const RenderPar
   clearPhotonBuffer();
   
   rc.pushAndSetFBO(_fbo.get());
-  _fbo->setDrawBuffers(2);
+  _fbo->setDrawBuffers(rc, 2);
   rc.pushAndSetShader(_mrtShader.get());
 
   //context.pushAndSetCamera(_camera.get());

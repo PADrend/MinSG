@@ -107,7 +107,7 @@ bool LightPatchRenderer::computeLightPatches(FrameContext & context, const Rende
     computeLightMatrix(_spotLights[i].get());
     
     // Write all visible polygonID's on the texture
-    _lightPatchFBO->setDrawBuffers(2);
+    _lightPatchFBO->setDrawBuffers(rc, 2);
     
     // Clear the uint polygonID Texture
     rc.clearColor({0, 0, 0, 0});
@@ -122,7 +122,7 @@ bool LightPatchRenderer::computeLightPatches(FrameContext & context, const Rende
     rc.popShader();
     
     // Take every polygonID in the polygonIDTexture and the corresponding TBO entry to be lit by this light source.
-    _lightPatchFBO->setDrawBuffers(0);
+    _lightPatchFBO->setDrawBuffers(rc, 0);
     rc.pushAndSetShader(_lightPatchShader.get());
     bindTBO(rc, true, true);
     _lightPatchShader->setUniform(rc, Rendering::Uniform("lightID", static_cast<int32_t>(1<<i))); // ID of light is its index in the vector

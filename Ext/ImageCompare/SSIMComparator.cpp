@@ -61,7 +61,7 @@ bool SSIMComparator::doCompare(RenderingContext & context, Texture * inA, Textur
 	fbo->attachColorTexture(context,aa->get(), 0);
 	fbo->attachColorTexture(context,bb->get(), 1);
 	fbo->attachColorTexture(context,ab->get(), 2);
-	fbo->setDrawBuffers(3);
+	fbo->setDrawBuffers(context, 3);
 	context.pushAndSetShader(shaderSSIMPrep.get());
 	context.pushAndSetTexture(0,inA);
 	context.pushAndSetTexture(1,inB);
@@ -69,7 +69,7 @@ bool SSIMComparator::doCompare(RenderingContext & context, Texture * inA, Textur
 	context.popTexture(0);
 	context.popTexture(1);
 	context.popShader();
-	fbo->setDrawBuffers(1);
+	fbo->setDrawBuffers(context, 1);
 	fbo->detachColorTexture(context,0);
 	fbo->detachColorTexture(context,1);
 	fbo->detachColorTexture(context,2);

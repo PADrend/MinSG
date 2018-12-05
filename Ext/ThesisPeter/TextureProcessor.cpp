@@ -67,7 +67,7 @@ void TextureProcessor::begin(){
 	renderingContext->pushAndSetFBO(fbo.get());
 	fbo->attachColorTexture(*renderingContext, outputTexture, 0);
 	if(depthTexture != 0) fbo->attachDepthTexture(*renderingContext, depthTexture);
-	fbo->setDrawBuffers(1);
+	fbo->setDrawBuffers(*renderingContext, 1);
 
 	renderingContext->pushAndSetShader(shader);
 
