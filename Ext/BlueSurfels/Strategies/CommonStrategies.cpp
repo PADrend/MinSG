@@ -58,7 +58,7 @@ bool FixedCountStrategy::update(MinSG::FrameContext& context, MinSG::Node* node,
     
 bool FactorStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel) {
   surfel.prefix *= getCountFactor();
-  surfel.pointSize *= getSizeFactor();
+  surfel.sizeFactor = getSizeFactor();
   return false;
 }
 

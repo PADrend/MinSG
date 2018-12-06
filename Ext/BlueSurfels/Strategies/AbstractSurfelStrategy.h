@@ -47,6 +47,7 @@ struct SurfelObject {
 	uint32_t prefix;
 	float pointSize;
 	float radius;
+	float sizeFactor;
 };
 
 class AbstractSurfelStrategy : public Util::ReferenceCounter<AbstractSurfelStrategy> {
