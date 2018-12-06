@@ -43,7 +43,7 @@ struct SurfelObject {
 	uint32_t maxPrefix;
 	float packing;
 	Geometry::Matrix4x4 surfelToCamera;
-	float mpp;
+	float relPixelSize;
 	uint32_t prefix;
 	float pointSize;
 	float radius;

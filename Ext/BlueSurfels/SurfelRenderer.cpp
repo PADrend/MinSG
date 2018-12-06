@@ -98,10 +98,10 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext& context, Node* node
 		
 	uint32_t maxPrefix = mesh->isUsingIndexData() ? mesh->getIndexCount() : mesh->getVertexCount();
 	float packing = getSurfelPacking(node, mesh);
-	float mpp = getMeterPerPixel(context.getCamera(), node);
+	float relPixelSize = computeRelPixelSize(context.getCamera(), node);
   auto surfelToCamera = context.getRenderingContext().getMatrix_worldToCamera() * node->getWorldTransformationMatrix();
 
-  SurfelObject surfel{mesh, maxPrefix, packing, surfelToCamera, mpp, maxPrefix, 1};
+  SurfelObject surfel{mesh, maxPrefix, packing, surfelToCamera, relPixelSize, maxPrefix, 1};
 
   bool breakTraversal = false;
   for(auto& strategy : data->strategies) {
@@ -110,7 +110,7 @@ NodeRendererResult SurfelRenderer::displayNode(FrameContext& context, Node* node
   }
   surfel.prefix = std::min(surfel.prefix, surfel.maxPrefix);
   surfel.pointSize = std::max(surfel.pointSize, 1.0f);
-	float radius = sizeToRadius(surfel.pointSize, surfel.mpp);
+	float radius = sizeToRadius(surfel.pointSize, surfel.relPixelSize);
 	//float radius = std::sqrt(surfel.packing/static_cast<float>(surfel.prefix));
   
   if(surfel.prefix > 0) {

@@ -24,6 +24,8 @@
 #include <Geometry/Plane.h>
 #include <Geometry/Tools.h>
 
+#include <Util/GenericAttribute.h>
+
 #include <algorithm>
 
 namespace MinSG{
@@ -33,6 +35,7 @@ static const Util::StringIdentifier SURFEL_ATTRIBUTE("surfels");
 static const Util::StringIdentifier SURFEL_PACKING_ATTRIBUTE("surfelPacking");
 static const Util::StringIdentifier SURFEL_SURFACE_ATTRIBUTE("surfelSurface");
 static const Util::StringIdentifier SURFEL_MEDIAN_ATTRIBUTE("surfelMedianDist");
+static const Util::StringIdentifier SURFEL_FIRST_K_ATTRIBUTE("surfelFirstK");
 
 std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh){
 
@@ -68,9 +71,7 @@ std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& 
 		octree.insert( P(pos) );
 	}
 	
-	
 	return progressiveClosestDistances;
-
 }
 
 std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength){
@@ -153,33 +154,60 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 	return nThClosestDistances[ nThClosestDistances.size()*0.5 ];
 }
 
-float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node * node) {
+float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node * node) {
   static const Geometry::Vec3 Z_AXIS(0,0,1);
-	const Geometry::Rect viewport(camera->getViewport());
-	// get approximate radius of bounding sphere
-	const float bs_radius = 0.0f;//node->getWorldBB().getExtentMax() * 0.5f;
-  const auto cam_pos_ws = camera->getWorldOrigin();
-  const auto node_pos_ws = node->getWorldBB().getClosestPoint(cam_pos_ws);//node->getWorldBB().getCenter();
-  float dist_ws = (cam_pos_ws - node_pos_ws).dot(camera->getWorldTransformationSRT().getDirVector());
-  dist_ws = camera->getFrustum().isOrthogonal() ? 1 : std::max(camera->getNearPlane(), dist_ws - camera->getNearPlane() - bs_radius);
+	const auto& vp = camera->getViewport();
+	const auto& modelToWorld = node->getWorldTransformationMatrix();
+	const auto cam_pos_ws = camera->getWorldOrigin();
+	const auto cam_dir_ws = camera->getWorldTransformationSRT().getDirVector();
+	
+	auto* surfels = getSurfels(node);
+	std::vector<Geometry::Vec3> firstK_ws;
+
+	auto firstKAttr = dynamic_cast<Util::GenericAttributeList*>(node->findAttribute(SURFEL_FIRST_K_ATTRIBUTE));
+	if(!surfels) {
+		firstK_ws.emplace_back(node->getWorldBB().getClosestPoint(cam_pos_ws));
+	} else if(firstKAttr) {
+		for(uint_fast8_t i=0; i<firstKAttr->size()/3; ++i) {
+			firstK_ws.emplace_back(modelToWorld.transformPosition(
+				firstKAttr->at(3*i+0)->toFloat(),
+				firstKAttr->at(3*i+1)->toFloat(),
+				firstKAttr->at(3*i+2)->toFloat()
+			));
+		}
+	} else {
+		auto posAcc = Rendering::PositionAttributeAccessor::create(surfels->openVertexData());
+		firstKAttr = new Util::GenericAttributeList;
+		for(uint_fast8_t i=0; i<8; ++i) {
+			const auto pos = posAcc->getPosition(i); 
+			firstK_ws.emplace_back(modelToWorld.transformPosition(pos));
+			firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.x()));
+			firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.y()));
+			firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.z()));
+		}
+		auto* proto = node->isInstance() ? node->getPrototype() : node;
+		proto->setAttribute(SURFEL_FIRST_K_ATTRIBUTE, firstKAttr);
+	}
+	
+	float dist_ws = camera->getFarPlane() + 1;
+	for(const auto& p : firstK_ws)
+		dist_ws = std::min(dist_ws, (cam_pos_ws - p).dot(cam_dir_ws));
+	dist_ws = camera->getFrustum().isOrthogonal() ? 1 : std::max(camera->getNearPlane(), dist_ws - camera->getNearPlane());
   
   const auto l = camera->getFrustum().getLeft();
   const auto r = camera->getFrustum().getRight();
   const auto n = camera->getNearPlane();
-  
-	// compute 1m vector in clipping space located at node
-  const float one_meter_ss = 2*n / ((r-l) * dist_ws);
-	const float scale = node->getWorldTransformationSRT().getScale();
-	const float pixel_per_meter = one_meter_ss * viewport.getWidth() * 0.5 * scale;
-	return pixel_per_meter > 0 ? 1.0f/pixel_per_meter : std::numeric_limits<float>::max();
+	const auto w = static_cast<float>(vp.getWidth());
+	const auto s = node->getWorldTransformationSRT().getScale();
+	return ((r-l) * dist_ws) / (2 * n * w * s);
 }
 
 float computeSurfelPacking(Rendering::Mesh* mesh) {
 	if(!mesh) return 0;
 	uint32_t count = std::min(1000u, mesh->getVertexCount());
-	float r = getMedianOfNthClosestNeighbours(*mesh, count, 1);
+	float r = getMedianOfNthClosestNeighbours(*mesh, count, 1) * 0.5;
 	//auto dist = getMinimalVertexDistances(*mesh, count);
-	//float r = *std::min_element(dist.begin(), dist.end());
+	//float r = *std::min_element(dist.begin(), dist.end()) * 0.5;
   return r * r * static_cast<float>(count);
 }
 

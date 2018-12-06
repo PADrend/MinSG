@@ -36,7 +36,7 @@ namespace BlueSurfels {
     
 bool FixedSizeStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel) {
   surfel.pointSize = getSize();
-	float r = sizeToRadius(surfel.pointSize, surfel.mpp);
+	float r = sizeToRadius(surfel.pointSize, surfel.relPixelSize);
   surfel.prefix = getPrefixForRadius(r, surfel.packing);
   if(surfel.prefix > surfel.maxPrefix) {
     surfel.prefix = 0;
@@ -67,7 +67,7 @@ bool FactorStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, Sur
 // BlendStrategy
 
 bool BlendStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel) {  
-	float r = MinSG::BlueSurfels::sizeToRadius(surfel.pointSize, surfel.mpp);
+	float r = MinSG::BlueSurfels::sizeToRadius(surfel.pointSize, surfel.relPixelSize);
   surfel.prefix = getPrefixForRadius(r, surfel.packing);  
   if(surfel.prefix > surfel.maxPrefix) {
     if(getBlend() > 0.0f) {
@@ -96,7 +96,7 @@ bool DebugStrategy::prepare(MinSG::FrameContext& context, MinSG::Node* node) {
 
 bool DebugStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel) {  
   if(getFixSurfels()) 
-    surfel.mpp = MinSG::BlueSurfels::getMeterPerPixel(debugCamera.get(), node);
+    surfel.relPixelSize = MinSG::BlueSurfels::computeRelPixelSize(debugCamera.get(), node);
   return false;
 }
 

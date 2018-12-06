@@ -63,7 +63,7 @@ bool FoveatedStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, S
   }
 	float a = std::min((dist-z1) / (z2-z1), 1.0f);
 	surfel.pointSize = (1.0f - a) * c1 + a * c2;	
-	float r = sizeToRadius(surfel.pointSize, surfel.mpp);
+	float r = sizeToRadius(surfel.pointSize, surfel.relPixelSize);
   surfel.prefix = getPrefixForRadius(r, surfel.packing);
   if(surfel.prefix > surfel.maxPrefix) {
     surfel.prefix = 0;

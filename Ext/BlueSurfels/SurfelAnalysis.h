@@ -35,7 +35,7 @@ std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefix
 
 float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
 
-float getMeterPerPixel(AbstractCameraNode* camera, MinSG::Node* node);
+float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node* node);
 
 float computeSurfelPacking(Rendering::Mesh* mesh);
 
@@ -51,12 +51,12 @@ inline float getRadiusForPrefix(uint32_t prefix, float packing) {
 	return prefix > 0 ? std::sqrt(packing / static_cast<float>(prefix)) : 0;
 }
 
-inline float radiusToSize(float radius, float mpp) {
-	return std::max(2.0f * radius / mpp, 1.0f);
+inline float radiusToSize(float radius, float relPixelSize) {
+	return std::max(2.0f * radius / relPixelSize, 1.0f);
 }
 
-inline float sizeToRadius(float size, float mpp) {
-	return size * mpp * 0.5f;
+inline float sizeToRadius(float size, float relPixelSize) {
+	return size * relPixelSize * 0.5f;
 }
 
 }
