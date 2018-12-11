@@ -25,11 +25,15 @@
 #include <Geometry/Tools.h>
 
 #include <Util/GenericAttribute.h>
+#include <Util/Graphics/Bitmap.h>
+#include <Util/Graphics/PixelAccessor.h>
 
 #include <algorithm>
 
 namespace MinSG{
 namespace BlueSurfels {
+using namespace Rendering;
+using namespace Geometry;
 	
 static const Util::StringIdentifier SURFEL_ATTRIBUTE("surfels");
 static const Util::StringIdentifier SURFEL_PACKING_ATTRIBUTE("surfelPacking");
@@ -248,6 +252,167 @@ float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels) {
 Rendering::Mesh* getSurfels(MinSG::Node * node) {
 	auto surfelAttribute = dynamic_cast<Util::ReferenceAttribute<Rendering::Mesh>*>(node->findAttribute( SURFEL_ATTRIBUTE ));
 	return surfelAttribute ? surfelAttribute->get() : nullptr;
+}
+
+
+// -------------------
+
+struct Sample {
+	Sample(uint32_t i, const Vec3& p) : i(i), p(p), n({0,0,0}), t({0,0,0}) {}
+	Sample(uint32_t i, const Vec3& p, const Vec3& n, const Vec3& t) : i(i), p(p), n(n), t(t) {}
+	const Vec3& getPosition() const { return p; }
+	uint32_t i; // index
+	Vec3 p; // position
+	Vec3 n; // normal
+	Vec3 t; // tangent
+};
+
+// approximate the geodetic differential by rotating the differential into the tangent plane
+Vec3 getGeodeticDiff(const Sample& s1, const Sample& s2) {
+	Vec3 d = s1.p - s2.p;
+	float dist = d.length();
+	
+	if(s1.n.isZero() || s2.n.isZero()) {
+		std::cerr << "Zero Normal AAAAAAAHHH!" << std::endl;
+		return {0,0,0};
+	}
+	
+	// approximate geodetic distance (Bowers 2010)
+	float c1 = s1.n.dot(d / dist);
+	float c2 = s2.n.dot(d / dist);
+	if(c1 == c2)
+		dist *= std::sqrt(1 - c1*c1);
+	else 
+		dist *= (std::asin(c1) - std::asin(c2)) / (c1 - c2);
+	
+	// compute cotangent
+	Vec3 cot = s1.n.cross(s1.t).normalize();
+	
+	// project differential onto tangent plane
+	d.setValue(s1.t.dot(d), cot.dot(d), 0);
+	if(d.isZero()) {
+		d.setValue(dist, 0, 0); // might be too biased?
+	} else {
+		d.normalize();
+		d *= dist;
+	}
+	return d;
+}
+
+// -------------------
+
+Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution, uint32_t count, bool geodetic) {
+	static Geometry::Vec3 X_AXIS(1,0,0);
+	static Geometry::Vec3 Y_AXIS(0,1,0);
+	static Geometry::Vec3 Z_AXIS(0,0,1);
+	// TODO: compute radial mean and anisotropy
+	
+	// mesh
+	count = count > 0 ? std::min(count, mesh->getVertexCount()) : mesh->getVertexCount();
+	auto pAcc = Rendering::PositionAttributeAccessor::create(mesh->openVertexData());
+	Util::Reference<Rendering::NormalAttributeAccessor> nAcc;
+	Util::Reference<Rendering::NormalAttributeAccessor> tAcc;
+	if(geodetic && !mesh->getVertexDescription().hasAttribute(VertexAttributeIds::NORMAL)) {
+		WARN("Differential domain analysis requires normals for analysis with geodesics");
+		geodetic = false;
+	}	
+	if(geodetic) {
+		nAcc = Rendering::NormalAttributeAccessor::create(mesh->openVertexData());
+		if(mesh->getVertexDescription().hasAttribute(VertexAttributeIds::TANGENT)) {
+			// Yaay, we have tangents
+			tAcc = Rendering::NormalAttributeAccessor::create(mesh->openVertexData(), VertexAttributeIds::TANGENT);
+		}
+	}
+	Geometry::Box bb = mesh->getBoundingBox();
+	
+	// parameter
+	//Sphere_f sphere({0.0,0.0,0.0}, diff_max);
+	Box queryBox({0,0,0}, diff_max*2);
+	const float cell_size = 2*diff_max/resolution;
+	const int kernel_size = 4; // size of the gaussian convolution kernel
+	const Vec2i imgCenter(resolution>>1,resolution>>1);
+	const Rect_i imageDim(0,0,resolution-1,resolution-1);
+	std::vector<std::vector<float>> spec(resolution, std::vector<float>(resolution, 0)); // spectral map
+
+	// collect samples and create octree
+	std::deque<Sample> neighbors;
+	std::deque<Sample> samples;
+	bb.resizeRel( 1.01 );
+	Geometry::PointOctree<Sample> octree(bb,bb.getExtentMax()*0.01,8);
+	for(uint32_t i=0; i<count; ++i) {
+		auto p = pAcc->getPosition(i);
+		if(geodetic) {
+			auto n = nAcc->getNormal(i);
+			if(n.isZero()) {
+				std::cerr << "Zero Normal " << i << " " << p << " " << n << std::endl;
+				continue;
+			}
+			Vec3 t;
+			if(tAcc.isNull()) {
+				// use arbitrary basis to compute tangents
+				t = n.cross(X_AXIS);
+				if(t.isZero()) t = n.cross(Y_AXIS);
+				if(t.isZero()) t = n.cross(Z_AXIS);
+				t.normalize();
+			} else {
+				t = tAcc->getNormal(i);
+			}
+			samples.emplace_back(i, p, n, t);
+		} else {
+			samples.emplace_back(i, p);
+		}
+		octree.insert(samples.back());
+	}
+	
+	// compute differentials of samples and scatter to spectrum map
+	std::vector<Vec2> diffs;
+	Vec2 query;
+	Vec2i diffIndex;
+	float max = 0;
+	for(auto& s1 : samples) {
+		neighbors.clear();
+		diffs.clear();
+		queryBox.setCenter(s1.p);
+		octree.collectPointsWithinBox(queryBox, neighbors);
+		
+		// gather differentials
+		for(auto& s2 : neighbors) {
+			if(s1.i == s2.i) continue;
+			Vec3 diff = geodetic ? getGeodeticDiff(s1, s2) : (s1.p - s2.p);
+			if(diff.isZero()) continue;			
+			diffs.emplace_back(diff.x(), diff.y());
+		}
+		
+		// scatter
+		for(auto& diff : diffs) {
+			diffIndex = Vec2i(diff/cell_size) + imgCenter;
+			
+			// gaussian convolution
+			for(int x=-kernel_size; x<=kernel_size; ++x) {
+				for(int y=-kernel_size; y<=kernel_size; ++y) {
+					Vec2i index = diffIndex + Vec2i(x, y);
+					if(imageDim.contains(index)) {
+						query = Vec2(index - imgCenter) * cell_size;
+						const float dist = diff.distanceSquared(query);
+						float value = std::exp(-dist/(cell_size*cell_size));
+						spec[index.x()][index.y()] += value;
+						max = std::max(max, spec[index.x()][index.y()]);
+					}
+				}
+			}
+		}
+	}
+	
+	// normalize and write to bitmap
+	Util::Reference<Util::Bitmap> result(new Util::Bitmap(resolution,resolution,Util::PixelFormat::RGB_FLOAT));
+	auto resultAcc = Util::PixelAccessor::create(result);
+	for(uint32_t x=0; x<resolution; ++x) {
+		for(uint32_t y=0; y<resolution; ++y) {
+			float ps = spec[x][y] / max;
+			resultAcc->writeColor(x, y, Util::Color4f(ps,ps,ps));
+		}
+	}
+	return result;
 }
 
 }
