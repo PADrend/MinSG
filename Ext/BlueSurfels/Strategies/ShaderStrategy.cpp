@@ -56,12 +56,14 @@ void ShaderStrategy::refreshShader() {
 	needsRefresh = false;	
 	shader = nullptr;
 	std::cout << "ShaderStrategy: refresh shader." << std::endl;
+	std::string culling = surfelCulling ? "1" : "0";
 	
 	if(!getShaderVS().empty()) {
 		auto file = getFileLocator().locateFile(Util::FileName(getShaderVS()));
 		if(file.first) {
 			if(shader.isNull()) shader = Rendering::Shader::createShader(Rendering::Shader::USE_UNIFORMS);
-			shader->attachShaderObject(Rendering::ShaderObjectInfo::loadVertex(file.second));
+			auto so = Rendering::ShaderObjectInfo::loadVertex(file.second).addDefine("SURFEL_CULLING", culling);
+			shader->attachShaderObject(std::move(so));
 		} else {
 			WARN("ShaderStrategy: could not find vertex shader '" + getShaderVS() + "'");
 			shader = nullptr;
@@ -73,7 +75,8 @@ void ShaderStrategy::refreshShader() {
 		auto file = getFileLocator().locateFile(Util::FileName(getShaderFS()));
 		if(file.first) {
 			if(shader.isNull()) shader = Rendering::Shader::createShader(Rendering::Shader::USE_UNIFORMS);
-			shader->attachShaderObject(Rendering::ShaderObjectInfo::loadFragment(file.second));
+			auto so = Rendering::ShaderObjectInfo::loadFragment(file.second).addDefine("SURFEL_CULLING", culling);
+			shader->attachShaderObject(std::move(so));
 		} else {
 			WARN("ShaderStrategy: could not find fragment shader '" + getShaderFS() + "'");
 			shader = nullptr;
@@ -85,7 +88,8 @@ void ShaderStrategy::refreshShader() {
 		auto file = getFileLocator().locateFile(Util::FileName(getShaderGS()));
 		if(file.first) {
 			if(shader.isNull()) shader = Rendering::Shader::createShader(Rendering::Shader::USE_UNIFORMS);
-			shader->attachShaderObject(Rendering::ShaderObjectInfo::loadGeometry(file.second));
+			auto so = Rendering::ShaderObjectInfo::loadGeometry(file.second).addDefine("SURFEL_CULLING", culling);
+			shader->attachShaderObject(std::move(so));
 		} else {
 			WARN("ShaderStrategy: could not find geometry shader '" + getShaderGS() + "'");
 			shader = nullptr;

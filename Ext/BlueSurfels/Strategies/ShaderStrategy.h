@@ -35,6 +35,14 @@ class ShaderStrategy : public AbstractSurfelStrategy {
 		GETSET(std::string, ShaderVS, "")
 		GETSET(std::string, ShaderFS, "")
 		GETSET(std::string, ShaderGS, "")
+		
+		void setSurfelCulling(bool v) {
+			if(surfelCulling != v)
+				needsRefresh = true;
+			surfelCulling = v;
+		}
+		bool getSurfelCulling() const { return surfelCulling; }
+		
 		void refreshShader();
 		Util::FileLocator& getFileLocator() { return locator; }
 	private:
@@ -42,6 +50,7 @@ class ShaderStrategy : public AbstractSurfelStrategy {
 		Util::Reference<Rendering::Shader> shader;
 		bool needsRefresh = true;
 		bool wasActive = false;
+		bool surfelCulling = true;
 };
   
 } /* BlueSurfels */
