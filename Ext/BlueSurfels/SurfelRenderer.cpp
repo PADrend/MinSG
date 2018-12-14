@@ -40,6 +40,7 @@ using namespace Geometry;
 static const Uniform::UniformName UNIFORM_SURFEL_RADIUS("sg_surfelRadius");
 static const Uniform::UniformName UNIFORM_SURFEL_PACKING("sg_surfelPacking");
 static const Uniform::UniformName UNIFORM_SIZE_FACTOR("sg_sizeFactor");
+static const Uniform::UniformName UNIFORM_SURFEL_COUNT("sg_surfelCount");
 
 struct SurfelDrawCommand {
   SurfelDrawCommand(const Matrix4x4& t, const Mesh* m, uint32_t c, float s, float r, float a, float f) : transform(t), mesh(m), count(c), size(s), radius(r), packing(a), factor(f) {}
@@ -161,6 +162,7 @@ void SurfelRenderer::drawSurfels(FrameContext & context) {
       rc.setGlobalUniform({UNIFORM_SURFEL_RADIUS, cmd.radius});
       rc.setGlobalUniform({UNIFORM_SURFEL_PACKING, cmd.packing});
       rc.setGlobalUniform({UNIFORM_SIZE_FACTOR, cmd.factor});
+      rc.setGlobalUniform({UNIFORM_SURFEL_COUNT, static_cast<int32_t>(cmd.count)});
   		rc.setPointParameters(Rendering::PointParameters(cmd.size));
       rc.setMatrix_modelToCamera(cmd.transform);
   		context.displayMesh(const_cast<Mesh*>(cmd.mesh), 0, cmd.count);

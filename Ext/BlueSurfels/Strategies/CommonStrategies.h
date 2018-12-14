@@ -12,6 +12,7 @@
 #define BLUE_SURFELS_STRATEGIES_FIXEDSIZE_H_
 
 #include "AbstractSurfelStrategy.h"
+#include "../SurfelAnalysis.h"
 
 #include <Util/Macros.h>
 
@@ -53,6 +54,14 @@ class BlendStrategy : public AbstractSurfelStrategy {
 		BlendStrategy() : AbstractSurfelStrategy(-1000) {}		
 		virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
 		GETSET(float, Blend, 0.3f)
+};
+	
+class ReferencePointStrategy : public AbstractSurfelStrategy {
+	PROVIDES_TYPE_NAME(ReferencePointStrategy)
+	public:
+		ReferencePointStrategy() : AbstractSurfelStrategy(10000) {}		
+		virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
+		GETSET(ReferencePoint, ReferencePoint, ReferencePoint::CLOSEST_SURFEL)
 };
 
 class DebugStrategy : public AbstractSurfelStrategy {

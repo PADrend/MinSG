@@ -31,13 +31,20 @@ class FrameContext;
 class Node;
 class AbstractCameraNode;
 namespace BlueSurfels {
+	
+enum ReferencePoint : uint8_t {
+	CLOSEST_BB,
+	FARTHEST_BB,
+	CENTER_BB,
+	CLOSEST_SURFEL
+};
 
 std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh);
 std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength);
 
 float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
 
-float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node* node);
+float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node* node, ReferencePoint ref = ReferencePoint::CLOSEST_SURFEL);
 
 float computeSurfelPacking(Rendering::Mesh* mesh);
 

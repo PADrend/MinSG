@@ -82,6 +82,14 @@ bool BlendStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, Surf
 }
 
 // ------------------------
+// ReferencePointStrategy
+  
+bool ReferencePointStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel) {
+  surfel.relPixelSize = computeRelPixelSize(context.getCamera(), node, getReferencePoint());
+  return false;
+}
+
+// ------------------------
 // DebugStrategy
 
 DebugStrategy::DebugStrategy() : AbstractSurfelStrategy(50000) {}
@@ -112,6 +120,7 @@ void DebugStrategy::setFixSurfels(bool value) { debugCamera = nullptr; fixSurfel
 static const Util::StringIdentifier ATTR_SIZE("size");
 static const Util::StringIdentifier ATTR_COUNT("count");
 static const Util::StringIdentifier ATTR_BLEND("blend");
+static const Util::StringIdentifier ATTR_REF_POINT("refPoint");
 
 static void exportFixedSizeStrategy(Util::GenericAttributeMap& desc, AbstractSurfelStrategy* _strategy) {
   const auto& strategy = dynamic_cast<FixedSizeStrategy*>(_strategy);
@@ -148,6 +157,17 @@ static AbstractSurfelStrategy* importFactorStrategy(const Util::GenericAttribute
   return strategy;
 }
 
+static void exportReferencePointStrategy(Util::GenericAttributeMap& desc, AbstractSurfelStrategy* _strategy) {
+  const auto& strategy = dynamic_cast<ReferencePointStrategy*>(_strategy);
+  desc.setValue(ATTR_REF_POINT, Util::GenericAttribute::createNumber(strategy->getReferencePoint()));
+}
+
+static AbstractSurfelStrategy* importReferencePointStrategy(const Util::GenericAttributeMap* desc) {
+  auto strategy = new ReferencePointStrategy;
+  strategy->setReferencePoint(static_cast<ReferencePoint>(desc->getUInt(ATTR_REF_POINT, ReferencePoint::CLOSEST_SURFEL)));
+  return strategy;
+}
+
 static void exportBlendStrategy(Util::GenericAttributeMap& desc, AbstractSurfelStrategy* _strategy) {
   const auto& strategy = dynamic_cast<BlendStrategy*>(_strategy);
   desc.setValue(ATTR_BLEND, Util::GenericAttribute::createNumber(strategy->getBlend()));
@@ -176,6 +196,8 @@ static bool importerBlendRegistered = registerImporter(BlendStrategy::getClassId
 static bool exporterBlendRegistered = registerExporter(BlendStrategy::getClassId(), &exportBlendStrategy);
 static bool importerDebugRegistered = registerImporter(DebugStrategy::getClassId(), &importDebugStrategy);
 static bool exporterDebugRegistered = registerExporter(DebugStrategy::getClassId(), &exportDebugStrategy);
+static bool importerReferencePointRegistered = registerImporter(ReferencePointStrategy::getClassId(), &importReferencePointStrategy);
+static bool exporterReferencePointRegistered = registerExporter(ReferencePointStrategy::getClassId(), &exportReferencePointStrategy);
 
 } /* BlueSurfels */
 } /* MinSG */

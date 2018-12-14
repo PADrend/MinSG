@@ -158,39 +158,52 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 	return nThClosestDistances[ nThClosestDistances.size()*0.5 ];
 }
 
-float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node * node) {
+float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node * node, ReferencePoint ref) {
   static const Geometry::Vec3 Z_AXIS(0,0,1);
 	const auto& vp = camera->getViewport();
 	const auto& modelToWorld = node->getWorldTransformationMatrix();
 	const auto cam_pos_ws = camera->getWorldOrigin();
 	const auto cam_dir_ws = camera->getWorldTransformationSRT().getDirVector();
 	
-	auto* surfels = getSurfels(node);
 	std::vector<Geometry::Vec3> firstK_ws;
-
-	auto firstKAttr = dynamic_cast<Util::GenericAttributeList*>(node->findAttribute(SURFEL_FIRST_K_ATTRIBUTE));
-	if(!surfels) {
-		firstK_ws.emplace_back(node->getWorldBB().getClosestPoint(cam_pos_ws));
-	} else if(firstKAttr) {
-		for(uint_fast8_t i=0; i<firstKAttr->size()/3; ++i) {
-			firstK_ws.emplace_back(modelToWorld.transformPosition(
-				firstKAttr->at(3*i+0)->toFloat(),
-				firstKAttr->at(3*i+1)->toFloat(),
-				firstKAttr->at(3*i+2)->toFloat()
-			));
+	
+	switch(ref) {
+		case ReferencePoint::FARTHEST_BB:
+			firstK_ws.emplace_back(node->getWorldBB().getClosestPoint(cam_pos_ws - cam_dir_ws*camera->getFarPlane()));
+			break;
+		case ReferencePoint::CENTER_BB:
+			firstK_ws.emplace_back(node->getWorldBB().getCenter());
+			break;
+		case ReferencePoint::CLOSEST_SURFEL: {
+			auto firstKAttr = dynamic_cast<Util::GenericAttributeList*>(node->findAttribute(SURFEL_FIRST_K_ATTRIBUTE));
+			auto* surfels = getSurfels(node);
+			if(!surfels) {
+				firstK_ws.emplace_back(node->getWorldBB().getClosestPoint(cam_pos_ws));
+			} else if(firstKAttr) {
+				for(uint_fast8_t i=0; i<firstKAttr->size()/3; ++i) {
+					firstK_ws.emplace_back(modelToWorld.transformPosition(
+						firstKAttr->at(3*i+0)->toFloat(),
+						firstKAttr->at(3*i+1)->toFloat(),
+						firstKAttr->at(3*i+2)->toFloat()
+					));
+				}
+			} else {
+				auto posAcc = Rendering::PositionAttributeAccessor::create(surfels->openVertexData());
+				firstKAttr = new Util::GenericAttributeList;
+				for(uint_fast8_t i=0; i<8; ++i) {
+					const auto pos = posAcc->getPosition(i); 
+					firstK_ws.emplace_back(modelToWorld.transformPosition(pos));
+					firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.x()));
+					firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.y()));
+					firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.z()));
+				}
+				auto* proto = node->isInstance() ? node->getPrototype() : node;
+				proto->setAttribute(SURFEL_FIRST_K_ATTRIBUTE, firstKAttr);
+			}
+			break;
 		}
-	} else {
-		auto posAcc = Rendering::PositionAttributeAccessor::create(surfels->openVertexData());
-		firstKAttr = new Util::GenericAttributeList;
-		for(uint_fast8_t i=0; i<8; ++i) {
-			const auto pos = posAcc->getPosition(i); 
-			firstK_ws.emplace_back(modelToWorld.transformPosition(pos));
-			firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.x()));
-			firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.y()));
-			firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.z()));
-		}
-		auto* proto = node->isInstance() ? node->getPrototype() : node;
-		proto->setAttribute(SURFEL_FIRST_K_ATTRIBUTE, firstKAttr);
+		default:
+			firstK_ws.emplace_back(node->getWorldBB().getClosestPoint(cam_pos_ws));
 	}
 	
 	float dist_ws = camera->getFarPlane() + 1;
