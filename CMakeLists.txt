@@ -148,8 +148,8 @@ if(MINSG_DEPENDENCIES_SET)
 endif()
 
 # Set version of library
-set_target_properties(MinSG PROPERTIES VERSION ${MINSG_VERSION}
-                                       SOVERSION ${MINSG_VERSION_MAJOR})
+set_target_properties(MinSG PROPERTIES VERSION ${MinSG_VERSION}
+                                       SOVERSION ${MinSG_VERSION_MAJOR})
 
 # Install the header files
 file(GLOB MINSG_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
@@ -218,7 +218,7 @@ configure_package_config_file(MinSGConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/M
                               NO_SET_AND_CHECK_MACRO
                               NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/MinSGConfigVersion.cmake
-                                 VERSION ${MINSG_VERSION}
+                                 VERSION ${MinSG_VERSION}
                                  COMPATIBILITY SameMajorVersion)
 
 # Install the configuration files
@@ -228,13 +228,13 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MinSGConfig.cmake ${CMAKE_CURRENT_BINA
 # Packaging
 include(InstallRequiredSystemLibraries)
 
-set(CPACK_PACKAGE_NAME "libminsg${MINSG_VERSION_MAJOR}")
+set(CPACK_PACKAGE_NAME "libminsg${MinSG_VERSION_MAJOR}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MinSG library")
 set(CPACK_PACKAGE_VENDOR "Benjamin Eikel; Claudius Jaehn; Ralf Petring")
 set(CPACK_PACKAGE_CONTACT "Benjamin Eikel <benjamin@eikel.org>")
-set(CPACK_PACKAGE_VERSION_MAJOR ${MINSG_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${MINSG_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${MINSG_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION_MAJOR ${MinSG_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${MinSG_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${MinSG_VERSION_PATCH})
 set(CPACK_PACKAGE_FILE_NAME "libMinSG")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_STRIP_FILES ON)
