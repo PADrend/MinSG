@@ -414,7 +414,7 @@ class Node :
 		/**
 		 * Inform the parent node and potentially this node that the transformation of this node has changed.
 		 * This has to be called by all member functions that influence the transformation of this node.
-		 * If \code isTransformationObserved() == true \endcode, all registered transformation observers (at 
+		 * If `isTransformationObserved() == true`, all registered transformation observers (at 
 		 * this node or in the nodes up to the root) are notified.
 		 */
 		void transformationChanged();
