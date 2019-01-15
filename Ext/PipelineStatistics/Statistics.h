@@ -15,6 +15,7 @@
 
 namespace MinSG {
 class Statistics;
+//! @ingroup ext
 namespace PipelineStatistics {
 
 /**

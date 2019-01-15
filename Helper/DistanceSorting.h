@@ -30,9 +30,13 @@ namespace MinSG {
  * @date 2011-02-14
  */
 
+/** @addtogroup helper
+ * @{
+ */
+	
 // ------------------------
 // Distance calculators
-
+ 
 namespace DistanceCalculators{
 
 struct NodeDistanceCalculator{
@@ -137,7 +141,7 @@ struct DistanceSetF2B : public std::set<T *, _DistanceCompare<T, std::less<volat
 		}
 };
 
-
+//! @}
 
 }
 
