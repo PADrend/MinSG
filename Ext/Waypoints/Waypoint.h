@@ -22,8 +22,10 @@
 namespace MinSG {
 class PathNode;
 
-/*! Waypoint class internally used by PathNodes.
-	Waypoint ---|> Node	*/
+/** Waypoint class internally used by PathNodes.
+ * Waypoint ---|> Node
+ * @ingroup nodes
+ */
 class Waypoint: public Node {
 		PROVIDES_TYPE_NAME(Waypoint)
 

@@ -25,6 +25,7 @@ namespace MinSG {
  *  Node containing geometry.
  *
  *   [GeometryNode] ---|> [Node]
+ * @ingroup nodes
  */
 class GeometryNode : public Node {
 		PROVIDES_TYPE_NAME(GeometryNode)

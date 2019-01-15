@@ -25,6 +25,7 @@ class FrameContext;
 class AbstractCameraNode;
 //typedef uint8_t renderingLayerMask_t;	//! \see RenderingLayer.h
 
+//! @ingroup ext
 namespace MixedExtVisibility {
 
 std::vector<Util::Reference<Node>> filterAndSortNodesByExtVisibility(FrameContext & context,

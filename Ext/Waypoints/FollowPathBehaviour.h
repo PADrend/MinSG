@@ -20,9 +20,10 @@
 namespace MinSG {
 class PathNode;
 
-/***
- **  PathNode::FollowPathBehaviour
- **/
+/**
+ * PathNode::FollowPathBehaviour
+ * @ingroup behaviour
+ */
 class FollowPathBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(FollowPathBehaviour)
 

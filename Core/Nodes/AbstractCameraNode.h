@@ -19,6 +19,7 @@ namespace MinSG {
 
 /**
  * (abstract)[AbstractCamera] ---|> [Node]
+ * @ingroup nodes
  */
 class AbstractCameraNode : public Node {
 	protected:

@@ -15,7 +15,8 @@
 #include <Rendering/RenderingContext/RenderingParameters.h>
 
 namespace MinSG {
-
+	
+//! @ingroup states
 class CullFaceState: public RenderingParametersState<Rendering::CullFaceParameters> {
 		PROVIDES_TYPE_NAME(CullFaceState)
 	public:

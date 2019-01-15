@@ -34,6 +34,7 @@ class TriangleAccessor;
  *
  * @author Benjamin Eikel
  * @date 2011-07-29
+ * @ingroup ext
  */
 class TriangleTree {
 	public:

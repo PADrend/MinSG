@@ -28,6 +28,7 @@ class RenderParam;
  * 
  * @author Benjamin Eikel
  * @date 2012-04-18
+ * @ingroup states
  */
 class NodeRendererState : public State {
 		PROVIDES_TYPE_NAME(NodeRendererState)

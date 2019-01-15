@@ -53,4 +53,19 @@ const char * const MINSG_VERSION = "MinSG 0.2.0";
  * Most important are the @link MinSG::NodeVisitor standard visitors@endlink to traverse the scene graph.
  */
 
+/** @defgroup ext Extensions 
+ * Poppycock and experimental stuff should go here.
+ * Furthermore classes that are used seldom belong here.
+ * This is a good place to try out new things and let them mature.
+ * For example code that is developed during theses or code that needs external libraries should be put here.
+ * If the code is tried and tested it may be moved to @ref directory_core.
+ * There are subdirectories that contain related classes (for example classes from a thesis or for one special purpose).
+ * All experimental code should be surrounded by a guard (see the following code example; do this in header and source files).
+ * @code
+ * #ifdef MINSG_EXT_MYEXTENSIONNAME
+ * ... your code ...
+ * #endif // MINSG_EXT_MYEXTENSIONNAME
+ * @endcode
+ */
+
 #endif // MINSG_H_INCLUDED

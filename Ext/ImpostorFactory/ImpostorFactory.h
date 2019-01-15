@@ -15,6 +15,7 @@ namespace MinSG {
 class FrameContext;
 class GeometryNode;
 class Node;
+//! @ingroup ext
 namespace ImpostorFactory {
 
 GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node);

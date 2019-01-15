@@ -22,6 +22,7 @@ namespace MinSG {
 		Computer Graphics Forum, Blackwell Publishing, Inc, 2004, 23, 615-624
 	
 	Minor adaptations to original algorithms and bug fix (don't render nodes twice)
+	@ingroup states
 */
 class CHCRenderer : public State {
 		PROVIDES_TYPE_NAME(CHCRenderer)

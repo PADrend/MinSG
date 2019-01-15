@@ -15,7 +15,8 @@
 #include "../../Core/Behaviours/AbstractBehaviour.h"
 
 namespace MinSG {
-
+	
+//! @ingroup behaviour
 class AbstractBehaviourDecorator : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(AbstractBehaviourDecorator)
 public:

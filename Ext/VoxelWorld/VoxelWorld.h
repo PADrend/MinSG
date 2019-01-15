@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -24,6 +24,7 @@ template<typename Voxel_t,unsigned int blockSizePow, typename integer_t, typenam
 }
 
 namespace MinSG {
+//! @ingroup ext
 namespace VoxelWorld{
 
 typedef Geometry::VoxelStorage<uint32_t,2,int32_t,uint32_t> simpleVoxelStorage_t;

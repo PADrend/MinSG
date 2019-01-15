@@ -12,6 +12,7 @@
 #define MINSG_SVS_DEFINITIONS_H_
 
 namespace MinSG {
+//! @ingroup ext
 namespace SVS {
 
 //! Type of interpolation to create values for a query that lies between sample points.

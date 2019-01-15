@@ -22,6 +22,7 @@ enum class NodeRendererResult : bool;
 
 /**
  *  [TransparencyRenderer] ---|> [NodeRendererState]
+ * @ingroup states
  */
 class TransparencyRenderer : public NodeRendererState {
 	PROVIDES_TYPE_NAME(TransparencyRenderer)

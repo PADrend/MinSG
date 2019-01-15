@@ -35,6 +35,7 @@ namespace MinSG {
  *  root joint.
  *
  *  ArmatureNode ---|> AbstractJoint ---|> ListNode ---|> GroupNode ---|> Node
+ * @ingroup nodes
  *
  */
 namespace MinSG {

@@ -24,6 +24,7 @@ class FileName;
 namespace MinSG {
 class FrameContext;
 
+//! @ingroup ext
 namespace OutOfCore {
 class CacheManager;
 class DataStrategy;

@@ -24,6 +24,7 @@ class Statistics;
  *  http://www.cg.tuwien.ac.at/research/publications/2008/mattausch-2008-CHC/
  *
  *  [CHCppRenderer] ---|> [State]
+ * @ingroup states
  */
 class CHCppRenderer : public State
 {

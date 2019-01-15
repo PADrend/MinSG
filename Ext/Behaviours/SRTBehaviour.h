@@ -18,9 +18,10 @@
 #include <vector>
 
 namespace MinSG {
-/***
- ** SRTBehaviour ---|> AbstractNodeBehaviour
- **/
+/**
+ * SRTBehaviour ---|> AbstractNodeBehaviour
+ * @ingroup behaviour
+ */
 class SRTBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(SRTBehaviour)
 

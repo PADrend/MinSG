@@ -19,7 +19,8 @@
 namespace MinSG {
 
 /**
-  *  [ShaderState] ---|> [State]
+ *  [ShaderState] ---|> [State]
+ * @ingroup states
  */
 class ShaderState : public State {
 		PROVIDES_TYPE_NAME(ShaderState)

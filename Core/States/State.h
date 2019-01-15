@@ -23,8 +23,11 @@ namespace MinSG {
 class Node;
 class FrameContext;
 
+//! @defgroup states States
+
 /**
 * Representation of a state, that can be bound to a node.
+* @ingroup states
 */
 class State :
 			public Util::ReferenceCounter<State>,

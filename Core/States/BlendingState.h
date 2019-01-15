@@ -18,6 +18,7 @@ namespace MinSG {
 
 /**
  *  [BlendingState] ---|> [State]
+ * @ingroup states
  */
 class BlendingState : public RenderingParametersState<Rendering::BlendingParameters> {
 		PROVIDES_TYPE_NAME(BlendingState)

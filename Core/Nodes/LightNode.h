@@ -25,6 +25,7 @@ namespace MinSG {
 
 /**
  *    [LightNode] ---|> [Node]
+ * @ingroup nodes
  */
 class LightNode : public Node {
 

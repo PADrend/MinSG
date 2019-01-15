@@ -21,6 +21,7 @@ namespace MinSG {
 
 /**
  *  [OccRenderer] ---|> [State]
+ * @ingroup states
  */
 class OccRenderer : public State {
 		PROVIDES_TYPE_NAME(OccRenderer)

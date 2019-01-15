@@ -17,6 +17,7 @@ namespace MinSG {
 
 /**
  *  [StrangeExampleRenderer] ---|> [State]
+ * @ingroup states
  */
 class StrangeExampleRenderer : public State {
 		PROVIDES_TYPE_NAME(StrangeExampleRenderer)

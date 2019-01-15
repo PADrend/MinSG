@@ -32,6 +32,7 @@ class TextureState;
  *
  * @author Benjamin Eikel
  * @date 2009-08-23
+ * @ingroup states
  */
 class MirrorState : public State {
 	PROVIDES_TYPE_NAME(MirrorState)

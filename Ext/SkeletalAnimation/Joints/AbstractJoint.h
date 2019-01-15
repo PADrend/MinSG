@@ -30,6 +30,7 @@ namespace MinSG {
      *  animationdata. 
      *
      *  AbstractJoint ---|> ListNode ---|> GroupNode ---|> Node
+     * @ingroup nodes
      *
      */
 	class AbstractJoint : public ListNode

@@ -31,6 +31,7 @@ namespace MinSG {
 class Node;
 class FrameContext;
 
+//! @ingroup ext
 namespace Evaluators {
 
 /***

@@ -31,6 +31,7 @@ class CameraNode;
  *
  * @author Benjamin Eikel
  * @date 2009-10-29
+ * @ingroup states
  */
 class ShadowState : public State {
 	PROVIDES_TYPE_NAME(ShadowState)

@@ -17,6 +17,7 @@
 namespace MinSG {
 class KeyFrameAnimationNode;
 
+//! @ingroup behaviour
 class KeyFrameAnimationBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(KeyFrameAnimationBehaviour)
 

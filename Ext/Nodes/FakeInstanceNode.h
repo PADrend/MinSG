@@ -35,6 +35,7 @@ class RenderParam;
  * lead to problems when used. Only use it if there is no better alternative.
  * @author Benjamin Eikel
  * @date 2012-10-22 
+ * @ingroup nodes
  */
 class FakeInstanceNode : public Node {
 	PROVIDES_TYPE_NAME(FakeInstanceNode)

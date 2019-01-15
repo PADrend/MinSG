@@ -13,7 +13,8 @@
 #include "../../Core/States/NodeRendererState.h"
 
 namespace MinSG{
-
+	
+//! @ingroup states
 class LODRenderer : public NodeRendererState{
 	PROVIDES_TYPE_NAME(LODRenderer)
 private:

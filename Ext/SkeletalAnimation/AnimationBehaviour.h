@@ -38,7 +38,7 @@ namespace MinSG
      *  @Brief Structure for managing animation data.
      *
      *  Behaviour storing all pose transformation joints.
-     *
+     * @ingroup behaviour
      */
 	class AnimationBehaviour : public AbstractNodeBehaviour
 	{

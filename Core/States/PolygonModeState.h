@@ -15,7 +15,8 @@
 #include <Rendering/RenderingContext/RenderingParameters.h>
 
 namespace MinSG {
-
+	
+//! @ingroup states
 class PolygonModeState: public RenderingParametersState<Rendering::PolygonModeParameters> {
 		PROVIDES_TYPE_NAME(PolygonModeState)
 	public:

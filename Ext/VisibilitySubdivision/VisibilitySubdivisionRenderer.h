@@ -27,6 +27,7 @@ class Texture;
 namespace MinSG {
 class GeometryNode;
 class ValuatedRegionNode;
+//! @ingroup ext
 namespace VisibilitySubdivision {
 /**
  * Node class to render the scene using pre-calculated visibility

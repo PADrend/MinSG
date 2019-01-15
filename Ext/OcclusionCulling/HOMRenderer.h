@@ -49,6 +49,7 @@ class Node;
 	 * @date 2008-09-07 (original as AbstractOctreeRenderer), 2009-07-24
 	 * (porting to State)
 	 * @see http://portal.acm.org/citation.cfm?doid=258734.258781
+	 * @ingroup states
 	 */
 	class HOMRenderer : public State {
 		PROVIDES_TYPE_NAME(HOMRenderer)

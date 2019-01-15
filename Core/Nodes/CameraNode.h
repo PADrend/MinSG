@@ -16,6 +16,7 @@ namespace MinSG {
 
 /**
  * [CameraNode] ---|> [AbstractCamera] ---|> [Node]
+ * @ingroup nodes
  */
 class CameraNode : public AbstractCameraNode {
 		PROVIDES_TYPE_NAME(CameraNode)

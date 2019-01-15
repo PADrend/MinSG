@@ -20,6 +20,7 @@ namespace MinSG {
 namespace SceneManagement {
 typedef Util::GenericAttributeMap DescriptionMap;
 }
+//! @ingroup ext
 namespace LoaderCOLLADA {
 class Writer;
 /**

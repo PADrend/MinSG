@@ -18,7 +18,8 @@
 #include <vector>
 
 namespace MinSG {
-
+	
+//! @ingroup ext
 class KeyFrameAnimationData{
 	public:
 		KeyFrameAnimationData(Rendering::MeshIndexData _indexData, std::vector<Rendering::MeshVertexData>  _framesData,

@@ -15,7 +15,8 @@
 #include <Rendering/RenderingContext/RenderingParameters.h>
 
 namespace MinSG {
-
+	
+//! @ingroup states
 class AlphaTestState: public RenderingParametersState<Rendering::AlphaTestParameters> {
 		PROVIDES_TYPE_NAME(AlphaTestState)
 	public:

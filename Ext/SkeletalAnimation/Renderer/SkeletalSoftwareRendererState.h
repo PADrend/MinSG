@@ -25,6 +25,7 @@ namespace Geometry {
 namespace MinSG {
     class GeometryNode;
     
+    //! @ingroup states
     class SkeletalSoftwareRendererState : public SkeletalAbstractRendererState {
         PROVIDES_TYPE_NAME(SkeletalSoftwareRendererState)
     private:

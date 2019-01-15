@@ -28,29 +28,30 @@ class FrameContext;
 enum class NodeRendererResult : bool;
 
 /**
- *	color cube renderer, which is based on color-cube rendering approach. Its implementation here slightly differs from
- *	that described in the paper (see below). Moreover any scene graph (Node) can be rendered with our color cube
- *	renderer, because our implementation  uses  nodes' absolute bounding boxes as their color cubes
- *	(this requires a different processing approach for inner nodes, see ColorCube.cpp for more details).
+ * color cube renderer, which is based on color-cube rendering approach. Its implementation here slightly differs from
+ * that described in the paper (see below). Moreover any scene graph (Node) can be rendered with our color cube
+ * renderer, because our implementation  uses  nodes' absolute bounding boxes as their color cubes
+ * (this requires a different processing approach for inner nodes, see ColorCube.cpp for more details).
  *
- *	1. Before the subtree is displayed, nodes whose projection on the screen is smaller than the specified size
- *	   (maximumProjSize) are collected to a priority queue (sorted in back-to-front order). Besides they are set
- *	   inactive, so their subtrees cannot be displayed as geometry.
+ * 1. Before the subtree is displayed, nodes whose projection on the screen is smaller than the specified size
+ *    (maximumProjSize) are collected to a priority queue (sorted in back-to-front order). Besides they are set
+ *    inactive, so their subtrees cannot be displayed as geometry.
  *
- *	2. Next the subtree (of the node containing the color cube renderer) is displayed in common way (with exception
- *	   of deactivated nodes and their subtrees).
+ * 2. Next the subtree (of the node containing the color cube renderer) is displayed in common way (with exception
+ *    of deactivated nodes and their subtrees).
  *
- *	3. Finally the nodes from the priority queue are displayed as color cubes and set active again.
+ * 3. Finally the nodes from the priority queue are displayed as color cubes and set active again.
  *
- *	@note the various lighting states (LightingState) or shader (ShaderState) should be enabled before current
- *	ColorCubeRenderer, otherwise the drawing of color cubes will ignore those lights and shaders enabled after current
- *	ColorCubeRenderer.
+ * @note the various lighting states (LightingState) or shader (ShaderState) should be enabled before current
+ * ColorCubeRenderer, otherwise the drawing of color cubes will ignore those lights and shaders enabled after current
+ * ColorCubeRenderer.
  *
- *	@author Paul Justus
- *	@date 2010-07-06
+ * @author Paul Justus
+ * @date 2010-07-06
+ * @ingroup ext
  *
- *	@see Bradford Chamberlain. "Fast rendering of complex environments using a spatial hierarchy"
- *	Proceedings of the conference on Graphics interface '96, Pages: 132-141, Toronto, Ontario, Canada , 1996
+ * @see Bradford Chamberlain. "Fast rendering of complex environments using a spatial hierarchy"
+ * Proceedings of the conference on Graphics interface '96, Pages: 132-141, Toronto, Ontario, Canada , 1996
  */
 class ColorCubeRenderer : public NodeRendererState {
 	PROVIDES_TYPE_NAME(ColorCubeRenderer)

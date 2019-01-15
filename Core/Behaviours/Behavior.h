@@ -16,6 +16,8 @@
 
 namespace MinSG {
 
+//! @defgroup behaviour Behaviours
+
 /**
 	Behavior base class.
 	
@@ -32,6 +34,7 @@ namespace MinSG {
 	\endcode
 	
 	\note Use a BehaviorManager for managing behavior statuses.
+	@ingroup behaviour
 
 **/
 class Behavior :

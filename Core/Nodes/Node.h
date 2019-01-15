@@ -41,12 +41,15 @@ class RenderParam;
 typedef uint32_t renderFlag_t;			//! \see RenderParam.h
 typedef uint8_t renderingLayerMask_t;	//! \see RenderingLayer.h
 
+//! @defgroup nodes Nodes
+
 /**
  * Base class of all nodes of the scene-graph.
  *
  *   [Node]
  *
  * \note (---|> AttributeProvider) A node's attribute's key influences its handling. \see NodeAttributeModifier.h for details.
+ * @ingroup nodes
  */
 class Node :
 			public Util::AttributeProvider,

@@ -24,6 +24,7 @@ class OccRenderer;
  *
  * @author Benjamin Eikel
  * @date 2011-07-06
+ * @ingroup states
  */
 class OccludeeRenderer : public State {
 		PROVIDES_TYPE_NAME(OccludeeRenderer)

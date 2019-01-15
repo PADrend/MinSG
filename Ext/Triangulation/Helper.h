@@ -24,6 +24,7 @@
 #include <Util/Graphics/Color.h>
 
 namespace MinSG {
+//! @ingroup ext
 namespace Triangulation {
 
 //! Create a mesh for a 2D triangle

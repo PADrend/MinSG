@@ -43,6 +43,7 @@ class ColorCubeGenerator;
  *
  * @author Paul Justus
  * @date 2010-08-15
+ * @ingroup ext
  *
  */
 class ColorCube {

@@ -35,6 +35,7 @@ class GroupNode;
  *       Besides only the scene root and closed nodes are allowed to contain states.
  *
  * @author pajustus
+ * @ingroup ext
  *
  */
 namespace TreeBuilder {

@@ -19,6 +19,7 @@ namespace MinSG {
 
 /**
  *  [SkyboxState] ---|> [State]
+ * @ingroup states
  */
 class SkyboxState : public State {
 	PROVIDES_TYPE_NAME(SkyboxState)

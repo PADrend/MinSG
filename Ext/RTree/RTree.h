@@ -28,6 +28,7 @@ namespace MinSG {
  * @see Antonin Guttman. R-trees: a dynamic index structure for spatial searching.
  * In SIGMOD ’84: Proceedings of the 1984 ACM SIGMOD international conference on Management of data, pages 47–57, New York, NY, USA, 1984.
  * @see http://doi.acm.org/10.1145/602259.602266
+ * @ingroup nodes
  */
 class RTree : public ListNode {
 	PROVIDES_TYPE_NAME(RTree)

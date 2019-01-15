@@ -47,6 +47,7 @@ namespace MinSG {
  *
  * @author Jan Krems, Benjamin Eikel
  * @date 2010-06-04
+ * @ingroup nodes
  */
 class ParticleSystemNode: public Node {
 		PROVIDES_TYPE_NAME(ParticleSystemNode)

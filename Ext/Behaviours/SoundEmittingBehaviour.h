@@ -20,9 +20,10 @@
 
 namespace MinSG {
 
-/***
- ** SoundEmittingBehaviour ---|> AbstractNodeBehaviour
- **/
+/**
+ * SoundEmittingBehaviour ---|> AbstractNodeBehaviour
+ * @ingroup behaviour
+ */
 class SoundEmittingBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(SoundEmittingBehaviour)
 

@@ -25,6 +25,7 @@ namespace MinSG {
 
 class ShaderUniformState;
 
+//! @ingroup ext
 namespace MAR {
 
 class MultiAlgoGroupNode : public GroupNode {

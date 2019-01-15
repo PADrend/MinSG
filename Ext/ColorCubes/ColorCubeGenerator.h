@@ -40,7 +40,7 @@ class Node;
  *
  * @author Paul Justus
  * @date 2010-08-15
- *
+ * @ingroup ext
  */
 class ColorCubeGenerator {
 	private:

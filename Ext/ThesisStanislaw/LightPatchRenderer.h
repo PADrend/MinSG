@@ -26,6 +26,7 @@
 
 
 namespace MinSG{
+//! @ingroup ext
 namespace ThesisStanislaw{
 
 class LightPatchRenderer {

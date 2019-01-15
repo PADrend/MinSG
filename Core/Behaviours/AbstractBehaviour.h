@@ -17,10 +17,11 @@ namespace MinSG {
 class Node;
 class State;
 
-/***
- **  AbstractBehaviour ---|> Behavior   (Compatibility class)
- ** \deprecated do not use for new Behaviors!
- **/
+/**
+ *  AbstractBehaviour ---|> Behavior   (Compatibility class)
+ * \deprecated do not use for new Behaviors!
+ * @ingroup behaviour
+ */
 class AbstractBehaviour : public Behavior {
 		PROVIDES_TYPE_NAME(AbstractBehaviour)
 

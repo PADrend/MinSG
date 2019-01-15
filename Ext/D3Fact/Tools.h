@@ -27,6 +27,7 @@ class UDPNetworkSocket;
 }
 }
 
+//! @ingroup ext
 namespace D3Fact {
 
 class Message;

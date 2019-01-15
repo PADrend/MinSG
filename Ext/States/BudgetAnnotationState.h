@@ -30,6 +30,7 @@ class RenderParam;
  *
  * @author Benjamin Eikel
  * @date 2012-11-16
+ * @ingroup states
  */
 class BudgetAnnotationState : public NodeRendererState {
 	PROVIDES_TYPE_NAME(BudgetAnnotationState)

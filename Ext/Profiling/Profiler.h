@@ -20,6 +20,7 @@ class GenericAttributeMap;
 class StringIdentifier;
 }
 namespace MinSG {
+//! @ingroup ext
 namespace Profiling {
 typedef Util::GenericAttributeMap Action;
 class Logger;

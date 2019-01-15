@@ -23,6 +23,7 @@ namespace MinSG {
  *
  *  \todo C: I expect that the orientation may be wrong if the node's relative coordinate system is not the global one (not checked).
  *  \todo C: There are some cases where the frustum culling does not work properly. getBoundingBox has to be implementd to solve that.
+ * @ingroup nodes
  */
 class BillboardNode : public GeometryNode {
 	PROVIDES_TYPE_NAME(BillboardNode)

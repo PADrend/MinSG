@@ -18,6 +18,7 @@
 #include <Util/Macros.h>
 
 namespace MinSG {
+//! @ingroup ext
 namespace ThesisPeter {
 
 class TextureProcessor {

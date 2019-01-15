@@ -35,6 +35,7 @@ namespace MinSG {
      *  Currently objects can be stacked on a skeleton with a given offset matrix.
      *
      *  RigidJoint ---|> JointNode ---|> AbstractJoint ---|> ListNode ---|> GroupNode ---|> Node
+     * @ingroup nodes
      *
      */
     class RigidJoint : public JointNode 

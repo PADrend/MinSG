@@ -21,6 +21,7 @@ namespace MinSG {
 	This algorithm is also used by Bittner et al. in the Paper "Coherent Hierarchical Culling:
 	Hardware Occlusion Queries Made Useful" (2004) as motivation for the necessity of more 
 	sophisticated query handling in practical algorithms.
+	@ingroup states
 */
 class NaiveOccRenderer : public State {
 		PROVIDES_TYPE_NAME(NaiveOccRenderer)

@@ -16,9 +16,10 @@
 #include <Geometry/Vec3.h>
 
 namespace MinSG {
-/***
- ** SimplePhysics ---|> AbstractNodeBehaviour
- **/
+/**
+ * SimplePhysics ---|> AbstractNodeBehaviour
+ * @ingroup behaviour
+ */
 class SimplePhysics : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(SimplePhysics)
 
@@ -34,9 +35,10 @@ class SimplePhysics : public AbstractNodeBehaviour {
 		float lastTime;
 };
 
-/***
- ** SimplePhysics ---|> Behavior
- **/
+/**
+ * SimplePhysics ---|> Behavior
+ * @ingroup behaviour
+ */
 class SimplePhysics2 : public Behavior {
 	PROVIDES_TYPE_NAME(SimplePhysics)
 

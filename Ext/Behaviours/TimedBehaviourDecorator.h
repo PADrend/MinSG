@@ -16,7 +16,8 @@
 #include "AbstractBehaviourDecorator.h"
 
 namespace MinSG {
-
+	
+//! @ingroup behaviour
 class TimedBehaviourDecorator: public AbstractBehaviourDecorator {
 	PROVIDES_TYPE_NAME(TimedBehaviourDecorator)
 public:

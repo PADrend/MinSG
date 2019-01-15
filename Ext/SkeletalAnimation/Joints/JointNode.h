@@ -24,6 +24,7 @@ namespace MinSG {
      *  animationdata.
      *
      *  JointNode ---|> AbstractJoint ---|> ListNode ---|> GroupNode ---|> Node
+     * @ingroup nodes
      *
      */
 	class JointNode : public AbstractJoint

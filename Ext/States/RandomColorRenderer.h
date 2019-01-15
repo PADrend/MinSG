@@ -28,6 +28,7 @@ class GeometryNode;
  *
  * @author Benjamin Eikel
  * @date 2009-10-09
+ * @ingroup states
  */
 class RandomColorRenderer : public State {
 	PROVIDES_TYPE_NAME(RandomColorRenderer)

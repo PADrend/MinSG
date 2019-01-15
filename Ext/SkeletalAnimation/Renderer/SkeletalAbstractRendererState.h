@@ -29,6 +29,7 @@ namespace MinSG {
 }
 
 namespace MinSG {
+  //! @ingroup states
     class SkeletalAbstractRendererState : public ShaderState {
     protected:
         bool validatedMatrices;

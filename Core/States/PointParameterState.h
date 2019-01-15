@@ -16,7 +16,8 @@
 #include <Rendering/RenderingContext/RenderingParameters.h>
 
 namespace MinSG {
-
+	
+//! @ingroup states
 class PointParameterState: public RenderingParametersState<Rendering::PointParameters> {
 		PROVIDES_TYPE_NAME(PointParameterState)
 	public:

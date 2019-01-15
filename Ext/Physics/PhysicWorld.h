@@ -39,6 +39,7 @@ class RenderingContext;
 }
 namespace MinSG {
 class Node;
+//! @ingroup ext
 namespace Physics {
 
 class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{

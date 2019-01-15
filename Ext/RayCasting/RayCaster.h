@@ -24,6 +24,7 @@ template<typename vec_t> class _Ray;
 namespace MinSG {
 class GeometryNode;
 class GroupNode;
+//! @ingroup ext
 namespace RayCasting {
 
 //! Class to perform ray casting

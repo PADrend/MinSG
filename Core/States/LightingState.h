@@ -24,6 +24,7 @@ namespace MinSG {
  *
  * @author Benjamin Eikel
  * @date 2010-05-25
+ * @ingroup states
  */
 class LightingState : public State {
 	PROVIDES_TYPE_NAME(LightingState)

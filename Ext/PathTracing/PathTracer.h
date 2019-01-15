@@ -30,6 +30,7 @@ namespace MinSG {
 class GroupNode;
 class AbstractCameraNode;
 
+//! @ingroup ext
 namespace PathTracing {
 class PathTracer {
 public:    

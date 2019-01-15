@@ -26,6 +26,7 @@ namespace MinSG {
  *		though this behvior is strongly not encouraged, as the contained States are not guaranteed to work in a nested way.
  *  \note the interface is intentionally designed as close as possible to the state related functions of Node.
  *		If the corresponding interface of Node is altered, these changes should also be performed to GroupState.
+ * @ingroup states
  */
 class GroupState : public State {
 		PROVIDES_TYPE_NAME(GroupState)

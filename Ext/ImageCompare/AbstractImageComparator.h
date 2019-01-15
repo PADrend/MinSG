@@ -23,6 +23,7 @@ class Texture;
 }
 
 namespace MinSG {
+//! @ingroup ext
 namespace ImageCompare {
 
 /**

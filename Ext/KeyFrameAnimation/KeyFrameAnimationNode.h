@@ -22,6 +22,7 @@ namespace MinSG {
 
 class KeyFrameAnimationBehaviour;
 
+//! @ingroup ext
 class KeyFrameAnimationNode:public GeometryNode{
 	PROVIDES_TYPE_NAME(KeyFrameAnimationNode)
 

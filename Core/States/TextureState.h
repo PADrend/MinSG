@@ -24,6 +24,7 @@ namespace MinSG {
 
 /**
  *  TextureState ---|> [State]
+ * @ingroup states
  */
 class TextureState : public State {
 		PROVIDES_TYPE_NAME(TextureState)

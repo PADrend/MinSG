@@ -20,7 +20,8 @@ namespace Util{
 class Bitmap;
 }
 namespace MinSG {
-
+	
+//! @ingroup ext
 namespace SamplingAnalysis{
 
 struct Histogram1D{

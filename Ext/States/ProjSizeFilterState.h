@@ -20,6 +20,7 @@ enum class NodeRendererResult : bool;
 /*!	Nodes with a small projected size, further than minimum distance to the observer are
 	moved to another RenderingChannel.
 	\note Should not be used together with a renderer which takes control over the rendering process.
+	@ingroup states
 */
 class ProjSizeFilterState : public NodeRendererState {
 		PROVIDES_TYPE_NAME(ProjSizeFilterState)

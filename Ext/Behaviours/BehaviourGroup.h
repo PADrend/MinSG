@@ -16,7 +16,8 @@
 #include <list>
 
 namespace MinSG {
-
+	
+//! @ingroup behaviour
 class BehaviourGroup: public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(BehaviourGroup)
 public:

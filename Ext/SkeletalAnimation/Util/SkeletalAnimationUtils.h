@@ -44,6 +44,7 @@ namespace Geometry {
 
 
 namespace MinSG {
+    //! @ingroup ext
     namespace SkeletalAnimationUtils
     {
         struct WeightPair

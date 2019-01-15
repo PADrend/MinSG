@@ -26,6 +26,7 @@ namespace PipelineStatistics {
  *
  * @author Benjamin Eikel
  * @date 2016-01-08
+ * @ingroup states
  */
 class Collector : public State {
 		PROVIDES_TYPE_NAME(PipelineStatistics::Collector)

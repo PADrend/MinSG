@@ -15,7 +15,8 @@
 #include <Rendering/RenderingContext/RenderingParameters.h>
 
 namespace MinSG {
-
+	
+//! @ingroup states
 class MaterialState: public RenderingParametersState<Rendering::MaterialParameters> {
 		PROVIDES_TYPE_NAME(MaterialState)
 	public:

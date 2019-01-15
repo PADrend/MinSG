@@ -19,6 +19,7 @@ class Texture;
 }
 
 namespace MinSG {
+//! @ingroup ext
 namespace TwinPartitions {
 struct PartitionsData;
 

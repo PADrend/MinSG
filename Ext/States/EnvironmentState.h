@@ -21,6 +21,7 @@ namespace MinSG {
  *  When activated, the environment is displayed at the current position with
  *  a deactivated depth mask and deactivated depth testing.
  *  [EnvironmentState] ---|> [State]
+ * @ingroup states
  */
 class EnvironmentState : public State {
 		PROVIDES_TYPE_NAME(EnvironmentState)

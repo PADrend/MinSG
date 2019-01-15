@@ -24,6 +24,7 @@ class FrameContext;
 class GroupNode;
 class Node;
 
+//! @ingroup ext
 namespace ThesisJonas {
 static const Util::StringIdentifier PREPROCESSING_NODE_ID("ThesisJonas_NodeId"); // node id for preprocessing to get correct mesh for a triangle
 static const Util::StringIdentifier SAMPLING_MESH_ID("ThesisJonas_SamplingMesh");

@@ -17,11 +17,12 @@
 
 namespace MinSG {
 
-/***
- **  GenericMetaNode ---|> Node
- ** An invisible Node, which can be seen when SHOW_META_OBJECTS is enabled.
- ** Useful as generic target for various Behaviours (e.g. SoundSources) or as a particle emitter.
- **/
+/**
+ *  GenericMetaNode ---|> Node
+ * An invisible Node, which can be seen when SHOW_META_OBJECTS is enabled.
+ * Useful as generic target for various Behaviours (e.g. SoundSources) or as a particle emitter.
+ * @ingroup nodes
+ */
 class GenericMetaNode : public Node {
 	PROVIDES_TYPE_NAME(GenericMetaNode)
 	public:

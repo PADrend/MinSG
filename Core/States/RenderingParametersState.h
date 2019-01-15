@@ -25,6 +25,7 @@ class RenderParam;
  * These states change the rendering parameters when enabled, and revert the change when disabled.
  * @author Benjamin Eikel
  * @date 2012-02-21
+ * @ingroup states
  */
 template<typename RenderingParameters>
 class RenderingParametersState : public State {

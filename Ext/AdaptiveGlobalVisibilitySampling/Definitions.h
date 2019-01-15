@@ -20,6 +20,7 @@
 #include <utility>
 
 namespace MinSG {
+//! @ingroup ext
 namespace AGVS {
 
 /**

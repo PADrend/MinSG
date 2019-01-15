@@ -27,9 +27,10 @@ namespace MinSG {
 
 class Waypoint;
 
-/***
- **  PathNode ---|> GroupNode ---|> Node
- **/
+/**
+ * PathNode ---|> GroupNode ---|> Node
+ * @ingroup nodes
+ */
 class PathNode : public GroupNode {
 		PROVIDES_TYPE_NAME(PathNode)
 	public:

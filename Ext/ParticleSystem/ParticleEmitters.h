@@ -39,6 +39,7 @@ class FrameContext;
  *
  * @author Jans Krems, Benjamin Eikel
  * @date 2010-06-15
+ * @ingroup behavior
  */
 class ParticleEmitter : public AbstractNodeBehaviour {
 		PROVIDES_TYPE_NAME(ParticleEmitter)

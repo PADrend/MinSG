@@ -20,6 +20,7 @@
 #include <functional>
 
 namespace MinSG {
+//! @ingroup ext
 namespace BlueSurfels {
 class AbstractSurfelStrategy;
 

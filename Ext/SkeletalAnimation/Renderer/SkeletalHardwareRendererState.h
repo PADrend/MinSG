@@ -46,6 +46,7 @@ namespace MinSG
      *  State tries Texture -> Uniform -> NoTransformation -> NoShader. 
      *
      *  [SkeletalHardwareRendererState] ---|> [ShaderState] ---|> [State]
+     * @ingroup states
      */
 	class SkeletalHardwareRendererState : public SkeletalAbstractRendererState
 	{

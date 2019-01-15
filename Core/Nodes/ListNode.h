@@ -19,6 +19,7 @@ namespace MinSG {
 
 /**
  *    [ListNode] ---|> [GroupNode] ---|> [Node]
+ * @ingroup nodes
  */
 class ListNode : public GroupNode {
 		PROVIDES_TYPE_NAME(ListNode)

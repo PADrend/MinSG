@@ -40,6 +40,7 @@ namespace MinSG
      *
      *  Mesh is represented by a geometrynode. 
      *
+     * @ingroup nodes
      */
 	class SkeletalNode : public ListNode
 	{

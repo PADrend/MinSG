@@ -36,6 +36,7 @@ class Node;
  *
  * @author Jan Krems
  * @date 2010-06-15
+ * @ingroup behavior
  */
 class ParticleAffector : public AbstractNodeBehaviour {
 		PROVIDES_TYPE_NAME(ParticleAffector)

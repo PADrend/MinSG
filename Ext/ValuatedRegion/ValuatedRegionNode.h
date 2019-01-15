@@ -20,6 +20,7 @@ namespace MinSG {
 
 /**
  *  ValuatedRegionNode ---|> ListNode ---|> GroupNode ---|> Node
+ * @ingroup nodes
  */
 class ValuatedRegionNode : public ListNode {
 		PROVIDES_TYPE_NAME(ValuatedRegionNode)

@@ -1,7 +1,7 @@
 /*
 	This file is part of the MinSG library.
 	Copyright (C) 2007-2012 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2007-2012 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2007-2012 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	Copyright (C) 2007-2012 Ralf Petring <ralf@petring.net>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -35,6 +35,7 @@ namespace SceneManagement {
 class SceneManager;
 }
 
+//! @ingroup ext
 namespace TreeSync {
 
 

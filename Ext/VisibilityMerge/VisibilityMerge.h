@@ -19,6 +19,7 @@ class ListNode;
 namespace SceneManagement {
 class SceneManager;
 }
+//! @ingroup ext
 namespace VisibilityMerge {
 /**
  * Class to merge geometric objects and visibility regions based on
