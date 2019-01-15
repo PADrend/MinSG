@@ -15,9 +15,10 @@ namespace MinSG {
 
 class Node;
 
-/***
- **  NodeVisitor
- **/
+/**
+ * NodeVisitor
+ * @ingroup helper
+ */
 class NodeVisitor {
 	public:
 		enum status {

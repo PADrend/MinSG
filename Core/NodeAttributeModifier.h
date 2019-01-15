@@ -15,18 +15,16 @@
 
 namespace MinSG {
 
-/*! A Node's attributes behave differently according to an optional prefix:
-		"$prefix$rest of the key"
-	The prefix can consist of the following modifiers:
-
-	C ... copy to [C]lone (default)
-	c ... don't copy to clone
-	I ... copy to [Instance]
-	i ... don't copy to instance (default)
-	S ... [S]ave to file (default)
-	s ... don't save to file
-
-*/
+/** A Node's attributes behave differently according to an optional prefix: "$prefix$rest of the key"
+ * The prefix can consist of the following modifiers:
+ *   - C ... copy to [C]lone (default)
+ *   - c ... don't copy to clone
+ *   - I ... copy to [Instance]
+ *   - i ... don't copy to instance (default)
+ *   - S ... [S]ave to file (default)
+ *   - s ... don't save to file
+ * @ingroup helper
+ */
 namespace NodeAttributeModifier {
 
 static const uint32_t COPY_TO_CLONES		= (1<<0);

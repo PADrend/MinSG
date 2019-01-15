@@ -26,6 +26,10 @@
 
 namespace MinSG {
 class GeometryNode;
+/** @addtogroup helper
+ * @{
+ */
+
 //--------------------------------------------------------------------
 // basic traversal functions
 
@@ -348,5 +352,6 @@ uint32_t getTreeDepth(Node * rootNode);
 
 // -----------------------------------------------------------------------------------------------
 
+//! @}
 }
 #endif // STDNODEVISITORS_H

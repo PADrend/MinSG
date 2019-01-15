@@ -21,6 +21,11 @@ namespace MinSG {
 class BehaviourManager;
 class Node;
 class State;
+
+/**
+ * Classes for the management of scenes, for example loading and saving of scenes from and to the file system.
+ * Global registration for @link MinSG::SceneManagement::SceneManager::registerNode Nodes@endlink and @link MinSG::SceneManagement::SceneManager::registerState States@endlink.
+ */
 namespace SceneManagement {
 
 

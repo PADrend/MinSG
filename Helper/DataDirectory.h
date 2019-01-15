@@ -19,6 +19,7 @@ namespace MinSG {
  * 
  * MinSG's data directory contains data files required by some parts of MinSG
  * (e.g., shader files).
+ * @ingroup helper
  */
 namespace DataDirectory {
 

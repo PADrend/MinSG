@@ -28,6 +28,7 @@ class GeometryNode;
  * @see OpenGL constant GL_SAMPLES_PASSED and function glBeginQuery
  * @author Benjamin Eikel
  * @date 2012-01-16
+ * @ingroup helper
  */
 namespace VisibilityTester {
 

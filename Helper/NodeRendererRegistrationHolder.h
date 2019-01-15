@@ -25,6 +25,7 @@ class FrameContext;
  * 
  * @author Benjamin Eikel
  * @date 2013-12-02
+ * @ingroup helper
  */
 class NodeRendererRegistrationHolder {
 	private:

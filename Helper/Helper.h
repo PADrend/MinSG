@@ -16,6 +16,11 @@
 #include <string>
 #include <cstdint>
 
+/** @defgroup helper Helper 
+ * Things that ease your work with MinSG.
+ * Most important are the @link MinSG::NodeVisitor standard visitors@endlink to traverse the scene graph.
+ */
+
 // Forward declarations.
 namespace Geometry {
 template<typename _T> class _Matrix4x4;
@@ -40,6 +45,10 @@ class GroupNode;
 class ShaderState;
 class TextureState;
 
+/** @addtogroup helper
+ * @{
+ */
+ 
 /*!
  * removes a child from its present parent (if exists)
  * and adds it to the given new Parent (if exists)
@@ -94,6 +103,7 @@ static const unsigned MESH_AUTO_CENTER_BOTTOM = 1 << 2;
 Node * loadModel(const Util::FileName & filename, unsigned flags = 0, Geometry::Matrix4x4 * transMat = nullptr);
 Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matrix4x4 * transMat,const Util::FileLocator& locator);
 
+//! @}
 }
 
 #endif // HELPER_H

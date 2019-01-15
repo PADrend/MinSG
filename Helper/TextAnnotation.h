@@ -33,6 +33,7 @@ class FrameContext;
  *
  * @author Benjamin Eikel
  * @date 2013-07-12
+ * @ingroup helper
  */
 namespace TextAnnotation {
 

@@ -18,6 +18,7 @@ class Node;
 namespace SceneManagement {
 class SceneManager;
 }
+//! @ingroup helper
 namespace GraphVizOutput {
 
 /**

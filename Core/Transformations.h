@@ -18,6 +18,7 @@
 namespace MinSG {
 class Node;
 
+//! @ingroup helper
 namespace Transformations {
 	
 //! @name coordinate transformations

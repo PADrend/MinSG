@@ -25,6 +25,7 @@ namespace MinSG {
  * frustum
  * @retval false if frustum culling is enabled and the box does not intersect
  * the frustum
+ * @ingroup helper
  */
 inline bool conditionalFrustumTest(const Geometry::Frustum & frustum,
 								   const Geometry::Box & box,
