@@ -121,7 +121,9 @@ if(ZLIB_FOUND)
 endif()
 
 option(MINSG_PROFILING "Defines if profiling information is generated and output in MinSG.")
-append_property(MINSG_COMPILE_DEFINITIONS MINSG_PROFILING)
+if(MINSG_PROFILING)
+	append_property(MINSG_COMPILE_DEFINITIONS MINSG_PROFILING)
+endif()
 
 # Dependency to OpenMP
 find_package(OpenMP QUIET)
