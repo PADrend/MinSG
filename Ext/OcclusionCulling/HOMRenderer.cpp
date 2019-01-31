@@ -76,7 +76,7 @@ HOMRenderer::~HOMRenderer() = default;
 
 void HOMRenderer::setupShader() {
 	occluderShader = Rendering::Shader::createShader(
-			"void main(void){gl_Position=ftransform();}",
+			"#version 130\nuniform mat4 sg_matrix_modelToClipping;\nin vec3 sg_Position;\nvoid main(void){gl_Position=sg_matrix_modelToClipping*vec4(sg_Position,1);}",
 			"void main(void){gl_FragColor=vec4(1.0,1.0,1.0,1.0);}");
 }
 
@@ -437,7 +437,7 @@ State::stateResult_t HOMRenderer::doEnableState(FrameContext & context,
 		if (process(current, cameraPos, cameraDir, zPlane, context, rp, cameraMatrix, projectionMatrix) != NodeVisitor::BREAK_TRAVERSAL) {
 			if (!current->isClosed()) {
 				// Add children to list.
-				const auto children = getChildNodes(node);
+				const auto children = getChildNodes(current);
 				nodes.insert(nodes.end(), children.begin(), children.end());
 			}
 		}
