@@ -190,7 +190,7 @@ float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node * node, Refere
 			} else {
 				auto posAcc = Rendering::PositionAttributeAccessor::create(surfels->openVertexData());
 				firstKAttr = new Util::GenericAttributeList;
-				for(uint_fast8_t i=0; i<8; ++i) {
+				for(uint_fast8_t i=0; i<std::min(8u,surfels->getVertexCount()); ++i) {
 					const auto pos = posAcc->getPosition(i); 
 					firstK_ws.emplace_back(modelToWorld.transformPosition(pos));
 					firstKAttr->push_back(Util::GenericAttribute::createNumber(pos.x()));

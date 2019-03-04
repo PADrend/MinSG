@@ -44,7 +44,7 @@ std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefix
 
 float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
 
-float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node* node, ReferencePoint ref = ReferencePoint::CLOSEST_SURFEL);
+float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node* node, ReferencePoint ref = ReferencePoint::CLOSEST_BB);
 
 float computeSurfelPacking(Rendering::Mesh* mesh);
 
