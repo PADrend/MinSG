@@ -57,12 +57,13 @@ void ShaderStrategy::refreshShader() {
 	shader = nullptr;
 	std::cout << "ShaderStrategy: refresh shader." << std::endl;
 	std::string culling = surfelCulling ? "1" : "0";
+	std::string dynSize = surfelDynSize ? "1" : "0";
 	
 	if(!getShaderVS().empty()) {
 		auto file = getFileLocator().locateFile(Util::FileName(getShaderVS()));
 		if(file.first) {
 			if(shader.isNull()) shader = Rendering::Shader::createShader(Rendering::Shader::USE_UNIFORMS);
-			auto so = Rendering::ShaderObjectInfo::loadVertex(file.second).addDefine("SURFEL_CULLING", culling);
+			auto so = Rendering::ShaderObjectInfo::loadVertex(file.second).addDefine("SURFEL_CULLING", culling).addDefine("SURFEL_DYN_SIZE", dynSize);
 			shader->attachShaderObject(std::move(so));
 		} else {
 			WARN("ShaderStrategy: could not find vertex shader '" + getShaderVS() + "'");
@@ -75,7 +76,7 @@ void ShaderStrategy::refreshShader() {
 		auto file = getFileLocator().locateFile(Util::FileName(getShaderFS()));
 		if(file.first) {
 			if(shader.isNull()) shader = Rendering::Shader::createShader(Rendering::Shader::USE_UNIFORMS);
-			auto so = Rendering::ShaderObjectInfo::loadFragment(file.second).addDefine("SURFEL_CULLING", culling);
+			auto so = Rendering::ShaderObjectInfo::loadFragment(file.second).addDefine("SURFEL_CULLING", culling).addDefine("SURFEL_DYN_SIZE", dynSize);
 			shader->attachShaderObject(std::move(so));
 		} else {
 			WARN("ShaderStrategy: could not find fragment shader '" + getShaderFS() + "'");
@@ -88,7 +89,7 @@ void ShaderStrategy::refreshShader() {
 		auto file = getFileLocator().locateFile(Util::FileName(getShaderGS()));
 		if(file.first) {
 			if(shader.isNull()) shader = Rendering::Shader::createShader(Rendering::Shader::USE_UNIFORMS);
-			auto so = Rendering::ShaderObjectInfo::loadGeometry(file.second).addDefine("SURFEL_CULLING", culling);
+			auto so = Rendering::ShaderObjectInfo::loadGeometry(file.second).addDefine("SURFEL_CULLING", culling).addDefine("SURFEL_DYN_SIZE", dynSize);
 			shader->attachShaderObject(std::move(so));
 		} else {
 			WARN("ShaderStrategy: could not find geometry shader '" + getShaderGS() + "'");

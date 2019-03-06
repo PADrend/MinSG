@@ -43,6 +43,13 @@ class ShaderStrategy : public AbstractSurfelStrategy {
 		}
 		bool getSurfelCulling() const { return surfelCulling; }
 		
+		void setSurfelDynSize(bool v) {
+			if(surfelDynSize != v)
+				needsRefresh = true;
+			surfelDynSize = v;
+		}
+		bool getSurfelDynSize() const { return surfelDynSize; }
+		
 		void refreshShader();
 		Util::FileLocator& getFileLocator() { return locator; }
 	private:
@@ -51,6 +58,7 @@ class ShaderStrategy : public AbstractSurfelStrategy {
 		bool needsRefresh = true;
 		bool wasActive = false;
 		bool surfelCulling = true;
+		bool surfelDynSize = false;
 };
   
 } /* BlueSurfels */
