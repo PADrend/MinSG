@@ -39,6 +39,12 @@ enum ReferencePoint : uint8_t {
 	CLOSEST_SURFEL
 };
 
+struct Radial {
+	float mean;
+	float variance;
+	uint32_t count;
+};
+
 std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh);
 std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength);
 
@@ -53,7 +59,8 @@ float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels);
 Rendering::Mesh* getSurfels(MinSG::Node * node);
 
 //! Differential domain analysis based on "Differential domain analysis for non-uniform sampling" by Wei et al. (ACM ToG 2011)
-Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution=256, uint32_t count=0, bool normalize=true, bool geodetic=true);
+Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution=256, uint32_t count=0, bool geodetic=true);
+std::vector<Radial> getRadialMeanVariance(const Util::Reference<Util::Bitmap>& spectrum);
 
 inline uint32_t getPrefixForRadius(float radius, float packing) {
 	return radius > 0 ? packing/(radius*radius) : 0;

@@ -314,11 +314,10 @@ Vec3 getGeodeticDiff(const Sample& s1, const Sample& s2) {
 
 // -------------------
 
-Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution, uint32_t count, bool normalize, bool geodetic) {
+Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution, uint32_t count, bool geodetic) {
 	static Geometry::Vec3 X_AXIS(1,0,0);
 	static Geometry::Vec3 Y_AXIS(0,1,0);
 	static Geometry::Vec3 Z_AXIS(0,0,1);
-	// TODO: compute radial mean and anisotropy
 	
 	// mesh
 	count = count > 0 ? std::min(count, mesh->getVertexCount()) : mesh->getVertexCount();
@@ -340,7 +339,7 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 	
 	// parameter
 	//Sphere_f sphere({0.0,0.0,0.0}, diff_max);
-	Box queryBox({0,0,0}, diff_max*2);
+	Box queryBox({0,0,0}, diff_max*2*std::sqrt(2));
 	const float cell_size = 2*diff_max/resolution;
 	const int kernel_size = 4; // size of the gaussian convolution kernel
 	const Vec2i imgCenter(resolution>>1,resolution>>1);
@@ -381,7 +380,8 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 	std::vector<Vec2> diffs;
 	Vec2 query;
 	Vec2i diffIndex;
-	float max = 0;
+	//float max = 0;
+	float totalSum = 0;
 	for(auto& s1 : samples) {
 		neighbors.clear();
 		diffs.clear();
@@ -409,7 +409,8 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 						const float dist = diff.distanceSquared(query);
 						float value = std::exp(-dist/(cell_size*cell_size));
 						spec[index.x()][index.y()] += value;
-						max = std::max(max, spec[index.x()][index.y()]);
+						totalSum += value;
+						//max = std::max(max, spec[index.x()][index.y()]);
 					}
 				}
 			}
@@ -417,13 +418,51 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 	}
 	
 	// normalize and write to bitmap
+	float normalizationFactor = (resolution*resolution) / totalSum;
 	Util::Reference<Util::Bitmap> result(new Util::Bitmap(resolution,resolution,Util::PixelFormat::RGB_FLOAT));
 	auto resultAcc = Util::PixelAccessor::create(result);
 	for(uint32_t x=0; x<resolution; ++x) {
 		for(uint32_t y=0; y<resolution; ++y) {
-			float ps = normalize ? (spec[x][y]/max) : spec[x][y];
+			//float ps = normalize ? (spec[x][y]/max) : spec[x][y];
+			float ps = spec[x][y] * normalizationFactor;
 			resultAcc->writeColor(x, y, Util::Color4f(ps,ps,ps));
 		}
+	}
+	return result;
+}
+
+std::vector<Radial> getRadialMeanVariance(const Util::Reference<Util::Bitmap>& spectrum) {
+	std::vector<Radial> result(spectrum->getWidth()/2+1, {0,0,0});
+	auto acc = Util::PixelAccessor::create(spectrum);
+	
+	for(uint32_t x=0; x<spectrum->getWidth(); ++x) {
+		for(uint32_t y=0; y<spectrum->getHeight(); ++y) {
+			Geometry::Vec2 v(x-spectrum->getWidth()/2.0, y-spectrum->getHeight()/2.0);
+			uint32_t entry = v.length();
+			if(entry < result.size()) {
+				float value = acc->readSingleValueFloat(x, y);
+				result[entry].mean += value;
+				result[entry].count++;
+			}
+		}
+	}
+	
+	for(uint32_t i=0; i<result.size(); ++i)
+		result[i].mean /= result[i].count;
+		
+	for(uint32_t x=0; x<spectrum->getWidth(); ++x) {
+		for(uint32_t y=0; y<spectrum->getHeight(); ++y) {
+			Geometry::Vec2 v(x-spectrum->getWidth()/2.0, y-spectrum->getHeight()/2.0);
+			uint32_t entry = v.length();
+			if(entry < result.size()) {
+				float var = acc->readSingleValueFloat(x, y) - result[entry].mean;
+				result[entry].variance += var*var;
+			}
+		}
+	}
+	for(uint32_t i=0; i<result.size(); ++i) {
+		if(result[i].count > 1 && result[i].mean > 0)
+			result[i].variance /= result[i].mean * result[i].mean * (result[i].count-1);
 	}
 	return result;
 }
