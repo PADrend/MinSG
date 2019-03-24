@@ -314,7 +314,7 @@ Vec3 getGeodeticDiff(const Sample& s1, const Sample& s2) {
 
 // -------------------
 
-Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution, uint32_t count, bool geodetic) {
+Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution, uint32_t count, bool normalize, bool geodetic) {
 	static Geometry::Vec3 X_AXIS(1,0,0);
 	static Geometry::Vec3 Y_AXIS(0,1,0);
 	static Geometry::Vec3 Z_AXIS(0,0,1);
@@ -421,7 +421,7 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 	auto resultAcc = Util::PixelAccessor::create(result);
 	for(uint32_t x=0; x<resolution; ++x) {
 		for(uint32_t y=0; y<resolution; ++y) {
-			float ps = spec[x][y] / max;
+			float ps = normalize ? (spec[x][y]/max) : spec[x][y];
 			resultAcc->writeColor(x, y, Util::Color4f(ps,ps,ps));
 		}
 	}
