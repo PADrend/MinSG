@@ -409,11 +409,17 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 						const float dist = diff.distanceSquared(query);
 						float value = std::exp(-dist/(cell_size*cell_size));
 						spec[index.x()][index.y()] += value;
-						totalSum += value;
+						//totalSum += value;
 						//max = std::max(max, spec[index.x()][index.y()]);
 					}
 				}
 			}
+		}
+	}
+	
+	for(uint32_t x=0; x<resolution; ++x) {
+		for(uint32_t y=0; y<resolution; ++y) {
+			totalSum += spec[x][y];
 		}
 	}
 	
