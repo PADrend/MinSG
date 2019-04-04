@@ -13,6 +13,8 @@
 
 #include "AbstractSurfelSampler.h"
 
+#include <vector>
+
 namespace MinSG {
 namespace BlueSurfels {
 
@@ -28,12 +30,15 @@ namespace BlueSurfels {
 class GreedyCluster : public AbstractSurfelSampler {
 	PROVIDES_TYPE_NAME(GreedyCluster)
 public:
-  virtual Rendering::Mesh* sampleSurfels(Rendering::Mesh* sourceMesh);
+	virtual Rendering::Mesh* sampleSurfels(Rendering::Mesh* sourceMesh);
 	
 	void setMinRadius(float r) { minRadius = r; }
 	float getMinRadius() const { return minRadius; }
+	
+	std::vector<float> getSampleTimes() const { return sampleTimes; }
 private:
 	float minRadius = 0;
+	std::vector<float> sampleTimes;
 };
 
 } /* BlueSurfels */
