@@ -10,11 +10,11 @@
 
 #include "CommonStrategies.h"
 
-#include <MinSG/Core/FrameContext.h>
-#include <MinSG/Core/Transformations.h>
-#include <MinSG/Core/Nodes/Node.h>
-#include <MinSG/Core/Nodes/AbstractCameraNode.h>
-#include <MinSG/Ext/BlueSurfels/SurfelAnalysis.h>
+#include "../../../Core/FrameContext.h"
+#include "../../../Core/Transformations.h"
+#include "../../../Core/Nodes/Node.h"
+#include "../../../Core/Nodes/AbstractCameraNode.h"
+#include "../SurfelAnalysis.h"
 
 #include <Util/GenericAttribute.h>
 #include <Util/GenericAttributeSerialization.h>

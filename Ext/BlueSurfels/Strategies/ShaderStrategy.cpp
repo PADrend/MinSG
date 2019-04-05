@@ -10,9 +10,9 @@
 
 #include "ShaderStrategy.h"
 
-#include <MinSG/Core/FrameContext.h>
-#include <MinSG/Core/Nodes/Node.h>
-#include <MinSG/Ext/BlueSurfels/SurfelAnalysis.h>
+#include "../../../Core/FrameContext.h"
+#include "../../../Core/Nodes/Node.h"
+#include "../SurfelAnalysis.h"
 
 #include <Util/GenericAttribute.h>
 #include <Util/IO/FileName.h>

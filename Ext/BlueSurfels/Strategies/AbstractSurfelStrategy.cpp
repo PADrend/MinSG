@@ -12,9 +12,9 @@
 
 #include <Util/Macros.h>
 
-#include <MinSG/SceneManagement/Exporter/ExporterTools.h>
-#include <MinSG/SceneManagement/Importer/ImporterTools.h>
-#include <MinSG/SceneManagement/SceneDescription.h>
+#include "../../../SceneManagement/Exporter/ExporterTools.h"
+#include "../../../SceneManagement/Importer/ImporterTools.h"
+#include "../../../SceneManagement/SceneDescription.h"
 
 #include <unordered_map>
 
