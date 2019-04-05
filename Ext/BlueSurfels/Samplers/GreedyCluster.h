@@ -13,7 +13,7 @@
 
 #include "AbstractSurfelSampler.h"
 
-#include <vector>
+#include <map>
 
 namespace MinSG {
 namespace BlueSurfels {
@@ -35,10 +35,10 @@ public:
 	void setMinRadius(float r) { minRadius = r; }
 	float getMinRadius() const { return minRadius; }
 	
-	std::vector<float> getSampleTimes() const { return sampleTimes; }
+	std::map<uint32_t,float> getSampleTimes() const { return sampleTimes; }
 private:
 	float minRadius = 0;
-	std::vector<float> sampleTimes;
+	std::map<uint32_t,float> sampleTimes;
 };
 
 } /* BlueSurfels */

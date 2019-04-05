@@ -30,7 +30,20 @@ namespace MinSG {
 namespace BlueSurfels {
 
 typedef std::pair<float,uint32_t> DistIndexPair_t;
-	
+
+uint32_t ipow(uint32_t base, uint32_t exp) {
+	uint32_t result = 1;
+	for (;;) {
+		if (exp & 1)
+			result *= base;
+		exp >>= 1;
+		if (!exp)
+			break;
+		base *= base;
+	}
+	return result;
+}
+
 struct Sample {
 	float distance;
 	uint32_t index;
@@ -104,7 +117,6 @@ Rendering::Mesh* GreedyCluster::sampleSurfels(Rendering::Mesh* sourceMesh) {
 		statistics["t_init"] = t.getSeconds();
 		t.reset();
 		sampleTimes.clear();
-		sampleTimes.reserve(targetCount/1000);
 	}
 		
 	Util::Timer heapTimer;
@@ -167,9 +179,9 @@ Rendering::Mesh* GreedyCluster::sampleSurfels(Rendering::Mesh* sourceMesh) {
 		octreeTime += octreeTimer.getSeconds();
 		result.emplace_back(index);
 		--remainingSamples;
-	
-		if(getStatisticsEnabled() && result.size() % 1000 == 0) {
-			sampleTimes.emplace_back(t.getMilliseconds());
+		
+		if(getStatisticsEnabled() && result.size() % ipow(10, static_cast<uint32_t>(std::log10(result.size()))) == 0) {
+			sampleTimes.emplace(result.size(), t.getMilliseconds());
 		}
 	}
 	
