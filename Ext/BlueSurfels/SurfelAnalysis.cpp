@@ -29,6 +29,7 @@
 #include <Util/Graphics/PixelAccessor.h>
 
 #include <algorithm>
+#include <numeric>
 
 namespace MinSG{
 namespace BlueSurfels {
@@ -159,7 +160,7 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 }
 
 float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node * node, ReferencePoint ref) {
-  static const Geometry::Vec3 Z_AXIS(0,0,1);
+	static const Geometry::Vec3 Z_AXIS(0,0,1);
 	const auto& vp = camera->getViewport();
 	const auto& modelToWorld = node->getWorldTransformationMatrix();
 	const auto cam_pos_ws = camera->getWorldOrigin();
@@ -209,23 +210,24 @@ float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node * node, Refere
 	float dist_ws = camera->getFarPlane() + 1;
 	for(const auto& p : firstK_ws)
 		dist_ws = std::min(dist_ws, (cam_pos_ws - p).dot(cam_dir_ws));
-	dist_ws = camera->getFrustum().isOrthogonal() ? 1 : std::max(camera->getNearPlane(), dist_ws - camera->getNearPlane());
-  
-  const auto l = camera->getFrustum().getLeft();
-  const auto r = camera->getFrustum().getRight();
-  const auto n = camera->getNearPlane();
+	dist_ws = camera->getFrustum().isOrthogonal() ? 1 : std::max(camera->getNearPlane(), dist_ws);
+	
+	const auto l = camera->getFrustum().getLeft();
+	const auto r = camera->getFrustum().getRight();
+	const auto n = camera->getNearPlane();
 	const auto w = static_cast<float>(vp.getWidth());
 	const auto s = node->getWorldTransformationSRT().getScale();
-	return ((r-l) * dist_ws) / (2 * n * w * s);
+	return ((r-l) * dist_ws) / (n * w * s);
 }
 
 float computeSurfelPacking(Rendering::Mesh* mesh) {
 	if(!mesh) return 0;
 	uint32_t count = std::min(1000u, mesh->getVertexCount());
-	float r = getMedianOfNthClosestNeighbours(*mesh, count, 1) * 0.5;
-	//auto dist = getMinimalVertexDistances(*mesh, count);
-	//float r = *std::min_element(dist.begin(), dist.end()) * 0.5;
-  return r * r * static_cast<float>(count);
+	//float r = getMedianOfNthClosestNeighbours(*mesh, count, 1);
+	auto dist = getMinimalVertexDistances(*mesh, count);
+	//float r = *std::min_element(dist.begin(), dist.end());
+	float r = std::accumulate(dist.begin(), dist.end(), 0.0)/count;
+	return r * r * static_cast<float>(count);
 }
 
 float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels) {
@@ -234,9 +236,9 @@ float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels) {
 	if(node->isInstance())
 		node = node->getPrototype();
 		
-  auto surfelPackingAttr = node->findAttribute(SURFEL_PACKING_ATTRIBUTE);
+	auto surfelPackingAttr = node->findAttribute(SURFEL_PACKING_ATTRIBUTE);
 	if(surfelPackingAttr)
-    return surfelPackingAttr->toFloat();
+		return surfelPackingAttr->toFloat();
 		
 	auto surfelSurfaceAttr = node->findAttribute(SURFEL_SURFACE_ATTRIBUTE);
 	if(surfelSurfaceAttr) {
@@ -271,18 +273,23 @@ Rendering::Mesh* getSurfels(MinSG::Node * node) {
 // -------------------
 
 struct Sample {
-	Sample(uint32_t i, const Vec3& p) : i(i), p(p), n({0,0,0}), t({0,0,0}) {}
-	Sample(uint32_t i, const Vec3& p, const Vec3& n, const Vec3& t) : i(i), p(p), n(n), t(t) {}
+	Sample(uint32_t i, const Vec3& p) : i(i), p(p), n({0,0,0}), t({0,0,0}), w(1) {}
+	Sample(uint32_t i, const Vec3& p, const Vec3& n, const Vec3& t) : i(i), p(p), n(n), t(t), w(1) {}
 	const Vec3& getPosition() const { return p; }
 	uint32_t i; // index
 	Vec3 p; // position
 	Vec3 n; // normal
 	Vec3 t; // tangent
+	float w; // weight
 };
 
 // approximate the geodetic differential by rotating the differential into the tangent plane
-Vec3 getGeodeticDiff(const Sample& s1, const Sample& s2) {
-	Vec3 d = s1.p - s2.p;
+Vec3 getDiff(const Sample& s1, const Sample& s2, bool geodetic) {
+	Vec3 d = (s1.p - s2.p) * 2.0 / (s1.w + s2.w);
+	
+	if(!geodetic)
+		return d;
+	
 	float dist = d.length();
 	
 	if(s1.n.isZero() || s2.n.isZero()) {
@@ -314,7 +321,7 @@ Vec3 getGeodeticDiff(const Sample& s1, const Sample& s2) {
 
 // -------------------
 
-Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution, uint32_t count, bool geodetic) {
+Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution, uint32_t count, bool geodetic, bool adaptive) {
 	static Geometry::Vec3 X_AXIS(1,0,0);
 	static Geometry::Vec3 Y_AXIS(0,1,0);
 	static Geometry::Vec3 Z_AXIS(0,0,1);
@@ -324,16 +331,25 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 	auto pAcc = Rendering::PositionAttributeAccessor::create(mesh->openVertexData());
 	Util::Reference<Rendering::NormalAttributeAccessor> nAcc;
 	Util::Reference<Rendering::NormalAttributeAccessor> tAcc;
+	Util::Reference<Rendering::ColorAttributeAccessor> cAcc;
 	if(geodetic && !mesh->getVertexDescription().hasAttribute(VertexAttributeIds::NORMAL)) {
 		WARN("Differential domain analysis requires normals for analysis with geodesics");
 		geodetic = false;
-	}	
+	}
 	if(geodetic) {
 		nAcc = Rendering::NormalAttributeAccessor::create(mesh->openVertexData());
 		if(mesh->getVertexDescription().hasAttribute(VertexAttributeIds::TANGENT)) {
 			// Yaay, we have tangents
 			tAcc = Rendering::NormalAttributeAccessor::create(mesh->openVertexData(), VertexAttributeIds::TANGENT);
 		}
+	}
+	
+	if(adaptive && !mesh->getVertexDescription().hasAttribute(VertexAttributeIds::COLOR)) {
+		WARN("Differential domain analysis uses the color as weight for adaptive samples");
+		adaptive = false;
+	}	
+	if(adaptive) {
+		cAcc = Rendering::ColorAttributeAccessor::create(mesh->openVertexData());
 	}
 	Geometry::Box bb = mesh->getBoundingBox();
 	
@@ -373,6 +389,9 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 		} else {
 			samples.emplace_back(i, p);
 		}
+		if(adaptive) {
+			samples.back().w = cAcc->getColor4f(i).r();
+		}
 		octree.insert(samples.back());
 	}
 	
@@ -391,7 +410,7 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 		// gather differentials
 		for(auto& s2 : neighbors) {
 			if(s1.i == s2.i) continue;
-			Vec3 diff = geodetic ? getGeodeticDiff(s1, s2) : (s1.p - s2.p);
+			Vec3 diff = getDiff(s1, s2, geodetic);
 			if(diff.isZero()) continue;			
 			diffs.emplace_back(diff.x(), diff.y());
 		}
