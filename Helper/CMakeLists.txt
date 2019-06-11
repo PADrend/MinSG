@@ -8,6 +8,7 @@
 #
 minsg_add_sources(
 	DataDirectory.cpp
+	GeometrySerialization.cpp
 	GraphVizOutput.cpp
 	Helper.cpp
 	NodeRendererRegistrationHolder.cpp
