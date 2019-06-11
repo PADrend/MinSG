@@ -42,6 +42,62 @@ static const Util::StringIdentifier SURFEL_SURFACE_ATTRIBUTE("surfelSurface");
 static const Util::StringIdentifier SURFEL_MEDIAN_ATTRIBUTE("surfelMedianDist");
 static const Util::StringIdentifier SURFEL_FIRST_K_ATTRIBUTE("surfelFirstK");
 
+static const Geometry::Vec3 X_AXIS(1,0,0);
+static const Geometry::Vec3 Y_AXIS(0,1,0);
+static const Geometry::Vec3 Z_AXIS(0,0,1);
+
+// -------------------
+	
+struct Sample {
+	Sample(uint32_t i, const Vec3& p) : i(i), p(p), n({0,0,0}), t({0,0,0}), w(1) {}
+	Sample(uint32_t i, const Vec3& p, const Vec3& n, const Vec3& t) : i(i), p(p), n(n), t(t), w(1) {}
+	const Vec3& getPosition() const { return p; }
+	uint32_t i; // index
+	Vec3 p; // position
+	Vec3 n; // normal
+	Vec3 t; // tangent
+	float w; // weight
+};
+
+// approximate the geodetic differential by rotating the differential into the tangent plane
+Vec3 getDiff(const Sample& s1, const Sample& s2, bool geodetic) {
+	Vec3 d = (s1.p - s2.p) * 2.0 / (s1.w + s2.w);
+	
+	if(!geodetic)
+		return d;
+	
+	float dist = d.length();
+	
+	if(s1.n.isZero() || s2.n.isZero()) {
+		std::cerr << "Zero Normal AAAAAAAHHH!" << std::endl;
+		return {0,0,0};
+	}
+	
+	// approximate geodetic distance (Bowers 2010)
+	Vec3 v = d / dist;
+	float c1 = std::max(-1.0f,std::min(1.0f, s1.n.dot(v))); // clamp to [-1,1]
+	float c2 = std::max(-1.0f,std::min(1.0f, s2.n.dot(v))); // clamp to [-1,1]
+	if(c1 == c2)
+		dist *= std::sqrt(1.0f - c1*c1);
+	else 
+		dist *= (std::asin(c1) - std::asin(c2)) / (c1 - c2);
+	
+	// compute cotangent
+	Vec3 cot = s1.n.cross(s1.t).normalize();
+	
+	// project differential onto tangent plane
+	d.setValue(s1.t.dot(d), cot.dot(d), 0);
+	if(d.isZero()) {
+		d.setValue(dist, 0, 0); // might be too biased?
+	} else {
+		d.normalize();
+		d *= dist;
+	}
+	return d;
+}
+
+// -------------------
+
 std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh){
 
 	Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(mesh.openVertexData(), Rendering::VertexAttributeIds::POSITION));
@@ -79,41 +135,68 @@ std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& 
 	return progressiveClosestDistances;
 }
 
-std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength){
+std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength, bool geodesic/*=false*/){
 
-	Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(mesh.openVertexData(), Rendering::VertexAttributeIds::POSITION));
+	Util::Reference<Rendering::PositionAttributeAccessor> pAcc(Rendering::PositionAttributeAccessor::create(mesh.openVertexData(), Rendering::VertexAttributeIds::POSITION));
 	
-	Geometry::Box bb = mesh.getBoundingBox();
-	bb.resizeRel( 1.01 );
-	
-	class P : public Geometry::Point<Geometry::Vec3>{
-	public:
-		size_t vIndex;
-		P(Geometry::Vec3 p,size_t _vIndex) : Geometry::Point<Geometry::Vec3>( std::move(p)),vIndex(_vIndex){}
-	};
-	Geometry::PointOctree<P> octree(bb,bb.getExtentMax()*0.01,8);
-	
-	const size_t endIndex = std::min(static_cast<size_t>(mesh.getVertexCount()),prefixLength);
-
-	for(size_t vIndex = 0 ; vIndex<endIndex; ++vIndex)
-		octree.insert( P(positionAccessor->getPosition(vIndex),vIndex) );
-	
-		
-	std::vector<float> closestDistances;
-	closestDistances.reserve(endIndex-1);
-	
-	std::deque<P> closestNeighbors;
-	for(size_t vIndex = 0 ; vIndex<endIndex; ++vIndex){
-		const auto pos = positionAccessor->getPosition(vIndex);
-		closestNeighbors.clear();
-		octree.getClosestPoints(pos, 2, closestNeighbors); // this point and closest neighbor
-		if(closestNeighbors.size()==2){ // get other point
-			if(closestNeighbors[0].vIndex==vIndex)
-				closestDistances.push_back(pos.distance(closestNeighbors[1].getPosition()));
-			else
-				closestDistances.push_back(pos.distance(closestNeighbors[0].getPosition()));
+	Util::Reference<Rendering::NormalAttributeAccessor> nAcc;
+	Util::Reference<Rendering::NormalAttributeAccessor> tAcc;
+	if(geodesic && !mesh.getVertexDescription().hasAttribute(VertexAttributeIds::NORMAL)) {
+		WARN("getMinimalVertexDistances requires normals when used with geodesics");
+		geodesic = false;
+	}
+	if(geodesic) {
+		nAcc = Rendering::NormalAttributeAccessor::create(mesh.openVertexData());
+		if(mesh.getVertexDescription().hasAttribute(VertexAttributeIds::TANGENT)) {
+			// Yaay, we have tangents
+			tAcc = Rendering::NormalAttributeAccessor::create(mesh.openVertexData(), VertexAttributeIds::TANGENT);
 		}
 	}
+	
+	// collect samples and create octree
+	std::deque<Sample> samples;
+	Geometry::Box bb = mesh.getBoundingBox();
+	bb.resizeRel( 1.01 );	
+	Geometry::PointOctree<Sample> octree(bb,bb.getExtentMax()*0.01,8);
+	prefixLength = prefixLength > 0 ? std::min<size_t>(prefixLength, mesh.getVertexCount()) : mesh.getVertexCount();
+	for(uint32_t i=0; i<prefixLength; ++i) {
+		auto p = pAcc->getPosition(i);
+		if(geodesic) {
+			auto n = nAcc->getNormal(i);
+			if(n.isZero()) {
+				std::cerr << "Zero Normal " << i << " " << p << " " << n << std::endl;
+				continue;
+			}
+			n.normalize();
+			Vec3 t;
+			if(tAcc.isNull()) {
+				// use arbitrary basis to compute tangents
+				t = n.cross(X_AXIS);
+				if(t.isZero()) t = n.cross(Y_AXIS);
+				if(t.isZero()) t = n.cross(Z_AXIS);
+				t.normalize();
+			} else {
+				t = tAcc->getNormal(i);
+			}
+			samples.emplace_back(i, p, n, t);
+		} else {
+			samples.emplace_back(i, p);
+		}
+		octree.insert(samples.back());
+	}	
+		
+	std::vector<float> closestDistances;
+	closestDistances.reserve(prefixLength);
+	std::deque<Sample> neighbors;
+	
+	for(auto& s1 : samples) {
+		neighbors.clear();
+		octree.getClosestPoints(s1.p, 2, neighbors); // this point and closest neighbor
+		if(neighbors.size()==2){ // get other point
+			closestDistances.push_back(getDiff(s1, neighbors[0].i==s1.i ? neighbors[1] : neighbors[0], geodesic).length());
+		}
+	}
+	
 	return closestDistances;
 }
 
@@ -269,62 +352,9 @@ Rendering::Mesh* getSurfels(MinSG::Node * node) {
 	return surfelAttribute ? surfelAttribute->get() : nullptr;
 }
 
-
-// -------------------
-
-struct Sample {
-	Sample(uint32_t i, const Vec3& p) : i(i), p(p), n({0,0,0}), t({0,0,0}), w(1) {}
-	Sample(uint32_t i, const Vec3& p, const Vec3& n, const Vec3& t) : i(i), p(p), n(n), t(t), w(1) {}
-	const Vec3& getPosition() const { return p; }
-	uint32_t i; // index
-	Vec3 p; // position
-	Vec3 n; // normal
-	Vec3 t; // tangent
-	float w; // weight
-};
-
-// approximate the geodetic differential by rotating the differential into the tangent plane
-Vec3 getDiff(const Sample& s1, const Sample& s2, bool geodetic) {
-	Vec3 d = (s1.p - s2.p) * 2.0 / (s1.w + s2.w);
-	
-	if(!geodetic)
-		return d;
-	
-	float dist = d.length();
-	
-	if(s1.n.isZero() || s2.n.isZero()) {
-		std::cerr << "Zero Normal AAAAAAAHHH!" << std::endl;
-		return {0,0,0};
-	}
-	
-	// approximate geodetic distance (Bowers 2010)
-	float c1 = s1.n.dot(d / dist);
-	float c2 = s2.n.dot(d / dist);
-	if(c1 == c2)
-		dist *= std::sqrt(1 - c1*c1);
-	else 
-		dist *= (std::asin(c1) - std::asin(c2)) / (c1 - c2);
-	
-	// compute cotangent
-	Vec3 cot = s1.n.cross(s1.t).normalize();
-	
-	// project differential onto tangent plane
-	d.setValue(s1.t.dot(d), cot.dot(d), 0);
-	if(d.isZero()) {
-		d.setValue(dist, 0, 0); // might be too biased?
-	} else {
-		d.normalize();
-		d *= dist;
-	}
-	return d;
-}
-
 // -------------------
 
 Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution, uint32_t count, bool geodetic, bool adaptive) {
-	static Geometry::Vec3 X_AXIS(1,0,0);
-	static Geometry::Vec3 Y_AXIS(0,1,0);
-	static Geometry::Vec3 Z_AXIS(0,0,1);
 	
 	// mesh
 	count = count > 0 ? std::min(count, mesh->getVertexCount()) : mesh->getVertexCount();

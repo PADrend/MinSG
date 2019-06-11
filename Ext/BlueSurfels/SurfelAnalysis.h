@@ -46,7 +46,7 @@ struct Radial {
 };
 
 std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh);
-std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength);
+std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength, bool geodesic=false);
 
 float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
 
@@ -59,7 +59,7 @@ float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels);
 Rendering::Mesh* getSurfels(MinSG::Node * node);
 
 //! Differential domain analysis based on "Differential domain analysis for non-uniform sampling" by Wei et al. (ACM ToG 2011)
-Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution=256, uint32_t count=0, bool geodetic=true, bool adaptive=false);
+Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution=256, uint32_t count=0, bool geodesic=true, bool adaptive=false);
 std::vector<Radial> getRadialMeanVariance(const Util::Reference<Util::Bitmap>& spectrum);
 
 inline uint32_t getPrefixForRadius(float radius, float packing) {
