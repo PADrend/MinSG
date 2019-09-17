@@ -1,13 +1,14 @@
 #
 # This file is part of the MinSG library.
 # Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
+# Copyright (C) 2014-2019 Sascha Brandt <sascha@brandt.graphics>
 #
 # This library is subject to the terms of the Mozilla Public License, v. 2.0.
 # You should have received a copy of the MPL along with this library; see the 
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
 cmake_minimum_required(VERSION 3.1.0)
-project(MinSG VERSION 0.2.0)
+project(MinSG VERSION 0.3.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -34,19 +35,19 @@ add_library(MinSG ${MinSG_SOURCES})
 
 # Dependency to Geometry
 if(NOT TARGET Geometry)
-	find_package(Geometry 0.2.0 REQUIRED NO_MODULE)
+	find_package(Geometry 0.3.0 REQUIRED NO_MODULE)
 endif()
 target_link_libraries(MinSG LINK_PUBLIC Geometry)
 
 # Dependency to Rendering
 if(NOT TARGET Rendering)
-	find_package(Rendering 0.2.0 REQUIRED NO_MODULE)
+	find_package(Rendering 0.3.0 REQUIRED NO_MODULE)
 endif()
 target_link_libraries(MinSG LINK_PUBLIC Rendering)
 
 # Dependency to Util
 if(NOT TARGET Util)
-	find_package(Util 0.2.0 REQUIRED NO_MODULE)
+	find_package(Util 0.3.0 REQUIRED NO_MODULE)
 endif()
 target_link_libraries(MinSG LINK_PUBLIC Util)
 
@@ -232,7 +233,7 @@ include(InstallRequiredSystemLibraries)
 
 set(CPACK_PACKAGE_NAME "libminsg${MinSG_VERSION_MAJOR}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MinSG library")
-set(CPACK_PACKAGE_VENDOR "Benjamin Eikel; Claudius Jaehn; Ralf Petring")
+set(CPACK_PACKAGE_VENDOR "Benjamin Eikel; Claudius Jaehn; Ralf Petring; Sascha Brandt")
 set(CPACK_PACKAGE_CONTACT "Benjamin Eikel <benjamin@eikel.org>")
 set(CPACK_PACKAGE_VERSION_MAJOR ${MinSG_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${MinSG_VERSION_MINOR})
