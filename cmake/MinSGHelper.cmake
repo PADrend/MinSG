@@ -31,3 +31,18 @@ function(minsg_add_dependencies extension)
 		append_property(MINSG_DEPENDENCIES ${ARGN})
 	endif()
 endfunction()
+
+#
+# Add additional include directories to MinSG
+#
+function(minsg_include_directories)
+	append_property(MINSG_EXT_INCLUDE_DIRS ${ARGN})
+endfunction()
+
+#
+# Add additional link libraries to MinSG
+#
+function(minsg_link_libraries)
+	append_property(MINSG_EXT_LIBRARIES ${ARGN})
+endfunction()
+

@@ -24,4 +24,14 @@ minsg_add_sources(
 add_subdirectory(Utils)
 
 minsg_add_extension(MINSG_EXT_D3FACT "Defines if the MinSG extension D3Fact is built.")
-minsg_add_dependencies(MINSG_EXT_D3FACT MINSG_HAVE_LIB_ZLIB)
+#minsg_add_dependencies(MINSG_EXT_D3FACT MINSG_HAVE_LIB_ZLIB)
+
+if(MINSG_EXT_D3FACT)	
+	# Dependency to ZLIB
+	find_package(ZLIB REQUIRED)
+	if(ZLIB_FOUND)
+		minsg_include_directories(${ZLIB_INCLUDE_DIRS})
+		minsg_link_libraries(${ZLIB_LIBRARIES})
+		append_property(MINSG_COMPILE_DEFINITIONS MINSG_HAVE_LIB_ZLIB)
+	endif()
+endif()

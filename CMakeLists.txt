@@ -23,13 +23,19 @@ include(SubdirectoryProperties)
 include(SubdirectorySources)
 include(MinSGHelper)
 
+if(${CMAKE_VERSION} VERSION_LESS "3.11.0") 
+	include(FetchContentFallback)
+else()
+	include(FetchContent)
+endif()
+
 add_subdirectory(Core)
 add_subdirectory(Ext)
 add_subdirectory(Helper)
 add_subdirectory(SceneManagement)
 
 get_property(MinSG_SOURCES GLOBAL PROPERTY MinSG_SRCS)
-add_library(MinSG ${MinSG_SOURCES})
+add_library(MinSG SHARED ${MinSG_SOURCES})
 
 # --- Required dependencies ---
 
@@ -51,20 +57,6 @@ if(NOT TARGET Util)
 endif()
 target_link_libraries(MinSG LINK_PUBLIC Util)
 
-# --- Optional dependencies ---
-
-# Dependency to Bullet
-find_package(Bullet QUIET)
-if(BULLET_FOUND)
-	target_include_directories(MinSG PRIVATE ${BULLET_INCLUDE_DIR})
-	append_property(MINSG_COMPILE_DEFINITIONS MINSG_HAVE_LIB_BULLET)
-	target_link_libraries(MinSG LINK_PRIVATE ${BULLET_LIBRARIES})
-
-	list(GET BULLET_LIBRARIES 0 BULLET_FIRST_LIB)
-	get_filename_component(BULLET_ROOT_DIR "${BULLET_INCLUDE_DIR}/../.." ABSOLUTE)
-	set(FIND_PACKAGE_BULLET "set(BULLET_ROOT \"${BULLET_ROOT_DIR}\")\nfind_package(Bullet MODULE)")
-endif()
-
 # Dependency to Sound
 if(NOT TARGET Sound)
 	find_package(Sound 0.2.0 QUIET NO_MODULE)
@@ -72,53 +64,6 @@ endif()
 if(TARGET Sound)
 	append_property(MINSG_COMPILE_DEFINITIONS MINSG_HAVE_LIB_SOUND)
 	target_link_libraries(MinSG LINK_PUBLIC Sound)
-endif()
-
-# Dependency to Detri
-find_package(Detri QUIET NO_MODULE)
-if(Detri_FOUND)
-	target_include_directories(MinSG PRIVATE ${DETRI_INCLUDE_DIR})
-	append_property(MINSG_COMPILE_DEFINITIONS MINSG_HAVE_LIB_DETRI)
-	target_link_libraries(MinSG LINK_PRIVATE ${DETRI_LIBRARIES})
-
-	get_property(DETRI_LIBRARY_LOCATION TARGET ${DETRI_LIBRARIES} PROPERTY LOCATION)
-	get_filename_component(DETRI_LIBRARY_DIR "${DETRI_LIBRARY_LOCATION}" PATH)
-	get_filename_component(DETRI_CMAKE_DIR "${DETRI_LIBRARY_DIR}/cmake" ABSOLUTE)
-	set(FIND_PACKAGE_DETRI "find_package(Detri PATHS \"${DETRI_CMAKE_DIR}\" NO_DEFAULT_PATH)")
-endif()
-
-# Dependency to lpsolve
-find_package(lpsolve 5.5.2 QUIET NO_MODULE)
-if(TARGET lpsolve55)
-	append_property(MINSG_COMPILE_DEFINITIONS MINSG_HAVE_LIB_LPSOLVE)
-	target_link_libraries(MinSG LINK_PRIVATE lpsolve55)
-
-	get_property(LPSOLVE_LIBRARY_LOCATION TARGET lpsolve55 PROPERTY LOCATION)
-	get_filename_component(LPSOLVE_LIBRARY_DIR "${LPSOLVE_LIBRARY_LOCATION}" PATH)
-	get_filename_component(LPSOLVE_CMAKE_DIR "${LPSOLVE_LIBRARY_DIR}/cmake" ABSOLUTE)
-	set(FIND_PACKAGE_LPSOLVE "find_package(lpsolve PATHS \"${LPSOLVE_CMAKE_DIR}\" NO_DEFAULT_PATH)")
-endif()
-
-# Dependency to OpenCOLLADA
-find_package(OpenCOLLADA QUIET NO_MODULE)
-if(OpenCOLLADA_FOUND)
-	target_include_directories(MinSG PRIVATE ${OPENCOLLADA_INCLUDE_DIRS})
-	append_property(MINSG_COMPILE_DEFINITIONS MINSG_HAVE_LIB_OPENCOLLADA)
-	target_link_libraries(MinSG LINK_PRIVATE ${OPENCOLLADA_LIBRARIES})
-
-	list(GET OPENCOLLADA_LIBRARIES 0 OPENCOLLADA_LIBRARY_FIRST)
-	get_property(OPENCOLLADA_LIBRARY_LOCATION TARGET ${OPENCOLLADA_LIBRARY_FIRST} PROPERTY LOCATION)
-	get_filename_component(OPENCOLLADA_LIBRARY_DIR "${OPENCOLLADA_LIBRARY_LOCATION}" PATH)
-	get_filename_component(OPENCOLLADA_CMAKE_DIR "${OPENCOLLADA_LIBRARY_DIR}/cmake" ABSOLUTE)
-	set(FIND_PACKAGE_OPENCOLLADA "find_package(OpenCOLLADA PATHS \"${OPENCOLLADA_CMAKE_DIR}\" NO_DEFAULT_PATH)")
-endif()
-
-# Dependency to ZLIB
-find_package(ZLIB QUIET)
-if(ZLIB_FOUND)
-	target_include_directories(MinSG PRIVATE ${ZLIB_INCLUDE_DIRS})
-	target_link_libraries(MinSG LINK_PRIVATE ${ZLIB_LIBRARIES})
-	append_property(MINSG_COMPILE_DEFINITIONS MINSG_HAVE_LIB_ZLIB)
 endif()
 
 option(MINSG_PROFILING "Defines if profiling information is generated and output in MinSG.")
@@ -137,6 +82,14 @@ endif()
 get_property(MINSG_DEFINITIONS GLOBAL PROPERTY MINSG_COMPILE_DEFINITIONS)
 target_compile_definitions(MinSG PUBLIC ${MINSG_DEFINITIONS})
 
+# Process the global property storing extended include dirs
+get_property(MINSG_EXT_INCLUDE_DIR GLOBAL PROPERTY MINSG_EXT_INCLUDE_DIRS)
+target_include_directories(MinSG PRIVATE ${MINSG_EXT_INCLUDE_DIR})
+
+# Process the global property storing extended link libraries
+get_property(MINSG_EXT_LIBRARY GLOBAL PROPERTY MINSG_EXT_LIBRARIES)
+target_link_libraries(MinSG LINK_PRIVATE ${MINSG_EXT_LIBRARY})
+
 # Process the global property storing dependencies
 get_property(MINSG_DEPENDENCIES_SET GLOBAL PROPERTY MINSG_DEPENDENCIES SET)
 if(MINSG_DEPENDENCIES_SET)
@@ -152,7 +105,8 @@ endif()
 
 # Set version of library
 set_target_properties(MinSG PROPERTIES VERSION ${MinSG_VERSION}
-                                       SOVERSION ${MinSG_VERSION_MAJOR})
+																			 SOVERSION ${MinSG_VERSION_MAJOR}
+																			 LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # Install the header files
 file(GLOB MINSG_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
@@ -203,9 +157,9 @@ install(TARGETS MinSG EXPORT LibraryExport
 
 # Set include directories for users of this library
 target_include_directories(MinSG
-                           INTERFACE
-                           "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>"
-                           "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+													 INTERFACE
+													 "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>"
+													 "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
 # Library export
 install(EXPORT LibraryExport DESTINATION ${CMAKE_INSTALL_CMAKECONFIGDIR} FILE MinSGTargets.cmake COMPONENT developmentlibraries)
@@ -216,17 +170,17 @@ add_subdirectory(tests)
 # Create the configuration files
 include(CMakePackageConfigHelpers)
 configure_package_config_file(MinSGConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/MinSGConfig.cmake
-                              INSTALL_DESTINATION ${CMAKE_INSTALL_CMAKECONFIGDIR}
-                              PATH_VARS CMAKE_INSTALL_CMAKECONFIGDIR
-                              NO_SET_AND_CHECK_MACRO
-                              NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+															INSTALL_DESTINATION ${CMAKE_INSTALL_CMAKECONFIGDIR}
+															PATH_VARS CMAKE_INSTALL_CMAKECONFIGDIR
+															NO_SET_AND_CHECK_MACRO
+															NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/MinSGConfigVersion.cmake
-                                 VERSION ${MinSG_VERSION}
-                                 COMPATIBILITY SameMajorVersion)
+																 VERSION ${MinSG_VERSION}
+																 COMPATIBILITY SameMajorVersion)
 
 # Install the configuration files
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MinSGConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/MinSGConfigVersion.cmake
-        DESTINATION ${CMAKE_INSTALL_CMAKECONFIGDIR} COMPONENT developmentlibraries)
+				DESTINATION ${CMAKE_INSTALL_CMAKECONFIGDIR} COMPONENT developmentlibraries)
 
 # Packaging
 include(InstallRequiredSystemLibraries)
