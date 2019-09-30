@@ -9,6 +9,8 @@
 
 #set(MINSG_BUILD_EXTENSIONS ON)
 
+set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
+
 add_subdirectory(AdaptiveGlobalVisibilitySampling)
 add_subdirectory(Behaviours)
 add_subdirectory(BlueSurfels)
