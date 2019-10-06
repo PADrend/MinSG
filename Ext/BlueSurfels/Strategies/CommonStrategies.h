@@ -75,6 +75,7 @@ class DebugStrategy : public AbstractSurfelStrategy {
 		void setFixSurfels(bool value);
 		GETSET(bool, HideSurfels, false)
 		GETSET(uint32_t, FixedSurfelCount, 0)
+		GETSET(bool, DebugColor, false)
 	private:
 		bool fixSurfels = false;
 		Util::Reference<MinSG::AbstractCameraNode> debugCamera;

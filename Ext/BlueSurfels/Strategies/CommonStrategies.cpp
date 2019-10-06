@@ -18,11 +18,14 @@
 
 #include <Util/GenericAttribute.h>
 #include <Util/GenericAttributeSerialization.h>
+#include <Util/Graphics/Color.h>
 
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/VertexAttributeIds.h>
 #include <Rendering/Mesh/VertexAttributeAccessors.h>
 #include <Rendering/Mesh/MeshDataStrategy.h>
+#include <Rendering/RenderingContext/RenderingContext.h>
+#include <Rendering/Shader/Uniform.h>
 
 #include <Geometry/Tools.h>
 
@@ -108,7 +111,9 @@ bool DebugStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, Surf
   return false;
 }
 
-bool DebugStrategy::beforeRendering(MinSG::FrameContext& context) { 
+bool DebugStrategy::beforeRendering(MinSG::FrameContext& context) {
+	static Rendering::Uniform::UniformName UNIFORM_DEBUG_COLOR("debugColor");
+	context.getRenderingContext().setGlobalUniform({UNIFORM_DEBUG_COLOR, Util::Color4f(0,0,1, getDebugColor() ? 1 : 0)});
   return getHideSurfels(); 
 }
 
