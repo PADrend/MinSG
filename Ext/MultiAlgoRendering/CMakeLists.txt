@@ -28,7 +28,7 @@ if(MINSG_EXT_MULTIALGORENDERING)
 		lpsolve
 		URL http://downloads.sourceforge.net/lpsolve/lp_solve_5.5.2.5_source.tar.gz
 		URL_MD5 "3be57261fc41dd8e210f54017220d5f7"
-		PATCH_COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_LIST_DIR}/extern/lpsolve-CMakeLists.txt CMakeLists.txt && cmake -E copy_if_different ${CMAKE_CURRENT_LIST_DIR}/extern/lpsolve-lpsolveConfig.cmake.in lpsolveConfig.cmake.in
+		PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_LIST_DIR}/extern/lpsolve-CMakeLists.txt CMakeLists.txt && ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_LIST_DIR}/extern/lpsolve-lpsolveConfig.cmake.in lpsolveConfig.cmake.in
 	)	
 	FetchContent_GetProperties(lpsolve)
 	if(NOT lpsolve_POPULATED)

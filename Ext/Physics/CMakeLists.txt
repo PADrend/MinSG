@@ -25,6 +25,7 @@ if(MINSG_EXT_PHYSICS)
 		bullet
 		GIT_REPOSITORY https://github.com/bulletphysics/bullet3.git
 		GIT_TAG 2.88
+		GIT_SHALLOW ON
 	)	
 	FetchContent_GetProperties(bullet)
 	if(NOT bullet_POPULATED)

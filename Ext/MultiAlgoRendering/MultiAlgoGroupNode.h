@@ -9,8 +9,8 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 #include "Dependencies.h"
 
-#ifndef MULTIALGOGROUPNODE_H
-#define MULTIALGOGROUPNODE_H
+#ifndef MAR_MULTIALGOGROUPNODE_H
+#define MAR_MULTIALGOGROUPNODE_H
 
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/States/GroupState.h"

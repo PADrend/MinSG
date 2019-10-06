@@ -10,8 +10,8 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 #include "Dependencies.h"
 
-#ifndef SAMPLEREGION_H
-#define SAMPLEREGION_H
+#ifndef MAR_SAMPLEREGION_H
+#define MAR_SAMPLEREGION_H
 
 #include "MultiAlgoGroupNode.h"
 #include "SampleStorage.h"

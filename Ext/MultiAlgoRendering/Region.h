@@ -10,8 +10,8 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 #include "Dependencies.h"
 
-#ifndef REGION_H
-#define REGION_H
+#ifndef MAR_REGION_H
+#define MAR_REGION_H
 
 #include "../../Core/Nodes/AbstractCameraNode.h"
 #include "../../Core/FrameContext.h"

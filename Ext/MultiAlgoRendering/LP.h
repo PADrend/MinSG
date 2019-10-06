@@ -10,8 +10,8 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 #include "Dependencies.h"
 
-#ifndef LP_H
-#define LP_H
+#ifndef MAR_LP_H
+#define MAR_LP_H
 
 #include <condition_variable>
 #include <mutex>
@@ -24,6 +24,7 @@ COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_GCC(-Wredundant-decls)
 #include <lp_lib.h>
 COMPILER_WARN_POP
+
 
 namespace MinSG
 {

@@ -10,8 +10,8 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 #include "Dependencies.h"
 
-#ifndef REGIONEVALUATOR_H
-#define REGIONEVALUATOR_H
+#ifndef MAR_REGIONEVALUATOR_H
+#define MAR_REGIONEVALUATOR_H
 
 #include "Region.h"
 

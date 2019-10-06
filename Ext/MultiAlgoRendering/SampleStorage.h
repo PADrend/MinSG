@@ -10,8 +10,8 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 #include "Dependencies.h"
 
-#ifndef SAMPLESTORAGE_H_
-#define SAMPLESTORAGE_H_
+#ifndef MAR_SAMPLESTORAGE_H_
+#define MAR_SAMPLESTORAGE_H_
 
 #include "MultiAlgoGroupNode.h"
 #include "Utils.h"

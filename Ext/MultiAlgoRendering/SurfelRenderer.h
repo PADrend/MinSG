@@ -10,8 +10,8 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 #include "Dependencies.h"
 
-#ifndef SURFELRENDERER_H
-#define SURFELRENDERER_H
+#ifndef MAR_SURFELRENDERER_H
+#define MAR_SURFELRENDERER_H
 
 #include "../../Core/States/NodeRendererState.h"
 #include "../../Core/FrameContext.h"

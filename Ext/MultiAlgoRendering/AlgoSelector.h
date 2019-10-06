@@ -10,8 +10,8 @@
 #ifdef MINSG_EXT_MULTIALGORENDERING
 #include "Dependencies.h"
 
-#ifndef ALGOSELECTOR_H
-#define ALGOSELECTOR_H
+#ifndef MAR_ALGOSELECTOR_H
+#define MAR_ALGOSELECTOR_H
 
 #include "../../Core/States/State.h"
 #include "MultiAlgoGroupNode.h"
