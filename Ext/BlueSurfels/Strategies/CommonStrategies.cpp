@@ -26,6 +26,8 @@
 #include <Rendering/Mesh/MeshDataStrategy.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Shader/Uniform.h>
+#include <Rendering/Texture/Texture.h>
+#include <Rendering/Texture/TextureUtils.h>
 
 #include <Geometry/Tools.h>
 
@@ -102,6 +104,21 @@ bool DebugStrategy::prepare(MinSG::FrameContext& context, MinSG::Node* node) {
     debugCamera = static_cast<MinSG::AbstractCameraNode*>(context.getCamera()->clone());
     debugCamera->setWorldTransformation(context.getCamera()->getWorldTransformationSRT());
   }
+	if(heatmap.isNull()) {
+		heatmap = Rendering::TextureUtils::createColorPalette({
+			Util::Color4ub(49,54,149),
+			Util::Color4ub(69,117,180),
+			Util::Color4ub(116,173,209),
+			Util::Color4ub(171,217,233),
+			Util::Color4ub(224,243,248),
+			Util::Color4ub(255,255,191),
+			Util::Color4ub(254,224,144),
+			Util::Color4ub(253,174,97),
+			Util::Color4ub(244,109,67),
+			Util::Color4ub(215,48,39),
+			Util::Color4ub(165,0,38)
+		});
+	}
   return false;
 }
 
@@ -112,12 +129,31 @@ bool DebugStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, Surf
 }
 
 bool DebugStrategy::beforeRendering(MinSG::FrameContext& context) {
+	static Rendering::Uniform::UniformName UNIFORM_DEBUG_COLOR_SCREEN("debugColorScreen");
 	static Rendering::Uniform::UniformName UNIFORM_DEBUG_COLOR("debugColor");
-	context.getRenderingContext().setGlobalUniform({UNIFORM_DEBUG_COLOR, Util::Color4f(0,0,1, getDebugColor() ? 1 : 0)});
+	context.getRenderingContext().setGlobalUniform({UNIFORM_DEBUG_COLOR_SCREEN, getDebugColorScreen()});
+	if(getDebugColorScreen() > 0.0f) {
+		context.getRenderingContext().setGlobalUniform({UNIFORM_DEBUG_COLOR, 7});
+		context.getRenderingContext().pushAndSetTexture(7, heatmap.get());
+	}
   return getHideSurfels(); 
 }
 
+void DebugStrategy::afterRendering(MinSG::FrameContext& context) {
+	if(getDebugColorScreen() > 0.0f)
+		context.getRenderingContext().popTexture(7);
+}
+
 void DebugStrategy::setFixSurfels(bool value) { debugCamera = nullptr; fixSurfels = value; }
+
+void DebugStrategy::setHeatmap(Rendering::Texture* texture) {
+	heatmap = texture;
+}
+
+Rendering::Texture* DebugStrategy::getHeatmap() const {
+	return heatmap.get();
+}
+
 
 // ------------------------------------------------------------------------
 // Import/Export

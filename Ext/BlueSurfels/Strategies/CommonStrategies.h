@@ -16,11 +16,12 @@
 
 #include <Util/Macros.h>
 
-namespace MinSG {
-class AbstractCameraNode;
-}
+namespace Rendering {
+class Texture;
+} /* Rendering */
 
 namespace MinSG {
+class AbstractCameraNode;
 namespace BlueSurfels {
 	
 class FixedSizeStrategy : public AbstractSurfelStrategy {
@@ -71,14 +72,18 @@ class DebugStrategy : public AbstractSurfelStrategy {
 		virtual bool prepare(MinSG::FrameContext& context, MinSG::Node* node);
 		virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
 		virtual bool beforeRendering(MinSG::FrameContext& context);
+		virtual void afterRendering(MinSG::FrameContext& context);
 		inline bool getFixSurfels() const { return fixSurfels; }
 		void setFixSurfels(bool value);
 		GETSET(bool, HideSurfels, false)
 		GETSET(uint32_t, FixedSurfelCount, 0)
-		GETSET(bool, DebugColor, false)
+		GETSET(float, DebugColorScreen, 0)
+		void setHeatmap(Rendering::Texture* texture);
+		Rendering::Texture* getHeatmap() const;
 	private:
 		bool fixSurfels = false;
 		Util::Reference<MinSG::AbstractCameraNode> debugCamera;
+		Util::Reference<Rendering::Texture> heatmap;
 };
   
 } /* BlueSurfels */
