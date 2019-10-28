@@ -11,6 +11,8 @@
 #ifndef MINSG_EXT_TRIANGLETREES_CONVERSION_H
 #define MINSG_EXT_TRIANGLETREES_CONVERSION_H
 
+#include <Rendering/Mesh/VertexDescription.h>
+
 #include <utility>
 #include <vector>
 
@@ -20,9 +22,6 @@ typedef _Box<float> Box_f;
 template<typename T_> class _Vec3;
 template<typename T_> class Triangle;
 typedef Triangle<_Vec3<float>> Triangle_f;
-}
-namespace Rendering {
-class VertexAttribute;
 }
 namespace MinSG {
 class GeometryNode;

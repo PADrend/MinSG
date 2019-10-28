@@ -12,6 +12,8 @@
 #ifndef MINSG_EXT_PATHTRACING_TREEBUILDER_H
 #define MINSG_EXT_PATHTRACING_TREEBUILDER_H
 
+#include <Rendering/Mesh/VertexDescription.h>
+
 #include <utility>
 #include <vector>
 #include <memory>
@@ -24,7 +26,6 @@ template<typename T_> class Triangle;
 typedef Triangle<_Vec3<float>> Triangle_f;
 }
 namespace Rendering {
-class VertexAttribute;
 class Mesh;
 }
 namespace MinSG {
