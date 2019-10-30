@@ -217,9 +217,9 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 			}
 
 			nodes.push_back(node);
-		}else if(type == Rendering::StreamerMD2::DESCRIPTION_TYPE_KEYFRAME_ANIMATION){
+		}else if(type == Rendering::Serialization::StreamerMD2::DESCRIPTION_TYPE_KEYFRAME_ANIMATION){
 
-			using Rendering::StreamerMD2;
+			using Rendering::Serialization::StreamerMD2;
 
 			Util::FileName md2FileName = Util::FileName(d->getString(Rendering::Serialization::DESCRIPTION_FILE));
 
