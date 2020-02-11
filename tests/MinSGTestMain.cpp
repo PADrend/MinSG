@@ -34,7 +34,7 @@ extern int test_statistics();
 extern int test_valuated_region_node();
 extern int test_visibility_vector();
 
-static std::unique_ptr<Util::UI::Window> init() {
+static auto init() -> decltype(Util::UI::createWindow({})) {
 	std::cout << "Init video system ... ";
 	Util::UI::Window::Properties properties;
 	properties.positioned = true;
