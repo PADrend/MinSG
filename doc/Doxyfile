@@ -1512,7 +1512,6 @@ INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = MINSG_PROFILING \
                          MINSG_EXT_CLUSTER_TREE \
                          MINSG_EXT_COLORCUBES \
-                         MINSG_EXT_D3FACT \
                          MINSG_EXT_EVALUATORS \
                          MINSG_EXT_IMAGECOMPARE \
                          MINSG_EXT_LOOSEOCTREE \

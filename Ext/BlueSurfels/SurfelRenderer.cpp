@@ -13,10 +13,12 @@
 #include "SurfelAnalysis.h"
 #include "Strategies/AbstractSurfelStrategy.h"
 
-#include "../../Core/Nodes/AbstractCameraNode.h"
+#include "../../Core/Nodes/CameraNode.h"
 #include "../../Core/Nodes/GroupNode.h"
 #include "../../Core/Nodes/GeometryNode.h"
 #include "../../Core/FrameContext.h"
+
+#include <Geometry/Angle.h>
 
 #include <Rendering/RenderingContext/RenderingParameters.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
@@ -41,6 +43,7 @@ static const Uniform::UniformName UNIFORM_SURFEL_RADIUS("sg_surfelRadius");
 static const Uniform::UniformName UNIFORM_SURFEL_PACKING("sg_surfelPacking");
 static const Uniform::UniformName UNIFORM_SIZE_FACTOR("sg_sizeFactor");
 static const Uniform::UniformName UNIFORM_SURFEL_COUNT("sg_surfelCount");
+static const Uniform::UniformName UNIFORM_CAMERA_FOV_TAN("sg_fov_tan");
 
 struct SurfelDrawCommand {
   SurfelDrawCommand(const Matrix4x4& t, const Mesh* m, uint32_t c, float s, float r, float a, float f) : transform(t), mesh(m), count(c), size(s), radius(r), packing(a), factor(f) {}
@@ -157,6 +160,13 @@ void SurfelRenderer::drawSurfels(FrameContext & context) {
     auto& rc = context.getRenderingContext();
     rc.pushPointParameters();
     rc.pushMatrix_modelToCamera();
+    
+    auto camera = dynamic_cast<CameraNode*>(context.getCamera());
+    if(camera) {
+      float fovLeft, fovRight, fovBottom, fovTop;
+      camera->getAngles(fovLeft, fovRight, fovBottom, fovTop);
+      rc.setGlobalUniform({UNIFORM_CAMERA_FOV_TAN, std::tan(Angle::deg(fovLeft).rad())});
+    }
     // TODO: use mutli-draw-indirect
     for(auto& cmd : data->commands) {
       rc.setGlobalUniform({UNIFORM_SURFEL_RADIUS, cmd.radius});
