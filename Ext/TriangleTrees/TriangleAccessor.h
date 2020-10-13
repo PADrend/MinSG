@@ -40,7 +40,7 @@ class TriangleAccessor {
 		 * @param _mesh Mesh containing the referenced triangle.
 		 * @param _triangleIndex Index of the triangle inside the given mesh.
 		 */
-		TriangleAccessor(const Rendering::Mesh * _mesh, uint32_t _triangleIndex);
+		MINSGAPI TriangleAccessor(const Rendering::Mesh * _mesh, uint32_t _triangleIndex);
 
 		/**
 		 * Return the minimum coordinate of all three vertices in the
@@ -70,7 +70,7 @@ class TriangleAccessor {
 		 * @param num Number of vertex in {0, 1, 2}
 		 * @return Beginning of vertex data
 		 */
-		const uint8_t * getVertexData(unsigned char num) const;
+		MINSGAPI const uint8_t * getVertexData(unsigned char num) const;
 
 		/**
 		 * Return the coordinates of the requested vertex.
@@ -87,7 +87,7 @@ class TriangleAccessor {
 		 * 
 		 * @return Geometric description of the triangle
 		 */
-		Geometry::Triangle_f getTriangle() const;
+		MINSGAPI Geometry::Triangle_f getTriangle() const;
 
 		/**
 		 * Return the index of the triangle inside the mesh.

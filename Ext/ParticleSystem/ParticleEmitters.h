@@ -44,8 +44,8 @@ class FrameContext;
 class ParticleEmitter : public AbstractNodeBehaviour {
 		PROVIDES_TYPE_NAME(ParticleEmitter)
 	public:
-		ParticleEmitter(ParticleSystemNode* node);
-		virtual ~ParticleEmitter();
+		MINSGAPI ParticleEmitter(ParticleSystemNode* node);
+		MINSGAPI virtual ~ParticleEmitter();
 
 		/**
 		 * If this emitter currently is emitting. Some emitter may enable themselves
@@ -199,25 +199,25 @@ class ParticleEmitter : public AbstractNodeBehaviour {
 		mutable std::mt19937 engine;
 
 		//! [convenience] Generate a direction.
-		Geometry::Vec3f getADirection();
+		MINSGAPI Geometry::Vec3f getADirection();
 
 		//! [convenience] Generate a color.
-		Util::Color4ub getAColor() const;
+		MINSGAPI Util::Color4ub getAColor() const;
 
 		//! [convenience] Generate a life time.
-		float getALife() const;
+		MINSGAPI float getALife() const;
 
 		//! [convenience] Generate a speed.
-		float getASpeed() const;
+		MINSGAPI float getASpeed() const;
 
 		//! [convenience] Generate a size.
-		Geometry::Vec2f getASize() const;
+		MINSGAPI Geometry::Vec2f getASize() const;
 		/**
 		 * [convenience] If spawnNode is set, position of spawn node relative to psystem,
 		 * zero elsewise (= position of the particle system). Particle position always are
 		 * relative to the particle system they are part of.
 		 */
-		void getSpawnCenter(Geometry::Vec3f& v, ParticleSystemNode* psystem)const;
+		MINSGAPI void getSpawnCenter(Geometry::Vec3f& v, ParticleSystemNode* psystem)const;
 };
 
 // -----------------------------------------------------------------------------------
@@ -230,10 +230,10 @@ class ParticleEmitter : public AbstractNodeBehaviour {
 class ParticleBoxEmitter: public ParticleEmitter {
 		PROVIDES_TYPE_NAME(ParticleBoxEmitter)
 	public:
-		ParticleBoxEmitter(ParticleSystemNode* node);
+		MINSGAPI ParticleBoxEmitter(ParticleSystemNode* node);
 
 		//! Emits particles inside a box area around the reference point.
-		AbstractBehaviour::behaviourResult_t doExecute() override;
+		MINSGAPI AbstractBehaviour::behaviourResult_t doExecute() override;
 
 		void setEmitBounds(const Geometry::Box& bounds) { emitBounds = bounds; }
 		const Geometry::Box& getEmitBounds()const		{ return emitBounds; }
@@ -255,10 +255,10 @@ class ParticlePointEmitter: public ParticleEmitter {
 		PROVIDES_TYPE_NAME(ParticlePointEmitter)
 	public:
 
-		ParticlePointEmitter(ParticleSystemNode* node);
+		MINSGAPI ParticlePointEmitter(ParticleSystemNode* node);
 
 		//! Combined point and sphere emitter. If offset is set, it's an sphere emitter.
-		AbstractBehaviour::behaviourResult_t doExecute() override;
+		MINSGAPI AbstractBehaviour::behaviourResult_t doExecute() override;
 
 		float getMinOffset()const		{ return minOffset; }
 		void setMinOffset(float off) 	{ minOffset = off; }

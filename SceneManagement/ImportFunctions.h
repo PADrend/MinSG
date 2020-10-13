@@ -40,7 +40,7 @@ static const importOption_t IMPORT_OPTION_USE_MESH_HASHING_REGISTRY = 1<<5;
  * @param importOptions Options controlling the import procedure
  * @return Array of MinSG nodes. In case of an error, an empty array will be returned.
  */
-std::vector<Util::Reference<Node>> loadMinSGFile(SceneManager& sm,const Util::FileName & fileName, const importOption_t importOptions = IMPORT_OPTION_NONE);
+MINSGAPI std::vector<Util::Reference<Node>> loadMinSGFile(SceneManager& sm,const Util::FileName & fileName, const importOption_t importOptions = IMPORT_OPTION_NONE);
 
 /**
  * Load MinSG nodes from a file.
@@ -49,7 +49,7 @@ std::vector<Util::Reference<Node>> loadMinSGFile(SceneManager& sm,const Util::Fi
  * @param fileName Path to a MinSG XML file
  * @return Array of MinSG nodes. In case of an error, an empty array will be returned.
  */
-std::vector<Util::Reference<Node>> loadMinSGFile(ImportContext & importContext, const Util::FileName & fileName);
+MINSGAPI std::vector<Util::Reference<Node>> loadMinSGFile(ImportContext & importContext, const Util::FileName & fileName);
 
 /**
  * Load MinSG nodes from a stream.
@@ -58,12 +58,12 @@ std::vector<Util::Reference<Node>> loadMinSGFile(ImportContext & importContext, 
  * @param in Input stream providing MinSG XML data
  * @return Array of MinSG nodes. In case of an error, an empty array will be returned.
  */
-std::vector<Util::Reference<Node>> loadMinSGStream(ImportContext & importContext, std::istream & in);
+MINSGAPI std::vector<Util::Reference<Node>> loadMinSGStream(ImportContext & importContext, std::istream & in);
 
-GroupNode * loadCOLLADA(SceneManager & sm,const Util::FileName & fileName,const importOption_t importOptions=IMPORT_OPTION_NONE);
-GroupNode * loadCOLLADA(ImportContext & importContext, const Util::FileName & fileName);
+MINSGAPI GroupNode * loadCOLLADA(SceneManager & sm,const Util::FileName & fileName,const importOption_t importOptions=IMPORT_OPTION_NONE);
+MINSGAPI GroupNode * loadCOLLADA(ImportContext & importContext, const Util::FileName & fileName);
 
-ImportContext createImportContext(SceneManager & sm,const importOption_t importOptions=IMPORT_OPTION_NONE);
+MINSGAPI ImportContext createImportContext(SceneManager & sm,const importOption_t importOptions=IMPORT_OPTION_NONE);
 
 }
 }

@@ -55,28 +55,28 @@ const std::string LOOSE_FACTOR = "LOOSE_FACTOR";
 const std::string EXACT_CUBES = "EXACT_CUBES";
 
 //! Builds a binary tree by splitting allways the largest dimension.
-void buildBinaryTree(GroupNode * root, Util::GenericAttributeMap & options);
+MINSGAPI void buildBinaryTree(GroupNode * root, Util::GenericAttributeMap & options);
 inline void buildBinaryTree(GroupNode * root) {
 	Util::GenericAttributeMap map;
 	buildBinaryTree(root, map);
 }
 
 //! Builds several variants of kd-trees.
-void buildKDTree(GroupNode * root, Util::GenericAttributeMap & options);
+MINSGAPI void buildKDTree(GroupNode * root, Util::GenericAttributeMap & options);
 inline void buildKDTree(GroupNode * root) {
 	Util::GenericAttributeMap map;
 	buildKDTree(root, map);
 }
 
 //! Builds several variants of quadtrees.
-void buildQuadTree(GroupNode * root, Util::GenericAttributeMap & options);
+MINSGAPI void buildQuadTree(GroupNode * root, Util::GenericAttributeMap & options);
 inline void buildQuadTree(GroupNode * root) {
 	Util::GenericAttributeMap map;
 	buildQuadTree(root, map);
 }
 
 //! Builds several variants of octrees.
-void buildOcTree(GroupNode * root, Util::GenericAttributeMap & options);
+MINSGAPI void buildOcTree(GroupNode * root, Util::GenericAttributeMap & options);
 inline void buildOcTree(GroupNode * root) {
 	Util::GenericAttributeMap map;
 	buildOcTree(root, map);
@@ -84,14 +84,14 @@ inline void buildOcTree(GroupNode * root) {
 
 //! Builds a simple list.
 //! @param options unused, just for compatibility with other build methods
-void buildList(GroupNode * root, Util::GenericAttributeMap & options);
+MINSGAPI void buildList(GroupNode * root, Util::GenericAttributeMap & options);
 inline void buildList(GroupNode * root) {
 	Util::GenericAttributeMap map;
 	buildList(root, map);
 }
 
 //! checks the preconditions to use a treebuilder, throws exception if not fulfilled
-void checkPreconditions(Util::Reference<GroupNode> group);
+MINSGAPI void checkPreconditions(Util::Reference<GroupNode> group);
 
 }
 

@@ -38,7 +38,7 @@ class RandomizedSampleTreeBuilder : public Builder {
 		 * @return Root node of constructed randomized sample tree.
 		 * @see RandomizedSampleTree::RandomizedSampleTree()
 		 */
-		TriangleTree * buildTriangleTree(Rendering::Mesh * mesh) override;
+		MINSGAPI TriangleTree * buildTriangleTree(Rendering::Mesh * mesh) override;
 };
 
 }

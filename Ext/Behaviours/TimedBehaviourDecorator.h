@@ -21,8 +21,8 @@ namespace MinSG {
 class TimedBehaviourDecorator: public AbstractBehaviourDecorator {
 	PROVIDES_TYPE_NAME(TimedBehaviourDecorator)
 public:
-	explicit TimedBehaviourDecorator(AbstractBehaviour* decorated, timestamp_t starttime=0, bool relative=false);
-	virtual ~TimedBehaviourDecorator();
+	MINSGAPI explicit TimedBehaviourDecorator(AbstractBehaviour* decorated, timestamp_t starttime=0, bool relative=false);
+	MINSGAPI virtual ~TimedBehaviourDecorator();
 
 	void setStartTime(timestamp_t time, bool relativeStarttime=false ) {
 		startTime = time;
@@ -30,7 +30,7 @@ public:
 	}
 	timestamp_t getStartTime() { return startTime; }
 
-	behaviourResult_t doExecute() override;
+	MINSGAPI behaviourResult_t doExecute() override;
 private:
 	timestamp_t startTime;
 	timestamp_t firstTime;

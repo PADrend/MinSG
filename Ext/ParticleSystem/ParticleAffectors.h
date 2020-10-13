@@ -45,9 +45,9 @@ class ParticleAffector : public AbstractNodeBehaviour {
 		/**
 		 * Just passes the node to AbstractNodeBehaviour
 		 */
-		ParticleAffector(ParticleSystemNode* node);
+		MINSGAPI ParticleAffector(ParticleSystemNode* node);
 
-		virtual ~ParticleAffector();
+		MINSGAPI virtual ~ParticleAffector();
 };
 
 // ---------------------------------------------------------------------------------------
@@ -60,15 +60,15 @@ class ParticleAnimator: public ParticleAffector {
 		PROVIDES_TYPE_NAME(ParticleAnimator)
 	public:
 		/** empty */
-		ParticleAnimator(ParticleSystemNode* node);
+		MINSGAPI ParticleAnimator(ParticleSystemNode* node);
 		/** empty */
-		virtual ~ParticleAnimator();
+		MINSGAPI virtual ~ParticleAnimator();
 
 		/**
 		 * Just calls the animate & collect particles function of the
 		 * particle system.
 		 */
-		AbstractBehaviour::behaviourResult_t doExecute() override;
+		MINSGAPI AbstractBehaviour::behaviourResult_t doExecute() override;
 };
 
 // ---------------------------------------------------------------------------------------
@@ -81,13 +81,13 @@ class ParticleAnimator: public ParticleAffector {
 class ParticleGravityAffector: public ParticleAffector {
 		PROVIDES_TYPE_NAME(ParticleGravityAffector)
 	public:
-		ParticleGravityAffector(ParticleSystemNode* node);
-		virtual ~ParticleGravityAffector();
+		MINSGAPI ParticleGravityAffector(ParticleSystemNode* node);
+		MINSGAPI virtual ~ParticleGravityAffector();
 
 		/**
 		 * Affects particles with a constant force, defined by <gravity>
 		 */
-		AbstractBehaviour::behaviourResult_t doExecute() override;
+		MINSGAPI AbstractBehaviour::behaviourResult_t doExecute() override;
 
 		void setGravity(const Geometry::Vec3f& g) 	{ gravity = g; }
 		const Geometry::Vec3f& getGravity()const	{ return gravity; }
@@ -107,10 +107,10 @@ class ParticleGravityAffector: public ParticleAffector {
 class ParticleReflectionAffector: public ParticleAffector {
 		PROVIDES_TYPE_NAME(ParticleReflectionAffector)
 	public:
-		ParticleReflectionAffector(ParticleSystemNode* node);
-		virtual ~ParticleReflectionAffector();
+		MINSGAPI ParticleReflectionAffector(ParticleSystemNode* node);
+		MINSGAPI virtual ~ParticleReflectionAffector();
 
-		AbstractBehaviour::behaviourResult_t doExecute() override;
+		MINSGAPI AbstractBehaviour::behaviourResult_t doExecute() override;
 
 		void setPlane(const Geometry::Plane& g) 			{ plane = g; }
 		const Geometry::Plane& getPlane()const				{ return plane; }
@@ -134,13 +134,13 @@ class ParticleReflectionAffector: public ParticleAffector {
 class ParticleFadeOutAffector: public ParticleAffector {
 		PROVIDES_TYPE_NAME(ParticleFadeOutAffector)
 	public:
-		ParticleFadeOutAffector(ParticleSystemNode* node);
-		virtual ~ParticleFadeOutAffector();
+		MINSGAPI ParticleFadeOutAffector(ParticleSystemNode* node);
+		MINSGAPI virtual ~ParticleFadeOutAffector();
 
 		/**
 		 * Linear fade out of particles using the alpha channel of the particle color
 		 */
-		AbstractBehaviour::behaviourResult_t doExecute() override;
+		MINSGAPI AbstractBehaviour::behaviourResult_t doExecute() override;
 };
 
 }

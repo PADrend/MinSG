@@ -56,19 +56,19 @@ class BudgetRenderer : public NodeRendererState {
 
 		std::vector<std::pair<double, GeometryNode *>> collectedNodes;
 
-		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 	protected:
 		//! Clear the set of collected nodes.
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 		//! Display a subset of the collected nodes.
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 	public:
-		BudgetRenderer();
+		MINSGAPI BudgetRenderer();
 
-		BudgetRenderer * clone() const override;
+		MINSGAPI BudgetRenderer * clone() const override;
 
 		uint32_t getBudget() const {
 			return budget;
@@ -79,7 +79,7 @@ class BudgetRenderer : public NodeRendererState {
 		}
 
 		//! Identifier of a node attribute containing the projected size.
-		static const Util::StringIdentifier projectedSizeId;
+		MINSGAPI static const Util::StringIdentifier projectedSizeId;
 };
 
 }

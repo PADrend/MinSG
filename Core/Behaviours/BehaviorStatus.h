@@ -30,8 +30,8 @@ class BehaviorStatus :
 		} state;
 
 	public:
-		BehaviorStatus(Behavior * b);
-		~BehaviorStatus();
+		MINSGAPI BehaviorStatus(Behavior * b);
+		MINSGAPI ~BehaviorStatus();
 
 		Behavior * getBehavior()const		{	return behavior.get();	}
 		double getCurrentTime()const		{	return currentTimeSec;	}

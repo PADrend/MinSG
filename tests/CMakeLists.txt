@@ -29,12 +29,17 @@ if(MINSG_BUILD_TESTS)
 		Viewer/MoveNodeHandler.cpp
 	)
 
+	if(MSVC)
+		target_compile_definitions(MinSGTest PRIVATE NOMINMAX)
+	endif()
 	target_link_libraries(MinSGTest LINK_PRIVATE MinSG)
 
 	if(COMPILER_SUPPORTS_CXX11)
 		set_property(TARGET MinSGTest APPEND_STRING PROPERTY COMPILE_FLAGS "-std=c++11 ")
 	elseif(COMPILER_SUPPORTS_CXX0X)
 		set_property(TARGET MinSGTest APPEND_STRING PROPERTY COMPILE_FLAGS "-std=c++0x ")
+	elseif(MSVC)
+		set_property(TARGET MinSGTest APPEND_STRING PROPERTY COMPILE_FLAGS "/std:c++14 ")
 	endif()
 
 	install(TARGETS MinSGTest

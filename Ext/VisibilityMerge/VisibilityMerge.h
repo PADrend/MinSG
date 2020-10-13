@@ -43,7 +43,7 @@ class VisibilityMerge {
 		 * @return Combination of new root node of visibility
 		 * subdivision and new root node of scene graph.
 		 */
-		static std::pair<ValuatedRegionNode *, ListNode *> run(SceneManagement::SceneManager * mgr,
+		MINSGAPI static std::pair<ValuatedRegionNode *, ListNode *> run(SceneManagement::SceneManager * mgr,
 																VisibilitySubdivision::cell_ptr root, const size_t wsSize,
 																const VisibilitySubdivision::costs_t b_D,
 																const VisibilitySubdivision::costs_t b_SPO,
@@ -60,7 +60,7 @@ class VisibilityMerge {
 		 * @param reverseMap Mapping to store reverse visibility
 		 * information.
 		 */
-		static void createReverseMapping(const VisibilitySubdivision::cell_set_t & cells,
+		MINSGAPI static void createReverseMapping(const VisibilitySubdivision::cell_set_t & cells,
 										VisibilitySubdivision::sorted_object_set_t & objects,
 										VisibilitySubdivision::reverse_map_t & reverseMap);
 
@@ -75,7 +75,7 @@ class VisibilityMerge {
 		 * @param reverseMap Mapping form objects to visibility cells
 		 * @return Costs induced when the two object are merged
 		 */
-		static VisibilitySubdivision::costs_volume_t getMergeCosts(VisibilitySubdivision::object_ptr o_i,
+		MINSGAPI static VisibilitySubdivision::costs_volume_t getMergeCosts(VisibilitySubdivision::object_ptr o_i,
 																	VisibilitySubdivision::object_ptr o_j,
 																	VisibilitySubdivision::reverse_map_t & reverseMap);
 
@@ -91,7 +91,7 @@ class VisibilityMerge {
 		 * @param b_SPO Maximum number of objects
 		 * @return Number of merges that were done
 		 */
-		static size_t objectSpaceReduce(VisibilitySubdivision::sorted_object_set_t & objectSpace,
+		MINSGAPI static size_t objectSpaceReduce(VisibilitySubdivision::sorted_object_set_t & objectSpace,
 										VisibilitySubdivision::reverse_map_t & reverseMap, const size_t wsSize,
 										const VisibilitySubdivision::costs_t b_D,
 										const VisibilitySubdivision::costs_t b_SPO);
@@ -105,7 +105,7 @@ class VisibilityMerge {
 		 * @param reverseMap Mapping form objects to visibility cells
 		 * @return Merged object
 		 */
-		static VisibilitySubdivision::object_ptr mergeObjects(VisibilitySubdivision::object_ptr o_i, VisibilitySubdivision::object_ptr o_j,
+		MINSGAPI static VisibilitySubdivision::object_ptr mergeObjects(VisibilitySubdivision::object_ptr o_i, VisibilitySubdivision::object_ptr o_j,
 										VisibilitySubdivision::reverse_map_t & reverseMap);
 
 		/**
@@ -119,7 +119,7 @@ class VisibilityMerge {
 		 * @param l_j Second list
 		 * @return Costs induced when the two lists are merged
 		 */
-		static VisibilitySubdivision::costs_volume_t getMergeScoreLists(
+		MINSGAPI static VisibilitySubdivision::costs_volume_t getMergeScoreLists(
 												const VisibilitySubdivision::visibility_sharer_map_t::const_iterator & l_i,
 												const VisibilitySubdivision::visibility_sharer_map_t::const_iterator & sl_j);
 
@@ -135,7 +135,7 @@ class VisibilityMerge {
 		 * @param b_SPZ Maximum number of cells
 		 * @return Number of merges that were done
 		 */
-		static size_t viewSpaceReduceGlobal(VisibilitySubdivision::visibility_sharer_map_t & sharer, const size_t wsSize,
+		MINSGAPI static size_t viewSpaceReduceGlobal(VisibilitySubdivision::visibility_sharer_map_t & sharer, const size_t wsSize,
 											const VisibilitySubdivision::costs_t b_SPZ);
 
 		/**
@@ -147,7 +147,7 @@ class VisibilityMerge {
 		 * @param l_i First list
 		 * @param l_j Second list
 		 */
-		static void mergeVisibility(VisibilitySubdivision::visibility_sharer_map_t & sharer,
+		MINSGAPI static void mergeVisibility(VisibilitySubdivision::visibility_sharer_map_t & sharer,
 									VisibilitySubdivision::list_ptr l_i,
 									VisibilitySubdivision::list_ptr l_j);
 };

@@ -31,10 +31,10 @@ class Statistics {
 	//!	@name General
 	//	@{
 	public:
-		Statistics();
+		MINSGAPI Statistics();
 
-		void beginFrame(int32_t framNumber=-1);
-		void endFrame();
+		MINSGAPI void beginFrame(int32_t framNumber=-1);
+		MINSGAPI void endFrame();
 
 		uint32_t getFrameNumberCounter() const {
 			return frameNumberCounter;
@@ -90,7 +90,7 @@ class Statistics {
 	//!	@name Counters
 	//	@{
 	public:
-		static const uint32_t COUNTER_KEY_INVALID;
+		MINSGAPI static const uint32_t COUNTER_KEY_INVALID;
 
 		int32_t getValueAsInt(uint32_t key)const			{	return static_cast<int32_t>(counters[key].value);	}
 		double getValueAsDouble(uint32_t key)const 		{	return counters[key].value;	}
@@ -124,7 +124,7 @@ class Statistics {
 		 * @param unit Unit of the value counted
 		 * @return Key that is used to access the counter
 		 */
-		uint32_t addCounter(const std::string & description, const std::string & unit);
+		MINSGAPI uint32_t addCounter(const std::string & description, const std::string & unit);
 
 		//! Return the number of counters. This value can be used in a loop iterating over the counters.
 		std::size_t getNumCounters() const {
@@ -140,11 +140,11 @@ class Statistics {
 		 * counter with the requested description, @a COUNTER_KEY_INVALID is
 		 * returned.
 		 */
-		uint32_t getCounterForDescription(const std::string & description) const;
+		MINSGAPI uint32_t getCounterForDescription(const std::string & description) const;
 
-		void countMesh(const Rendering::Mesh & mesh, uint32_t primitiveCount);
+		MINSGAPI void countMesh(const Rendering::Mesh & mesh, uint32_t primitiveCount);
 
-		void countNode(const Node * node);
+		MINSGAPI void countNode(const Node * node);
 
 	private:
 		struct Counter {
@@ -198,7 +198,7 @@ class Statistics {
 		void enableEvents()							{	eventsEnabled=true;	}
 		void disableEvents()						{	eventsEnabled=false;	}
 
-		void pushEvent(eventType_t type,double value);
+		MINSGAPI void pushEvent(eventType_t type,double value);
 		const Event & getEvent(size_t index) const {
 			return events[index];
 		}

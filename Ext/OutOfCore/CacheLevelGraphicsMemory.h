@@ -30,10 +30,10 @@ namespace OutOfCore {
 class CacheLevelGraphicsMemory : public CacheLevel {
 	private:
 		//! Upload the cache object to graphics memory.
-		void doAddCacheObject(CacheObject * object) override;
+		MINSGAPI void doAddCacheObject(CacheObject * object) override;
 
 		//! Delete the cache object from graphics memory.
-		void doRemoveCacheObject(CacheObject * object) override;
+		MINSGAPI void doRemoveCacheObject(CacheObject * object) override;
 
 		//! Do nothing
 		bool doLoadCacheObject(CacheObject * /*object*/) override {
@@ -41,18 +41,18 @@ class CacheLevelGraphicsMemory : public CacheLevel {
 		}
 
 		//! Return the memory size of the cache object.
-		uint64_t getCacheObjectSize(CacheObject * object) const override;
+		MINSGAPI uint64_t getCacheObjectSize(CacheObject * object) const override;
 
 		//! Fetch cache objects from below and upload the to GPU memory.
-		void doWork() override;
+		MINSGAPI void doWork() override;
 
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
 		//! Check all cache objects stored in this cache level for inconsistencies.
-		void doVerify() const override;
+		MINSGAPI void doVerify() const override;
 #endif /* MINSG_EXT_OUTOFCORE_DEBUG */
 	public:
-		CacheLevelGraphicsMemory(uint64_t cacheSize, CacheContext & cacheContext);
-		virtual ~CacheLevelGraphicsMemory();
+		MINSGAPI CacheLevelGraphicsMemory(uint64_t cacheSize, CacheContext & cacheContext);
+		MINSGAPI virtual ~CacheLevelGraphicsMemory();
 };
 
 }

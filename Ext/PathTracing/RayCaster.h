@@ -56,7 +56,7 @@ class RayCaster {
 		 * first entry. The intersection value for the point where an object is
 		 * hit is stored in the second entry of the result.
 		 */
-		static intersection_packet_t castRays(const SolidTree_ExtTriangle& tree,
+		MINSGAPI static intersection_packet_t castRays(const SolidTree_ExtTriangle& tree,
 											  const std::vector<ray_t> & rays, const box_t& bounds);
 
 };

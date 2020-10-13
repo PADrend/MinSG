@@ -50,11 +50,11 @@ class AdaptiveGlobalVisibilitySampling {
 		 * sampling in.
 		 * @param viewSpaceSubdivision Root node of the view cell hierarchy
 		 */
-		AdaptiveGlobalVisibilitySampling(GroupNode * scene,
+		MINSGAPI AdaptiveGlobalVisibilitySampling(GroupNode * scene,
 										 ValuatedRegionNode * viewSpaceSubdivision);
 
 		//! Standard destructor: Free resources
-		~AdaptiveGlobalVisibilitySampling();
+		MINSGAPI ~AdaptiveGlobalVisibilitySampling();
 
 		/**
 		 * Perform the sampling by creating the given number of samples. For
@@ -64,7 +64,7 @@ class AdaptiveGlobalVisibilitySampling {
 		 * @return If @c true, the pixel error is small and the sampling can be
 		 * terminated. Otherwise, the sampling should be continued.
 		 */
-		bool performSampling(uint32_t numSamples);
+		MINSGAPI bool performSampling(uint32_t numSamples);
 
 		/**
 		 * Create a mesh from the samples that can be used as visualization of
@@ -75,10 +75,10 @@ class AdaptiveGlobalVisibilitySampling {
 		 * 
 		 * @return New mesh. The caller should store it in a Util::Reference.
 		 */
-		Rendering::Mesh * createMeshFromSamples() const;
+		MINSGAPI Rendering::Mesh * createMeshFromSamples() const;
 
 		//! Return the root of the view cell hierarchy.
-		ValuatedRegionNode * getViewCellHierarchy() const;
+		MINSGAPI ValuatedRegionNode * getViewCellHierarchy() const;
 };
 
 }

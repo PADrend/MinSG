@@ -44,7 +44,7 @@ namespace Physics {
 
 class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 	public:
-		static PhysicWorld * createBulletWorld();
+		MINSGAPI static PhysicWorld * createBulletWorld();
 
 		//! create a new physic world
 		PhysicWorld() = default;
@@ -77,18 +77,18 @@ class PhysicWorld : public Util::ReferenceCounter<PhysicWorld>{
 		virtual void setAngularVelocity(Node& node,const Geometry::Vec3&) = 0;
 		
 		// collision shapes
-		static const Util::StringIdentifier SHAPE_AABB;
-		static const Util::StringIdentifier SHAPE_SPHERE;
-		static const Util::StringIdentifier SHAPE_COMPOSED;
+		MINSGAPI static const Util::StringIdentifier SHAPE_AABB;
+		MINSGAPI static const Util::StringIdentifier SHAPE_SPHERE;
+		MINSGAPI static const Util::StringIdentifier SHAPE_COMPOSED;
 	protected:
 		Util::LambdaFactory<CollisionShape*, Util::StringIdentifier> shapeFactory;
 	public:
 		template<typename ...Args>
 		Util::Reference<CollisionShape> createShape(const Util::StringIdentifier& id, Args... args) { return shapeFactory.create(id, args...);	}
 		
-		Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb);
-		Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere& s);
-		Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes);
+		MINSGAPI Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb);
+		MINSGAPI Util::Reference<CollisionShape> createShape_Sphere(const Geometry::Sphere& s);
+		MINSGAPI Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes);
 
 
 		// constraints

@@ -46,16 +46,16 @@ class VisibilitySubdivisionRenderer : public State {
 		/**
 		 * Standard constructor.
 		 */
-		VisibilitySubdivisionRenderer();
-		VisibilitySubdivisionRenderer(const VisibilitySubdivisionRenderer & source);
-		virtual ~VisibilitySubdivisionRenderer();
+		MINSGAPI VisibilitySubdivisionRenderer();
+		MINSGAPI VisibilitySubdivisionRenderer(const VisibilitySubdivisionRenderer & source);
+		MINSGAPI virtual ~VisibilitySubdivisionRenderer();
 
 		/**
 		 * Assign a new visibility subdivision.
 		 *
 		 * @param root Root of a visibility subdivision.
 		 */
-		void setViSu(cell_ptr root);
+		MINSGAPI void setViSu(cell_ptr root);
 
 		/**
 		 * Set the maximum runtime for the rendering of one frame.
@@ -99,7 +99,7 @@ class VisibilitySubdivisionRenderer : public State {
 			return debugOutput;
 		}
 
-		VisibilitySubdivisionRenderer * clone() const override;
+		MINSGAPI VisibilitySubdivisionRenderer * clone() const override;
 
 		/**
 		 * Display a given subset of the potentially visible objects inside the given cell.
@@ -110,7 +110,7 @@ class VisibilitySubdivisionRenderer : public State {
 		 * @param budgetEnd Number of triangles where the rendering of objects should stop. If zero then the rendering is not stopped.
 		 * @return @c true if the objects were display and @c false if an error occurred.
 		 */
-		static bool renderCellSubset(FrameContext & context, cell_ptr cell, uint32_t budgetBegin, uint32_t budgetEnd);
+		MINSGAPI static bool renderCellSubset(FrameContext & context, cell_ptr cell, uint32_t budgetBegin, uint32_t budgetEnd);
 
 	private:
 		//! Hold current data and do not update for new frames.
@@ -134,9 +134,9 @@ class VisibilitySubdivisionRenderer : public State {
 		std::vector<object_ptr> holdObjects;
 
 		//! Render objects from different budgets in different colors.
-		void debugDisplay(uint32_t & renderedTriangles, object_ptr object, FrameContext & context, const RenderParam & rp);
+		MINSGAPI void debugDisplay(uint32_t & renderedTriangles, object_ptr object, FrameContext & context, const RenderParam & rp);
 
-		stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
 
 		// -----
 

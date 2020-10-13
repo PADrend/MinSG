@@ -29,7 +29,7 @@ namespace GraphVizOutput {
  * @c nullptr to deactivate name output.
  * @param fileName Name of file to store the data in.
  */
-void treeToFile(Node * rootNode,
+MINSGAPI void treeToFile(Node * rootNode,
 				const SceneManagement::SceneManager * sceneManager,
 				const Util::FileName & fileName);
 

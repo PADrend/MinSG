@@ -24,11 +24,11 @@ class SimplePhysics : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(SimplePhysics)
 
 	public:
-		SimplePhysics(Node * node,Geometry::Vec3 v);
-		SimplePhysics(Node * node);
-		virtual ~SimplePhysics();
+		MINSGAPI SimplePhysics(Node * node,Geometry::Vec3 v);
+		MINSGAPI SimplePhysics(Node * node);
+		MINSGAPI virtual ~SimplePhysics();
 
-		behaviourResult_t doExecute() override;
+		MINSGAPI behaviourResult_t doExecute() override;
 
 	protected:
 		Geometry::Vec3 speed;
@@ -51,11 +51,11 @@ class SimplePhysics2 : public Behavior {
 		Geometry::Vec3 initialDirection;
 
 		//! ---|> Behavior
-		void doPrepareBehaviorStatus(BehaviorStatus &) override;
+		MINSGAPI void doPrepareBehaviorStatus(BehaviorStatus &) override;
 		//! ---|> Behavior
-		void doBeforeInitialExecute(BehaviorStatus &) override;
+		MINSGAPI void doBeforeInitialExecute(BehaviorStatus &) override;
 		//! ---|> Behavior
-		behaviourResult_t doExecute2(BehaviorStatus &) override;
+		MINSGAPI behaviourResult_t doExecute2(BehaviorStatus &) override;
 //		//! ---|> Behavior
 //		void doFinalize(BehaviorStatus &)override;
 };

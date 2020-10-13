@@ -75,7 +75,7 @@ class PreprocessingContext {
 		 * child nodes will be combined to compute the bounding sphere of the
 		 * inner node.
 		 */
-		PreprocessingContext(SceneManagement::SceneManager & sceneManager,
+		MINSGAPI PreprocessingContext(SceneManagement::SceneManager & sceneManager,
 							 FrameContext & frameContext,
 							 GroupNode * rootNode,
 							 const std::vector<Geometry::Vec3f> & positions,
@@ -84,60 +84,60 @@ class PreprocessingContext {
 							 bool computeTightInnerBoundingSpheres);
 
 		//! Destroy the preprocessing context
-		~PreprocessingContext();
+		MINSGAPI ~PreprocessingContext();
 
 		/**
 		 * Preprocess a single node. If the preprocessing is already finished,
 		 * do nothing.
 		 */
-		void preprocessSingleNode();
+		MINSGAPI void preprocessSingleNode();
 
 		/**
 		 * Check the state of the preprocessing.
 		 *
 		 * @return @c true if and only if the preprocessing is finished
 		 */
-		bool isFinished() const;
+		MINSGAPI bool isFinished() const;
 
 		/**
 		 * Return the number of nodes that wait to be preprocessed.
 		 * 
 		 * @return Current number of nodes
 		 */
-		std::size_t getNumRemainingNodes() const;
+		MINSGAPI std::size_t getNumRemainingNodes() const;
 
 		//! Access the scene manager.
-		SceneManagement::SceneManager & getSceneManager();
+		MINSGAPI SceneManagement::SceneManager & getSceneManager();
 
 		//! Access the frame context.
-		FrameContext & getFrameContext();
+		MINSGAPI FrameContext & getFrameContext();
 
 		//! Read the sample positions.
-		const std::vector<Geometry::Vec3f> & getPositions() const;
+		MINSGAPI const std::vector<Geometry::Vec3f> & getPositions() const;
 
 		//! Read the image resolution.
-		uint32_t getResolution() const;
+		MINSGAPI uint32_t getResolution() const;
 
 		//! Read if existing results are to be used.
-		bool getUseExistingVisibilityResults() const;
+		MINSGAPI bool getUseExistingVisibilityResults() const;
 
 		//! Read if tight bounding spheres for inner nodes are to be computed.
-		bool getComputeTightInnerBoundingSpheres() const;
+		MINSGAPI bool getComputeTightInnerBoundingSpheres() const;
 
 #ifdef MINSG_EXT_SVS_PROFILING
 		//! Access the profiler.
-		Profiling::Profiler & getProfiler();
+		MINSGAPI Profiling::Profiler & getProfiler();
 
-		static const Util::StringIdentifier ATTR_numDescendantsGeometryNode;
-		static const Util::StringIdentifier ATTR_numDescendantsGroupNode;
-		static const Util::StringIdentifier ATTR_numDescendantsTriangles;
-		static const Util::StringIdentifier ATTR_numGeometryNodesVisible;
-		static const Util::StringIdentifier ATTR_numTrianglesVisible;
-		static const Util::StringIdentifier ATTR_numPixelsVisible;
-		static const Util::StringIdentifier ATTR_numChildrenGeometryNode;
-		static const Util::StringIdentifier ATTR_numChildrenGroupNode;
-		static const Util::StringIdentifier ATTR_numVertices;
-		static const Util::StringIdentifier ATTR_sphereRadius;
+		MINSGAPI static const Util::StringIdentifier ATTR_numDescendantsGeometryNode;
+		MINSGAPI static const Util::StringIdentifier ATTR_numDescendantsGroupNode;
+		MINSGAPI static const Util::StringIdentifier ATTR_numDescendantsTriangles;
+		MINSGAPI static const Util::StringIdentifier ATTR_numGeometryNodesVisible;
+		MINSGAPI static const Util::StringIdentifier ATTR_numTrianglesVisible;
+		MINSGAPI static const Util::StringIdentifier ATTR_numPixelsVisible;
+		MINSGAPI static const Util::StringIdentifier ATTR_numChildrenGeometryNode;
+		MINSGAPI static const Util::StringIdentifier ATTR_numChildrenGroupNode;
+		MINSGAPI static const Util::StringIdentifier ATTR_numVertices;
+		MINSGAPI static const Util::StringIdentifier ATTR_sphereRadius;
 #endif /* MINSG_EXT_SVS_PROFILING */
 };
 

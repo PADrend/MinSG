@@ -79,7 +79,7 @@ class CameraNodeOrtho : public AbstractCameraNode {
 
 
 	protected:
-		void updateFrustum() override;
+		MINSGAPI void updateFrustum() override;
 
 	private:
 		explicit CameraNodeOrtho(const CameraNodeOrtho& other) :

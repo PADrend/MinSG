@@ -55,9 +55,9 @@ class RegionEvaluator : public Util::AttributeProvider,public Util::ReferenceCou
 
 	protected:
 
-		static const Util::Color4ub colorFinished;
-		static const Util::Color4ub colorScheduled;
-		static const Util::Color4ub colorActive;
+		MINSGAPI static const Util::Color4ub colorFinished;
+		MINSGAPI static const Util::Color4ub colorScheduled;
+		MINSGAPI static const Util::Color4ub colorActive;
 
 		typedef std::map<std::string, RegionEvaluator *> EvaluatorMap;
 		typedef std::set<Region *, bool( *)(const Region *, const Region *)> RegionPrioQueue;
@@ -109,7 +109,7 @@ class PolygonDensityEvaluator: public RegionEvaluator {
 
 	public:
 
-		static bool compare(const Region * a, const Region * b);
+		MINSGAPI static bool compare(const Region * a, const Region * b);
 
 		PolygonDensityEvaluator() {
 			evalQueue = new RegionPrioQueue(compare);
@@ -117,12 +117,12 @@ class PolygonDensityEvaluator: public RegionEvaluator {
 
 	protected:
 
-		virtual void evaluate(Region * r) override;
-		virtual void init(Region * r) override;
+		MINSGAPI virtual void evaluate(Region * r) override;
+		MINSGAPI virtual void init(Region * r) override;
 
-		void calcPriority(Region * r);
-		PrioSplit calcPriority(const std::vector<Geometry::Box> & r);
-		float calcDensity(const Geometry::Box & b);
+		MINSGAPI void calcPriority(Region * r);
+		MINSGAPI PrioSplit calcPriority(const std::vector<Geometry::Box> & r);
+		MINSGAPI float calcDensity(const Geometry::Box & b);
 
 	private:
 
@@ -133,7 +133,7 @@ class RegionSizeEvaluator: public RegionEvaluator {
 
 	public:
 
-		static bool compare(const Region * a, const Region * b);
+		MINSGAPI static bool compare(const Region * a, const Region * b);
 
 		RegionSizeEvaluator() {
 			evalQueue = new RegionPrioQueue(compare);
@@ -141,8 +141,8 @@ class RegionSizeEvaluator: public RegionEvaluator {
 
 	protected:
 
-		virtual void evaluate(Region * r) override;
-		virtual void init(Region * r) override;
+		MINSGAPI virtual void evaluate(Region * r) override;
+		MINSGAPI virtual void init(Region * r) override;
 
 	private:
 
@@ -152,7 +152,7 @@ class PolygonCountEvaluator: public RegionEvaluator {
 
 	public:
 
-		static bool compare(const Region * a, const Region * b);
+		MINSGAPI static bool compare(const Region * a, const Region * b);
 
 		PolygonCountEvaluator() {
 			evalQueue = new RegionPrioQueue(compare);
@@ -160,8 +160,8 @@ class PolygonCountEvaluator: public RegionEvaluator {
 
 	protected:
 
-		virtual void evaluate(Region * r) override;
-		virtual void init(Region * r) override;
+		MINSGAPI virtual void evaluate(Region * r) override;
+		MINSGAPI virtual void init(Region * r) override;
 
 	private:
 

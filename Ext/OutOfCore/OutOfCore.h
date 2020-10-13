@@ -30,22 +30,22 @@ class CacheManager;
 class DataStrategy;
 
 //! Return the single instance of CacheManager.
-CacheManager & getCacheManager();
+MINSGAPI CacheManager & getCacheManager();
 
 //! Return the single instance of DataStrategy.
-DataStrategy & getDataStrategy();
+MINSGAPI DataStrategy & getDataStrategy();
 
 //! Associate the out-of-core system to the FrameContext (so that it is triggered every frame) and register the MeshImport function.
-void setUp(FrameContext& context);
+MINSGAPI void setUp(FrameContext& context);
 
 //! Remove the association of the out-of-core system and remove all cache levels.
-void shutDown();
+MINSGAPI void shutDown();
 
 //! Return @c true, if setUp() has been called at least once.
-bool isSystemEnabled();
+MINSGAPI bool isSystemEnabled();
 
 //! Helper function to add a new mesh to the out-of-core system.
-Rendering::Mesh * addMesh(const Util::FileName & meshFile, const Geometry::Box & meshBB);
+MINSGAPI Rendering::Mesh * addMesh(const Util::FileName & meshFile, const Geometry::Box & meshBB);
 
 }
 }

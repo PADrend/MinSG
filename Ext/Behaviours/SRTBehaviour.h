@@ -30,13 +30,13 @@ class SRTBehaviour : public AbstractNodeBehaviour {
 		float trans[3];
 	};
 
-	void loadSRTs(const Util::FileName &filename);
+	MINSGAPI void loadSRTs(const Util::FileName &filename);
 
 	public:
-		SRTBehaviour(Node * node, const Util::FileName &filename);
-		virtual ~SRTBehaviour();
+		MINSGAPI SRTBehaviour(Node * node, const Util::FileName &filename);
+		MINSGAPI virtual ~SRTBehaviour();
 
-		behaviourResult_t doExecute() override;
+		MINSGAPI behaviourResult_t doExecute() override;
 		size_t getSize() { return srts.size(); }
 	protected:
 		std::vector<Geometry::SRTf> srts;

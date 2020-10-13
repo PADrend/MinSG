@@ -39,8 +39,8 @@ class TwinPartitionsRenderer : public State {
 		 *
 		 * @partitions Valid partition data. The renderer takes ownership of the pointer and deletes it when it is destroyed.
 		 */
-		TwinPartitionsRenderer(PartitionsData * partitions);
-		virtual ~TwinPartitionsRenderer();
+		MINSGAPI TwinPartitionsRenderer(PartitionsData * partitions);
+		MINSGAPI virtual ~TwinPartitionsRenderer();
 
 		uint32_t getMaximumRuntime() const {
 			return maxRuntime;
@@ -80,13 +80,13 @@ class TwinPartitionsRenderer : public State {
 		}
 
 		//! Implementation cannot be prevented.
-		State * clone() const override;
+		MINSGAPI State * clone() const override;
 
 	private:
 		//! Not implemented.
-		TwinPartitionsRenderer(const TwinPartitionsRenderer & /*source*/);
+		MINSGAPI TwinPartitionsRenderer(const TwinPartitionsRenderer & /*source*/);
 		//! Not implemented.
-		TwinPartitionsRenderer & operator=(const TwinPartitionsRenderer & /*source*/);
+		MINSGAPI TwinPartitionsRenderer & operator=(const TwinPartitionsRenderer & /*source*/);
 
 		//! Structure containing the data of the object space and the view space.
 		std::unique_ptr<PartitionsData> data;
@@ -109,7 +109,7 @@ class TwinPartitionsRenderer : public State {
 		//! Flag determining if the textured depth meshes are displayed.
 		bool drawTexturedDepthMeshes;
 
-		stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
 };
 }
 }

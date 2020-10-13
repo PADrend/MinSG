@@ -42,30 +42,30 @@ class SamplePoint {
 		 *
 		 * @param pos Position on the unit sphere
 		 */
-		SamplePoint(const Geometry::Vec3f & pos);
-		SamplePoint(SamplePoint &&);
-		SamplePoint(const SamplePoint &);
-		~SamplePoint();
-		SamplePoint & operator=(SamplePoint &&);
-		SamplePoint & operator=(const SamplePoint &);
+		MINSGAPI SamplePoint(const Geometry::Vec3f & pos);
+		MINSGAPI SamplePoint(SamplePoint &&);
+		MINSGAPI SamplePoint(const SamplePoint &);
+		MINSGAPI ~SamplePoint();
+		MINSGAPI SamplePoint & operator=(SamplePoint &&);
+		MINSGAPI SamplePoint & operator=(const SamplePoint &);
 
 		//! Equality comparison
-		bool operator==(const SamplePoint & other) const;
+		MINSGAPI bool operator==(const SamplePoint & other) const;
 
 		//! Retrieve the sample position.
-		const Geometry::Vec3f & getPosition() const;
+		MINSGAPI const Geometry::Vec3f & getPosition() const;
 
 		//! Retrieve the value stored at this position.
-		const VisibilitySubdivision::VisibilityVector & getValue() const;
+		MINSGAPI const VisibilitySubdivision::VisibilityVector & getValue() const;
 		//! Store a new value for this position.
-		void setValue(const VisibilitySubdivision::VisibilityVector & vv);
+		MINSGAPI void setValue(const VisibilitySubdivision::VisibilityVector & vv);
 
 		/**
 		 * Calculate the amount of memory that is required to store the sample.
 		 * 
 		 * @return Overall amount of memory in bytes
 		 */
-		size_t getMemoryUsage() const;
+		MINSGAPI size_t getMemoryUsage() const;
 };
 
 }

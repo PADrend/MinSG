@@ -40,7 +40,7 @@ class OctreeBuilder : public Builder {
 		 * @return Root node of constructed octree.
 		 * @see Octree::Octree()
 		 */
-		TriangleTree * buildTriangleTree(Rendering::Mesh * mesh) override;
+		MINSGAPI TriangleTree * buildTriangleTree(Rendering::Mesh * mesh) override;
 
 	private:
 		//! Maximum number of triangles in a node. If this number is exceeded, the node will be split.

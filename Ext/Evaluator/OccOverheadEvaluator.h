@@ -27,12 +27,12 @@ class OccOverheadEvaluator : public Evaluator {
 		PROVIDES_TYPE_NAME(OccOverheadEvaluator)
 	public:
 
-		OccOverheadEvaluator(DirectionMode mode=SINGLE_VALUE);
-		virtual ~OccOverheadEvaluator();
+		MINSGAPI OccOverheadEvaluator(DirectionMode mode=SINGLE_VALUE);
+		MINSGAPI virtual ~OccOverheadEvaluator();
 	// ---|> Evaluator
-		virtual void beginMeasure() override;
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
-		virtual void endMeasure(FrameContext & context) override;
+		MINSGAPI virtual void beginMeasure() override;
+		MINSGAPI virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		MINSGAPI virtual void endMeasure(FrameContext & context) override;
 
 	private:
 		float renderingTime;

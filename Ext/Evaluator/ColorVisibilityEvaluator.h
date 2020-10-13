@@ -38,13 +38,13 @@ class ColorVisibilityEvaluator : public Evaluator {
 	PROVIDES_TYPE_NAME(ColorVisibilityEvaluator)
 	public:
 		//! This uses always Evaluator::SINGLE_VALUE mode.
-		ColorVisibilityEvaluator(DirectionMode dirMode);
-		virtual ~ColorVisibilityEvaluator();
+		MINSGAPI ColorVisibilityEvaluator(DirectionMode dirMode);
+		MINSGAPI virtual ~ColorVisibilityEvaluator();
 
 		// ---|> Evaluator
-		virtual void beginMeasure() override;
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & rect) override;
-		virtual void endMeasure(FrameContext & context) override;
+		MINSGAPI virtual void beginMeasure() override;
+		MINSGAPI virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & rect) override;
+		MINSGAPI virtual void endMeasure(FrameContext & context) override;
 
 	private:
 		//! Stores the number of triangles which were detected visible.

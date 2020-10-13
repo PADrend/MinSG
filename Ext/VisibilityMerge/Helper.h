@@ -37,7 +37,7 @@ class Helper {
 		 * @return A pointer to the extracted list or @c nullptr if the
 		 * list could not be extracted.
 		 */
-		static VisibilitySubdivision::list_ptr getVVList(const VisibilitySubdivision::cell_ptr node);
+		MINSGAPI static VisibilitySubdivision::list_ptr getVVList(const VisibilitySubdivision::cell_ptr node);
 
 		/**
 		 * Convenience function to extract the visibility vector from
@@ -46,7 +46,7 @@ class Helper {
 		 * @param attribute GenericAttribute which is used as source.
 		 * @return Extracted visibility vector
 		 */
-		static const VisibilitySubdivision::VisibilityVector & getVV(const Util::GenericAttribute * attribute);
+		MINSGAPI static const VisibilitySubdivision::VisibilityVector & getVV(const Util::GenericAttribute * attribute);
 
 		/**
 		 * Convenience function to access the visibility vector stored in a
@@ -55,7 +55,7 @@ class Helper {
 		 * @param attribute GenericAttribute that stores the data
 		 * @return Reference to the visibility vector
 		 */
-		static VisibilitySubdivision::VisibilityVector & getVV(Util::GenericAttribute * attribute);
+		MINSGAPI static VisibilitySubdivision::VisibilityVector & getVV(Util::GenericAttribute * attribute);
 
 		/**
 		 * Go recursively through the tree given by @a root and extract
@@ -64,7 +64,7 @@ class Helper {
 		 * @param root Root node of visibility subdivision subtree.
 		 * @return Leaf cells that were found.
 		 */
-		static VisibilitySubdivision::cell_set_t collectVisibilityCells(VisibilitySubdivision::cell_ptr root);
+		MINSGAPI static VisibilitySubdivision::cell_set_t collectVisibilityCells(VisibilitySubdivision::cell_ptr root);
 
 		/**
 		 * Calculate the overall runtime for a visibility list by
@@ -74,7 +74,7 @@ class Helper {
 		 * @param list Visibility list
 		 * @return Runtime costs
 		 */
-		static VisibilitySubdivision::costs_t getRuntime(const VisibilitySubdivision::list_ptr cell);
+		MINSGAPI static VisibilitySubdivision::costs_t getRuntime(const VisibilitySubdivision::list_ptr cell);
 
 		/**
 		 * Invalidate the runtime of the given list in the internal
@@ -83,7 +83,7 @@ class Helper {
 		 *
 		 * @param list Visibility list
 		 */
-		static void clearRuntime(const VisibilitySubdivision::list_ptr list);
+		MINSGAPI static void clearRuntime(const VisibilitySubdivision::list_ptr list);
 
 		/**
 		 * Calculate the overall runtime for a visibility cell by
@@ -118,7 +118,7 @@ class Helper {
 		 * @return Visibility vector representing the maximum
 		 * visibility of the list
 		 */
-		static VisibilitySubdivision::VisibilityVector getMaximumVisibility(const VisibilitySubdivision::list_ptr list);
+		MINSGAPI static VisibilitySubdivision::VisibilityVector getMaximumVisibility(const VisibilitySubdivision::list_ptr list);
 
 		/**
 		 * Accumulate the visibility vectors of a visibility cell.
@@ -127,11 +127,11 @@ class Helper {
 		 * @return Visibility vector representing the maximum
 		 * visibility of the cell
 		 */
-		static VisibilitySubdivision::VisibilityVector getMaximumVisibility(const VisibilitySubdivision::cell_ptr cell);
+		MINSGAPI static VisibilitySubdivision::VisibilityVector getMaximumVisibility(const VisibilitySubdivision::cell_ptr cell);
 
 	private:
 		//! Cache for the calculations of @a getRuntime.
-		static std::unordered_map<VisibilitySubdivision::list_ptr, VisibilitySubdivision::costs_t> runtimeCache;
+		MINSGAPI static std::unordered_map<VisibilitySubdivision::list_ptr, VisibilitySubdivision::costs_t> runtimeCache;
 };
 }
 }

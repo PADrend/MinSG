@@ -47,7 +47,7 @@ class SimilarPixelCounter : public AbstractImageComparator {
 		 * @param[out] value Share of correct pixels on the whole image. 1.0 means there are no different pixels, 0.0 means that all pixels differ.
 		 * @param[out] resultTex Texture containing the absolute difference values between the two input textures.
 		 */
-		virtual bool compare(Rendering::RenderingContext & context,
+		MINSGAPI virtual bool compare(Rendering::RenderingContext & context,
 							   Rendering::Texture * firstTex,
 							 Rendering::Texture * secondTex,
 							 double & value,

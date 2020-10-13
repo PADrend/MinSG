@@ -35,14 +35,14 @@ class LightNode : public Node {
 
 
 		//!	factories
-		static LightNode * createPointLight();
-		static LightNode * createDirectionalLight();
-		static LightNode * createSpotLight();
+		MINSGAPI static LightNode * createPointLight();
+		MINSGAPI static LightNode * createDirectionalLight();
+		MINSGAPI static LightNode * createSpotLight();
 
 		// ----
 
-		LightNode(Rendering::LightParameters::lightType_t type = Rendering::LightParameters::POINT);
-		virtual ~LightNode();
+		MINSGAPI LightNode(Rendering::LightParameters::lightType_t type = Rendering::LightParameters::POINT);
+		MINSGAPI virtual ~LightNode();
 
 		Rendering::LightParameters::lightType_t getType() const {
 			return parameters.type;
@@ -73,7 +73,7 @@ class LightNode : public Node {
 		/// SpoLight parameters
 		float getCutoff() const									{	return parameters.cutoff;	}
 		/* cutoff gets clamped to [0.0f , 90.0f] */
-		void setCutoff(float cutoff);
+		MINSGAPI void setCutoff(float cutoff);
 		void setExponent(float exponent)						{	parameters.exponent = exponent;	}
 		float getExponent() const								{	return parameters.exponent;	}
 
@@ -82,38 +82,38 @@ class LightNode : public Node {
 			return parameters;
 		}
 
-		void switchOn(FrameContext & context);
-		void switchOff(FrameContext & context);
+		MINSGAPI void switchOn(FrameContext & context);
+		MINSGAPI void switchOff(FrameContext & context);
 		bool isSwitchedOn()const								{	return lightNumber != INVALID_LIGHT_NUMBER; }
 
 		/// ---|> [Node]
-		void doDisplay(FrameContext & context, const RenderParam & rp) override;
+		MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
 
 	private:
 		/// ---|> [Node]
-		const Geometry::Box& doGetBB() const override;
+		MINSGAPI const Geometry::Box& doGetBB() const override;
 		
-		explicit LightNode(const LightNode &);
+		MINSGAPI explicit LightNode(const LightNode &);
 
 		/// ---|> [Node]
 		LightNode * doClone() const override	{	return new LightNode(*this);	}
 
 
 		//! Invalidate the meta mesh. This should be called when parameters have changed and the mesh should be recreated.
-		void removeMetaMesh();
+		MINSGAPI void removeMetaMesh();
 
 		mutable Rendering::LightParameters parameters;
 
 		//! Temporary storage for the light number, when the light is enabled between @a activate and @a deactivate.
 		uint8_t lightNumber;
 
-		void validateParameters()const;
+		MINSGAPI void validateParameters()const;
 
 		//! Reference for a Mesh that is used for displaying meta data.
 		Util::Reference<Rendering::Mesh> metaMesh;
 
 		//! Function that is called by the display function for creating a new mesh when the reference is invalid.
-		Rendering::Mesh * createMetaMesh();
+		MINSGAPI Rendering::Mesh * createMetaMesh();
 };
 }
 

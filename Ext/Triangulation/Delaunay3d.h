@@ -27,7 +27,7 @@
 namespace MinSG {
 namespace Triangulation {
 
-std::vector<std::tuple<uint32_t, uint32_t, uint32_t, uint32_t>> doTetrahedralization(const std::vector<Geometry::Vec3f> & positions);
+MINSGAPI std::vector<std::tuple<uint32_t, uint32_t, uint32_t, uint32_t>> doTetrahedralization(const std::vector<Geometry::Vec3f> & positions);
 
 template<typename Point_t>
 class Delaunay3d {

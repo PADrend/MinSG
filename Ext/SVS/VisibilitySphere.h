@@ -62,10 +62,10 @@ class VisibilitySphere {
 
 	public:
 		//! Build a new triangulation from the given samples.
-		VisibilitySphere(Geometry::Sphere_f _sphere, const std::vector<SamplePoint> & _samples);
+		MINSGAPI VisibilitySphere(Geometry::Sphere_f _sphere, const std::vector<SamplePoint> & _samples);
 
 		//! Move the given sphere and the given samples into the visibility sphere.
-		VisibilitySphere(Geometry::Sphere_f && _sphere, std::vector<SamplePoint> && _samples);
+		MINSGAPI VisibilitySphere(Geometry::Sphere_f && _sphere, std::vector<SamplePoint> && _samples);
 
 		/**
 		 * Build a new visibility sphere.
@@ -75,7 +75,7 @@ class VisibilitySphere {
 		 * @param newSphere Geometric representation of the sphere surface of the new visibility sphere
 		 * @param visibilitySpheres Sampling spheres that are used to create the new visibility sphere
 		 */
-		VisibilitySphere(Geometry::Sphere_f newSphere,
+		MINSGAPI VisibilitySphere(Geometry::Sphere_f newSphere,
 					   const std::deque<const VisibilitySphere *> & visibilitySpheres);
 
 		VisibilitySphere(const VisibilitySphere &) = default;
@@ -83,7 +83,7 @@ class VisibilitySphere {
 		~VisibilitySphere() = default;
 
 		//! Equality comparison
-		bool operator==(const VisibilitySphere & other) const;
+		MINSGAPI bool operator==(const VisibilitySphere & other) const;
 
 		const Geometry::Sphere_f & getSphere() const {
 			return sphere;
@@ -97,14 +97,14 @@ class VisibilitySphere {
 			return samples;
 		}
 
-		ListNode * getTriangulationMinSGNodes() const;
+		MINSGAPI ListNode * getTriangulationMinSGNodes() const;
 
 		/**
 		 * Calculate the amount of memory that is required to store the visibility sphere.
 		 * 
 		 * @return Overall amount of memory in bytes
 		 */
-		size_t getMemoryUsage() const;
+		MINSGAPI size_t getMemoryUsage() const;
 
 		/**
 		 * Iterate over all sample points on the sphere and perform an evaluation for each point.
@@ -115,7 +115,7 @@ class VisibilitySphere {
 		 * @param camera Orthographic camera that is used for rendering
 		 * @param node Root node of the scene that is given to the evaluator
 		 */
-		void evaluateAllSamples(FrameContext & frameContext,
+		MINSGAPI void evaluateAllSamples(FrameContext & frameContext,
 								Evaluators::Evaluator & evaluator,
 								CameraNodeOrtho * camera,
 								Node * node);
@@ -135,7 +135,7 @@ class VisibilitySphere {
 		 * @param explicitNodes Additional nodes that are explicitly taken into account.
 		 * The range has to be sorted.
 		 */
-		void evaluateAllSamples(FrameContext & frameContext,
+		MINSGAPI void evaluateAllSamples(FrameContext & frameContext,
 								Evaluators::Evaluator & evaluator,
 								CameraNodeOrtho * camera,
 								Node * node,
@@ -150,7 +150,7 @@ class VisibilitySphere {
 		 * @param interpolationMethod See documentation of @a interpolation_type_t
 		 * @return Visibility information for the queried position
 		 */
-		VisibilitySubdivision::VisibilityVector queryValue(const Geometry::Vec3f & query, interpolation_type_t interpolationMethod) const;
+		MINSGAPI VisibilitySubdivision::VisibilityVector queryValue(const Geometry::Vec3f & query, interpolation_type_t interpolationMethod) const;
 };
 
 }

@@ -14,7 +14,7 @@
 namespace MinSG {
 namespace SceneManagement {
 
-void initExtNodeExporter();
+MINSGAPI void initExtNodeExporter();
 
 }
 }

@@ -49,12 +49,12 @@ class ABTree : public kDTree {
 		 * box size that is used for increase. For example if the value
 		 * is @c 0.1f then a maximum increase of 10% is allowed.
 		 */
-		explicit ABTree(Rendering::Mesh * mesh,
+		MINSGAPI explicit ABTree(Rendering::Mesh * mesh,
 				uint32_t trianglesPerNode = 1000,
 				float allowedBBEnlargement = 0.0f);
 
 		//! Does nothing.
-		virtual ~ABTree();
+		MINSGAPI virtual ~ABTree();
 
 		/**
 		 * Return the dimension which is orthogonal to the splitting
@@ -83,7 +83,7 @@ class ABTree : public kDTree {
 		 * @param parent Parent node which is used to copy the
 		 * parameters from.
 		 */
-		explicit ABTree(const Geometry::Box & childBound, const kDTree & parent);
+		MINSGAPI explicit ABTree(const Geometry::Box & childBound, const kDTree & parent);
 
 		//! Return a child node. Needed for polymorphism.
 		ABTree * createChild(const Geometry::Box & childBound, const kDTree & parent) const override {
@@ -103,7 +103,7 @@ class ABTree : public kDTree {
 		 * @note It has the side effect that the @a splitValue will be
 		 * set to the calculated value.
 		 */
-		void calculateSplittingPlane(uint32_t & numFirstChild, uint32_t & numSecondChild) override;
+		MINSGAPI void calculateSplittingPlane(uint32_t & numFirstChild, uint32_t & numSecondChild) override;
 };
 
 }

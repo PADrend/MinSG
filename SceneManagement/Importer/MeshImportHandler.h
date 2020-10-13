@@ -42,7 +42,7 @@ class MeshImportHandler {
 		 * @param description Description of the Node to which the mesh belongs.
 		 * @return Arbitrary node or tree of nodes that represents the mesh inside the scene graph.
 		 */
-		virtual Node * handleImport(const Util::FileLocator& locator, const std::string & url, const DescriptionMap * description);
+		MINSGAPI virtual Node * handleImport(const Util::FileLocator& locator, const std::string & url, const DescriptionMap * description);
 };
 
 }

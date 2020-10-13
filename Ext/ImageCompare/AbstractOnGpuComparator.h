@@ -49,8 +49,8 @@ protected:
 		bool autoMode;
 		Util::Reference<Rendering::Texture> tex;
 
-		TexRef(const TexRef & other);
-		TexRef & operator=(const TexRef & other);
+		MINSGAPI TexRef(const TexRef & other);
+		MINSGAPI TexRef & operator=(const TexRef & other);
 
 	public:
 		TexRef(const Geometry::Vec2i & vec) :
@@ -76,17 +76,17 @@ protected:
 	};
 
 public:
-	static void initShaderFileLocator( const Util::FileLocator& locator);
-	static const Util::FileLocator& getShaderFileLocator();
+	MINSGAPI static void initShaderFileLocator( const Util::FileLocator& locator);
+	MINSGAPI static const Util::FileLocator& getShaderFileLocator();
 
 	enum FilterType {
 		GAUSS, BOX
 	};
 
-	AbstractOnGpuComparator(int32_t _filterSize);
-	virtual ~AbstractOnGpuComparator();
+	MINSGAPI AbstractOnGpuComparator(int32_t _filterSize);
+	MINSGAPI virtual ~AbstractOnGpuComparator();
 
-	virtual bool compare(Rendering::RenderingContext & context, Rendering::Texture * firstTex, Rendering::Texture * secondTex, double & value,
+	MINSGAPI virtual bool compare(Rendering::RenderingContext & context, Rendering::Texture * firstTex, Rendering::Texture * secondTex, double & value,
 			Rendering::Texture * resultTex) override;
 
 	virtual bool doCompare(Rendering::RenderingContext & context, Rendering::Texture * firstTex, Rendering::Texture * secondTex, double & value,
@@ -110,25 +110,25 @@ public:
 
 	virtual void setTextureDownloadSize(uint32_t sideLength)	{	texDownSize = sideLength;	}
 
-	virtual void setFBO(Util::Reference<Rendering::FBO> _fbo);
-	virtual bool init(Rendering::RenderingContext & context);
+	MINSGAPI virtual void setFBO(Util::Reference<Rendering::FBO> _fbo);
+	MINSGAPI virtual bool init(Rendering::RenderingContext & context);
 	
 protected:
 
-	void prepare(Rendering::RenderingContext & context);
+	MINSGAPI void prepare(Rendering::RenderingContext & context);
 
-	void finish(Rendering::RenderingContext & context);
+	MINSGAPI void finish(Rendering::RenderingContext & context);
 
-	void checkTextureSize(Geometry::Vec2i size);
-	void checkTextureSize(uint32_t width, uint32_t height);
+	MINSGAPI void checkTextureSize(Geometry::Vec2i size);
+	MINSGAPI void checkTextureSize(uint32_t width, uint32_t height);
 
-	float average(Rendering::RenderingContext & context, TexRef_t src);
-	void filter(Rendering::RenderingContext & context, TexRef_t src, TexRef_t dst);
-	void copy(Rendering::RenderingContext & context, TexRef_t src, TexRef_t dst);
+	MINSGAPI float average(Rendering::RenderingContext & context, TexRef_t src);
+	MINSGAPI void filter(Rendering::RenderingContext & context, TexRef_t src, TexRef_t dst);
+	MINSGAPI void copy(Rendering::RenderingContext & context, TexRef_t src, TexRef_t dst);
 
-	static void deleteTextures();
-	static Util::Reference<Rendering::Texture> createTexture(const Geometry::Vec2i & size);
-	static void releaseTexture(const Util::Reference<Rendering::Texture> & tex);
+	MINSGAPI static void deleteTextures();
+	MINSGAPI static Util::Reference<Rendering::Texture> createTexture(const Geometry::Vec2i & size);
+	MINSGAPI static void releaseTexture(const Util::Reference<Rendering::Texture> & tex);
 
 	Util::Reference<Rendering::Shader> shaderShrink;
 	Util::Reference<Rendering::Shader> shaderCopy;

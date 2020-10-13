@@ -61,10 +61,10 @@ typedef std::pair<	std::vector<std::tuple<Geometry::_Vec3<int32_t>,uint32_t,uint
 					std::vector<std::tuple<Geometry::_Vec3<int32_t>, std::array<uint32_t, 64>>> >// blocks
 				serializationData_t;
 
-serializationData_t loadVoxels(std::istream & input);
-serializationData_t loadVoxels(const Util::FileName & filename);
-void saveVoxels(std::ostream & output, const serializationData_t&);
-void saveVoxels(const Util::FileName & filename, const serializationData_t&);
+MINSGAPI serializationData_t loadVoxels(std::istream & input);
+MINSGAPI serializationData_t loadVoxels(const Util::FileName & filename);
+MINSGAPI void saveVoxels(std::ostream & output, const serializationData_t&);
+MINSGAPI void saveVoxels(const Util::FileName & filename, const serializationData_t&);
 
 
 }

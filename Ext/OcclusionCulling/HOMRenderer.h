@@ -63,19 +63,19 @@ class Node;
 			 * @param pyramidSize Side length of the HOM pyramid in pixels. It
 			 * has to be greater or equal four and a power of two.
 			 */
-			HOMRenderer(unsigned int pyramidSize = 512);
+			MINSGAPI HOMRenderer(unsigned int pyramidSize = 512);
 
 			//! Copy constructor
-			HOMRenderer(const HOMRenderer & source);
+			MINSGAPI HOMRenderer(const HOMRenderer & source);
 
 			//! Move constructor
 			HOMRenderer(HOMRenderer &&) = default;
 
 			//! Destructor. Frees the HOM pyramid memory.
-			virtual ~HOMRenderer();
+			MINSGAPI virtual ~HOMRenderer();
 
 			//! Collect possible occluders into the occluder-database.
-			void initOccluderDatabase();
+			MINSGAPI void initOccluderDatabase();
 
 			/**
 			 * Change the pyramid size if the parameter is valid.
@@ -85,7 +85,7 @@ class Node;
 			 * @return @c true if the side length was changed, @c false
 			 * otherwise.
 			 */
-			bool setSideLength(unsigned int pyramidSize);
+			MINSGAPI bool setSideLength(unsigned int pyramidSize);
 			unsigned int getSideLength() const {
 				return sideLength;
 			}
@@ -172,7 +172,7 @@ class Node;
 				return triangleLimit;
 			}
 
-			HOMRenderer * clone() const override;
+			MINSGAPI HOMRenderer * clone() const override;
 
 		protected:
 			/**
@@ -275,7 +275,7 @@ class Node;
 			/**
 			 * Reserves the memory for the HOM pyramid.
 			 */
-			void setupHOMPyramid(Rendering::RenderingContext & context);
+			MINSGAPI void setupHOMPyramid(Rendering::RenderingContext & context);
 
 			/**
 			 * Creates the Shader.
@@ -301,12 +301,12 @@ class Node;
 			/**
 			 * Select occluders in frustum.
 			 */
-			void selectOccluders(std::deque<SelectedOccluder> & occluders, AbstractCameraNode * camera) const;
+			MINSGAPI void selectOccluders(std::deque<SelectedOccluder> & occluders, AbstractCameraNode * camera) const;
 
 			/**
 			 * Draw selected occluders.
 			 */
-			double drawOccluders(const std::deque<SelectedOccluder> & occluders, FrameContext & context) const;
+			MINSGAPI double drawOccluders(const std::deque<SelectedOccluder> & occluders, FrameContext & context) const;
 
 			/**
 			 * Checks the given area inside the HOM pyramid and determines if
@@ -324,7 +324,7 @@ class Node;
 			 * @return @c true if the area is visible and @c false if the area
 			 * is hidden.
 			 */
-			bool isAreaVisible(unsigned int level, unsigned int minX,
+			MINSGAPI bool isAreaVisible(unsigned int level, unsigned int minX,
 								unsigned int maxX, unsigned int minY,
 								unsigned int maxY, unsigned int bMinX,
 								unsigned int bMaxX, unsigned int bMinY,
@@ -349,7 +349,7 @@ class Node;
 			 * @return Status code indicating if the traversal should be
 			 * continued.
 			 */
-			int process(Node * node, const Geometry::Vec3f & cameraPos, const Geometry::Vec3f & cameraDir, float zPlane,
+			MINSGAPI int process(Node * node, const Geometry::Vec3f & cameraPos, const Geometry::Vec3f & cameraDir, float zPlane,
 						FrameContext & rendContext, const RenderParam & rp,
 							const Geometry::Matrix4x4f & cameraMatrix,
 							const Geometry::Matrix4x4f & projectionMatrix);
@@ -359,7 +359,7 @@ class Node;
 			 * Render the given @a node with this renderer using the
 			 * FrameContext @a context and the @a flags given.
 			 */
-			stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+			MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 	};
 }
 

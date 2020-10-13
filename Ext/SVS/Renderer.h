@@ -58,7 +58,7 @@ class Renderer : public NodeRendererState {
 		//! When @c true, perform an occlusion test before displaying geometry stored in the visibility information of a sphere.
 		bool performGeometryOcclusionTest;
 
-		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 		/**
 		 * Display the geometry that is potentially visible for the current camera position.
@@ -68,10 +68,10 @@ class Renderer : public NodeRendererState {
 		 * @param rp Current rendering parameters
 		 * @param skipGeometryOcclusionTest If @c true, no occlusion tests for geometry are performed, regardless of the value of @a performGeometryOcclusionTest
 		 */
-		void displaySphere(FrameContext & context, GroupNode * groupNode, const RenderParam & rp, bool skipGeometryOcclusionTest);
+		MINSGAPI void displaySphere(FrameContext & context, GroupNode * groupNode, const RenderParam & rp, bool skipGeometryOcclusionTest);
 
 		//! Perform an occlusion test for the sphere stored in @p groupNode
-		void testSphere(FrameContext & context, GroupNode * groupNode);
+		MINSGAPI void testSphere(FrameContext & context, GroupNode * groupNode);
 
 		/**
 		 * Check for available results of occlusion tests for spheres.
@@ -79,10 +79,10 @@ class Renderer : public NodeRendererState {
 		 * @return @c true if all pending queries have been processed, 
 		 * @c false if the processing stopped leaving untreated queries behind.
 		 */
-		bool processPendingSphereQueries(FrameContext & context, const RenderParam & rp);
+		MINSGAPI bool processPendingSphereQueries(FrameContext & context, const RenderParam & rp);
 
 		//! Perform an occlusion test for the given @p geometryNode
-		void testGeometry(FrameContext & context, GeometryNode * geometryNode);
+		MINSGAPI void testGeometry(FrameContext & context, GeometryNode * geometryNode);
 
 		/**
 		 * Check for available results of occlusion tests for geometry.
@@ -90,20 +90,20 @@ class Renderer : public NodeRendererState {
 		 * @return @c true if all pending queries have been processed, 
 		 * @c false if the processing stopped leaving untreated queries behind.
 		 */
-		bool processPendingGeometryQueries(FrameContext & context, const RenderParam & rp);
+		MINSGAPI bool processPendingGeometryQueries(FrameContext & context, const RenderParam & rp);
 
 	protected:
 #ifdef MINSG_PROFILING
 		//! Call parent's implementation. Reset counters.
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 #endif /* MINSG_PROFILING */
 
 		//! Call parent's implementation. Pass counters to statistics.
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 	public:
-		Renderer();
+		MINSGAPI Renderer();
 
-		Renderer * clone() const override;
+		MINSGAPI Renderer * clone() const override;
 
 		interpolation_type_t getInterpolationMethod() const {
 			return interpolationMethod;

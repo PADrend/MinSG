@@ -34,20 +34,20 @@ class TransparencyRenderer : public NodeRendererState {
 		//! Flag to toggle usage of premultiplied alpha.
 		bool usePremultipliedAlpha;
 
-		stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
-		void doDisableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node *, const RenderParam & rp) override;
 
-		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-		TransparencyRenderer(const TransparencyRenderer &);
+		MINSGAPI TransparencyRenderer(const TransparencyRenderer &);
 	public:
-		TransparencyRenderer();
-		virtual ~TransparencyRenderer();
+		MINSGAPI TransparencyRenderer();
+		MINSGAPI virtual ~TransparencyRenderer();
 
-		void addNode(Node * n);
+		MINSGAPI void addNode(Node * n);
 
 		/// ---|> [State]
-		TransparencyRenderer * clone() const override;
+		MINSGAPI TransparencyRenderer * clone() const override;
 
 		/**
 		 * Specify the usage of premultiplied-alpha colors for blending.

@@ -29,12 +29,12 @@ class OccRenderer;
 class OccludeeRenderer : public State {
 		PROVIDES_TYPE_NAME(OccludeeRenderer)
 	public:
-		OccludeeRenderer();
-		OccludeeRenderer(const OccludeeRenderer & other);
+		MINSGAPI OccludeeRenderer();
+		MINSGAPI OccludeeRenderer(const OccludeeRenderer & other);
 		OccludeeRenderer(OccludeeRenderer &&) = default;
-		virtual ~OccludeeRenderer();
+		MINSGAPI virtual ~OccludeeRenderer();
 
-		OccludeeRenderer * clone() const override;
+		MINSGAPI OccludeeRenderer * clone() const override;
 		
 		void setUseWireframe(bool b) { useWireframe = b; }
 		bool getUseWireframe() const { return useWireframe; }
@@ -46,7 +46,7 @@ class OccludeeRenderer : public State {
 		std::unique_ptr<OccRenderer> occlusionCullingRenderer;
 		bool useWireframe, showOriginal;
 
-		stateResult_t doEnableState(FrameContext & context, Node * rootNode, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * rootNode, const RenderParam & rp) override;
 };
 
 }

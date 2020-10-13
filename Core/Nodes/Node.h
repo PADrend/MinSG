@@ -64,23 +64,23 @@ class Node :
 	 */
 	//@{
 	protected:
-		Node();
-		explicit Node(const Node & s);
+		MINSGAPI Node();
+		MINSGAPI explicit Node(const Node & s);
 
 	public:
-		virtual ~Node();
-		Node * clone(bool cloneAttributes=true)const;
+		MINSGAPI virtual ~Node();
+		MINSGAPI Node * clone(bool cloneAttributes=true)const;
 		
 		//! Make sure to keep a Reference to the node or call MinSG::destroy(node)
-		void destroy();
+		MINSGAPI void destroy();
 
 	private:
 		/*! ---o
 			\note do not call directly. Use MinSG::destroy(node) instead. */
-		virtual void doDestroy();
+		MINSGAPI virtual void doDestroy();
 
 		/*! Prevent usage of assignment operator. */
-		Node & operator=(const Node & /*n*/);
+		MINSGAPI Node & operator=(const Node & /*n*/);
 
 		virtual Node * doClone()const = 0;
 
@@ -97,15 +97,15 @@ class Node :
 
 	public:
 		GroupNode * getParent() const						{	return parentNode.get();	}
-		Node * getRootNode();
+		MINSGAPI Node * getRootNode();
 		bool hasParent() const								{	return parentNode.isNotNull();	}
 
-		void addToParent(Util::WeakPointer<GroupNode> p);
-		Util::Reference<Node> removeFromParent();
+		MINSGAPI void addToParent(Util::WeakPointer<GroupNode> p);
+		MINSGAPI Util::Reference<Node> removeFromParent();
 		
 		/*! Set the node's parent without removing it from its old one or informing the new parent.
 			\note Use only if you really know what you are doing!!! Normally, you should use node.addToParent( newParent ); */
-		void _setParent(Util::WeakPointer<GroupNode> p);
+		MINSGAPI void _setParent(Util::WeakPointer<GroupNode> p);
 	//@}
 
 	// -----------------
@@ -195,7 +195,7 @@ class Node :
 		bool getStatus(statusFlag_t statusFlag) const		{	return statusFlags & statusFlag;	}
 		
 		//! (internal) Automatically adjust N_STATUS_TRANSFORMATION_OBSERVED. (Further flags can be added here.)
-		void updateObservedStatus();
+		MINSGAPI void updateObservedStatus();
 		
 	public:
 		bool isDestroyed()const{	return getStatus(STATUS_IS_DESTROYED);	}
@@ -209,21 +209,21 @@ class Node :
 	//@{
 	private:
 		/// ---o
-		virtual const Geometry::Box& doGetBB() const;
+		MINSGAPI virtual const Geometry::Box& doGetBB() const;
 	protected:
 		/*!	Call whenever the (world) bounding box may have changed. E.g. when the node is moved, a child is added or removed or a mesh is added or changed.
 			The method invalidates the worldBB and traverses the tree up invalidating all worldBBs and compoundBBs (until a node has a fixed bb).	*/
-		void worldBBChanged();
+		MINSGAPI void worldBBChanged();
 	public:
 		//! \note the bounding box is in local coordinates
-		const Geometry::Box& getBB() const;
+		MINSGAPI const Geometry::Box& getBB() const;
 		
-		void setFixedBB(const Geometry::Box &fixedBB);
+		MINSGAPI void setFixedBB(const Geometry::Box &fixedBB);
 		bool hasFixedBB()const							{	return getStatus(STATUS_CONTAINS_FIXED_BB);	}
-		virtual void removeFixedBB();
+		MINSGAPI virtual void removeFixedBB();
 		/*! \note Don't store the resulting reference, but make a copy for storing: The box may change 
 		when the Node is transformed. It may even get deleted when the Node's transformation is reset.	*/
-		const Geometry::Box& getWorldBB() const;
+		MINSGAPI const Geometry::Box& getWorldBB() const;
 	//@}
 
 	// -----------------
@@ -235,13 +235,13 @@ class Node :
 	public:
 		/*! Render the node.
 			\note calls doDisplay(....) internally */
-		void display(FrameContext & context, const RenderParam & rp);
+		MINSGAPI void display(FrameContext & context, const RenderParam & rp);
 
 	protected:
 		/*!  ---o
 			Render the node. All matrix operations and states must be applied when called.
 			This function is internally called by the default to display(...) method. */
-		virtual void doDisplay(FrameContext & context, const RenderParam & rp);
+		MINSGAPI virtual void doDisplay(FrameContext & context, const RenderParam & rp);
 	//@}
 
 	// -----------------
@@ -254,7 +254,7 @@ class Node :
 		 * 
 		 * @return Amount of memory in bytes
 		 */
-		virtual size_t getMemoryUsage() const;
+		MINSGAPI virtual size_t getMemoryUsage() const;
 	//@}
 	
 	// -----------------
@@ -269,21 +269,21 @@ class Node :
 			- If a node in the source tree is already an instance, the node is cloned
 			  (i.e. the new node points to the same prototype as the given node; no instances of instances).
 				*/
-		static Node * createInstance(const Node * source);
+		MINSGAPI static Node * createInstance(const Node * source);
 	
 		//!	If the node is an instance, its prototype is returned; nullptr otherwise.
-		Node * getPrototype()const;
+		MINSGAPI Node * getPrototype()const;
 		
 		/*! Returns the node's attribute with the given name, if it is available; otherwise,
 			if the node's prototype is available and has the attribute, it is taken from there.*/
-		Util::GenericAttribute * findAttribute(const Util::StringIdentifier & key)const;
+		MINSGAPI Util::GenericAttribute * findAttribute(const Util::StringIdentifier & key)const;
 		
 		//! True iff the node is an instance of another node. \see getPrototype()
 		bool isInstance()const							{	return getStatus(STATUS_IS_INSTANCE);	}
 
 		/*! (internal) Should only be called if you really know what you are doing!
 			if prototype is nullptr, the STATUS_IS_INSTANCE flag is removed (otherwise set).	*/
-		void _setPrototype(Node * n);
+		MINSGAPI void _setPrototype(Node * n);
 	//@}
 
 	// -----------------
@@ -297,11 +297,11 @@ class Node :
 		typedef std::vector<std::pair<Util::Reference<State>, bool>> stateList_t;
 
 		bool hasStates()const							{	return states && (!states->empty()); }
-		void addState(State * sn);
-		void removeState(State * sn);
-		void removeStates();
+		MINSGAPI void addState(State * sn);
+		MINSGAPI void removeState(State * sn);
+		MINSGAPI void removeStates();
 		const stateList_t * getStateListPtr()const		{	return states.get();	}
-		std::vector<State*> getStates()const;
+		MINSGAPI std::vector<State*> getStates()const;
 
 	private:
 		std::unique_ptr<stateList_t> states;
@@ -329,31 +329,31 @@ class Node :
 		mutable std::unique_ptr<WorldLocation> worldLocation;
 
 
-		void invalidateWorldMatrix() const;
+		MINSGAPI void invalidateWorldMatrix() const;
 	
 	protected:
-		Geometry::SRT & accessSRT() const;
+		MINSGAPI Geometry::SRT & accessSRT() const;
 
 	public:
 		float getRelScaling() const									{	return accessSRT().getScale();	}
 		Geometry::Vec3 getRelOrigin() const							{	return accessSRT().getTranslation();	}
-		const Geometry::Matrix4x4& getRelTransformationMatrix() const;
-		const Geometry::Matrix4x4* getRelTransformationMatrixPtr() const;
-		const Geometry::SRT& getRelTransformationSRT()const;
+		MINSGAPI const Geometry::Matrix4x4& getRelTransformationMatrix() const;
+		MINSGAPI const Geometry::Matrix4x4* getRelTransformationMatrixPtr() const;
+		MINSGAPI const Geometry::SRT& getRelTransformationSRT()const;
 		Geometry::Vec3 getWorldOrigin() const						{	return getWorldTransformationMatrixPtr() == nullptr ? Geometry::Vec3(0,0,0) : (*getWorldTransformationMatrixPtr()).transformPosition(0,0,0);	}
 
 		/*! Transforms from local to world coordinate system.
 			\note (internal) the STATUS_WORLD_MATRIX_VALID is set to true by this function */
-		const Geometry::Matrix4x4& getWorldTransformationMatrix() const;
+		MINSGAPI const Geometry::Matrix4x4& getWorldTransformationMatrix() const;
 		/*! (internal) Return the pointer to the current world matrix. If the node is transformed globally and
 			no world matrix has yet been created, a new one is calculated.
 			If the node is not transformed, nullptr may be returned.
 			\note (internal) the STATUS_WORLD_MATRIX_VALID is set to true by this function */
-		const Geometry::Matrix4x4* getWorldTransformationMatrixPtr() const;
-		Geometry::SRT getWorldTransformationSRT() const; 
+		MINSGAPI const Geometry::Matrix4x4* getWorldTransformationMatrixPtr() const;
+		MINSGAPI Geometry::SRT getWorldTransformationSRT() const; 
 		
 		//! Returns the inverse of getWorldTransformationMatrix()
-		Geometry::Matrix4x4 getWorldToLocalMatrix() const;
+		MINSGAPI Geometry::Matrix4x4 getWorldToLocalMatrix() const;
 		
 		bool hasRelTransformation()const							{	return relTransformation!=nullptr; 	}
 		bool hasRelTransformationSRT() const						{	return relTransformation!=nullptr && getStatus(STATUS_HAS_SRT);	}
@@ -361,7 +361,7 @@ class Node :
 		void moveLocal(const Geometry::Vec3 & v)					{	accessSRT().translateLocal(v);	transformationChanged();	}
 		
 		//! Remove all relative transformations
-		void resetRelTransformation();
+		MINSGAPI void resetRelTransformation();
 		void resetRelRotation()										{	accessSRT().resetRotation();	transformationChanged();	}			
 		
 		//!	Rotate around a local direction around the object's local origin (0,0,0).
@@ -379,32 +379,32 @@ class Node :
 		}
 		void setRelRotation(const Geometry::Vec3 & dir,const Geometry::Vec3 & up)	{	accessSRT().setRotation(dir,up);	transformationChanged();	}
 
-		void setRelTransformation(const Geometry::Matrix4x4 & m);
-		void setRelTransformation(const Geometry::SRT & srt);
-		void setWorldOrigin(const Geometry::Vec3 & v);
-		void setWorldTransformation(const Geometry::SRT & worldSRT);
+		MINSGAPI void setRelTransformation(const Geometry::Matrix4x4 & m);
+		MINSGAPI void setRelTransformation(const Geometry::SRT & srt);
+		MINSGAPI void setWorldOrigin(const Geometry::Vec3 & v);
+		MINSGAPI void setWorldTransformation(const Geometry::SRT & worldSRT);
 // ---
 
-		const Geometry::Matrix4x4& getMatrix() const				__attribute__((deprecated)){	return getRelTransformationMatrix(); 	}
-		Geometry::Vec3 getRelPosition() const 						__attribute__((deprecated)){	return getRelOrigin();	} 
-		float getScale() const										__attribute__((deprecated)){	return getRelScaling();	}
-		const Geometry::SRT& getSRT()const							__attribute__((deprecated)){	return getRelTransformationSRT(); 	}
-		const Geometry::Matrix4x4 & getWorldMatrix() const			__attribute__((deprecated)){	return getWorldTransformationMatrix();	}
-		Geometry::Vec3 getWorldPosition() const 					__attribute__((deprecated)){	return getWorldOrigin();	}
-		bool hasMatrix()const 										__attribute__((deprecated)){	return hasRelTransformation(); 	}
-		bool hasSRT() const											__attribute__((deprecated)){	return hasRelTransformationSRT();	}
-		void reset()												__attribute__((deprecated)){	resetRelTransformation();	}
-		void rotateLocal_deg(float deg, const Geometry::Vec3 & v)	__attribute__((deprecated)){	rotateLocal(Geometry::Angle::deg(deg),v);    }
-		void rotateLocal_rad(float rad, const Geometry::Vec3 & v)	__attribute__((deprecated)){	rotateLocal(Geometry::Angle::rad(rad),v);    }
-		void rotateRel_deg(float deg, const Geometry::Vec3 & v)		__attribute__((deprecated)){	rotateRel(Geometry::Angle::deg(deg),v);    }
-		void rotateRel_rad(float rad, const Geometry::Vec3 & v)		__attribute__((deprecated)){	rotateRel(Geometry::Angle::rad(rad),v);    }
-		void setScale(float f)										__attribute__((deprecated)){	setRelScaling(f);	}
-		void setMatrix(const Geometry::Matrix4x4 & m)	 			__attribute__((deprecated)){	setRelTransformation( m ); 	}
-		void setSRT(const Geometry::SRT & newSRT)					__attribute__((deprecated)){	return setRelTransformation(newSRT);}
-		void setRelPosition(const Geometry::Vec3 & v)				__attribute__((deprecated)){	setRelOrigin(v);	}
-		void setWorldPosition(const Geometry::Vec3 & v )			__attribute__((deprecated)){	setWorldOrigin(v);	}
-		void setRelRotation_deg(float deg,const Geometry::Vec3 & v)	__attribute__((deprecated)){	setRelRotation(Geometry::Angle::deg(deg),v); }
-		void setRelRotation_rad(float rad,const Geometry::Vec3 & v) __attribute__((deprecated)){	setRelRotation(Geometry::Angle::rad(rad),v); }
+		MINSGAPI MINSG_DEPRECATED const Geometry::Matrix4x4& getMatrix() const					{	return getRelTransformationMatrix(); 	}
+		MINSGAPI MINSG_DEPRECATED Geometry::Vec3 getRelPosition() const 						{	return getRelOrigin();	} 
+		MINSGAPI MINSG_DEPRECATED float getScale() const										{	return getRelScaling();	}
+		MINSGAPI MINSG_DEPRECATED const Geometry::SRT& getSRT()const							{	return getRelTransformationSRT(); 	}
+		MINSGAPI MINSG_DEPRECATED const Geometry::Matrix4x4 & getWorldMatrix() const			{	return getWorldTransformationMatrix();	}
+		MINSGAPI MINSG_DEPRECATED Geometry::Vec3 getWorldPosition() const 						{	return getWorldOrigin();	}
+		MINSGAPI MINSG_DEPRECATED bool hasMatrix()const 										{	return hasRelTransformation(); 	}
+		MINSGAPI MINSG_DEPRECATED bool hasSRT() const											{	return hasRelTransformationSRT();	}
+		MINSGAPI MINSG_DEPRECATED void reset()													{	resetRelTransformation();	}
+		MINSGAPI MINSG_DEPRECATED void rotateLocal_deg(float deg, const Geometry::Vec3 & v)		{	rotateLocal(Geometry::Angle::deg(deg),v);    }
+		MINSGAPI MINSG_DEPRECATED void rotateLocal_rad(float rad, const Geometry::Vec3 & v)		{	rotateLocal(Geometry::Angle::rad(rad),v);    }
+		MINSGAPI MINSG_DEPRECATED void rotateRel_deg(float deg, const Geometry::Vec3 & v)		{	rotateRel(Geometry::Angle::deg(deg),v);    }
+		MINSGAPI MINSG_DEPRECATED void rotateRel_rad(float rad, const Geometry::Vec3 & v)		{	rotateRel(Geometry::Angle::rad(rad),v);    }
+		MINSGAPI MINSG_DEPRECATED void setScale(float f)										{	setRelScaling(f);	}
+		MINSGAPI MINSG_DEPRECATED void setMatrix(const Geometry::Matrix4x4 & m)	 				{	setRelTransformation( m ); 	}
+		MINSGAPI MINSG_DEPRECATED void setSRT(const Geometry::SRT & newSRT)						{	return setRelTransformation(newSRT);}
+		MINSGAPI MINSG_DEPRECATED void setRelPosition(const Geometry::Vec3 & v)					{	setRelOrigin(v);	}
+		MINSGAPI MINSG_DEPRECATED void setWorldPosition(const Geometry::Vec3 & v )				{	setWorldOrigin(v);	}
+		MINSGAPI MINSG_DEPRECATED void setRelRotation_deg(float deg,const Geometry::Vec3 & v)	{	setRelRotation(Geometry::Angle::deg(deg),v); }
+		MINSGAPI MINSG_DEPRECATED void setRelRotation_rad(float rad,const Geometry::Vec3 & v) 	{	setRelRotation(Geometry::Angle::rad(rad),v); }
 	//@}
 
 	// -----------------
@@ -420,11 +420,11 @@ class Node :
 		 * If `isTransformationObserved() == true`, all registered transformation observers (at 
 		 * this node or in the nodes up to the root) are notified.
 		 */
-		void transformationChanged();
+		MINSGAPI void transformationChanged();
 		//! (internal) Called by GroupNode::addNode(...)
-		void informNodeAddedObservers(Node * addedNode); 
+		MINSGAPI void informNodeAddedObservers(Node * addedNode); 
 		//! (internal) Called by GroupNode::removeNode(...)
-		void informNodeRemovedObservers(GroupNode * parent, Node * removedNode);
+		MINSGAPI void informNodeRemovedObservers(GroupNode * parent, Node * removedNode);
 	public:
 		bool isTransformationObserved() const			{	return getStatus(STATUS_TRANSFORMATION_OBSERVED);	}
 		
@@ -433,18 +433,18 @@ class Node :
 		typedef std::function<void (GroupNode *,Node *)> nodeRemovedObserverFunc;
 
 		//! Register a function that is called whenever an observed node in the subtree is transformed.
-		void addTransformationObserver(const transformationObserverFunc & func);
+		MINSGAPI void addTransformationObserver(const transformationObserverFunc & func);
 		//! Register a function that is called whenever a node is added somewhere in the subtree.
-		void addNodeAddedObserver(const nodeAddedObserverFunc & func);
+		MINSGAPI void addNodeAddedObserver(const nodeAddedObserverFunc & func);
 		//! Register a function that is called whenever a node is removed somewhere in the subtree.
-		void addNodeRemovedObserver(const nodeRemovedObserverFunc & func);
+		MINSGAPI void addNodeRemovedObserver(const nodeRemovedObserverFunc & func);
 
 		//! Remove all transformation observer functions.
-		void clearTransformationObservers();
+		MINSGAPI void clearTransformationObservers();
 		//! Remove all nodeAdded observer functions.
-		void clearNodeAddedObservers();
+		MINSGAPI void clearNodeAddedObservers();
 		//! Remove all nodeAdded observer functions.
-		void clearNodeRemovedObservers();
+		MINSGAPI void clearNodeRemovedObservers();
 	//@}
 
 	// -----------------
@@ -455,7 +455,7 @@ class Node :
 	//@{
 	public:
 		///  ---o
-		virtual NodeVisitor::status traverse(NodeVisitor & visitor);
+		MINSGAPI virtual NodeVisitor::status traverse(NodeVisitor & visitor);
 	//@}
 
 	// -----------------

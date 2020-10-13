@@ -20,7 +20,7 @@ namespace AGVS {
 template<typename value_t> class Sample;
 
 //! Split the view cell recursively until no further split is possible.
-void splitViewCell(ValuatedRegionNode * viewCell);
+MINSGAPI void splitViewCell(ValuatedRegionNode * viewCell);
 
 /**
  * Update the view cell hierarchy with a sample. The contribution of
@@ -31,7 +31,7 @@ void splitViewCell(ValuatedRegionNode * viewCell);
  * @param originCell View cell containing the origin of the sample
  * @return Pair of forward and backward contribution of the sample
  */
-contribution_t updateWithSample(ValuatedRegionNode * rootViewCell,
+MINSGAPI contribution_t updateWithSample(ValuatedRegionNode * rootViewCell,
 								const Sample<float> & sample,
 								const ValuatedRegionNode * originCell);
 

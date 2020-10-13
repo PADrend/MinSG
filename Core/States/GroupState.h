@@ -35,16 +35,16 @@ class GroupState : public State {
 		typedef std::vector<Util::Reference<State>> stateArray_t;
 
 		GroupState() : State() {}
-		virtual ~GroupState();
+		MINSGAPI virtual ~GroupState();
 
-		void addState(State * s);
+		MINSGAPI void addState(State * s);
 		/// ---|> [State]
 		GroupState * clone() const override				{	return new GroupState(*this);	}
 		const stateArray_t & getStates() const			{	return states;	}
 		bool hasStates() const							{	return !states.empty(); }
 		bool isEnabled() const							{	return !enabledStates.empty();	}
-		void removeState(State * s);
-		void removeStates();
+		MINSGAPI void removeState(State * s);
+		MINSGAPI void removeStates();
 
 	private:
 		static State * const NO_STATE;
@@ -52,9 +52,9 @@ class GroupState : public State {
 		std::stack<State *> enabledStates;
 
 		/// ---|> [State]
-		void doDisableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node *, const RenderParam & rp) override;
 		/// ---|> [State]
-		stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
 
 };
 }

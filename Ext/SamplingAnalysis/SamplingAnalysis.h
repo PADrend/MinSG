@@ -32,10 +32,10 @@ struct Histogram1D{
 	explicit Histogram1D( const size_t size):buckets(size),sum(0),maxValue(0),overflow(0){}
 };
 
-Histogram1D * createDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets,float maxDistance=-1);
-Histogram1D * createAngleHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
-Histogram1D * createClosestPointDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
-Util::Reference<Util::Bitmap> create2dDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
+MINSGAPI Histogram1D * createDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets,float maxDistance=-1);
+MINSGAPI Histogram1D * createAngleHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
+MINSGAPI Histogram1D * createClosestPointDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
+MINSGAPI Util::Reference<Util::Bitmap> create2dDistanceHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets);
 
 }
 }

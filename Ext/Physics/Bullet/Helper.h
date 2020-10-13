@@ -32,15 +32,15 @@ class Color4f;
 namespace MinSG {
 namespace Physics{
 
-btMatrix3x3 toBtMatrix3x3(const Geometry::Matrix3x3& m);
-btTransform toBtTransform(const Geometry::SRT& s);
-btVector3 toBtVector3(const Geometry::Vec3& v);
+MINSGAPI btMatrix3x3 toBtMatrix3x3(const Geometry::Matrix3x3& m);
+MINSGAPI btTransform toBtTransform(const Geometry::SRT& s);
+MINSGAPI btVector3 toBtVector3(const Geometry::Vec3& v);
 
-Geometry::Vec3 toVec3(const btVector3& btv);
-Geometry::Matrix3x3 toMatrix3x3(const btMatrix3x3& btm);
-Geometry::SRT toSRT(const btTransform& t);
+MINSGAPI Geometry::Vec3 toVec3(const btVector3& btv);
+MINSGAPI Geometry::Matrix3x3 toMatrix3x3(const btMatrix3x3& btm);
+MINSGAPI Geometry::SRT toSRT(const btTransform& t);
 
-Util::Color4f toColor4f(const btVector3& btv);
+MINSGAPI Util::Color4f toColor4f(const btVector3& btv);
 }
 }
 

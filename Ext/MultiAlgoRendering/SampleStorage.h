@@ -45,9 +45,9 @@ struct SampleResult : public Util::ReferenceCounter<SampleResult> {
 
 private:
 	
-	SampleResult();
-	SampleResult(const SampleResult &);
-	SampleResult & operator= (const SampleResult &);
+	MINSGAPI SampleResult();
+	MINSGAPI SampleResult(const SampleResult &);
+	MINSGAPI SampleResult & operator= (const SampleResult &);
 };
 
 struct SamplePointData : public Util::ReferenceCounter<SamplePointData> {
@@ -58,7 +58,7 @@ struct SamplePointData : public Util::ReferenceCounter<SamplePointData> {
 	container_t errors;
 	container_t pixels;
 
-    static int32_t counterSPD;
+    MINSGAPI static int32_t counterSPD;
 
     explicit SamplePointData(uint32_t size): ReferenceCounter_t(), times(size, 0.0f), errors(size, 0.0f), pixels(size, 0.0f) {
     }
@@ -92,7 +92,7 @@ struct SamplePointData : public Util::ReferenceCounter<SamplePointData> {
 
 private:
 	
-	SamplePointData();
+	MINSGAPI SamplePointData();
     SamplePointData(const SamplePointData &) = delete;
     SamplePointData & operator= (const SamplePointData &) = delete;
     SamplePointData(SamplePointData &&) = delete;

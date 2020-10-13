@@ -27,11 +27,11 @@ namespace BlueSurfels {
 class AbstractSurfelSampler : public Util::ReferenceCounter<AbstractSurfelSampler> {
 		PROVIDES_TYPE_NAME(AbstractSurfelSampler)
 	public:
-		AbstractSurfelSampler();
+		MINSGAPI AbstractSurfelSampler();
 		virtual ~AbstractSurfelSampler() = default;
 		
 		virtual Rendering::Mesh* sampleSurfels(Rendering::Mesh* sourceMesh) = 0;
-		static Rendering::Mesh* finalizeMesh(Rendering::Mesh* source, const std::vector<uint32_t>& indices);
+		MINSGAPI static Rendering::Mesh* finalizeMesh(Rendering::Mesh* source, const std::vector<uint32_t>& indices);
 				
 		const std::unordered_map<std::string, float>& getStatistics() const { return statistics; }
 		void clearStatistics() const { statistics.clear(); }

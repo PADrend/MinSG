@@ -30,15 +30,15 @@ namespace Evaluators{
 class AdaptCullEvaluator : public Evaluator {
 		PROVIDES_TYPE_NAME(AdaptCullEvaluator)
 	public:
-		static Rendering::Shader * whiteShader;
+		MINSGAPI static Rendering::Shader * whiteShader;
 
-		AdaptCullEvaluator(DirectionMode mode=SINGLE_VALUE);
-		virtual ~AdaptCullEvaluator();
+		MINSGAPI AdaptCullEvaluator(DirectionMode mode=SINGLE_VALUE);
+		MINSGAPI virtual ~AdaptCullEvaluator();
 
 	// ---|> Evaluator
-		virtual void beginMeasure() override;
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
-		virtual void endMeasure(FrameContext & context) override;
+		MINSGAPI virtual void beginMeasure() override;
+		MINSGAPI virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		MINSGAPI virtual void endMeasure(FrameContext & context) override;
 
 	private:
 		std::map<unsigned int,Node *> objectsInVF;

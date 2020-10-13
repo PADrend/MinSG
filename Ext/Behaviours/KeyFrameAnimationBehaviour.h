@@ -22,11 +22,11 @@ class KeyFrameAnimationBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(KeyFrameAnimationBehaviour)
 
 	public:
-		KeyFrameAnimationBehaviour(KeyFrameAnimationNode * node);
-		virtual ~KeyFrameAnimationBehaviour();
+		MINSGAPI KeyFrameAnimationBehaviour(KeyFrameAnimationNode * node);
+		MINSGAPI virtual ~KeyFrameAnimationBehaviour();
 
 		// ---|> AbstractBehaviour
-		behaviourResult_t doExecute() override;
+		MINSGAPI behaviourResult_t doExecute() override;
 
 };
 

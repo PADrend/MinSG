@@ -34,8 +34,8 @@ class NodeRendererRegistrationHolder {
 		std::unique_ptr<RegistrationState> impl;
 
 	public:
-		NodeRendererRegistrationHolder();
-		~NodeRendererRegistrationHolder();
+		MINSGAPI NodeRendererRegistrationHolder();
+		MINSGAPI ~NodeRendererRegistrationHolder();
 		NodeRendererRegistrationHolder(NodeRendererRegistrationHolder &&) = default;
 		NodeRendererRegistrationHolder(const NodeRendererRegistrationHolder &) = delete;
 		NodeRendererRegistrationHolder & operator=(NodeRendererRegistrationHolder &&) = default;
@@ -52,7 +52,7 @@ class NodeRendererRegistrationHolder {
 		 * @param renderer NodeRenderer function that will be registered at the
 		 * rendering channel
 		 */
-		void registerNodeRenderer(FrameContext & frameContext,
+		MINSGAPI void registerNodeRenderer(FrameContext & frameContext,
 								  Util::StringIdentifier channelName,
 								  NodeRenderer renderer);
 
@@ -61,7 +61,7 @@ class NodeRendererRegistrationHolder {
 		 * before by this instance. If there is no previous registration,
 		 * nothing happens.
 		 */
-		void unregisterNodeRenderer();
+		MINSGAPI void unregisterNodeRenderer();
 };
 
 }

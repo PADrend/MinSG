@@ -58,8 +58,8 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 	/*!	@name Main */
 	//	@{
 	public:
-		FrameContext();
-		~FrameContext();
+		MINSGAPI FrameContext();
+		MINSGAPI ~FrameContext();
 	//	@}
 
 	// -----------------------------------
@@ -81,29 +81,29 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 
 		/*!	Associate a new camera with the context.
 			@param newCamera New camera or @c nullptr, if the camera should be removed.*/
-		void setCamera(AbstractCameraNode * newCamera);
+		MINSGAPI void setCamera(AbstractCameraNode * newCamera);
 
 		//! Push the current camera onto the camera stack.
-        void pushCamera();
+        MINSGAPI void pushCamera();
 
 		//! Pop a camera from the top of the camera stack and make it the current camera.
-		void popCamera();
+		MINSGAPI void popCamera();
 
 		void pushAndSetCamera(AbstractCameraNode * newCamera) {
 			pushCamera();
 			setCamera(newCamera);
 		}
 
-		Geometry::Vec3 convertWorldPosToScreenPos(const Geometry::Vec3 & objPos) const;
-		Geometry::Vec3 convertScreenPosToWorldPos(const Geometry::Vec3 & screenPos) const;
+		MINSGAPI Geometry::Vec3 convertWorldPosToScreenPos(const Geometry::Vec3 & objPos) const;
+		MINSGAPI Geometry::Vec3 convertScreenPosToWorldPos(const Geometry::Vec3 & screenPos) const;
 
 		/*! Projects the BoundingBox of the given Node into the given screenRect
 			using the current camera and projection matrix of the RenderingContext. */
-		Geometry::Rect getProjectedRect(Node * node, const Geometry::Rect & screenRect) const;
+		MINSGAPI Geometry::Rect getProjectedRect(Node * node, const Geometry::Rect & screenRect) const;
 
 		/*! Projects the BoundingBox of the given Node into the current view port
 			using the current camera and projection matrix of the RenderingContext. */
-		Geometry::Rect getProjectedRect(Node * node) const;
+		MINSGAPI Geometry::Rect getProjectedRect(Node * node) const;
 	// @}
 
 	// -----------------------------------
@@ -149,11 +149,11 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 			- Inform Rendering::MeshDataStrategy about the start of a new frame.
 			- Inform the frameListeners about the start of a new frame by calling onBeginFrame().
 			@param frameNumber If <0 the internal frameNumber is taken and increased; used for statistics	*/
-		void beginFrame(int frameNumber = -1);
+		MINSGAPI void beginFrame(int frameNumber = -1);
 
 		/*!	- Mark the end of the frame for the rendering statistics (Statistics & FrameStats)
 			@param waitForGLfinish defines if finish on the rendering context is called before marking the end of the frame	*/
-		void endFrame(bool waitForGlFinish = false);
+		MINSGAPI void endFrame(bool waitForGlFinish = false);
 
 
 		/*!	Called before the next frame starts
@@ -167,11 +167,11 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 
 		/*!	Register a new event listener.
 			@param listener New event listener	*/
-		void addBeginFrameListener(const FrameListenerFunction & listener);
+		MINSGAPI void addBeginFrameListener(const FrameListenerFunction & listener);
 		
 		/*!	Register a new event listener.
 		 @ param listener New event listener	*/                             
-		 void addEndFrameListener(const FrameListenerFunction & listener);
+		MINSGAPI void addEndFrameListener(const FrameListenerFunction & listener);
 
 	private:
 		std::vector<FrameListenerFunction> beginFrameListenerCallbacks;
@@ -187,16 +187,16 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 		typedef renderingChannel_t::handle_t node_renderer_registration_t;
 		typedef std::unordered_map<Util::StringIdentifier, renderingChannel_t> channelMap_t;
 
-		static const Util::StringIdentifier DEFAULT_CHANNEL;
-		static const Util::StringIdentifier TRANSPARENCY_CHANNEL;
-		static const Util::StringIdentifier APPROXIMATION_CHANNEL;
+		MINSGAPI static const Util::StringIdentifier DEFAULT_CHANNEL;
+		MINSGAPI static const Util::StringIdentifier TRANSPARENCY_CHANNEL;
+		MINSGAPI static const Util::StringIdentifier APPROXIMATION_CHANNEL;
 
 		/*! Renders the node with the current renderer of the given rendering channel (rp.channel).
 			@return true if the node could be handled by a renderer. */
-		bool displayNode(Node * node, const RenderParam & rp);
+		MINSGAPI bool displayNode(Node * node, const RenderParam & rp);
 
-		node_renderer_registration_t registerNodeRenderer(const Util::StringIdentifier & channelName, NodeRenderer renderer);
-		void unregisterNodeRenderer(const Util::StringIdentifier & channelName, node_renderer_registration_t handle);
+		MINSGAPI node_renderer_registration_t registerNodeRenderer(const Util::StringIdentifier & channelName, NodeRenderer renderer);
+		MINSGAPI void unregisterNodeRenderer(const Util::StringIdentifier & channelName, node_renderer_registration_t handle);
 
 		const channelMap_t & getRenderingChannels() const {
 			return renderingChannels;
@@ -207,11 +207,11 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 
 		/*! Display @p mesh. The mesh is uploaded if necessary and the number of triangles is
 		 counted for the frameStats (if enabled)	*/
-		void displayMesh(Rendering::Mesh * mesh);
-		void displayMesh(Rendering::Mesh * mesh,uint32_t firstElement,uint32_t elementCount);
+		MINSGAPI void displayMesh(Rendering::Mesh * mesh);
+		MINSGAPI void displayMesh(Rendering::Mesh * mesh,uint32_t firstElement,uint32_t elementCount);
 
-		void showAnnotation(Node * node, const std::string & text, const int yPosOffset,const bool showRectangle, const Util::Color4f & textColor,const Util::Color4f & bgColor);
-		void showAnnotation(Node * node, const std::string & text, const int yPosOffset = 0,const bool showRectangle = true);
+		MINSGAPI void showAnnotation(Node * node, const std::string & text, const int yPosOffset,const bool showRectangle, const Util::Color4f & textColor,const Util::Color4f & bgColor);
+		MINSGAPI void showAnnotation(Node * node, const std::string & text, const int yPosOffset = 0,const bool showRectangle = true);
 	private:
 		std::unique_ptr<Rendering::RenderingContext> renderingContext;
 		channelMap_t renderingChannels;
@@ -232,7 +232,7 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 		 * @param newTextRenderer A copy of the given renderer will be stored as
 		 * default text renderer.
 		 */
-		void setTextRenderer(const Rendering::TextRenderer & newTextRenderer);
+		MINSGAPI void setTextRenderer(const Rendering::TextRenderer & newTextRenderer);
 
 		/**
 		 * Access the default text renderer. The text renderer can be used to
@@ -240,7 +240,7 @@ class FrameContext : public Util::ReferenceCounter<FrameContext>{
 		 * 
 		 * @return Default text renderer
 		 */
-		const Rendering::TextRenderer & getTextRenderer() const;
+		MINSGAPI const Rendering::TextRenderer & getTextRenderer() const;
 	//	@}
 
 	/*!	@name Statistics */

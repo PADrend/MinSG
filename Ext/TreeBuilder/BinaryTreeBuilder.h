@@ -22,12 +22,12 @@ class BinaryTreeBuilder: public AbstractTreeBuilder {
 
 public:
 
-	BinaryTreeBuilder(Util::GenericAttributeMap & options);
-	virtual ~BinaryTreeBuilder();
+	MINSGAPI BinaryTreeBuilder(Util::GenericAttributeMap & options);
+	MINSGAPI virtual ~BinaryTreeBuilder();
 
 protected:
 
-	list_t split(NodeWrapper & source) override;
+	MINSGAPI list_t split(NodeWrapper & source) override;
 
 };
 

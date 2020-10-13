@@ -46,20 +46,20 @@ public:
         MODE_UNCONDITIONED	= 3
     };
 
-    explicit CHCppRenderer(const unsigned int _visibilityThreshold = 0u,
+    MINSGAPI explicit CHCppRenderer(const unsigned int _visibilityThreshold = 0u,
                            const unsigned int _maxPrevInvisNodesBatchSize = 50u,
                            const unsigned int _skippedFramesTillQuery = 5u,
                            const unsigned int _maxDepthForTightBoundingVolumes = 3u,
                            const float _maxAreaDerivationForTightBoundingVolumes = 1.4f);
-    virtual ~CHCppRenderer();
+    MINSGAPI virtual ~CHCppRenderer();
 
-    NodeInfo * getNodeInfo(Node * node, CHCppContext & chcppContext) const;
+    MINSGAPI NodeInfo * getNodeInfo(Node * node, CHCppContext & chcppContext) const;
 
     renderMode getMode() const{ return mode;  }
     void setMode(const renderMode newMode){  mode = newMode;  }
 
     // ---|> [State]
-    CHCppRenderer * clone() const override;
+    MINSGAPI CHCppRenderer * clone() const override;
 
     unsigned int getVisibilityThreshold() const						{ return visibilityThreshold; }
     void setVisibilityThreshold(const unsigned int i)				{ visibilityThreshold = i; }
@@ -96,25 +96,25 @@ private:
     int testsInvisible;
     int occludedGeometryNodes; // not calculated
 
-    stateResult_t doEnableState(FrameContext & frameContext,Node *, const RenderParam & rp) override;
+    MINSGAPI stateResult_t doEnableState(FrameContext & frameContext,Node *, const RenderParam & rp) override;
 	
-    State::stateResult_t showVisible(FrameContext & frameContext, Node * rootNode, const RenderParam & rp, CHCppContext & chcppContext) const;
-    State::stateResult_t showCulled(FrameContext & frameContext, Node * rootNode, const RenderParam & rp, CHCppContext & chcppContext) const;
-    State::stateResult_t performCulling(FrameContext & frameContext, Node * rootNode, const RenderParam & rp, CHCppContext & chcppContext);
+    MINSGAPI State::stateResult_t showVisible(FrameContext & frameContext, Node * rootNode, const RenderParam & rp, CHCppContext & chcppContext) const;
+    MINSGAPI State::stateResult_t showCulled(FrameContext & frameContext, Node * rootNode, const RenderParam & rp, CHCppContext & chcppContext) const;
+    MINSGAPI State::stateResult_t performCulling(FrameContext & frameContext, Node * rootNode, const RenderParam & rp, CHCppContext & chcppContext);
 	
-    void traverseNode(FrameContext & frameContext, Node * node, const RenderParam & rp, NodeDistancePriorityQueue_F2B & distanceQueue);
-    void pullUpVisibility(Node * node, CHCppContext & chcppContext) const;
-    void handleReturnedQuery(FrameContext & frameContext, const queue_item_t & queryItem, const RenderParam & childRp, NodeDistancePriorityQueue_F2B & distanceQueue, CHCppContext & chcppContext);
-    void queryPreviouslyInvisibleNode(FrameContext & frameContext, Node * node, CHCppContext & chcppContext);
-    void issueMultiQueries(FrameContext & frameContext, CHCppContext & chcppContext);
-    void queryIndividualNodes(FrameContext & frameContext, const queue_item_t & item, CHCppContext & chcppContext);
-    void issueQuery(FrameContext & frameContext, Node * node, CHCppContext & chcppContext);
-    bool handleCameraInBox(FrameContext & frameContext, Node * node, NodeInfo * nodeInfo, const RenderParam & childRp, NodeDistancePriorityQueue_F2B & distanceQueue, CHCppContext & chcppContext);
+    MINSGAPI void traverseNode(FrameContext & frameContext, Node * node, const RenderParam & rp, NodeDistancePriorityQueue_F2B & distanceQueue);
+    MINSGAPI void pullUpVisibility(Node * node, CHCppContext & chcppContext) const;
+    MINSGAPI void handleReturnedQuery(FrameContext & frameContext, const queue_item_t & queryItem, const RenderParam & childRp, NodeDistancePriorityQueue_F2B & distanceQueue, CHCppContext & chcppContext);
+    MINSGAPI void queryPreviouslyInvisibleNode(FrameContext & frameContext, Node * node, CHCppContext & chcppContext);
+    MINSGAPI void issueMultiQueries(FrameContext & frameContext, CHCppContext & chcppContext);
+    MINSGAPI void queryIndividualNodes(FrameContext & frameContext, const queue_item_t & item, CHCppContext & chcppContext);
+    MINSGAPI void issueQuery(FrameContext & frameContext, Node * node, CHCppContext & chcppContext);
+    MINSGAPI bool handleCameraInBox(FrameContext & frameContext, Node * node, NodeInfo * nodeInfo, const RenderParam & childRp, NodeDistancePriorityQueue_F2B & distanceQueue, CHCppContext & chcppContext);
 
-    void drawTightBoundingVolume(FrameContext & frameContext, Node * node) const;
+    MINSGAPI void drawTightBoundingVolume(FrameContext & frameContext, Node * node) const;
 
-    void resetStatistics();
-    void updateStatistics(FrameContext & frameContext);
+    MINSGAPI void resetStatistics();
+    MINSGAPI void updateStatistics(FrameContext & frameContext);
 
 
 };

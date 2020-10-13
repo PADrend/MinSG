@@ -30,12 +30,12 @@ class Statistics {
 		 * @param fileName Store the tab separated data into the file
 		 * given by this parameter.
 		 */
-		Statistics(const std::string & fileName);
+		MINSGAPI Statistics(const std::string & fileName);
 
 		/**
 		 * Destructor closes the output file.
 		 */
-		~Statistics();
+		MINSGAPI ~Statistics();
 
 		/**
 		 * Return the value of the current pass counter.
@@ -64,7 +64,7 @@ class Statistics {
 		 * reduction. This number separates the object space reduction
 		 * from the view space reduction.
 		 */
-		static void perRun(const std::string & fileName, const std::string & timeStamp, const std::string & description, size_t wsSize,
+		MINSGAPI static void perRun(const std::string & fileName, const std::string & timeStamp, const std::string & description, size_t wsSize,
 							VisibilitySubdivision::costs_t trianglesMinLimit, VisibilitySubdivision::costs_t objectCountLimit,
 							VisibilitySubdivision::costs_t cellCountLimit, unsigned int passBoundary);
 
@@ -74,7 +74,7 @@ class Statistics {
 		 * @param time Duration of pass
 		 * @param numMerges Number of merges done during pass
 		 */
-		void perPass(double duration, size_t numMerges);
+		MINSGAPI void perPass(double duration, size_t numMerges);
 
 		/**
 		 * Generate and output statistics for individual visibility
@@ -83,7 +83,7 @@ class Statistics {
 		 *
 		 * @param lists Visibility lists of a visibility subdivision
 		 */
-		void perList(const VisibilitySubdivision::visibility_sharer_map_t & lists);
+		MINSGAPI void perList(const VisibilitySubdivision::visibility_sharer_map_t & lists);
 
 		/**
 		 * Generate and output statistics for individual visibility
@@ -92,7 +92,7 @@ class Statistics {
 		 *
 		 * @param cells Cells of a visibility subdivision
 		 */
-		void perCell(const VisibilitySubdivision::cell_set_t & cells);
+		MINSGAPI void perCell(const VisibilitySubdivision::cell_set_t & cells);
 
 		/**
 		 * Generate and output statistics for individual objects. This
@@ -101,7 +101,7 @@ class Statistics {
 		 *
 		 * @param objects Object space
 		 */
-		void perObject(const VisibilitySubdivision::sorted_object_set_t & objects);
+		MINSGAPI void perObject(const VisibilitySubdivision::sorted_object_set_t & objects);
 
 	private:
 		//! Output stream to paste data to the file.

@@ -22,12 +22,12 @@ namespace MinSG {
 class StrangeExampleRenderer : public State {
 		PROVIDES_TYPE_NAME(StrangeExampleRenderer)
 	private:
-		stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
 	public:
-		StrangeExampleRenderer();
-		virtual ~StrangeExampleRenderer();
+		MINSGAPI StrangeExampleRenderer();
+		MINSGAPI virtual ~StrangeExampleRenderer();
 
-		StrangeExampleRenderer * clone() const override;
+		MINSGAPI StrangeExampleRenderer * clone() const override;
 };
 }
 

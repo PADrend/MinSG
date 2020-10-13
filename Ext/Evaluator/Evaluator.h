@@ -46,8 +46,8 @@ class Evaluator {
 			DIRECTION_VALUES = 1
 		};
 
-		Evaluator(DirectionMode mode = SINGLE_VALUE);
-		virtual ~Evaluator();
+		MINSGAPI Evaluator(DirectionMode mode = SINGLE_VALUE);
+		MINSGAPI virtual ~Evaluator();
 
 		inline void setMode(DirectionMode _mode) {
 			mode = _mode;
@@ -67,9 +67,9 @@ class Evaluator {
 		}
 
 	protected:
-		void setMaxValue_i(unsigned int maxValue);
-		void setMaxValue_f(float maxValue);
-		void setMaxValue(Util::GenericAttribute * maxValue);
+		MINSGAPI void setMaxValue_i(unsigned int maxValue);
+		MINSGAPI void setMaxValue_f(float maxValue);
+		MINSGAPI void setMaxValue(Util::GenericAttribute * maxValue);
 
 		DirectionMode mode;
 

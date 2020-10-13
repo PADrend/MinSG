@@ -27,7 +27,7 @@ class SurfacePoint;
 
 class ExtTriangle {
 public:  
-  SurfacePoint getSurfacePoint(float u, float v) const;
+  MINSGAPI SurfacePoint getSurfacePoint(float u, float v) const;
   
   Geometry::Triangle_3f pos = {{0,0,0},{0,0,0},{0,0,0}};
   Geometry::Triangle_3f normal = {{0,0,0},{0,0,0},{0,0,0}};

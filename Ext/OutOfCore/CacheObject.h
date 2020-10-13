@@ -78,9 +78,9 @@ class CacheObject {
 		}
 
 	public:
-		CacheObject(Rendering::Mesh * mesh);
+		MINSGAPI CacheObject(Rendering::Mesh * mesh);
 
-		~CacheObject();
+		MINSGAPI ~CacheObject();
 };
 
 //! Structure used to sort cache objects by decreasing priority in STL containers.

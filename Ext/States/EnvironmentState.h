@@ -27,19 +27,19 @@ class EnvironmentState : public State {
 		PROVIDES_TYPE_NAME(EnvironmentState)
 	public:
 
-		EnvironmentState(Node * environment=nullptr);
-		virtual ~EnvironmentState();
+		MINSGAPI EnvironmentState(Node * environment=nullptr);
+		MINSGAPI virtual ~EnvironmentState();
 
 		void setEnvironment(Node * n)   {   environment=n;  }
 		Node * getEnvironment()const    {   return environment.get();   }
 
 		// ---|> [State]
-		EnvironmentState * clone() const override;
+		MINSGAPI EnvironmentState * clone() const override;
 
 	private:
 		Util::Reference<Node> environment;
 
-		stateResult_t doEnableState(FrameContext & context,Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context,Node *, const RenderParam & rp) override;
 };
 
 }

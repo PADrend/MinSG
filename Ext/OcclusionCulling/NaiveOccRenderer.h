@@ -37,10 +37,10 @@ class NaiveOccRenderer : public State {
 	private:
 		bool debugShowVisible;
 
-		State::stateResult_t performCulling(FrameContext & context,Node * rootNode, const RenderParam & rp);
-		State::stateResult_t showVisible(FrameContext & context,Node * rootNode, const RenderParam & rp);
+		MINSGAPI State::stateResult_t performCulling(FrameContext & context,Node * rootNode, const RenderParam & rp);
+		MINSGAPI State::stateResult_t showVisible(FrameContext & context,Node * rootNode, const RenderParam & rp);
 
-		stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
 
 };
 }

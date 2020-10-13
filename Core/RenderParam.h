@@ -41,10 +41,10 @@ class RenderParam {
 		renderingLayerMask_t renderingLayers;
 		Util::StringIdentifier channel;
 	public:
-		RenderParam();
-		RenderParam(renderFlag_t _flags);
-		RenderParam(renderFlag_t _flags, Util::StringIdentifier _channel);
-		RenderParam(renderFlag_t _flags, Util::StringIdentifier _channel, renderingLayerMask_t layers);
+		MINSGAPI RenderParam();
+		MINSGAPI RenderParam(renderFlag_t _flags);
+		MINSGAPI RenderParam(renderFlag_t _flags, Util::StringIdentifier _channel);
+		MINSGAPI RenderParam(renderFlag_t _flags, Util::StringIdentifier _channel, renderingLayerMask_t layers);
 
 		renderFlag_t getFlags() const								{	return flags;	}
 		bool getFlag(renderFlag_t flagMask) const					{	return flags & flagMask;	}

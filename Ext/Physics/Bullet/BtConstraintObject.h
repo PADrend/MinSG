@@ -54,7 +54,7 @@ class BtConstraintObject : public Util::ReferenceCounter<BtConstraintObject>{
 			return new BtConstraintObject(TYPE_HINGE,_nodeA,_posA,_dirA,_nodeB,_posB,_dirB);
 		}
 		
-		~BtConstraintObject();
+		MINSGAPI ~BtConstraintObject();
 
 		Node& getNodeA()const 						{	return *nodeA.get();	}
 		Node& getNodeB()const 						{	return *nodeB.get();	}

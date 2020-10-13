@@ -33,18 +33,18 @@ namespace Evaluators{
 class VisibilityEvaluator : public Evaluator {
 		PROVIDES_TYPE_NAME(VisibilityEvaluator)
 	public:
-		static Rendering::Shader * whiteShader;
+		MINSGAPI static Rendering::Shader * whiteShader;
 
-		explicit VisibilityEvaluator(DirectionMode mode=SINGLE_VALUE,bool _countPolygons=false);
-		virtual ~VisibilityEvaluator();
+		MINSGAPI explicit VisibilityEvaluator(DirectionMode mode=SINGLE_VALUE,bool _countPolygons=false);
+		MINSGAPI virtual ~VisibilityEvaluator();
 
 		bool doesCountPolygons()const	{	return countPolygons;	}
 		void setCountPolygons(bool b)	{	countPolygons=b;	}
 
 	// ---|> Evaluator
-		virtual void beginMeasure() override;
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
-		virtual void endMeasure(FrameContext & context) override;
+		MINSGAPI virtual void beginMeasure() override;
+		MINSGAPI virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		MINSGAPI virtual void endMeasure(FrameContext & context) override;
 
 	private:
 		std::map<uintptr_t,Node *> objectsInVF;

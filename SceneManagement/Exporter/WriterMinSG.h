@@ -24,7 +24,7 @@ typedef Util::GenericAttributeMap DescriptionMap;
  *  WriterMinSG
  */
 struct WriterMinSG{
-static bool save(std::ostream & out, const DescriptionMap & sceneDescription);
+MINSGAPI static bool save(std::ostream & out, const DescriptionMap & sceneDescription);
 };
 
 }

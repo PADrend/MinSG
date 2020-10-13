@@ -45,11 +45,11 @@ public:
 		}
 	};
 
-	AbstractTreeBuilder(Util::GenericAttributeMap & options);
-	virtual ~AbstractTreeBuilder();
+	MINSGAPI AbstractTreeBuilder(Util::GenericAttributeMap & options);
+	MINSGAPI virtual ~AbstractTreeBuilder();
 
-	void buildTree(Util::Reference<GroupNode> group, const Geometry::Box & target);
-	void buildTree(Util::Reference<GroupNode> group);
+	MINSGAPI void buildTree(Util::Reference<GroupNode> group, const Geometry::Box & target);
+	MINSGAPI void buildTree(Util::Reference<GroupNode> group);
 
 protected:
 
@@ -59,7 +59,7 @@ protected:
 	 * main method to build trees, splits the source into parts an then does recursive calls with each part
 	 * - if canSplit --> split --> distribute --> finalize --> recurse
 	 */
-	void buildTree(NodeWrapper & source);
+	MINSGAPI void buildTree(NodeWrapper & source);
 
 	/**
 	 * method to split the source
@@ -72,20 +72,20 @@ protected:
 	 * first selecting the one out of dest where thight box contains the center of the child
 	 * then moving the child into selected dest iff it fits into the loose box
 	 */
-	static void distribute(NodeWrapper & source, list_t & dest);
+	MINSGAPI static void distribute(NodeWrapper & source, list_t & dest);
 
 	/**
 	 * determines if a box can split thats true if
 	 * - maximum tree depth is not reached
 	 * - maximum child count in source is exceeded
 	 */
-	bool canSplit(const NodeWrapper & source);
+	MINSGAPI bool canSplit(const NodeWrapper & source);
 
 	/**
 	 * removes empty entries from dest
 	 * sets up the relationships between source and dest
 	 */
-	void finalize(NodeWrapper & source, list_t & dest);
+	MINSGAPI void finalize(NodeWrapper & source, list_t & dest);
 
 	uint32_t maxTreeDepth;
 	uint32_t maxChildCount;

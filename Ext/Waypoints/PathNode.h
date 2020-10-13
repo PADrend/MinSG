@@ -37,32 +37,32 @@ class PathNode : public GroupNode {
 
 		typedef std::map<AbstractBehaviour::timestamp_t, Util::Reference<Waypoint> > wayPointMap_t;
 		// ---------------------------------------
-		PathNode();
-		PathNode(const PathNode & source);
-		virtual ~PathNode();
+		MINSGAPI PathNode();
+		MINSGAPI PathNode(const PathNode & source);
+		MINSGAPI virtual ~PathNode();
 
 		/*! Create and add a new waypoint */
-		Waypoint * createWaypoint(const Geometry::SRT & position,AbstractBehaviour::timestamp_t time);
-		void updateWaypoint(Waypoint * wp,AbstractBehaviour::timestamp_t newTime);
+		MINSGAPI Waypoint * createWaypoint(const Geometry::SRT & position,AbstractBehaviour::timestamp_t time);
+		MINSGAPI void updateWaypoint(Waypoint * wp,AbstractBehaviour::timestamp_t newTime);
 
-		Waypoint * getWaypoint(AbstractBehaviour::timestamp_t time);
+		MINSGAPI Waypoint * getWaypoint(AbstractBehaviour::timestamp_t time);
 
-		void removeLastWaypoint();
+		MINSGAPI void removeLastWaypoint();
 
 		size_t countWaypoints()const 						{	return waypoints.size();	}
 		wayPointMap_t::const_iterator begin()const 			{	return waypoints.begin();	}
 		wayPointMap_t::const_iterator end()const 			{	return waypoints.end();	}
 
-		wayPointMap_t::const_iterator getNextWaypoint(AbstractBehaviour::timestamp_t time)const;
-		wayPointMap_t::iterator getNextWaypoint(AbstractBehaviour::timestamp_t time);
-		Geometry::SRT getPosition(AbstractBehaviour::timestamp_t time)const;
-		Geometry::SRT getWorldPosition(AbstractBehaviour::timestamp_t time);
-		void closeLoop(AbstractBehaviour::timestamp_t time);
+		MINSGAPI wayPointMap_t::const_iterator getNextWaypoint(AbstractBehaviour::timestamp_t time)const;
+		MINSGAPI wayPointMap_t::iterator getNextWaypoint(AbstractBehaviour::timestamp_t time);
+		MINSGAPI Geometry::SRT getPosition(AbstractBehaviour::timestamp_t time)const;
+		MINSGAPI Geometry::SRT getWorldPosition(AbstractBehaviour::timestamp_t time);
+		MINSGAPI void closeLoop(AbstractBehaviour::timestamp_t time);
 
 		bool isLooping()const 	{	return looping;	}
 		void setLooping(bool b) {	looping=b;	}
 
-		AbstractBehaviour::timestamp_t getMaxTime()const;
+		MINSGAPI AbstractBehaviour::timestamp_t getMaxTime()const;
 
 		bool isBBValid()const 	{	return bbValid;	}
 
@@ -70,8 +70,8 @@ class PathNode : public GroupNode {
 		size_t countChildren() const override 					{	return countWaypoints();	}
 
 		// ---|> Node
-		void doDisplay(FrameContext & context, const RenderParam & rp) override;
-		NodeVisitor::status traverse(NodeVisitor & visitor) override;
+		MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
+		MINSGAPI NodeVisitor::status traverse(NodeVisitor & visitor) override;
 
 		bool getMetaDisplayWaypoints() const {
 			return metaDisplayWaypoints;
@@ -89,13 +89,13 @@ class PathNode : public GroupNode {
 
 	private:
 		// ---|> Node
-		const Geometry::Box& doGetBB() const override;
+		MINSGAPI const Geometry::Box& doGetBB() const override;
 		PathNode * doClone()const override	{	return new PathNode(*this);	}
 
 		// ---|> GroupNode
-		void invalidateCompoundBB() override;
-		void doAddChild(Util::Reference<Node> child) override;
-		bool doRemoveChild(Util::Reference<Node> child) override;
+		MINSGAPI void invalidateCompoundBB() override;
+		MINSGAPI void doAddChild(Util::Reference<Node> child) override;
+		MINSGAPI bool doRemoveChild(Util::Reference<Node> child) override;
 
 		wayPointMap_t waypoints;
 		Util::Reference<Rendering::Mesh> metaMesh;

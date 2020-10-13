@@ -37,20 +37,20 @@ public:
 
 	typedef int32_t AlgoId_t ;
 	enum AlgoId : AlgoId_t {Auto = 0, SkipRendering = 1, ColorCubes = 2, CHCppAggressive = 3, CHCpp = 4, BruteForce = 5, BlueSurfels = 6, SphericalSampling = 7, ClassicLOD = 8, ForceSurfels = 9};
-	static std::string algoIdToString(AlgoId id);
+	MINSGAPI static std::string algoIdToString(AlgoId id);
 	
-	static const uint32_t INVALID_NODE_ID;
+	MINSGAPI static const uint32_t INVALID_NODE_ID;
 
-	MultiAlgoGroupNode();
-	MultiAlgoGroupNode(const MultiAlgoGroupNode & source);
-	virtual ~MultiAlgoGroupNode();
+	MINSGAPI MultiAlgoGroupNode();
+	MINSGAPI MultiAlgoGroupNode(const MultiAlgoGroupNode & source);
+	MINSGAPI virtual ~MultiAlgoGroupNode();
 
-	void setAlgorithm(AlgoId);
+	MINSGAPI void setAlgorithm(AlgoId);
 	inline AlgoId getAlgorithm() const {
 		return algoId;
 	}
 
-	static void initAlgorithm(AlgoId, GroupState * state = nullptr);
+	MINSGAPI static void initAlgorithm(AlgoId, GroupState * state = nullptr);
 
 	static void setHighlightIntensity(float f) {
 		highlightIntensity = f;
@@ -70,28 +70,28 @@ public:
 		return node.get();
 	}
 	
-	void initNode();
+	MINSGAPI void initNode();
 
-	std::string toString() const;
+	MINSGAPI std::string toString() const;
 
 	/// ---|> [GroupNode]
-	size_t countChildren() const override;
+	MINSGAPI size_t countChildren() const override;
 
 	/// ---|> [Node]
-	NodeVisitor::status traverse(NodeVisitor & visitor) override;
-	void doDisplay(FrameContext & context, const RenderParam & rp) override;
+	MINSGAPI NodeVisitor::status traverse(NodeVisitor & visitor) override;
+	MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
 
 private:
 	/// ---|> [Node]
-	const Geometry::Box& doGetBB() const override;
+	MINSGAPI const Geometry::Box& doGetBB() const override;
 
 	/// ---|> [GroupNode]
 	void invalidateCompoundBB() override{}
-	void doAddChild(Util::Reference<Node> child) override;
-	bool doRemoveChild(Util::Reference<Node> child) override;
+	MINSGAPI void doAddChild(Util::Reference<Node> child) override;
+	MINSGAPI bool doRemoveChild(Util::Reference<Node> child) override;
 
 		
-	Node * doClone() const override;
+	MINSGAPI Node * doClone() const override;
 
 	uint32_t nodeId;
 
@@ -100,13 +100,13 @@ private:
 	typedef std::map<AlgoId,Util::Reference<GroupState> > states_t;
 	typedef states_t::const_iterator states_c_it;
 	typedef states_t::iterator states_it;
-	static states_t states;
+	MINSGAPI static states_t states;
 
 	Util::Reference<GroupNode> node;
 
 	AlgoId algoId;
 
-	static float highlightIntensity;
+	MINSGAPI static float highlightIntensity;
 };
 }
 

@@ -33,7 +33,7 @@ class MeshImportHandler;
 
 namespace ImporterTools {
 
-std::deque<const DescriptionMap *> filterElements(const std::string & type, 
+MINSGAPI std::deque<const DescriptionMap *> filterElements(const std::string & type, 
 												   const DescriptionArray * subDescriptions);
 
 /*! Helper function that adds standard data to a node.
@@ -43,32 +43,32 @@ std::deque<const DescriptionMap *> filterElements(const std::string & type,
 	- add states
 	- add behaviours
 	- add children (if node is a group node)	*/
-void finalizeNode(ImportContext & ctxt, Node * node,const DescriptionMap & d);
+MINSGAPI void finalizeNode(ImportContext & ctxt, Node * node,const DescriptionMap & d);
 
 /*! Helper function that adds standard data to state.
 	- register named state
 	- add attributes
 	more to come...	*/
-void finalizeState(ImportContext & ctxt, State * state,const DescriptionMap & d);
+MINSGAPI void finalizeState(ImportContext & ctxt, State * state,const DescriptionMap & d);
 
-Geometry::SRT getSRT(const DescriptionMap & d) ;
+MINSGAPI Geometry::SRT getSRT(const DescriptionMap & d) ;
 
-void addAttributes(ImportContext & ctxt, const DescriptionArray * subDescriptions, Util::AttributeProvider * attrProvider) ;
+MINSGAPI void addAttributes(ImportContext & ctxt, const DescriptionArray * subDescriptions, Util::AttributeProvider * attrProvider) ;
 
 typedef std::function<bool (ImportContext & ctxt,const std::string & type, const DescriptionMap & description, GroupNode * parent)> NodeImport_Fn_t;
 typedef std::function<bool (ImportContext & ctxt,const std::string & type, const DescriptionMap & description, Node * parent)> StateImport_Fn_t;
 typedef std::function<bool (ImportContext & ctxt,const std::string & type, const DescriptionMap & description, Node * parent)> BehaviourImport_Fn_t;
 typedef std::function<bool (ImportContext & ctxt,const std::string & type, const DescriptionMap & description)> AdditionalDataImport_Fn_t;
 
-void registerNodeImporter(NodeImport_Fn_t);
-void registerStateImporter(StateImport_Fn_t);
-void registerBehaviourImporter(BehaviourImport_Fn_t);
-void registerAdditionalDataImporter(AdditionalDataImport_Fn_t);
+MINSGAPI void registerNodeImporter(NodeImport_Fn_t);
+MINSGAPI void registerStateImporter(StateImport_Fn_t);
+MINSGAPI void registerBehaviourImporter(BehaviourImport_Fn_t);
+MINSGAPI void registerAdditionalDataImporter(AdditionalDataImport_Fn_t);
 
-MeshImportHandler * getMeshImportHandler();
-void setMeshImportHandler(std::unique_ptr<MeshImportHandler> handler);
+MINSGAPI MeshImportHandler * getMeshImportHandler();
+MINSGAPI void setMeshImportHandler(std::unique_ptr<MeshImportHandler> handler);
 
-void buildSceneFromDescription(ImportContext & importContext,const DescriptionMap * d);
+MINSGAPI void buildSceneFromDescription(ImportContext & importContext,const DescriptionMap * d);
 
 }
 }

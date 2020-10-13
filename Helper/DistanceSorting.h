@@ -123,7 +123,13 @@ class _DistanceCompare {
 		}
 
 		//! Unimplemented, because the sort order must not be changed for an existing data structure.
+#if defined(_MSC_VER)
+	// TODO find the actual problem here
+    public:
+        _DistanceCompare & operator=(const _DistanceCompare & other) { __debugbreak(); return *this; }
+#else
 		_DistanceCompare & operator=(const _DistanceCompare & other);
+#endif
 };
 
 // First element of std::set with default comparison std::less is the smallest element.

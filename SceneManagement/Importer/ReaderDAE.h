@@ -33,7 +33,7 @@ namespace ReaderDAE {
  * @date 2009-08-03
  * @see http://www.khronos.org/collada/
  */
-const DescriptionMap * loadScene(std::istream & in, bool invertTransparency);
+MINSGAPI const DescriptionMap * loadScene(std::istream & in, bool invertTransparency);
 
 }
 }

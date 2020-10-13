@@ -51,8 +51,8 @@ class MotionState: public btMotionState{
 
 		virtual ~MotionState(){}
 
-		void getWorldTransform(btTransform &worldTrans) const override;
-		void setWorldTransform(const btTransform &worldTrans) override;
+		MINSGAPI void getWorldTransform(btTransform &worldTrans) const override;
+		MINSGAPI void setWorldTransform(const btTransform &worldTrans) override;
 };
 }
 }

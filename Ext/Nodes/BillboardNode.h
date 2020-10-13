@@ -34,16 +34,16 @@ class BillboardNode : public GeometryNode {
 			@param rotateRightAxis Orient the right-axis automatically orthogonal to the camera
 								E.g. for multiscreen support
 		*/
-		BillboardNode(Geometry::Rect _rect,bool rotateUpAxis,bool rotateRightAxis=false);
-		virtual ~BillboardNode();
+		MINSGAPI BillboardNode(Geometry::Rect _rect,bool rotateUpAxis,bool rotateRightAxis=false);
+		MINSGAPI virtual ~BillboardNode();
 
 		const Geometry::Rect & getRect()const 	{	return rect;	}
-		void setRect(Geometry::Rect _rect);
+		MINSGAPI void setRect(Geometry::Rect _rect);
 		bool getRotateUpAxis()const 			{	return rotateUpAxis;	}
 		bool getRotateRightAxis()const 			{	return rotateRightAxis;	}
 
 		/// ---|> [Node]
-		void doDisplay(FrameContext & context, const RenderParam & rp) override;
+		MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
 
 	private:
 		explicit BillboardNode(const BillboardNode&) = default;
@@ -54,7 +54,7 @@ class BillboardNode : public GeometryNode {
 		bool rotateRightAxis;
 		Geometry::Rect rect;
 
-		void createMesh();
+		MINSGAPI void createMesh();
 };
 
 }

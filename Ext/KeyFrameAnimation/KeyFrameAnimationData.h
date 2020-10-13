@@ -22,9 +22,9 @@ namespace MinSG {
 //! @ingroup ext
 class KeyFrameAnimationData{
 	public:
-		KeyFrameAnimationData(Rendering::MeshIndexData _indexData, std::vector<Rendering::MeshVertexData>  _framesData,
+		MINSGAPI KeyFrameAnimationData(Rendering::MeshIndexData _indexData, std::vector<Rendering::MeshVertexData>  _framesData,
 				const std::map<std::string, std::vector<int> > _animationData);
-		~KeyFrameAnimationData();
+		MINSGAPI ~KeyFrameAnimationData();
 
 		const std::map<std::string, std::vector<int> > & getAnimationData() const {
 			return animationData;
@@ -38,7 +38,7 @@ class KeyFrameAnimationData{
 			return indexData;
 		}
 
-		KeyFrameAnimationData * clone()const;
+		MINSGAPI KeyFrameAnimationData * clone()const;
 
 	private:
 		Rendering::MeshIndexData indexData;

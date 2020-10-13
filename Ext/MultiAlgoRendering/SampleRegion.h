@@ -79,8 +79,8 @@ public:
 	
 	//! @name Serialization
 	//@{
-		static SampleRegion * create(std::istream & in);
-		void write(std::ostream & out)const;
+		MINSGAPI static SampleRegion * create(std::istream & in);
+		MINSGAPI void write(std::ostream & out)const;
 	//@}
 		
 	SampleRegion(const SampleStorage * storage, Geometry::Box _bounds, int _depth = 0) :
@@ -108,7 +108,7 @@ public:
 private:
 	mutable SampleQuality sampleQuality;
 public:
-	static const float INVALID_QUALITY;
+	MINSGAPI static const float INVALID_QUALITY;
 	const SampleQuality & getSampleQuality(const SampleContext * context) const
 	{
 		if(!sampleQuality.isValid() && sampleCount > 0)
@@ -207,9 +207,9 @@ public:
 
 private:
 
-	SampleRegion(uint32_t);
-	SampleRegion(const SampleRegion&);
-	SampleRegion & operator= (const SampleRegion &);
+	MINSGAPI SampleRegion(uint32_t);
+	MINSGAPI SampleRegion(const SampleRegion&);
+	MINSGAPI SampleRegion & operator= (const SampleRegion &);
 
 };
 

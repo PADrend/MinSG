@@ -34,34 +34,34 @@ class AbstractCameraNode;
 namespace PathTracing {
 class PathTracer {
 public:    
-  PathTracer();  
+  MINSGAPI PathTracer();  
   PathTracer(const PathTracer& other) = delete;  
-  ~PathTracer();  
+  MINSGAPI ~PathTracer();  
   
   /**
    * 
    */
-  void download( Util::PixelAccessor& image, float gamma=2.2);
+  MINSGAPI void download( Util::PixelAccessor& image, float gamma=2.2);
   /**
    * Resets the path tracer.
    */
-  void reset();  
-  void start();
-  void pause();
+  MINSGAPI void reset();  
+  MINSGAPI void start();
+  MINSGAPI void pause();
   
-  void setScene(GroupNode* scene);
-  void setCamera(AbstractCameraNode* camera);
+  MINSGAPI void setScene(GroupNode* scene);
+  MINSGAPI void setCamera(AbstractCameraNode* camera);
   
-  void setMaxBounces(uint32_t maxBounces);
-  void setSeed(uint32_t seed);
-  void setUseGlobalLight(bool useGlobalLight);
-  void setAntiAliasing(bool antiAliasing);
-  void setResolution(const Geometry::Vec2i& resolution);
-  void setMaxSamples(uint32_t maxSamples);
-  void setThreadCount(uint32_t count);
-  void setTileSize(uint32_t size);
-  bool isFinished() const;
-  uint32_t getSamplesPerPixel() const;
+  MINSGAPI void setMaxBounces(uint32_t maxBounces);
+  MINSGAPI void setSeed(uint32_t seed);
+  MINSGAPI void setUseGlobalLight(bool useGlobalLight);
+  MINSGAPI void setAntiAliasing(bool antiAliasing);
+  MINSGAPI void setResolution(const Geometry::Vec2i& resolution);
+  MINSGAPI void setMaxSamples(uint32_t maxSamples);
+  MINSGAPI void setThreadCount(uint32_t count);
+  MINSGAPI void setTileSize(uint32_t size);
+  MINSGAPI bool isFinished() const;
+  MINSGAPI uint32_t getSamplesPerPixel() const;
 private:
 	class pimpl;
 	std::unique_ptr<pimpl> impl;

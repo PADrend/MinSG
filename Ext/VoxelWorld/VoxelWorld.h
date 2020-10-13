@@ -29,7 +29,7 @@ namespace VoxelWorld{
 
 typedef Geometry::VoxelStorage<uint32_t,2,int32_t,uint32_t> simpleVoxelStorage_t;
 
-Util::Reference<Rendering::Mesh> generateMesh( const simpleVoxelStorage_t&, const Geometry::_Box<int32_t>& boundary); // material lib
+MINSGAPI Util::Reference<Rendering::Mesh> generateMesh( const simpleVoxelStorage_t&, const Geometry::_Box<int32_t>& boundary); // material lib
 
 }
 }

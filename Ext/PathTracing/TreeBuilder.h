@@ -43,7 +43,7 @@ class ExtTriangle;
 typedef TriangleTrees::SolidTree<Geometry::Box_f, ExtTriangle> SolidTree_ExtTriangle;
 
 
-SolidTree_ExtTriangle buildSolidExtTree(GroupNode * scene, std::vector<std::unique_ptr<Material>>& materialLibrary);
+MINSGAPI SolidTree_ExtTriangle buildSolidExtTree(GroupNode * scene, std::vector<std::unique_ptr<Material>>& materialLibrary);
 
 /**
  * Convert the data structure stored in a TriangleTree into a SolidTree.
@@ -58,7 +58,7 @@ SolidTree_ExtTriangle buildSolidExtTree(GroupNode * scene, std::vector<std::uniq
  * @return Output of the conversion: A SolidTree directly storing the triangles
  * and pointers to GeometryNodes
  */
-SolidTree_ExtTriangle convertTree(const TriangleTrees::TriangleTree * treeNode,
+MINSGAPI SolidTree_ExtTriangle convertTree(const TriangleTrees::TriangleTree * treeNode,
 										Rendering::Mesh* mesh,
 									  const Rendering::VertexAttribute & idAttr,
 									  const std::vector<GeometryNode *> & idLookup, 

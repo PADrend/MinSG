@@ -31,24 +31,24 @@ class SurfelRenderer : public MinSG::NodeRendererState {
 	PROVIDES_TYPE_NAME(SurfelRenderer)
 	public:
 
-		SurfelRenderer();
+		MINSGAPI SurfelRenderer();
 		SurfelRenderer(const SurfelRenderer&) = delete;
-		virtual ~SurfelRenderer();
+		MINSGAPI virtual ~SurfelRenderer();
 
 		/// ---|> [State]
-		SurfelRenderer* clone() const override;
+		MINSGAPI SurfelRenderer* clone() const override;
 	protected:
-		stateResult_t doEnableState(MinSG::FrameContext& context, MinSG::Node* node, const MinSG::RenderParam& rp) override;
-		void doDisableState(MinSG::FrameContext& context, MinSG::Node* node, const MinSG::RenderParam& rp) override;
-		MinSG::NodeRendererResult displayNode(MinSG::FrameContext& context, MinSG::Node* node, const MinSG::RenderParam& rp) override;
+		MINSGAPI stateResult_t doEnableState(MinSG::FrameContext& context, MinSG::Node* node, const MinSG::RenderParam& rp) override;
+		MINSGAPI void doDisableState(MinSG::FrameContext& context, MinSG::Node* node, const MinSG::RenderParam& rp) override;
+		MINSGAPI MinSG::NodeRendererResult displayNode(MinSG::FrameContext& context, MinSG::Node* node, const MinSG::RenderParam& rp) override;
 	public:
 
-	void addSurfelStrategy(AbstractSurfelStrategy* strategy);
-	void removeSurfelStrategy(AbstractSurfelStrategy* strategy);
-	void clearSurfelStrategies();
-	std::vector<AbstractSurfelStrategy*> getSurfelStrategies() const;
+	MINSGAPI void addSurfelStrategy(AbstractSurfelStrategy* strategy);
+	MINSGAPI void removeSurfelStrategy(AbstractSurfelStrategy* strategy);
+	MINSGAPI void clearSurfelStrategies();
+	MINSGAPI std::vector<AbstractSurfelStrategy*> getSurfelStrategies() const;
 	
-	void drawSurfels(MinSG::FrameContext& context);
+	MINSGAPI void drawSurfels(MinSG::FrameContext& context);
   private:
 		struct Data;
 		std::unique_ptr<Data> data;

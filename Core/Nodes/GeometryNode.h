@@ -31,19 +31,19 @@ class GeometryNode : public Node {
 		PROVIDES_TYPE_NAME(GeometryNode)
 
 	public:
-		GeometryNode();
-		GeometryNode(const Util::Reference<Rendering::Mesh> & _mesh);
-		virtual ~GeometryNode();
+		MINSGAPI GeometryNode();
+		MINSGAPI GeometryNode(const Util::Reference<Rendering::Mesh> & _mesh);
+		MINSGAPI virtual ~GeometryNode();
 
-		void setMesh(const Util::Reference<Rendering::Mesh> & newMesh);
+		MINSGAPI void setMesh(const Util::Reference<Rendering::Mesh> & newMesh);
 		Rendering::Mesh * getMesh()const                {   return mesh.get();  }
 		bool hasMesh()const                				{   return mesh.isNotNull();  }
 
-		uint32_t getTriangleCount()const;
-		uint32_t getVertexCount()const;
+		MINSGAPI uint32_t getTriangleCount()const;
+		MINSGAPI uint32_t getVertexCount()const;
 
 		/// ---|> [Node]
-		void doDisplay(FrameContext & context, const RenderParam & rp) override;
+		MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
 
 		/**
 		 * Get the amount of memory that is required to store this node. The
@@ -51,15 +51,15 @@ class GeometryNode : public Node {
 		 * 
 		 * @return Amount of memory in bytes
 		 */
-		size_t getMemoryUsage() const override;
+		MINSGAPI size_t getMemoryUsage() const override;
 
 	protected:
 		// ----
 		Util::Reference<Rendering::Mesh> mesh;
-		explicit GeometryNode(const GeometryNode & source);
+		MINSGAPI explicit GeometryNode(const GeometryNode & source);
 	private:
 		/// ---|> [Node]
-		const Geometry::Box& doGetBB() const override;
+		MINSGAPI const Geometry::Box& doGetBB() const override;
 
 
 		/// ---|> [Node]

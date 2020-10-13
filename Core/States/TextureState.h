@@ -33,12 +33,12 @@ class TextureState : public State {
 		Util::Reference<Rendering::Texture> texture;
 		int textureUnit;
 
-		stateResult_t doEnableState(FrameContext & context,Node *, const RenderParam & rp) override;
-		void doDisableState(FrameContext & context,Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context,Node *, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context,Node *, const RenderParam & rp) override;
 
 	public:
-		TextureState(Rendering::Texture * _texture=nullptr);
-		TextureState(const TextureState & source);
+		MINSGAPI TextureState(Rendering::Texture * _texture=nullptr);
+		MINSGAPI TextureState(const TextureState & source);
 		virtual ~TextureState()							{	}
 
 		Rendering::Texture * getTexture()const 			{	return texture.get();	}
@@ -49,7 +49,7 @@ class TextureState : public State {
 		int getTextureUnit()const 						{	return textureUnit;	}
 
 		/// ---|> [State]
-		TextureState * clone() const override;
+		MINSGAPI TextureState * clone() const override;
 };
 }
 #endif // TextureState_H

@@ -55,11 +55,11 @@ class CacheLevelFileSystem : public CacheLevel {
 
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
 		//! Check all cache objects stored in this cache level for inconsistencies.
-		void doVerify() const override;
+		MINSGAPI void doVerify() const override;
 #endif /* MINSG_EXT_OUTOFCORE_DEBUG */
 	public:
-		CacheLevelFileSystem(CacheContext & cacheContext);
-		virtual ~CacheLevelFileSystem();
+		MINSGAPI CacheLevelFileSystem(CacheContext & cacheContext);
+		MINSGAPI virtual ~CacheLevelFileSystem();
 };
 
 }

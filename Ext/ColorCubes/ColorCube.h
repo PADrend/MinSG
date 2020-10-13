@@ -70,10 +70,10 @@ public:
 	}
 
 	//! Return the color cube of the given node. If the node has no color cube, throw an exception.
-	static const ColorCube & getColorCube(Node * node);
+	MINSGAPI static const ColorCube & getColorCube(Node * node);
 
 	//! Check if the node has got a color cube.
-	static bool hasColorCube(Node * node);
+	MINSGAPI static bool hasColorCube(Node * node);
 
 	/**!
 	 * Stores the given colorCube in the given Node as nodeAttribute
@@ -82,7 +82,7 @@ public:
 	 * @note 	first calculate the color cube and then attach it,
 	 * 			do NOT try to create, attach and finally fill the color cube with values
 	 */
-	static void attachColorCube(Node * node, const ColorCube & cc);
+	MINSGAPI static void attachColorCube(Node * node, const ColorCube & cc);
 
 	/**
 	 * removes the color cube from the specified node. It also removes all color cubes on the path from specified node up to
@@ -94,30 +94,30 @@ public:
 	 * @param recursive determines whether all color cubes in the subtree should be removed or only the color cube of the
 	 * specified node.
 	 */
-	static void removeColorCube(Node * node, bool recursive=true);
+	MINSGAPI static void removeColorCube(Node * node, bool recursive=true);
 
 	/**
 	 *
 	 */
-	static void buildColorCubes(FrameContext & context, Node * node, uint32_t nodeCount=100, uint32_t triangleCount=20000);
+	MINSGAPI static void buildColorCubes(FrameContext & context, Node * node, uint32_t nodeCount=100, uint32_t triangleCount=20000);
 
 
 private:
 	//! get color cube mesh
-	static Rendering::Mesh * getCubeMesh();
+	MINSGAPI static Rendering::Mesh * getCubeMesh();
 
 	/**
 	 * this function is used by removeColorCube(...) to remove all color cubes in the subtree
 	 * @param node root of the subtree in which all color cubes should be removed
 	 */
-	static void removeColorCubesRecursive(Node * node);
+	MINSGAPI static void removeColorCubesRecursive(Node * node);
 
 	/**
 	 *	draws the box (the bounding of corresponding node) with faces colored using processed colors
 	 *	(is called during rendering to draw the color cube, or during the preprocessing to draw the cubes of the children)
 	 *	@param box 	to draw (belongs to the corresponding node)
 	 */
-	void drawColoredBox(FrameContext & context, const Geometry::Box& box) const;
+	MINSGAPI void drawColoredBox(FrameContext & context, const Geometry::Box& box) const;
 
 
 };

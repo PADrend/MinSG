@@ -23,18 +23,18 @@ class BehaviourGroup: public AbstractNodeBehaviour {
 public:
 	typedef std::list<Util::Reference<AbstractBehaviour> > behaviourList_t;
 
-	BehaviourGroup();
-	virtual ~BehaviourGroup();
+	MINSGAPI BehaviourGroup();
+	MINSGAPI virtual ~BehaviourGroup();
 
-	void addBehaviour(AbstractBehaviour* behaviour);
-	void removeBehaviour(AbstractBehaviour* behaviour);
-	void getBehaviours(behaviourList_t & list);
-	size_t count();
+	MINSGAPI void addBehaviour(AbstractBehaviour* behaviour);
+	MINSGAPI void removeBehaviour(AbstractBehaviour* behaviour);
+	MINSGAPI void getBehaviours(behaviourList_t & list);
+	MINSGAPI size_t count();
 
 	// ---|> AbstractBehaviour
-	behaviourResult_t doExecute() override;
+	MINSGAPI behaviourResult_t doExecute() override;
 	// ---|> AbstractNodeBehaviour
-	void onNodeChanged(Node * oldNode) override;
+	MINSGAPI void onNodeChanged(Node * oldNode) override;
 
 private:
 	behaviourList_t behaviours;

@@ -53,9 +53,9 @@ class CacheManager {
 		uint32_t frameNumber;
 
 	public:
-		CacheManager();
+		MINSGAPI CacheManager();
 
-		~CacheManager();
+		MINSGAPI ~CacheManager();
 
 		/**
 		 * Change the user priority of a mesh inside the cache hierarchy.
@@ -68,7 +68,7 @@ class CacheManager {
 		 * @return Previous user priority
 		 * @throw std::exception if an error occurred (e.g. the given mesh is unknown).
 		 */
-		uint16_t setUserPriority(Rendering::Mesh * mesh, uint16_t userPriority);
+		MINSGAPI uint16_t setUserPriority(Rendering::Mesh * mesh, uint16_t userPriority);
 
 		/**
 		 * Inform this manager that a mesh is displayed.
@@ -79,7 +79,7 @@ class CacheManager {
 		 * @param mesh Mesh that is displayed
 		 * @throw std::exception if an error occurred (e.g. the given mesh is unknown).
 		 */
-		void meshDisplay(Rendering::Mesh * mesh);
+		MINSGAPI void meshDisplay(Rendering::Mesh * mesh);
 
 		/**
 		 * Add a new level to the top of the cache hierarchy.
@@ -90,10 +90,10 @@ class CacheManager {
 		 * @return Identifier of the new cache level
 		 * @throw std::exception if an error occurred
 		 */
-		cacheLevelId_t addCacheLevel(CacheLevelType type, uint64_t size);
+		MINSGAPI cacheLevelId_t addCacheLevel(CacheLevelType type, uint64_t size);
 
 		//! Remove all cache levels and cache objects.
-		void clear();
+		MINSGAPI void clear();
 
 		/**
 		 * Return the cache level with the given identifier.
@@ -114,7 +114,7 @@ class CacheManager {
 		 * @param mesh Currently empty mesh.
 		 * @throw std::exception in case of an error (e.g. there is no file system cache level).
 		 */
-		void addFileSystemObject(Rendering::Mesh * mesh);
+		MINSGAPI void addFileSystemObject(Rendering::Mesh * mesh);
 
 		/**
 		 * Remove a cache object that is too large for the cache system. A
@@ -126,7 +126,7 @@ class CacheManager {
 		 * @param levelId Cache level that reports the large cache object
 		 * @param size Size of the given cache object
 		 */
-		void removeLargeCacheObject(CacheObject * object,
+		MINSGAPI void removeLargeCacheObject(CacheObject * object,
 									cacheLevelId_t levelId,
 									uint64_t size);
 
@@ -134,14 +134,14 @@ class CacheManager {
 		 * Do the real work here: Swap cache objects in and out.
 		 * This function is called by a frame listener before each frame.
 		 */
-		void trigger();
+		MINSGAPI void trigger();
 
 		/**
 		 * Tell the statistics object the fill levels of the cache levels.
 		 *
 		 * @param statistics Statistics object.
 		 */
-		void updateStatistics(Statistics & statistics);
+		MINSGAPI void updateStatistics(Statistics & statistics);
 
 		//! Access the associated cache context.
 		CacheContext & getCacheContext() {

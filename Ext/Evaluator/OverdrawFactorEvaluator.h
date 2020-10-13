@@ -27,12 +27,12 @@ namespace Evaluators {
 class OverdrawFactorEvaluator : public Evaluator {
 		PROVIDES_TYPE_NAME(OverdrawFactorEvaluator)
 	public:
-		OverdrawFactorEvaluator(DirectionMode mode);
-		virtual ~OverdrawFactorEvaluator();
+		MINSGAPI OverdrawFactorEvaluator(DirectionMode mode);
+		MINSGAPI virtual ~OverdrawFactorEvaluator();
 
-		virtual void beginMeasure() override;
-		virtual void measure(FrameContext & frameContext, Node & node, const Geometry::Rect & rect) override;
-		virtual void endMeasure(FrameContext &) override;
+		MINSGAPI virtual void beginMeasure() override;
+		MINSGAPI virtual void measure(FrameContext & frameContext, Node & node, const Geometry::Rect & rect) override;
+		MINSGAPI virtual void endMeasure(FrameContext &) override;
 
 		/**
 		 * Return the quantile that is used to calculate a single value from

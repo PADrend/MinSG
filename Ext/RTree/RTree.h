@@ -39,7 +39,7 @@ class RTree : public ListNode {
 		 * @param minEntries Minimum number of nodes in a node of the tree. This has to be at most half of the maximum number.
 		 * @param maxEntries Maximum number of nodes in a node of the tree.
 		 */
-		RTree(uint16_t minEntries, uint16_t maxEntries);
+		MINSGAPI RTree(uint16_t minEntries, uint16_t maxEntries);
 
 		/**
 		 * Insert a new node into the tree.
@@ -47,7 +47,7 @@ class RTree : public ListNode {
 		 * @param child New node to add to the tree.
 		 * @see Algorithm Insert
 		 */
-		void doAddChild(Util::Reference<Node> child) override;
+		MINSGAPI void doAddChild(Util::Reference<Node> child) override;
 
 		/**
 		 * Remove a node from the tree.
@@ -56,10 +56,10 @@ class RTree : public ListNode {
 		 * @return @c true if child was removed and @c false if the child was not found in the tree.
 		 * @see Algorithm Delete
 		 */
-		bool doRemoveChild(Util::Reference<Node> child) override;
+		MINSGAPI bool doRemoveChild(Util::Reference<Node> child) override;
 
 		//! Return a string representation describing this node.
-		std::string toString() const;
+		MINSGAPI std::string toString() const;
 
 		/**
 		 * Find all nodes which intersect with the given box.
@@ -86,7 +86,7 @@ class RTree : public ListNode {
 		 *
 		 * @param source Source tree node
 		 */
-		RTree(const RTree & source);
+		MINSGAPI RTree(const RTree & source);
 
 		/**
 		 * Select a leaf node, in which to place a new node.
@@ -95,7 +95,7 @@ class RTree : public ListNode {
 		 * @return Leaf node
 		 * @see Algorithm ChooseLeaf
 		 */
-		virtual RTree * chooseLeaf(const Geometry::Box & newBox);
+		MINSGAPI virtual RTree * chooseLeaf(const Geometry::Box & newBox);
 
 		/**
 		 * Ascend from a leaf node to the root and propagate splits upwards.
@@ -104,7 +104,7 @@ class RTree : public ListNode {
 		 * @param nn Leaf node which is a sibling of @a leaf and is the result of a split.
 		 * @see Algorithm AdjustTree
 		 */
-		static void adjustTree(RTree * & n, RTree * & nn);
+		MINSGAPI static void adjustTree(RTree * & n, RTree * & nn);
 
 		/**
 		 * Find the leaf node which contains the given node.
@@ -114,7 +114,7 @@ class RTree : public ListNode {
 		 * @return Leaf node
 		 * @see Algorithm FindLeaf
 		 */
-		static RTree * findLeaf(RTree * root, Node * node);
+		MINSGAPI static RTree * findLeaf(RTree * root, Node * node);
 
 		/**
 		 * Check if the leaf node has enough nodes after deleting a node from it. Propagate changes upwards in the tree.
@@ -122,7 +122,7 @@ class RTree : public ListNode {
 		 * @param leaf Leaf node, from which a node was deleted.
 		 * @see Algorithm CondenseTree
 		 */
-		static void condenseTree(RTree * leaf);
+		MINSGAPI static void condenseTree(RTree * leaf);
 
 		/**
 		 * Traverse the tree given by its root node and collect all entries that are stored in leaf nodes.
@@ -131,7 +131,7 @@ class RTree : public ListNode {
 		 * @param node Root node of the subtree.
 		 * @param entries Container to store the entries, that are found.
 		 */
-		static void collectEntries(RTree * node, std::deque<Node::ref_t> & entries);
+		MINSGAPI static void collectEntries(RTree * node, std::deque<Node::ref_t> & entries);
 
 		/**
 		 * Split an internal or a leaf node into two nodes and distribute their elements and the given additional element to them.
@@ -141,7 +141,7 @@ class RTree : public ListNode {
 		 * @return New node.
 		 * @see Algorithm Quadratic Split
 		 */
-		static RTree * splitNode(RTree * node, Node * element);
+		MINSGAPI static RTree * splitNode(RTree * node, Node * element);
 
 		/**
 		 * Distribute the given nodes to the two containers. The bounding boxes are the criteria for the distribution:
@@ -152,7 +152,7 @@ class RTree : public ListNode {
 		 * @param second Second group of output nodes.
 		 * @param m Minimum number of entries in a node.
 		 */
-		static void distributeNodes(std::list<Node::ref_t> & input, std::deque<Node::ref_t> & first, std::deque<Node::ref_t> & second, uint32_t m);
+		MINSGAPI static void distributeNodes(std::list<Node::ref_t> & input, std::deque<Node::ref_t> & first, std::deque<Node::ref_t> & second, uint32_t m);
 };
 
 }

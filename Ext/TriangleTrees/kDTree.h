@@ -57,12 +57,12 @@ class kDTree : public TriangleTree {
 		 * box size that is used for increase. For example if the value
 		 * is @c 0.1f then a maximum increase of 10% is allowed.
 		 */
-		explicit kDTree(Rendering::Mesh * mesh,
+		MINSGAPI explicit kDTree(Rendering::Mesh * mesh,
 				uint32_t trianglesPerNode = 1000,
 				float allowedBBEnlargement = 0.0f);
 
 		//! Clean up memory for possible children.
-		virtual ~kDTree();
+		MINSGAPI virtual ~kDTree();
 
 		/**
 		 * Tell if the node is a leaf node.
@@ -112,7 +112,7 @@ class kDTree : public TriangleTree {
 		 * @param index Index of triangle stored in this node.
 		 * @return Indices stored in this node.
 		 */
-		const TriangleAccessor & getTriangle(uint32_t index) const override;
+		MINSGAPI const TriangleAccessor & getTriangle(uint32_t index) const override;
 
 		/**
 		 * Return the number of triangles that are stored in this tree node.
@@ -137,7 +137,7 @@ class kDTree : public TriangleTree {
 		 * Split this node if it is a leaf. It creates two children
 		 * and converts this node into an inner node.
 		 */
-		void split();
+		MINSGAPI void split();
 
 		/**
 		 * Check if the triangle fits into the bounding box of the tree
@@ -147,14 +147,14 @@ class kDTree : public TriangleTree {
 		 * @return @c true if the triangle is inside or at most
 		 * touching the bounds.
 		 */
-		bool contains(const TriangleAccessor & triangle) const override;
+		MINSGAPI bool contains(const TriangleAccessor & triangle) const override;
 
 		/**
 		 * Add attributes specific to this object to the given container.
 		 *
 		 * @param container Container for attributes.
 		 */
-		void fetchAttributes(Util::AttributeProvider * container) const override;
+		MINSGAPI void fetchAttributes(Util::AttributeProvider * container) const override;
 
 	protected:
 		/**
@@ -203,7 +203,7 @@ class kDTree : public TriangleTree {
 		 * @param parent Parent node which is used to copy the
 		 * parameters from.
 		 */
-		explicit kDTree(const Geometry::Box & childBound, const kDTree & parent);
+		MINSGAPI explicit kDTree(const Geometry::Box & childBound, const kDTree & parent);
 
 		//! Return a child node. Needed for polymorphism.
 		virtual kDTree * createChild(const Geometry::Box & childBound, const kDTree & parent) const {
@@ -222,7 +222,7 @@ class kDTree : public TriangleTree {
 		 * @note It has the side effect that the @a splitValue will be
 		 * set to the calculated value.
 		 */
-		virtual void calculateSplittingPlane(uint32_t & numFirstChild, uint32_t & numSecondChild);
+		MINSGAPI virtual void calculateSplittingPlane(uint32_t & numFirstChild, uint32_t & numSecondChild);
 
 		/**
 		 * Check if the triangle given by its @a index lies on both
@@ -240,7 +240,7 @@ class kDTree : public TriangleTree {
 		 * @param @c true if the triangle lies on both side, @c false
 		 * otherwise
 		 */
-		static bool needCut(const TriangleAccessor & triangle,
+		MINSGAPI static bool needCut(const TriangleAccessor & triangle,
 							uint8_t splitDimension,
 							float splitValue, float & minPos,
 							float & maxPos);

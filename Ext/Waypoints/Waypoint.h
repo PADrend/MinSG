@@ -33,20 +33,20 @@ class Waypoint: public Node {
 
 		friend class PathNode;
 	public:
-		Waypoint(const Geometry::SRT & _srt,AbstractBehaviour::timestamp_t timeSec);
-		Waypoint(const Waypoint &) = default;
+		MINSGAPI Waypoint(const Geometry::SRT & _srt,AbstractBehaviour::timestamp_t timeSec);
+		MINSGAPI Waypoint(const Waypoint &) = default;
 
 		PathNode * getPath()const						{	return dynamic_cast<PathNode*>(getParent());	}
 
 		AbstractBehaviour::timestamp_t getTime()const	{	return time;	}
-		void setTime(AbstractBehaviour::timestamp_t newTime);
+		MINSGAPI void setTime(AbstractBehaviour::timestamp_t newTime);
 
 		// ---|> Node
-		void doDisplay(FrameContext & context, const RenderParam & rp) override;
+		MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
 
 	private:
 		Waypoint * doClone()const override				{	return new Waypoint(*this);	}
-		const Geometry::Box& doGetBB() const override;
+		MINSGAPI const Geometry::Box& doGetBB() const override;
 		
 };
 

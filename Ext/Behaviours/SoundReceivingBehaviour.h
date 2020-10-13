@@ -28,11 +28,11 @@ class SoundReceivingBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(SoundReceivingBehaviour)
 
 	public:
-		SoundReceivingBehaviour(Node * node);
+		MINSGAPI SoundReceivingBehaviour(Node * node);
 		virtual ~SoundReceivingBehaviour() {
 		}
 
-		behaviourResult_t doExecute() override;
+		MINSGAPI behaviourResult_t doExecute() override;
 
 		Sound::Listener * getListener()const	{	return Sound::Listener::getInstance();	}
 

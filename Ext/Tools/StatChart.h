@@ -37,13 +37,13 @@ class StatChart{
 			}
 		};
 
-		StatChart(uint32_t width,uint32_t height,float timeRange=50.0);
+		MINSGAPI StatChart(uint32_t width,uint32_t height,float timeRange=50.0);
 		StatChart(const StatChart & other) = delete;
 		StatChart(StatChart &&) = default;
-		~StatChart();
+		MINSGAPI ~StatChart();
 
-		uint32_t getWidth() const;
-		uint32_t getHeight() const;
+		MINSGAPI uint32_t getWidth() const;
+		MINSGAPI uint32_t getHeight() const;
 		const Util::Reference<Util::Bitmap> & getBitmap() const {
 			return bitmap;
 		}
@@ -75,7 +75,7 @@ class StatChart{
 		std::string getDescription(Statistics::eventType_t type)const{
 			return dataRows[type].description;
 		}
-		void update(const Statistics & fStats);
+		MINSGAPI void update(const Statistics & fStats);
 
 	private:
 		Util::Reference<Util::Bitmap> bitmap;

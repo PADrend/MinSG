@@ -26,7 +26,7 @@ class FoveatedStrategy : public AbstractSurfelStrategy {
 	PROVIDES_TYPE_NAME(FoveatedStrategy)
 	public:
 		FoveatedStrategy() : AbstractSurfelStrategy(100), foveaZones({{0.25f, 2.0f}, {1.0f, 4.0f}}) {}
-		virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
+		MINSGAPI virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
 		
 		GETSET(bool, Debug, false)
 		GETSET(Geometry::Vec2, Offset, Geometry::Vec2(0,0))

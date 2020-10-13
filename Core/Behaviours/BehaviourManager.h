@@ -28,10 +28,10 @@ class BehaviourManager : public Util::ReferenceCounter<BehaviourManager> {
 
 	public:
 		//! (ctor)
-		BehaviourManager();
+		MINSGAPI BehaviourManager();
 
 		//! (dtor)
-		~BehaviourManager();
+		MINSGAPI ~BehaviourManager();
 
 		/**
 		 * @name Registered Behaviours (deprecated)
@@ -44,14 +44,14 @@ class BehaviourManager : public Util::ReferenceCounter<BehaviourManager> {
 		typedef std::multimap<Node *,Util::Reference<AbstractNodeBehaviour> > nodeBehaviourRegistry_t;
 		typedef std::multimap<State *,Util::Reference<AbstractStateBehaviour> > stateBehaviourRegistry_t;
 
-		void registerBehaviour(AbstractBehaviour * behavior);
-		void removeBehaviour(AbstractBehaviour * behaviour);
-		void clearBehaviours();
-		void executeBehaviours(Behavior::timestamp_t timeSec);
-		void executeBehaviours(Behavior::timestamp_t timeSec,behaviourList_t & finishedBehaviours);
+		MINSGAPI void registerBehaviour(AbstractBehaviour * behavior);
+		MINSGAPI void removeBehaviour(AbstractBehaviour * behaviour);
+		MINSGAPI void clearBehaviours();
+		MINSGAPI void executeBehaviours(Behavior::timestamp_t timeSec);
+		MINSGAPI void executeBehaviours(Behavior::timestamp_t timeSec,behaviourList_t & finishedBehaviours);
 
-		nodeBehaviourList_t getBehavioursByNode(Node * node)const;
-		stateBehaviourList_t getBehavioursByState(State * state)const;
+		MINSGAPI nodeBehaviourList_t getBehavioursByNode(Node * node)const;
+		MINSGAPI stateBehaviourList_t getBehavioursByState(State * state)const;
 
 	private:
 		nodeBehaviourRegistry_t registeredNodeBehaviours;
@@ -71,12 +71,12 @@ class BehaviourManager : public Util::ReferenceCounter<BehaviourManager> {
 		Util::StringIdentifier attrName_behaviorStore;
 		std::vector<Util::Reference<BehaviorStatus>> activeBehaviorStatuses;
 
-		void executeBehaviors(Behavior::timestamp_t timeSec); // called by executeBehaviours
+		MINSGAPI void executeBehaviors(Behavior::timestamp_t timeSec); // called by executeBehaviours
 	 public:
-		BehaviorStatus * startNodeBehavior(Behavior *, Node *);
-		BehaviorStatus * startStateBehavior(Behavior *, State *);
-		std::vector<BehaviorStatus*> getActiveBehaviorStatusesByNode(Node *);
-		std::vector<BehaviorStatus*> getActiveBehaviorStatusesByState(State *);
+		MINSGAPI BehaviorStatus * startNodeBehavior(Behavior *, Node *);
+		MINSGAPI BehaviorStatus * startStateBehavior(Behavior *, State *);
+		MINSGAPI std::vector<BehaviorStatus*> getActiveBehaviorStatusesByNode(Node *);
+		MINSGAPI std::vector<BehaviorStatus*> getActiveBehaviorStatusesByState(State *);
 		const std::vector<Util::Reference<BehaviorStatus>> & getActiveBehaviorStatuses()const{	return activeBehaviorStatuses;	}
 		//@}
 		

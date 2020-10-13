@@ -47,7 +47,7 @@ namespace MinSG {
 				 * @param scene Root node of the scene graph
 				 * @return @c true on success, @c false otherwise
 				 */
-				static bool
+				MINSGAPI static bool
 						saveFile(const Util::FileName & fileName, Node * scene);
 
 			private:

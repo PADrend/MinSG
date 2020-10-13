@@ -22,7 +22,7 @@ namespace OutOfCore {
  \note Texture-Serialization may be added here when needed.
  \note The return value is always true and can be used for static initialization.
  */
-void initMeshAttributeSerialization();
+MINSGAPI void initMeshAttributeSerialization();
 
 }
 }

@@ -26,12 +26,12 @@ namespace MinSG {
 
 class DebugCamera : public Util::ReferenceCounter<DebugCamera> {
 public:
-	DebugCamera();
-	~DebugCamera();
+	MINSGAPI DebugCamera();
+	MINSGAPI ~DebugCamera();
 
-	void displayMesh(Rendering::RenderingContext & rc, Rendering::Mesh * mesh);
-	void enable(Rendering::RenderingContext & rc, AbstractCameraNode * debug, AbstractCameraNode * original, Rendering::FBO * fbo);
-	void disable(Rendering::RenderingContext & rc);
+	MINSGAPI void displayMesh(Rendering::RenderingContext & rc, Rendering::Mesh * mesh);
+	MINSGAPI void enable(Rendering::RenderingContext & rc, AbstractCameraNode * debug, AbstractCameraNode * original, Rendering::FBO * fbo);
+	MINSGAPI void disable(Rendering::RenderingContext & rc);
 	
 	AbstractCameraNode::ref_t debug;
 	AbstractCameraNode::ref_t original;

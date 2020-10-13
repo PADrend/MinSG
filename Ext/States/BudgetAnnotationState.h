@@ -57,7 +57,7 @@ class BudgetAnnotationState : public NodeRendererState {
 		 * @throw std::invalid_argument If the conversion of an unknown value is detected
 		 * @return Human-readable string
 		 */
-		static std::string distributionTypeToString(distribution_type_t type);
+		MINSGAPI static std::string distributionTypeToString(distribution_type_t type);
 
 		/**
 		 * Convert the value of a string to an enumerator.
@@ -66,7 +66,7 @@ class BudgetAnnotationState : public NodeRendererState {
 		 * @throw std::invalid_argument If the conversion of an unknown value is detected
 		 * @return Distribution type enumerator
 		 */
-		static distribution_type_t distributionTypeFromString(const std::string & str);
+		MINSGAPI static distribution_type_t distributionTypeFromString(const std::string & str);
 	private:
 		//! The attribute that is written to the nodes
 		Util::StringIdentifier annotationAttribute;
@@ -91,15 +91,15 @@ class BudgetAnnotationState : public NodeRendererState {
 
 		distribution_type_t distributionType;
 	protected:
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 	public:
-		BudgetAnnotationState();
+		MINSGAPI BudgetAnnotationState();
 
-		virtual ~BudgetAnnotationState();
+		MINSGAPI virtual ~BudgetAnnotationState();
 
-		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-		BudgetAnnotationState * clone() const override;
+		MINSGAPI BudgetAnnotationState * clone() const override;
 
 		const Util::StringIdentifier & getAnnotationAttribute() const {
 			return annotationAttribute;
@@ -118,7 +118,7 @@ class BudgetAnnotationState : public NodeRendererState {
 		distribution_type_t getDistributionType() const {
 			return distributionType;
 		}
-		void setDistributionType(distribution_type_t type);
+		MINSGAPI void setDistributionType(distribution_type_t type);
 };
 
 }

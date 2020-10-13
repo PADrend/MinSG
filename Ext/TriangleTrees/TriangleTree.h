@@ -43,10 +43,10 @@ class TriangleTree {
 		 *
 		 * @param mesh Mesh containing the triangles.
 		 */
-		explicit TriangleTree(Rendering::Mesh * mesh);
+		MINSGAPI explicit TriangleTree(Rendering::Mesh * mesh);
 
 		//! Empty destructor.
-		virtual ~TriangleTree();
+		MINSGAPI virtual ~TriangleTree();
 
 		/**
 		 * Return the bounding box of this node.
@@ -102,7 +102,7 @@ class TriangleTree {
 		 *
 		 * @return Triangle count
 		 */
-		uint32_t countTriangles() const;
+		MINSGAPI uint32_t countTriangles() const;
 
 		/**
 		 * Return the number of triangles that are stored in inner nodes of the subtree.
@@ -111,7 +111,7 @@ class TriangleTree {
 		 *
 		 * @return Number of triangles that are stored in inner nodes.
 		 */
-		uint32_t countInnerTriangles() const;
+		MINSGAPI uint32_t countInnerTriangles() const;
 
 		/**
 		 * Return the number of triangles that are outside the bounding box of the node they are stored in.
@@ -120,7 +120,7 @@ class TriangleTree {
 		 *
 		 * @return Number of triangles outside the bounding box.
 		 */
-		uint32_t countTrianglesOutside() const;
+		MINSGAPI uint32_t countTrianglesOutside() const;
 
 		/**
 		 * Check if the triangle fits into the bounding box of this tree node.
@@ -154,7 +154,7 @@ class TriangleTree {
 		 * @param childBound Axis-aligned bounding box for the child.
 		 * @param parent Parent node which is used to copy the parameters from.
 		 */
-		explicit TriangleTree(Geometry::Box childBound, const TriangleTree & parent);
+		MINSGAPI explicit TriangleTree(Geometry::Box childBound, const TriangleTree & parent);
 
 		/**
 		 * Set the bounding box of this node.

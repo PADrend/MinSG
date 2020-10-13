@@ -20,7 +20,7 @@ namespace MinSG {
 class AbstractBehaviourDecorator : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(AbstractBehaviourDecorator)
 public:
-	AbstractBehaviourDecorator(AbstractBehaviour* decorated);
+	MINSGAPI AbstractBehaviourDecorator(AbstractBehaviour* decorated);
 	virtual ~AbstractBehaviourDecorator() {}
 
 	/**
@@ -39,10 +39,10 @@ public:
 	 * Behaviour <-- Decorator1 <-- Decorator2 <-- Decorator3
 	 * this method returns the Behaviour at the top
 	 */
-	AbstractBehaviour* getDecoratedRoot();
+	MINSGAPI AbstractBehaviour* getDecoratedRoot();
 
 	// ---|> AbstractNodeBehaviour
-	void onNodeChanged(Node * oldNode) override;
+	MINSGAPI void onNodeChanged(Node * oldNode) override;
 
 private:
 	Util::Reference<AbstractBehaviour> decoratedBehaviour;

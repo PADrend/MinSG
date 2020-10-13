@@ -57,13 +57,13 @@ class TextureState;
  * @param newParent the parent to which the child shall be added
  * @note child->getParent() and newParent may be nullptr
  */
-void changeParentKeepTransformation(Util::Reference<Node> child, GroupNode * newParent);
+MINSGAPI void changeParentKeepTransformation(Util::Reference<Node> child, GroupNode * newParent);
 
 /*! Returns the combined world bounding boxes of the given nodes.*/
-Geometry::Box combineNodesWorldBBs(const std::vector<Node*> & nodes);
+MINSGAPI Geometry::Box combineNodesWorldBBs(const std::vector<Node*> & nodes);
 
 //! Destroys the given subtree by calling doDestroy() on every node.
-void destroy(Node * rootNode);
+MINSGAPI void destroy(Node * rootNode);
 
 /**
  * Return the node itself or the prototype of the node if and only if the node
@@ -82,7 +82,7 @@ node_type_t * getOriginalNode(node_type_t * node) {
 }
 
 /*!	Init the given shaderState with a new Shader loaded from the given filenames. The metadata of the State is set accordingly. */
-void initShaderState(ShaderState * shaderState,		const std::vector<std::string> & vsFiles,
+MINSGAPI void initShaderState(ShaderState * shaderState,		const std::vector<std::string> & vsFiles,
 													const std::vector<std::string> & gsFiles,
 													const std::vector<std::string> & fsFiles,
 													uint32_t usageType,
@@ -100,8 +100,8 @@ static const unsigned MESH_AUTO_CENTER_BOTTOM = 1 << 2;
  *  @param transMat Transformation matrix applied to the mesh.
  *  @param metaData
  */
-Node * loadModel(const Util::FileName & filename, unsigned flags = 0, Geometry::Matrix4x4 * transMat = nullptr);
-Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matrix4x4 * transMat,const Util::FileLocator& locator);
+MINSGAPI Node * loadModel(const Util::FileName & filename, unsigned flags = 0, Geometry::Matrix4x4 * transMat = nullptr);
+MINSGAPI Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matrix4x4 * transMat,const Util::FileLocator& locator);
 
 //! @}
 }
