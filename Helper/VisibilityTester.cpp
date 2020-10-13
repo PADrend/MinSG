@@ -46,9 +46,9 @@ std::deque<std::pair<GeometryNode *, uint32_t>> testNodes(FrameContext & context
 	renderingContext.applyChanges();
 
 	for(std::size_t i = 0; i < numQueries; ++i) {
-		queries[i].begin();
+		queries[i].begin(renderingContext);
 		Rendering::drawAbsBox(renderingContext, nodes[i]->getWorldBB());
-		queries[i].end();
+		queries[i].end(renderingContext);
 	}
 
 	renderingContext.popPolygonOffset();
@@ -56,12 +56,12 @@ std::deque<std::pair<GeometryNode *, uint32_t>> testNodes(FrameContext & context
 
 	// Third pass: Determine the visible objects by rendering their geometry.
 	for(std::size_t i = 0; i < numQueries; ++i) {
-		if(queries[i].getResult() > 0) {
+		if(queries[i].getResult(context.getRenderingContext()) > 0) {
 			bbVisible[i] = true;
-			queries[i].begin();
+			queries[i].begin(renderingContext);
 			// Bounding box is visible: Render geometry.
 			nodes[i]->display(context, USE_WORLD_MATRIX | NO_STATES);
-			queries[i].end();
+			queries[i].end(renderingContext);
 		}
 	}
 
@@ -71,7 +71,7 @@ std::deque<std::pair<GeometryNode *, uint32_t>> testNodes(FrameContext & context
 	// Check query result.
 	for(std::size_t i = 0; i < numQueries; ++i) {
 		if(bbVisible[i]) {
-			const uint32_t sampleCount = queries[i].getResult();
+			const uint32_t sampleCount = queries[i].getResult(context.getRenderingContext());
 			if(sampleCount > 0) {
 				result.emplace_back(nodes[i], sampleCount);
 			}

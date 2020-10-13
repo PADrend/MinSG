@@ -129,7 +129,7 @@ void DirectionalInterpolator::calculateRatio(Rendering::RenderingContext & rende
 		for(int i=0;i<6;i++){
 //            if(values[i] == nullptr)
 //                continue;
-			queries[i].begin();
+			queries[i].begin(renderingContext);
 //            if(cit!=vNode->colors.end()){
 //                glColor4f(cit->r, cit->g, cit->b, cit->a);
 //                cit++;
@@ -141,7 +141,7 @@ void DirectionalInterpolator::calculateRatio(Rendering::RenderingContext & rende
 				Geometry::Vec3f(sides[i] + 6),
 				Geometry::Vec3f(sides[i] + 9)
 			);
-			queries[i].end();
+			queries[i].end(renderingContext);
 		}
 		Rendering::OcclusionQuery::disableTestMode(renderingContext);
 	}
@@ -162,7 +162,7 @@ void DirectionalInterpolator::calculateRatio(Rendering::RenderingContext & rende
 	for(int i=0;i<6;i++){
 //        if(values[i] == nullptr)
 //            continue;
-		samples[i] = queries[i].getResult();
+		samples[i] = queries[i].getResult(renderingContext);
 		sum+=samples[i];
 //        std::cout << samples[i]<<" , ";
 	}

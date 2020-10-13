@@ -133,19 +133,19 @@ size_t TrianglesEvaluator::getNumTrianglesVisible(FrameContext & context, Geomet
 	std::vector<Rendering::OcclusionQuery> queries(numQueries);
 	Rendering::OcclusionQuery::enableTestMode(context.getRenderingContext());
 	for (auto & query : queries) {
-		query.begin();
+		query.begin(context.getRenderingContext());
 		Rendering::drawTriangle(context.getRenderingContext(),
 								Geometry::Vec3f(reinterpret_cast<const float *>(data + (index[0] * stride))),
 								Geometry::Vec3f(reinterpret_cast<const float *>(data + (index[1] * stride))),
 								Geometry::Vec3f(reinterpret_cast<const float *>(data + (index[2] * stride)))
 							   );
-		query.end();
+		query.end(context.getRenderingContext());
 		index += 3;
 	}
 	Rendering::OcclusionQuery::disableTestMode(context.getRenderingContext());
 	// Get results.
 	for (const auto & query : queries) {
-		if (query.getResult() > 0) {
+		if (query.getResult(context.getRenderingContext()) > 0) {
 			++visibleTriangles;
 		}
 	}

@@ -110,9 +110,9 @@ State::stateResult_t CHCRenderer::doEnableState(FrameContext & context,Node * ro
 		const auto startQuery = [&](Node& node,const Geometry::Box& worldBoundingBox){
 			Rendering::OcclusionQuery query;
 			Rendering::OcclusionQuery::enableTestMode(context.getRenderingContext());
-			query.begin();
+			query.begin(context.getRenderingContext());
 			Rendering::drawAbsBox(context.getRenderingContext(), worldBoundingBox );
-			query.end();
+			query.end(context.getRenderingContext());
 			Rendering::OcclusionQuery::disableTestMode(context.getRenderingContext());
 			return std::make_pair(std::move(query),&node);
 		};
@@ -121,8 +121,8 @@ State::stateResult_t CHCRenderer::doEnableState(FrameContext & context,Node * ro
 		while(!distanceQueue.empty() || !queryQueue.empty()){
 				
 			// ---- PART 1: process finished occlusion queries
-			while( !queryQueue.empty() && (distanceQueue.empty() || queryQueue.front().first.isResultAvailable()) ){
-				if( queryQueue.front().first.getResult()>0 ){
+			while( !queryQueue.empty() && (distanceQueue.empty() || queryQueue.front().first.isResultAvailable(context.getRenderingContext())) ){
+				if( queryQueue.front().first.getResult(context.getRenderingContext())>0 ){
 					++stat_numTestsVisible;
 					statistics.pushEvent( Statistics::EVENT_TYPE_END_TEST_VISIBLE, 1);
 

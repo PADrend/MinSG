@@ -78,17 +78,17 @@ void BoxQualityEvaluator::measure(FrameContext & context,Node & node,const Geome
 		// start queries
 		Rendering::OcclusionQuery::enableTestMode(context.getRenderingContext());
 		for(const auto & geoNode : objectsInVFList) {
-			queries[i].begin();
+			queries[i].begin(context.getRenderingContext());
 //				queries[i].fastBoxTest(n->getWorldBB());
 			Rendering::drawAbsBox(context.getRenderingContext(), geoNode->getWorldBB() );
-			queries[i].end();
+			queries[i].end(context.getRenderingContext());
 			++i;
 		}
 		Rendering::OcclusionQuery::disableTestMode(context.getRenderingContext());
 		i=0;
 		// get results
 		for(auto & geoNode : objectsInVFList) {
-			if (queries[i].getResult() == 0 && !geoNode->getWorldBB().contains(context.getCamera()->getWorldOrigin()) ) {
+			if (queries[i].getResult(context.getRenderingContext()) == 0 && !geoNode->getWorldBB().contains(context.getCamera()->getWorldOrigin()) ) {
 				geoNode = nullptr;
 			} else {
 				objectsClassifiedAsV[reinterpret_cast<uintptr_t>(geoNode)] = geoNode;
@@ -107,10 +107,10 @@ void BoxQualityEvaluator::measure(FrameContext & context,Node & node,const Geome
 		for(const auto & geoNode : objectsInVFList) {
 			if (!geoNode)
 				continue;
-			queries[i].begin();
+			queries[i].begin(context.getRenderingContext());
 			// render object i
 			context.displayNode(geoNode, USE_WORLD_MATRIX);
-			queries[i].end();
+			queries[i].end(context.getRenderingContext());
 			++i;
 		}
 		i=0;
@@ -118,7 +118,7 @@ void BoxQualityEvaluator::measure(FrameContext & context,Node & node,const Geome
 		for(const auto & geoNode : objectsInVFList) {
 			if (!geoNode)
 				continue;
-			if (queries[i].getResult() > 0) {
+			if (queries[i].getResult(context.getRenderingContext()) > 0) {
 				objectsVisible[reinterpret_cast<uintptr_t>(geoNode)] = geoNode;
 			}
 			++i;

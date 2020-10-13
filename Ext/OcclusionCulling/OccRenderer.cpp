@@ -178,11 +178,11 @@ State::stateResult_t OccRenderer::performCulling(FrameContext & context,Node * r
 	while ( (!distanceQueue.empty()) || (!queryQueue.empty() ) ) {
 		bool idle=true;
 
-		while ( !queryQueue.empty() && queryQueue.front().first.isResultAvailable() ) {
+		while ( !queryQueue.empty() && queryQueue.front().first.isResultAvailable(context.getRenderingContext()) ) {
 			idle=false;
 
 			const OcclusionQuery & currentQuery = queryQueue.front().first;
-			unsigned int result = currentQuery.getResult();
+			unsigned int result = currentQuery.getResult(context.getRenderingContext());
 			Node * node = queryQueue.front().second;
 
 			queryQueue.pop();
@@ -295,9 +295,9 @@ State::stateResult_t OccRenderer::performCulling(FrameContext & context,Node * r
 				Rendering::OcclusionQuery query;
 
 				Rendering::OcclusionQuery::enableTestMode(context.getRenderingContext());
-				query.begin();
+				query.begin(context.getRenderingContext());
 				Rendering::drawFastAbsBox(context.getRenderingContext(), node->getWorldBB());
-				query.end();
+				query.end(context.getRenderingContext());
 				Rendering::OcclusionQuery::disableTestMode(context.getRenderingContext());
 				tests++;
 				queryQueue.emplace(std::move(query), node);

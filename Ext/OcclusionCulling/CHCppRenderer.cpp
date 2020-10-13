@@ -150,7 +150,7 @@ State::stateResult_t CHCppRenderer::performCulling(FrameContext & frameContext, 
 		while(!chcppContext.queryQueue.empty())
 		{
 			// if queries finished, handle them
-			if(chcppContext.queryQueue.front().first.isResultAvailable())
+			if(chcppContext.queryQueue.front().first.isResultAvailable(frameContext.getRenderingContext()))
 			{
 				handleReturnedQuery(frameContext, chcppContext.queryQueue.front(), childParam, distanceQueue, chcppContext);
 				chcppContext.queryQueue.pop();
@@ -260,7 +260,7 @@ void CHCppRenderer::handleReturnedQuery(FrameContext & frameContext, const queue
 	tests++;
 
 	const Rendering::OcclusionQuery & currentQuery = queryItem.first;
-	unsigned int result = currentQuery.getResult();
+	unsigned int result = currentQuery.getResult(frameContext.getRenderingContext());
 
 	// Node is visible?
 	if(result > visibilityThreshold)
@@ -369,11 +369,11 @@ void CHCppRenderer::issueMultiQueries(FrameContext & frameContext, CHCppContext 
 
 		assert(!multiQueryNodes.empty());
 
-		item.first.begin();
+		item.first.begin(frameContext.getRenderingContext());
 		for(const auto & node : item.second) {
 			drawTightBoundingVolume(frameContext, node);
 		}
-		item.first.end();
+		item.first.end(frameContext.getRenderingContext());
 
 		chcppContext.queryQueue.emplace(std::move(item));
 	}
@@ -400,9 +400,9 @@ void CHCppRenderer::issueQuery(FrameContext & frameContext, Node * node, CHCppCo
 	queue_item_t item;
 	item.second.push_back(node);
 
-	item.first.begin();
+	item.first.begin(frameContext.getRenderingContext());
 	drawTightBoundingVolume(frameContext, node);
-	item.first.end();
+	item.first.end(frameContext.getRenderingContext());
 
 	chcppContext.queryQueue.emplace(std::move(item));
 }

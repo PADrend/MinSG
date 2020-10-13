@@ -317,15 +317,15 @@ std::vector<GeometryNode *> collectVisibleNodes(Node * root, FrameContext & cont
 	size_t i = 0;
 	Rendering::OcclusionQuery::enableTestMode(context.getRenderingContext());
 	for(const auto & geoNode : objectsInVFList) {
-		queries[i].begin();
+		queries[i].begin(context.getRenderingContext());
 		context.displayNode(geoNode, param);
-		queries[i].end();
+		queries[i].end(context.getRenderingContext());
 		++i;
 	}
 	Rendering::OcclusionQuery::disableTestMode(context.getRenderingContext());
 	i = 0;
 	for(const auto & geoNode : objectsInVFList) {
-		if(queries[i].getResult() > 0) {
+		if(queries[i].getResult(context.getRenderingContext()) > 0) {
 			visibleObjects.push_back(geoNode);
 		}
 		++i;

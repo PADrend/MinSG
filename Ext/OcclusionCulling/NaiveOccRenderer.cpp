@@ -124,11 +124,11 @@ State::stateResult_t NaiveOccRenderer::doEnableState(FrameContext & context,Node
 				Rendering::OcclusionQuery::enableTestMode(context.getRenderingContext());
 
 				statistics.pushEvent(Statistics::EVENT_TYPE_START_TEST, 1);
-				boxQuery.begin();
+				boxQuery.begin(context.getRenderingContext());
 				Rendering::drawAbsBox(context.getRenderingContext(), worldBoundingBox );
-				boxQuery.end();
+				boxQuery.end(context.getRenderingContext());
 				Rendering::OcclusionQuery::disableTestMode(context.getRenderingContext());
-				const bool result = boxQuery.getResult();
+				const bool result = boxQuery.getResult(context.getRenderingContext());
 				nodeIsVisible = result;
 				if(result){ // statistics
 					++stat_numTestsVisible;

@@ -93,10 +93,10 @@ void OccOverheadEvaluator::measure(FrameContext & context,Node & node,const Geom
 		// start queries
 		Rendering::OcclusionQuery::enableTestMode(context.getRenderingContext());
 		for(const auto & groupNode : groupNodesInVFList) {
-			queries[i].begin();
+			queries[i].begin(context.getRenderingContext());
 //            queries[i].fastBoxTest((*it)->getWorldBB());
 			Rendering::drawAbsBox(context.getRenderingContext(), groupNode->getWorldBB() );
-			queries[i].end();
+			queries[i].end(context.getRenderingContext());
 			++i;
 		}
 		Rendering::OcclusionQuery::disableTestMode(context.getRenderingContext());
@@ -106,7 +106,7 @@ void OccOverheadEvaluator::measure(FrameContext & context,Node & node,const Geom
 			Geometry::Box extendedBox=groupNode->getWorldBB();
 			extendedBox.resizeAbs(context.getCamera()->getNearPlane());
 
-			if (queries[i].getResult() > 0 || extendedBox.contains(context.getCamera()->getWorldOrigin()) ) {
+			if (queries[i].getResult(context.getRenderingContext()) > 0 || extendedBox.contains(context.getCamera()->getWorldOrigin()) ) {
 				visibleGroupNodes.push_back(groupNode);
 			}
 			++i;
