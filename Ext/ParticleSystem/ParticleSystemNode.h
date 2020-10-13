@@ -67,23 +67,23 @@ class ParticleSystemNode: public Node {
 		 * - no particles
 		 * - max particles: 1000
 		 */
-		ParticleSystemNode();
+		MINSGAPI ParticleSystemNode();
 		ParticleSystemNode(const ParticleSystemNode&) = default;
 
 		//! release data
-		virtual ~ParticleSystemNode();
+		MINSGAPI virtual ~ParticleSystemNode();
 
 		//! Set renderer based on rendererId
-		void setRenderer(renderer_t typeId);
+		MINSGAPI void setRenderer(renderer_t typeId);
 
 		//! set custom renderer
-		void setRenderer(ParticleRenderer _renderer);
+		MINSGAPI void setRenderer(ParticleRenderer _renderer);
 
 		//! Get type-id of renderer. Used for serialization.
 		renderer_t getRendererType()const					{	return rendererType;	}
 
 		//! ---|> Node
-		void doDisplay(FrameContext & context, const RenderParam & rp) override;
+		MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
 
 		/*! (internal) should only used by a ParticleEmitter
 			Create a new particle and return it for initialization	*/
@@ -106,7 +106,7 @@ class ParticleSystemNode: public Node {
 			- age particles (subtract the elapsed time from timeLeft)
 			- collect dead particles (timeLeft <= 0)
 			- animate particles left	*/
-		void collectAndAnimateParticles(AbstractBehaviour::timestamp_t elapsed); // collect dead particles
+		MINSGAPI void collectAndAnimateParticles(AbstractBehaviour::timestamp_t elapsed); // collect dead particles
 
 	private:
 		/// ---|> [Node]

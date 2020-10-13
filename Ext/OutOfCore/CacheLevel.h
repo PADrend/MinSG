@@ -108,7 +108,7 @@ class CacheLevel {
 		 *
 		 * @throw std::exception if there are inconsistencies
 		 */
-		void verify() const;
+		MINSGAPI void verify() const;
 
 		/**
 		 * Check the internal data structures.
@@ -124,7 +124,7 @@ class CacheLevel {
 		//! Identifier of this level that is unique inside the cache hierarchy.
 		const cacheLevelId_t levelId;
 
-		CacheLevel(uint64_t cacheSize, CacheContext & cacheContext);
+		MINSGAPI CacheLevel(uint64_t cacheSize, CacheContext & cacheContext);
 
 		CacheLevel * getLower() {
 			return lower;
@@ -152,10 +152,10 @@ class CacheLevel {
 		 * @param maximumMemory Maximum amount of memory in bytes that is to
 		 * be used
 		 */
-		void removeUnimportantCacheObjects(uint64_t maximumMemory);
+		MINSGAPI void removeUnimportantCacheObjects(uint64_t maximumMemory);
 
 	public:
-		virtual ~CacheLevel();
+		MINSGAPI virtual ~CacheLevel();
 
 		cacheLevelId_t getLevelId() const {
 			return levelId;
@@ -165,7 +165,7 @@ class CacheLevel {
 			return memoryOverall;
 		}
 
-		uint64_t getUsedMemory() const;
+		MINSGAPI uint64_t getUsedMemory() const;
 
 		uint64_t getFreeMemory() const {
 			return memoryOverall - getUsedMemory();
@@ -178,7 +178,7 @@ class CacheLevel {
 		 * @param object Cache object to add
 		 * @throw std::exception if an error occurred
 		 */
-		void addCacheObject(CacheObject * object);
+		MINSGAPI void addCacheObject(CacheObject * object);
 
 		/**
 		 * Remove the given cache object from this cache level.
@@ -187,7 +187,7 @@ class CacheLevel {
 		 * @param object Cache object to remove
 		 * @throw std::exception if an error occurred
 		 */
-		void removeCacheObject(CacheObject * object);
+		MINSGAPI void removeCacheObject(CacheObject * object);
 
 		/**
 		 * Load a given cache object stored in this cache level into main memory.
@@ -195,16 +195,16 @@ class CacheLevel {
 		 * @param object Cache object to load
 		 * @throw std::exception if an error occurred
 		 */
-		bool loadCacheObject(CacheObject * object);
+		MINSGAPI bool loadCacheObject(CacheObject * object);
 
 		//! Return the number of cache objects that are stored inside this cache level.
-		std::size_t getNumObjects() const;
+		MINSGAPI std::size_t getNumObjects() const;
 
 		//! Lock @a containerMutex. Must be used only by CacheContext.
-		void lockContainer() const;
+		MINSGAPI void lockContainer() const;
 
 		//! Unlock @a containerMutex. Must be used only by CacheContext.
-		void unlockContainer() const;
+		MINSGAPI void unlockContainer() const;
 
 		//! Return the duration in milliseconds of the last call to @a work.
 		double getLastWorkDuration() const {
@@ -240,7 +240,7 @@ class CacheLevel {
 		 *
 		 * @throw std::exception if an error occurred
 		 */
-		void work();
+		MINSGAPI void work();
 
 		/**
 		 * Function called once at the beginning.

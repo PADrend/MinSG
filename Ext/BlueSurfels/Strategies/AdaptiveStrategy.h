@@ -23,9 +23,9 @@ class AdaptiveStrategy : public AbstractSurfelStrategy {
 	PROVIDES_TYPE_NAME(AdaptiveStrategy)
 	public:
 		AdaptiveStrategy() : AbstractSurfelStrategy(10000) {}
-		virtual bool prepare(MinSG::FrameContext& context, MinSG::Node* node);
-		virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
-		virtual void afterRendering(MinSG::FrameContext& context);
+		MINSGAPI virtual bool prepare(MinSG::FrameContext& context, MinSG::Node* node);
+		MINSGAPI virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
+		MINSGAPI virtual void afterRendering(MinSG::FrameContext& context);
 		GETSET(float, TargetTime, 16)
 		GETSET(float, MaxSize, 8)
 	private:

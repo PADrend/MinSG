@@ -27,10 +27,10 @@ class TreeVisualization : public State {
 
 	public:
 		//! Standard constructor
-		TreeVisualization();
-		virtual ~TreeVisualization();
+		MINSGAPI TreeVisualization();
+		MINSGAPI virtual ~TreeVisualization();
 
-		TreeVisualization * clone() const override;
+		MINSGAPI TreeVisualization * clone() const override;
 
 		//! Set the draw depth of the tree.
 		void setDrawDepth(unsigned char depth) {
@@ -78,12 +78,12 @@ class TreeVisualization : public State {
 		bool showLines;
 
 		//! Visualize a binary tree (e.g. ABTree, kDTree).
-		void displayBinaryTree(FrameContext & context, Node * root) const;
+		MINSGAPI void displayBinaryTree(FrameContext & context, Node * root) const;
 
 		//! Visualize an octree.
-		void displayOctree(FrameContext & context, Node * root) const;
+		MINSGAPI void displayOctree(FrameContext & context, Node * root) const;
 
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 };
 
 }

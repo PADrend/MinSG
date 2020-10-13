@@ -75,10 +75,10 @@ class ColorCubeRenderer : public NodeRendererState {
 
 public:
 	//!	[ctor]
-	ColorCubeRenderer();
+	MINSGAPI ColorCubeRenderer();
 
 	//!	[ctor]
-	ColorCubeRenderer(Util::StringIdentifier channel);
+	MINSGAPI ColorCubeRenderer(Util::StringIdentifier channel);
 
 	//! returns if color cube highlighting is enabled (for debugging)
 	bool isHighlightEnabled() const				{	return highlight;	}
@@ -86,14 +86,14 @@ public:
 	//! set whether color cube highlighting is enabled (for debugging)
 	void setHighlightEnabled(bool b)			{	highlight=b;	}
 
-	NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+	MINSGAPI NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-	ColorCubeRenderer * clone() const override;
+	MINSGAPI ColorCubeRenderer * clone() const override;
 
 private:
 
 	//!	renders color cubes (nodes a the priority queue)
-	void renderColorCubes(FrameContext& context,std::deque<Node*> & nodes)const;
+	MINSGAPI void renderColorCubes(FrameContext& context,std::deque<Node*> & nodes)const;
 
 	/**
 	 *	On enabling the state a priority queue is created and all nodes, whose color cubes should be displayed, are collected
@@ -107,7 +107,7 @@ private:
 	 *	@param node containing current ColorCubeRenderer in its state list.
 	 *	@param flats current rendering flags
 	 */
-	stateResult_t doEnableState(FrameContext& context, Node * node, const RenderParam & rp) override;
+	MINSGAPI stateResult_t doEnableState(FrameContext& context, Node * node, const RenderParam & rp) override;
 
 	/**
 	 *	normally the drawing of color cubes is done here after the displaying of the subtree has been finished (if the node
@@ -119,10 +119,10 @@ private:
 	 *	@param node containing current ColorCubeRenderer
 	 *	@param flags current rendering flags
 	 */
-	void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+	MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-	static Rendering::Mesh * getColorCubesMesh(FrameContext& context, std::deque<Node*> & nodes, uint32_t meshSize, uint32_t meshIndex);
-	static Rendering::Mesh * createMesh(uint32_t size);
+	MINSGAPI static Rendering::Mesh * getColorCubesMesh(FrameContext& context, std::deque<Node*> & nodes, uint32_t meshSize, uint32_t meshIndex);
+	MINSGAPI static Rendering::Mesh * createMesh(uint32_t size);
 };
 
 }

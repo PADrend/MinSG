@@ -20,7 +20,7 @@ namespace BlueSurfels {
 class ProgressiveSampler : public AbstractSurfelSampler {
 	PROVIDES_TYPE_NAME(ProgressiveSampler)
 public:
-  virtual Rendering::Mesh* sampleSurfels(Rendering::Mesh* sourceMesh);	
+    MINSGAPI virtual Rendering::Mesh* sampleSurfels(Rendering::Mesh* sourceMesh);	
 	uint32_t getSamplesPerRound() const { return samplesPerRound; }
 	void setSamplesPerRound(uint32_t v) { samplesPerRound = v; }
 private:

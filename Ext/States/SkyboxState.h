@@ -24,13 +24,13 @@ namespace MinSG {
 class SkyboxState : public State {
 	PROVIDES_TYPE_NAME(SkyboxState)
 	public:
-		static SkyboxState * createSkybox(const std::string & filename);
+		MINSGAPI static SkyboxState * createSkybox(const std::string & filename);
 
-		SkyboxState();
-		SkyboxState(const SkyboxState & source);
+		MINSGAPI SkyboxState();
+		MINSGAPI SkyboxState(const SkyboxState & source);
 		virtual ~SkyboxState() {}
 
-		void setTexture(Geometry::side_t side, Rendering::Texture * texture);
+		MINSGAPI void setTexture(Geometry::side_t side, Rendering::Texture * texture);
 
 		/**
 		 * Specify the side length of the cube.
@@ -42,13 +42,13 @@ class SkyboxState : public State {
 		}
 
 		// ---|> [State]
-		SkyboxState * clone() const override;
+		MINSGAPI SkyboxState * clone() const override;
 
 	private:
 		Util::Reference<Rendering::Texture> textures[6];
 		float sideLength;
 
-		stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
 };
 
 }

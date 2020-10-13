@@ -45,22 +45,22 @@ struct Radial {
 	uint32_t count;
 };
 
-std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh);
-std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength, bool geodesic=false);
+MINSGAPI std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh);
+MINSGAPI std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength, bool geodesic=false);
 
-float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
+MINSGAPI float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
 
-float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node* node, ReferencePoint ref = ReferencePoint::CLOSEST_BB);
+MINSGAPI float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node* node, ReferencePoint ref = ReferencePoint::CLOSEST_BB);
 
-float computeSurfelPacking(Rendering::Mesh* mesh);
+MINSGAPI float computeSurfelPacking(Rendering::Mesh* mesh);
 
-float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels);
+MINSGAPI float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels);
 
-Rendering::Mesh* getSurfels(MinSG::Node * node);
+MINSGAPI Rendering::Mesh* getSurfels(MinSG::Node * node);
 
 //! Differential domain analysis based on "Differential domain analysis for non-uniform sampling" by Wei et al. (ACM ToG 2011)
-Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution=256, uint32_t count=0, bool geodesic=true, bool adaptive=false);
-std::vector<Radial> getRadialMeanVariance(const Util::Reference<Util::Bitmap>& spectrum);
+MINSGAPI Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution=256, uint32_t count=0, bool geodesic=true, bool adaptive=false);
+MINSGAPI std::vector<Radial> getRadialMeanVariance(const Util::Reference<Util::Bitmap>& spectrum);
 
 inline uint32_t getPrefixForRadius(float radius, float packing) {
 	return radius > 0 ? packing/(radius*radius) : 0;

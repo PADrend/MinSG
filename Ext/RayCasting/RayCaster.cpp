@@ -229,10 +229,16 @@ class IntersectionQuery {
 		}
 };
 
+#if defined(_MSC_VER)
+#define UNUSED(name) __pragma(warning(suppress:4100)) name
+#else
+#define UNUSED(name) name __attribute__((unused))
+#endif
+
 template<typename value_t>
 static void testTrianglesInNode(const TriangleTrees::SolidTree_3f_GeometryNode & node,
 								const std::vector<IntersectionQuery<value_t>> & queries,
-								Context<value_t> & context __attribute__((unused))) {
+								Context<value_t> & UNUSED(context)) {
 	PROFILING_BEGIN(trianglesAction, "Triangles test");
 
 	for(const auto & triangleData : node.getTriangles()) {

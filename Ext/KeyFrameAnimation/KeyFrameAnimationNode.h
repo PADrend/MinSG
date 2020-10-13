@@ -27,60 +27,60 @@ class KeyFrameAnimationNode:public GeometryNode{
 	PROVIDES_TYPE_NAME(KeyFrameAnimationNode)
 
 	public:
-		static const short STATE_LOOP_MODE;
-		static const short STATE_SINGLE_MODE;
-		static const short STATE_SINGLE_MODE_FINISHED;
+		MINSGAPI static const short STATE_LOOP_MODE;
+		MINSGAPI static const short STATE_SINGLE_MODE;
+		MINSGAPI static const short STATE_SINGLE_MODE_FINISHED;
 
 
-		KeyFrameAnimationNode(const Rendering::MeshIndexData & indexData, const std::vector<Rendering::MeshVertexData> & framesData,
+		MINSGAPI KeyFrameAnimationNode(const Rendering::MeshIndexData & indexData, const std::vector<Rendering::MeshVertexData> & framesData,
 				std::map<std::string, std::vector<int> > animationData);
-		KeyFrameAnimationNode(const KeyFrameAnimationNode & source, Rendering::VertexDescription _vertexDescription,
+		MINSGAPI KeyFrameAnimationNode(const KeyFrameAnimationNode & source, Rendering::VertexDescription _vertexDescription,
 								std::pair<std::string, std::vector<int> > _activeAnimation,
 				float _curAnimationPosition, float _curTime, float _speedFactor, float _lastTimeStamp, short _curState);
-		~KeyFrameAnimationNode();
+		MINSGAPI ~KeyFrameAnimationNode();
 
-		Rendering::Mesh * createInitialMesh() const;
+		MINSGAPI Rendering::Mesh * createInitialMesh() const;
 
-		bool updateMesh(float timeStampSec);
+		MINSGAPI bool updateMesh(float timeStampSec);
 
-		void setVertexData(Rendering::MeshVertexData & vertexData, int startFrameIndex, int endFrameIndex, float interpolatePercentage) const;
-		bool setActiveAnimation(const std::string & name);
+		MINSGAPI void setVertexData(Rendering::MeshVertexData & vertexData, int startFrameIndex, int endFrameIndex, float interpolatePercentage) const;
+		MINSGAPI bool setActiveAnimation(const std::string & name);
 
-		std::map<std::string, std::vector<int> > getAnimationData();
+		MINSGAPI std::map<std::string, std::vector<int> > getAnimationData();
 
 		std::string getActiveAnimationName(){
 			return activeAnimation.first;
 		}
 
-		void setBehaviour(KeyFrameAnimationBehaviour * b);
-		KeyFrameAnimationBehaviour * getBehaviour();
+		MINSGAPI void setBehaviour(KeyFrameAnimationBehaviour * b);
+		MINSGAPI KeyFrameAnimationBehaviour * getBehaviour();
 
 		/*!	Sets speed factor (>=0) for active animation. 1.0 is standard speed/fps.
 			@return false if given value is smaller zero. */
-		bool setSpeedFactor(const float & sf);
+		MINSGAPI bool setSpeedFactor(const float & sf);
 
 		float getSpeedFactor(){
 			return speedFactor;
 		}
 
-		void setState(const short & value);
-		short getState();
+		MINSGAPI void setState(const short & value);
+		MINSGAPI short getState();
 
 		/*!	Sets current position of active animation. Receives floats >= 0. Only decimal places are considered.
 		 *  So a value of 3.76 results in the same animation position than the value 0.76.
 		 *	@return false if given value is smaller zero.
 		 */
-		bool setAnimationPosition(const float & value);
+		MINSGAPI bool setAnimationPosition(const float & value);
 
 		/*! Returns the current (last set) animation position. Here only decimal places are considered.
 		 *  @return float >= 0.0 < 1.0
 		 */
-		float getAnimationPosition();
+		MINSGAPI float getAnimationPosition();
 
 
 	private:
 		/// ---|> [GeometryNode]
-		KeyFrameAnimationNode * doClone()const override;
+		MINSGAPI KeyFrameAnimationNode * doClone()const override;
 
 		KeyFrameAnimationData * keyFrameAnimationData;
 		KeyFrameAnimationBehaviour * keyFrameAnimationBehaviour;

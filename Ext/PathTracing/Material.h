@@ -36,19 +36,19 @@ struct TextureWrapper {
 
 class Material {
 public:
-  Material();
-  Material(const TextureWrapper& diffuse, const TextureWrapper& normal, const TextureWrapper& specular, 
+  MINSGAPI Material();
+  MINSGAPI Material(const TextureWrapper& diffuse, const TextureWrapper& normal, const TextureWrapper& specular, 
     const TextureWrapper& shininess, const Util::Color4f& emission);
   
-  Util::Color4f getDiffuse(const Geometry::Vec2& uv) const;
-  Geometry::Vec3 getNormal(const Geometry::Vec2& uv) const;
-  Util::Color4f getSpecular(const Geometry::Vec2& uv) const;
-  float getShininess(const Geometry::Vec2& uv) const;
-  Util::Color4f getEmission() const;
+  MINSGAPI Util::Color4f getDiffuse(const Geometry::Vec2& uv) const;
+  MINSGAPI Geometry::Vec3 getNormal(const Geometry::Vec2& uv) const;
+  MINSGAPI Util::Color4f getSpecular(const Geometry::Vec2& uv) const;
+  MINSGAPI float getShininess(const Geometry::Vec2& uv) const;
+  MINSGAPI Util::Color4f getEmission() const;
   
-  bool isEmissive() const;
+  MINSGAPI bool isEmissive() const;
   
-  static Material* createFromNode(Node* node);
+  MINSGAPI static Material* createFromNode(Node* node);
 private:
   TextureWrapper diffuse;
   TextureWrapper normal;

@@ -28,18 +28,18 @@ class SoundEmittingBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(SoundEmittingBehaviour)
 
 	public:
-		SoundEmittingBehaviour(Node * node);
-		virtual ~SoundEmittingBehaviour();
+		MINSGAPI SoundEmittingBehaviour(Node * node);
+		MINSGAPI virtual ~SoundEmittingBehaviour();
 
-		behaviourResult_t doExecute() override;
-		void onInit() override;
+		MINSGAPI behaviourResult_t doExecute() override;
+		MINSGAPI void onInit() override;
 
 		bool isRemoveWhenStopped()const		{	return removeWhenStopped;	}
 		Sound::Source * getSource()const	{	return source.get();	}
 		void setRemoveWhenStopped(bool b)	{	removeWhenStopped = b;	}
 
 	private:
-		void doFinalize(BehaviorStatus &)override;
+		MINSGAPI void doFinalize(BehaviorStatus &)override;
 
 		Util::Reference<Sound::Source> source;
 		bool removeWhenStopped;

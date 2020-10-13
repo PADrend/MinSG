@@ -14,7 +14,7 @@
 namespace MinSG {
 namespace SceneManagement {
 
-void initExtAdditionalDataImporter();
+MINSGAPI void initExtAdditionalDataImporter();
 
 }
 }

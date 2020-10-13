@@ -58,15 +58,15 @@ class D2D {
 		~D2D() {
 			clear();
 		}
-		void addPoint(const WrapperPoint & point);
-		void clear();
-		void expandTri(D2D_Edge * e, D2D_Node * node, int type);
-		void expandHull(D2D_Node * node);
-		int searchEdge(D2D_Edge * e, D2D_Node * node, D2D_Edge * & foundEdge)const;
-		void swapTest(D2D_Edge * e11);
+		MINSGAPI void addPoint(const WrapperPoint & point);
+		MINSGAPI void clear();
+		MINSGAPI void expandTri(D2D_Edge * e, D2D_Node * node, int type);
+		MINSGAPI void expandHull(D2D_Node * node);
+		MINSGAPI int searchEdge(D2D_Edge * e, D2D_Node * node, D2D_Edge * & foundEdge)const;
+		MINSGAPI void swapTest(D2D_Edge * e11);
 
 		typedef std::function<void (const WrapperPoint &, const WrapperPoint &, const WrapperPoint &)> generatorFunction_t;
-		void generate(generatorFunction_t generator) const;
+		MINSGAPI void generate(generatorFunction_t generator) const;
 };
 
 /*! Delaunay2d

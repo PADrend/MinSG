@@ -45,7 +45,7 @@ class VisibilitySphere;
  * @param resolution Width and height of the viewport in pixels
  * @return Orthographic camera
  */
-CameraNodeOrtho * createSamplingCamera(const Geometry::Sphere_f & sphere, const Geometry::Matrix4x4f & worldMatrix, int resolution);
+MINSGAPI CameraNodeOrtho * createSamplingCamera(const Geometry::Sphere_f & sphere, const Geometry::Matrix4x4f & worldMatrix, int resolution);
 
 /**
  * Transform the given camera so that it is located on the sphere surface at the given position looking at the center of the sphere.
@@ -55,7 +55,7 @@ CameraNodeOrtho * createSamplingCamera(const Geometry::Sphere_f & sphere, const 
  * @param worldMatrix Transformation matrix to convert local to world coordinates
  * @param position Position specified by a unit vector from the center to the surface of the unit sphere
  */
-void transformCamera(AbstractCameraNode * camera, const Geometry::Sphere_f & sphere, const Geometry::Matrix4x4f & worldMatrix, const Geometry::Vec3f & position);
+MINSGAPI void transformCamera(AbstractCameraNode * camera, const Geometry::Sphere_f & sphere, const Geometry::Matrix4x4f & worldMatrix, const Geometry::Vec3f & position);
 
 /**
  * Create a color texture from the sample values of the given visibility sphere.
@@ -67,7 +67,7 @@ void transformCamera(AbstractCameraNode * camera, const Geometry::Sphere_f & sph
  * @param interpolation Type of interpolation to use when requesting values between sample positions
  * @return Color texture containing the encoded values
  */
-Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const VisibilitySphere & visibilitySphere, interpolation_type_t interpolation);
+MINSGAPI Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const VisibilitySphere & visibilitySphere, interpolation_type_t interpolation);
 
 /**
  * Perform the preprocessing for the given node.
@@ -81,7 +81,7 @@ Rendering::Texture * createColorTexture(uint32_t width, uint32_t height, const V
  * scene manager, frame context, resolution, sample positions)
  * @param node Node to do the sampling for
  */
-void preprocessNode(PreprocessingContext & preprocessingContext,
+MINSGAPI void preprocessNode(PreprocessingContext & preprocessingContext,
 					GroupNode * node);
 
 /**
@@ -92,7 +92,7 @@ void preprocessNode(PreprocessingContext & preprocessingContext,
  * scene manager, frame context, resolution, sample positions)
  * @param node Node to do the sampling for
  */
-void createVisibilitySphere(PreprocessingContext & preprocessingContext,
+MINSGAPI void createVisibilitySphere(PreprocessingContext & preprocessingContext,
 						  GroupNode * node);
 
 /**
@@ -103,7 +103,7 @@ void createVisibilitySphere(PreprocessingContext & preprocessingContext,
  * @param visibilitySphere Sampling sphere to check
  * @return @c true if the visibility sphere is valid, @c false otherwise
  */
-bool isVisibilitySphereValid(GroupNode * node, const VisibilitySphere & visibilitySphere);
+MINSGAPI bool isVisibilitySphereValid(GroupNode * node, const VisibilitySphere & visibilitySphere);
 
 /**
  * Check if a visibility sphere is stored at the node.
@@ -111,7 +111,7 @@ bool isVisibilitySphereValid(GroupNode * node, const VisibilitySphere & visibili
  * @param node Inner node of a tree structure
  * @return @c true if there is a visibility sphere, @c false otherwise
  */
-bool hasVisibilitySphere(GroupNode * node);
+MINSGAPI bool hasVisibilitySphere(GroupNode * node);
 
 /**
  * Retrieve a visibility sphere from a node.
@@ -120,7 +120,7 @@ bool hasVisibilitySphere(GroupNode * node);
  * @return Sampling sphere stored at the given node
  * @throw std::logic_error If the attribute was not found, or has wrong type
  */
-const VisibilitySphere & retrieveVisibilitySphere(GroupNode * node);
+MINSGAPI const VisibilitySphere & retrieveVisibilitySphere(GroupNode * node);
 
 /**
  * Store a visibility sphere at a node.
@@ -129,14 +129,14 @@ const VisibilitySphere & retrieveVisibilitySphere(GroupNode * node);
  * @param visibilitySphere Sampling sphere that will be stored at the given node
  * @throw std::logic_error If the attribute did already exist
  */
-void storeVisibilitySphere(GroupNode * node, VisibilitySphere && visibilitySphere);
+MINSGAPI void storeVisibilitySphere(GroupNode * node, VisibilitySphere && visibilitySphere);
 
 /**
  * Remove all visibility spheres stored at nodes on the path from the given node to the root.
  * 
  * @param node Beginning of the path
  */
-void removeVisibilitySphereUpwards(GroupNode * node);
+MINSGAPI void removeVisibilitySphereUpwards(GroupNode * node);
 
 /**
  * Change the coordinate system from world coordinates to local coordinates for
@@ -145,7 +145,7 @@ void removeVisibilitySphereUpwards(GroupNode * node);
  * @param rootNode Root node of the subtree
  * @throw std::logic_error In case of an error
  */
-void transformSpheresFromWorldToLocal(GroupNode * rootNode);
+MINSGAPI void transformSpheresFromWorldToLocal(GroupNode * rootNode);
 
 /**
  * Transform the center and radius of a sphere.
@@ -174,7 +174,7 @@ Geometry::_Sphere<number_t> transformSphere(const Geometry::_Sphere<number_t> & 
  * @throw std::invalid_argument If the conversion of an unknown value is detected
  * @return Interpolation type enumerator
  */
-interpolation_type_t interpolationFromUInt(uint32_t number);
+MINSGAPI interpolation_type_t interpolationFromUInt(uint32_t number);
 
 /**
  * Convert the value of an enumerator to a string.
@@ -183,7 +183,7 @@ interpolation_type_t interpolationFromUInt(uint32_t number);
  * @throw std::invalid_argument If the conversion of an unknown value is detected
  * @return Human-readable string
  */
-std::string interpolationToString(interpolation_type_t interpolation);
+MINSGAPI std::string interpolationToString(interpolation_type_t interpolation);
 
 /**
  * Convert the value of a string to an enumerator.
@@ -192,7 +192,7 @@ std::string interpolationToString(interpolation_type_t interpolation);
  * @throw std::invalid_argument If the conversion of an unknown value is detected
  * @return Interpolation type enumerator
  */
-interpolation_type_t interpolationFromString(const std::string & str);
+MINSGAPI interpolation_type_t interpolationFromString(const std::string & str);
 
 }
 }

@@ -58,41 +58,41 @@ class BtPhysicWorld : public PhysicWorld{
 		btDiscreteDynamicsWorld* dynamicsWorld;
 		btAlignedObjectArray<btCollisionShape*>	collisionShapes;
 
-		void onNodeTransformed(Node * node);
-		btRigidBody * createRigidBody(BtPhysicObject& physObj,Util::Reference<CollisionShape> shape);
-		void initCollisionCallbacks(BtPhysicObject& physObj);
+		MINSGAPI void onNodeTransformed(Node * node);
+		MINSGAPI btRigidBody * createRigidBody(BtPhysicObject& physObj,Util::Reference<CollisionShape> shape);
+		MINSGAPI void initCollisionCallbacks(BtPhysicObject& physObj);
 
 		std::vector<btRigidBody *> bodiesToRemove;
 		std::vector<btTypedConstraint *> constraintsToRemove;
 		std::set<Util::Reference<Node>> nodesToUpdate;
 	public:
-		BtPhysicWorld();
+		MINSGAPI BtPhysicWorld();
 		virtual ~BtPhysicWorld() = default;
 		
 		// simulation
-		void cleanupWorld() override;
-		void stepSimulation(float time) override;
-		void renderPhysicWorld(Rendering::RenderingContext& rctxt) override;
+		MINSGAPI void cleanupWorld() override;
+		MINSGAPI void stepSimulation(float time) override;
+		MINSGAPI void renderPhysicWorld(Rendering::RenderingContext& rctxt) override;
 		
 		// world setup
-		void initNodeObserver(Node * rootNode)override;
-		void createGroundPlane(const Geometry::Plane& plane ) override;
-		void setGravity(const Geometry::Vec3& gravity)override;
-		const Geometry::Vec3 getGravity()override;
+		MINSGAPI void initNodeObserver(Node * rootNode)override;
+		MINSGAPI void createGroundPlane(const Geometry::Plane& plane ) override;
+		MINSGAPI void setGravity(const Geometry::Vec3& gravity)override;
+		MINSGAPI const Geometry::Vec3 getGravity()override;
 		
 		// physics objects
 	private:
-		void applyProperties(Node& node);
+		MINSGAPI void applyProperties(Node& node);
 	public:
-		void markAsKinematicObject(Node& node, bool b)override;
-		void removeNode(Node *node)override;
-		void setMass(Node& node, float mass) override;
-		void setFriction(Node& _node, float fric) override;
-		void setRollingFriction(Node& _node, float rollfric) override;
-		void setShape(Node& node, Util::Reference<CollisionShape> shape) override;
-		void setLinearDamping(Node& node, float) override;
-		void setAngularDamping(Node& node, float) override;
-		void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
+		MINSGAPI void markAsKinematicObject(Node& node, bool b)override;
+		MINSGAPI void removeNode(Node *node)override;
+		MINSGAPI void setMass(Node& node, float mass) override;
+		MINSGAPI void setFriction(Node& _node, float fric) override;
+		MINSGAPI void setRollingFriction(Node& _node, float rollfric) override;
+		MINSGAPI void setShape(Node& node, Util::Reference<CollisionShape> shape) override;
+		MINSGAPI void setLinearDamping(Node& node, float) override;
+		MINSGAPI void setAngularDamping(Node& node, float) override;
+		MINSGAPI void updateLocalSurfaceVelocity(Node* node, const Geometry::Vec3& localForce) override;
 		
 		// collision shapes
 		//Util::Reference<CollisionShape> createShape_AABB(const Geometry::Box& aabb)override;
@@ -100,14 +100,14 @@ class BtPhysicWorld : public PhysicWorld{
 		//Util::Reference<CollisionShape> createShape_Composed(const std::vector<std::pair<Util::Reference<CollisionShape>,Geometry::SRT>>& shapes)override;
 
 		// constraints		
-		void addConstraint_p2p(Node& nodeA, const Geometry::Vec3& pivotLocalA, Node& nodeB,const Geometry::Vec3& pivotLocalB) override;
-		void addConstraint_hinge(Node& nodeA, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dirLocalA,Node& nodeB, const Geometry::Vec3& pivotLocalB, const Geometry::Vec3& dirLocalB) override;
-		void removeConstraints(Node& node) override;
-		void removeConstraintBetweenNodes(Node& nodeA,Node& nodeB)override;
+		MINSGAPI void addConstraint_p2p(Node& nodeA, const Geometry::Vec3& pivotLocalA, Node& nodeB,const Geometry::Vec3& pivotLocalB) override;
+		MINSGAPI void addConstraint_hinge(Node& nodeA, const Geometry::Vec3& pivotLocalA, const Geometry::Vec3& dirLocalA,Node& nodeB, const Geometry::Vec3& pivotLocalB, const Geometry::Vec3& dirLocalB) override;
+		MINSGAPI void removeConstraints(Node& node) override;
+		MINSGAPI void removeConstraintBetweenNodes(Node& nodeA,Node& nodeB)override;
 
 		// interaction
-		void setLinearVelocity(Node& node,const Geometry::Vec3&) override;
-		void setAngularVelocity(Node& node,const Geometry::Vec3&) override;
+		MINSGAPI void setLinearVelocity(Node& node,const Geometry::Vec3&) override;
+		MINSGAPI void setAngularVelocity(Node& node,const Geometry::Vec3&) override;
 
 };
 }

@@ -36,30 +36,30 @@ namespace ExporterTools {
 typedef std::function<void (ExporterContext & ctxt,DescriptionMap&,Node * node)> NodeExport_Fn_t;
 typedef std::function<void (ExporterContext & ctxt,DescriptionMap&,State * state)> StateExport_Fn_t;
 typedef std::function<DescriptionMap *(ExporterContext & ctxt,AbstractBehaviour * behaviour)> BehaviourExport_Fn_t;
-void registerNodeExporter(const Util::StringIdentifier & classId,NodeExport_Fn_t);
-void registerStateExporter(const Util::StringIdentifier & classId,StateExport_Fn_t);
-void registerBehaviourExporter(BehaviourExport_Fn_t);
+MINSGAPI void registerNodeExporter(const Util::StringIdentifier & classId,NodeExport_Fn_t);
+MINSGAPI void registerStateExporter(const Util::StringIdentifier & classId,StateExport_Fn_t);
+MINSGAPI void registerBehaviourExporter(BehaviourExport_Fn_t);
 
 
 
 /*! Helper function that adds standard data to a description.
 	- set string TYPE = TYPE_BEHAVIOUR */
-void finalizeBehaviourDescription(ExporterContext & ctxt,DescriptionMap & description, AbstractBehaviour * behaviour);
+MINSGAPI void finalizeBehaviourDescription(ExporterContext & ctxt,DescriptionMap & description, AbstractBehaviour * behaviour);
 
-void addAttributesToDescription(ExporterContext & ctxt, DescriptionMap & description, const Util::GenericAttribute::Map * attribs);
-void addSRTToDescription(DescriptionMap & description, const Geometry::SRT & srt);
-void addTransformationToDescription(DescriptionMap & description, Node * node);
-void addChildEntry(DescriptionMap & description, std::unique_ptr<DescriptionMap> childDescription);
-void addDataEntry(DescriptionMap & description, std::unique_ptr<DescriptionMap> dataDescription);
+MINSGAPI void addAttributesToDescription(ExporterContext & ctxt, DescriptionMap & description, const Util::GenericAttribute::Map * attribs);
+MINSGAPI void addSRTToDescription(DescriptionMap & description, const Geometry::SRT & srt);
+MINSGAPI void addTransformationToDescription(DescriptionMap & description, Node * node);
+MINSGAPI void addChildEntry(DescriptionMap & description, std::unique_ptr<DescriptionMap> childDescription);
+MINSGAPI void addDataEntry(DescriptionMap & description, std::unique_ptr<DescriptionMap> dataDescription);
 
-void addChildNodesToDescription(ExporterContext & ctxt,DescriptionMap & description, Node * node);
-void addStatesToDescription(ExporterContext & ctxt,DescriptionMap & description, Node * node);
-void addBehavioursToDescription(ExporterContext & ctxt,DescriptionMap & description, Node * node);
+MINSGAPI void addChildNodesToDescription(ExporterContext & ctxt,DescriptionMap & description, Node * node);
+MINSGAPI void addStatesToDescription(ExporterContext & ctxt,DescriptionMap & description, Node * node);
+MINSGAPI void addBehavioursToDescription(ExporterContext & ctxt,DescriptionMap & description, Node * node);
 
-std::unique_ptr<DescriptionMap> createDescriptionForBehaviour(ExporterContext & ctxt,AbstractBehaviour * behaviour);
-std::unique_ptr<DescriptionMap> createDescriptionForNode(ExporterContext & ctxt,Node * node);
-std::unique_ptr<DescriptionMap> createDescriptionForScene(ExporterContext & ctxt, const std::deque<Node *> &nodes);
-std::unique_ptr<DescriptionMap> createDescriptionForState(ExporterContext & ctxt,State * state);
+MINSGAPI std::unique_ptr<DescriptionMap> createDescriptionForBehaviour(ExporterContext & ctxt,AbstractBehaviour * behaviour);
+MINSGAPI std::unique_ptr<DescriptionMap> createDescriptionForNode(ExporterContext & ctxt,Node * node);
+MINSGAPI std::unique_ptr<DescriptionMap> createDescriptionForScene(ExporterContext & ctxt, const std::deque<Node *> &nodes);
+MINSGAPI std::unique_ptr<DescriptionMap> createDescriptionForState(ExporterContext & ctxt,State * state);
 
 }
 }

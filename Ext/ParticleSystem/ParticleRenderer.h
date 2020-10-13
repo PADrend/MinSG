@@ -34,7 +34,7 @@ struct ParticleBillboardRenderer {
 	 * Render a billboard for every particle. For now it's only very basic, no special rules for
 	 * rotation around different axis implemented.
 	 */
-	void operator()(ParticleSystemNode * node, FrameContext & context, const RenderParam & rp);
+	MINSGAPI void operator()(ParticleSystemNode * node, FrameContext & context, const RenderParam & rp);
 };
 
 //! Just render OpenGL-points where the particles are. Test renderer. Just works.
@@ -42,7 +42,7 @@ struct ParticlePointRenderer {
 	/**
 	 * Just render OpenGL-points where the particles are. Test renderer. Just works.
 	 */
-	void operator()(ParticleSystemNode* psystem, FrameContext & context, const RenderParam & rp);
+	MINSGAPI void operator()(ParticleSystemNode* psystem, FrameContext & context, const RenderParam & rp);
 };
 
 }

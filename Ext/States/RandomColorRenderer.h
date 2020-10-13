@@ -33,11 +33,11 @@ class GeometryNode;
 class RandomColorRenderer : public State {
 	PROVIDES_TYPE_NAME(RandomColorRenderer)
 	public:
-		RandomColorRenderer();
-		RandomColorRenderer(const RandomColorRenderer & source);
-		virtual ~RandomColorRenderer();
+		MINSGAPI RandomColorRenderer();
+		MINSGAPI RandomColorRenderer(const RandomColorRenderer & source);
+		MINSGAPI virtual ~RandomColorRenderer();
 
-		RandomColorRenderer * clone() const override;
+		MINSGAPI RandomColorRenderer * clone() const override;
 
 	private:
 		//! Cache for node which was used in the last call.
@@ -48,10 +48,10 @@ class RandomColorRenderer : public State {
 		color_map_t colorMapping;
 
 		//! Shader used for rendering the colored geometry.
-		static Rendering::Shader * shader;
-		static Rendering::Shader * getShader();
+		MINSGAPI static Rendering::Shader * shader;
+		MINSGAPI static Rendering::Shader * getShader();
 
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 };
 
 }

@@ -34,9 +34,9 @@ class LP
 
 public:
 
-	LP ( uint32_t _nodeCount, uint32_t _algoCount, float * _errors, float * _times, double _targetTime );
+	MINSGAPI LP ( uint32_t _nodeCount, uint32_t _algoCount, float * _errors, float * _times, double _targetTime );
 
-	~LP();
+	MINSGAPI ~LP();
 
 	bool isStopped() {
 		std::lock_guard<std::mutex> lock(mutex);
@@ -48,9 +48,9 @@ public:
 		return resultComputed;
 	}
 
-	std::vector<int> getResult();
+	MINSGAPI std::vector<int> getResult();
 
-	void run();
+	MINSGAPI void run();
 
 private:
 
@@ -66,8 +66,8 @@ private:
 	std::condition_variable changed;
 	std::thread thread;
 
-	void printMatrix();
-	void printResult();
+	MINSGAPI void printMatrix();
+	MINSGAPI void printResult();
 };
 
 }

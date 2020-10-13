@@ -33,7 +33,7 @@ class SurfelRenderer : public NodeRendererState {
 
 		virtual ~SurfelRenderer() {}
 
-		virtual NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI virtual NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 		float getSurfelCountFactor() const{
 			return surfelCountFac;
@@ -73,17 +73,17 @@ class SurfelRenderer : public NodeRendererState {
 			return new SurfelRenderer(*this);
 		};
 
-		Rendering::Mesh * getSurfels(Node * node);
+		MINSGAPI Rendering::Mesh * getSurfels(Node * node);
 		bool hasSurfels(Node * node) {
 			return getSurfels(node) != nullptr;
 		}
 
-		float getSurfelCoverage(Node * node);
+		MINSGAPI float getSurfelCoverage(Node * node);
 
-		void displaySurfels(FrameContext & context, Rendering::Mesh * surfelMesh, Geometry::Matrix4x4f worldMatrix, float surfelCount, float surfelSize);
+		MINSGAPI void displaySurfels(FrameContext & context, Rendering::Mesh * surfelMesh, Geometry::Matrix4x4f worldMatrix, float surfelCount, float surfelSize);
 
 		//! render surfels for forced nodes.
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 	private:
 		float surfelCountFac;
@@ -92,7 +92,7 @@ class SurfelRenderer : public NodeRendererState {
 		bool forceFlag;
 		std::set<Node *> displayOnDeaktivate;
 		
-		float getProjSize(FrameContext & context, Node * node);
+		MINSGAPI float getProjSize(FrameContext & context, Node * node);
 };
 
 }

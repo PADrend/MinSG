@@ -26,7 +26,7 @@ namespace PipelineStatistics {
  */
 class Statistics {
 	private:
-		explicit Statistics(MinSG::Statistics & statistics);
+		MINSGAPI explicit Statistics(MinSG::Statistics & statistics);
 		Statistics(Statistics &&) = delete;
 		Statistics(const Statistics &) = delete;
 		Statistics & operator=(Statistics &&) = delete;
@@ -45,7 +45,7 @@ class Statistics {
 		uint32_t clippingOutputPrimitivesCounter;
 	public:
 		//! Return singleton instance.
-		static Statistics & instance(MinSG::Statistics & statistics);
+		MINSGAPI static Statistics & instance(MinSG::Statistics & statistics);
 
 		uint32_t getVerticesSubmittedCounter() const {
 			return verticesSubmittedCounter;

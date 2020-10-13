@@ -22,170 +22,170 @@ typedef const char * const cStr_t; // string constant
 
 // ------------------------------------------------------------
 //! Various States
-extern cStr_t STATE_TYPE_OCC_RENDERER; // ext
-extern cStr_t STATE_TYPE_SKYBOX; // ext
-extern cStr_t STATE_TYPE_OCC_RENDERER; // ext
+MINSGAPI extern cStr_t STATE_TYPE_OCC_RENDERER; // ext
+MINSGAPI extern cStr_t STATE_TYPE_SKYBOX; // ext
+MINSGAPI extern cStr_t STATE_TYPE_OCC_RENDERER; // ext
 
 // ------------------------------------------------------------
 //!	@name Billboard
 //	@{
-extern cStr_t NODE_TYPE_BILLBOARD;
-extern const Util::StringIdentifier ATTR_BILLBOARD_RECT;
-extern const Util::StringIdentifier ATTR_BILLBOARD_ROTATE_UP;
-extern const Util::StringIdentifier ATTR_BILLBOARD_ROTATE_RIGHT;
+MINSGAPI extern cStr_t NODE_TYPE_BILLBOARD;
+MINSGAPI extern const Util::StringIdentifier ATTR_BILLBOARD_RECT;
+MINSGAPI extern const Util::StringIdentifier ATTR_BILLBOARD_ROTATE_UP;
+MINSGAPI extern const Util::StringIdentifier ATTR_BILLBOARD_ROTATE_RIGHT;
 //	@}
 // ------------------------------------------------------------
 //!	@name Budget annotation state
 //	@{
-extern cStr_t STATE_TYPE_BUDGET_ANNOTATION_STATE;
-extern const Util::StringIdentifier ATTR_BAS_ANNOTATION_ATTRIBUTE;
-extern const Util::StringIdentifier ATTR_BAS_BUDGET;
-extern const Util::StringIdentifier ATTR_BAS_DISTRIBUTION_TYPE;
+MINSGAPI extern cStr_t STATE_TYPE_BUDGET_ANNOTATION_STATE;
+MINSGAPI extern const Util::StringIdentifier ATTR_BAS_ANNOTATION_ATTRIBUTE;
+MINSGAPI extern const Util::StringIdentifier ATTR_BAS_BUDGET;
+MINSGAPI extern const Util::StringIdentifier ATTR_BAS_DISTRIBUTION_TYPE;
 //	@}
 // ------------------------------------------------------------
 //!	@name CHC++
 //	@{
-extern cStr_t STATE_TYPE_CHCPP_RENDERER; // ext
-extern const Util::StringIdentifier ATTR_CHCPP_VISIBILITYTHRESHOLD;
-extern const Util::StringIdentifier ATTR_CHCPP_MAXPREVINVISNODESBATCHSIZE;
-extern const Util::StringIdentifier ATTR_CHCPP_SKIPPEDFRAMESTILLQUERY;
-extern const Util::StringIdentifier ATTR_CHCPP_MAXDEPTHFORTIGHTBOUNDINGVOLUMES;
-extern const Util::StringIdentifier ATTR_CHCPP_MAXAREADERIVATIONFORTIGHTBOUNDINGVOLUMES;
+MINSGAPI extern cStr_t STATE_TYPE_CHCPP_RENDERER; // ext
+MINSGAPI extern const Util::StringIdentifier ATTR_CHCPP_VISIBILITYTHRESHOLD;
+MINSGAPI extern const Util::StringIdentifier ATTR_CHCPP_MAXPREVINVISNODESBATCHSIZE;
+MINSGAPI extern const Util::StringIdentifier ATTR_CHCPP_SKIPPEDFRAMESTILLQUERY;
+MINSGAPI extern const Util::StringIdentifier ATTR_CHCPP_MAXDEPTHFORTIGHTBOUNDINGVOLUMES;
+MINSGAPI extern const Util::StringIdentifier ATTR_CHCPP_MAXAREADERIVATIONFORTIGHTBOUNDINGVOLUMES;
 //	@}
 // ------------------------------------------------------------
 //!	@name Color cubes
 //	@{
-extern cStr_t STATE_TYPE_COLOR_CUBE_RENDERER;
-extern const Util::StringIdentifier ATTR_COLOR_CUBE_RENDERER_HIGHLIGHT;
+MINSGAPI extern cStr_t STATE_TYPE_COLOR_CUBE_RENDERER;
+MINSGAPI extern const Util::StringIdentifier ATTR_COLOR_CUBE_RENDERER_HIGHLIGHT;
 //	@}
 // ------------------------------------------------------------
 //!	@name GenericMetaNode
 //	@{
-extern cStr_t NODE_TYPE_GENERIC_META_NODE;
-extern const Util::StringIdentifier ATTR_GENERIC_META_NODE_BB;
+MINSGAPI extern cStr_t NODE_TYPE_GENERIC_META_NODE;
+MINSGAPI extern const Util::StringIdentifier ATTR_GENERIC_META_NODE_BB;
 //	@}
 // ------------------------------------------------------------
 //!	@name Mirror state
 //	@{
-extern cStr_t STATE_TYPE_MIRROR_STATE;
-extern const Util::StringIdentifier ATTR_MIRROR_TEXTURE_SIZE;
+MINSGAPI extern cStr_t STATE_TYPE_MIRROR_STATE;
+MINSGAPI extern const Util::StringIdentifier ATTR_MIRROR_TEXTURE_SIZE;
 //	@}
 // ------------------------------------------------------------
 //!	@name BlueSurfels
 // @{
 #ifdef MINSG_EXT_BLUE_SURFELS
-extern cStr_t STATE_TYPE_SURFEL_RENDERER;
+MINSGAPI extern cStr_t STATE_TYPE_SURFEL_RENDERER;
 #endif
 // @}
 // ------------------------------------------------------------
 //!	@name MultiAlgoRendering
 // @{
 #ifdef MINSG_EXT_MULTIALGORENDERING
-extern cStr_t NODE_TYPE_MULTIALGOGROUPNODE;
-extern const Util::StringIdentifier ATTR_MAGN_NODEID;
-extern cStr_t STATE_TYPE_ALGOSELECTOR;
-extern cStr_t STATE_TYPE_MAR_SURFEL_RENDERER;
-extern const Util::StringIdentifier ATTR_MAR_SURFEL_COUNT_FACTOR;
-extern const Util::StringIdentifier ATTR_MAR_SURFEL_SIZE_FACTOR;
-extern const Util::StringIdentifier ATTR_MAR_SURFEL_FORCE_FLAG;
-extern const Util::StringIdentifier ATTR_MAR_SURFEL_MAX_AUTO_SIZE;
+MINSGAPI extern cStr_t NODE_TYPE_MULTIALGOGROUPNODE;
+MINSGAPI extern const Util::StringIdentifier ATTR_MAGN_NODEID;
+MINSGAPI extern cStr_t STATE_TYPE_ALGOSELECTOR;
+MINSGAPI extern cStr_t STATE_TYPE_MAR_SURFEL_RENDERER;
+MINSGAPI extern const Util::StringIdentifier ATTR_MAR_SURFEL_COUNT_FACTOR;
+MINSGAPI extern const Util::StringIdentifier ATTR_MAR_SURFEL_SIZE_FACTOR;
+MINSGAPI extern const Util::StringIdentifier ATTR_MAR_SURFEL_FORCE_FLAG;
+MINSGAPI extern const Util::StringIdentifier ATTR_MAR_SURFEL_MAX_AUTO_SIZE;
 #endif
 // @}
 // ------------------------------------------------------------
 //!	@name Particle system
 //	@{
-extern cStr_t NODE_TYPE_PARTICLESYSTEM;
+MINSGAPI extern cStr_t NODE_TYPE_PARTICLESYSTEM;
 
-extern const Util::StringIdentifier ATTR_PARTICLE_RENDERER;
-extern const Util::StringIdentifier ATTR_PARTICLE_MAX_PARTICLE_COUNT;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_RENDERER;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MAX_PARTICLE_COUNT;
 
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_ANIMATOR; // ext
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_BOX_EMITTER; // ext
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_FADE_OUT_AFFECTOR; // ext
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_GRAVITY_AFFECTOR; // ext
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_POINT_EMITTER; // ext
-extern cStr_t BEHAVIOUR_TYPE_PARTICLE_REFLECTION_AFFECTOR; // ext
+MINSGAPI extern cStr_t BEHAVIOUR_TYPE_PARTICLE_ANIMATOR; // ext
+MINSGAPI extern cStr_t BEHAVIOUR_TYPE_PARTICLE_BOX_EMITTER; // ext
+MINSGAPI extern cStr_t BEHAVIOUR_TYPE_PARTICLE_FADE_OUT_AFFECTOR; // ext
+MINSGAPI extern cStr_t BEHAVIOUR_TYPE_PARTICLE_GRAVITY_AFFECTOR; // ext
+MINSGAPI extern cStr_t BEHAVIOUR_TYPE_PARTICLE_POINT_EMITTER; // ext
+MINSGAPI extern cStr_t BEHAVIOUR_TYPE_PARTICLE_REFLECTION_AFFECTOR; // ext
 
-extern const Util::StringIdentifier ATTR_PARTICLE_DIRECTION;
-extern const Util::StringIdentifier ATTR_PARTICLE_DIR_VARIANCE;
-extern const Util::StringIdentifier ATTR_PARTICLE_EMIT_BOUNDS;
-extern const Util::StringIdentifier ATTR_PARTICLE_GRAVITY;
-extern const Util::StringIdentifier ATTR_PARTICLE_MIN_HEIGHT;
-extern const Util::StringIdentifier ATTR_PARTICLE_MAX_HEIGHT;	
-extern const Util::StringIdentifier ATTR_PARTICLE_MIN_WIDTH;
-extern const Util::StringIdentifier ATTR_PARTICLE_MAX_WIDTH;
-extern const Util::StringIdentifier ATTR_PARTICLE_MIN_SPEED;
-extern const Util::StringIdentifier ATTR_PARTICLE_MAX_SPEED;
-extern const Util::StringIdentifier ATTR_PARTICLE_MIN_LIFE;
-extern const Util::StringIdentifier ATTR_PARTICLE_MAX_LIFE;
-extern const Util::StringIdentifier ATTR_PARTICLE_MIN_COLOR;
-extern const Util::StringIdentifier ATTR_PARTICLE_MAX_COLOR;
-extern const Util::StringIdentifier ATTR_PARTICLE_OFFSET;
-extern const Util::StringIdentifier ATTR_PARTICLE_PER_SECOND;
-extern const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_ADHERENCE;
-extern const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_PLANE;
-extern const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_REFLECTIVENESS;
-extern const Util::StringIdentifier ATTR_PARTICLE_SPAWN_NODE;
-extern const Util::StringIdentifier ATTR_PARTICLE_TIME_OFFSET;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_DIRECTION;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_DIR_VARIANCE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_EMIT_BOUNDS;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_GRAVITY;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MIN_HEIGHT;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MAX_HEIGHT;	
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MIN_WIDTH;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MAX_WIDTH;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MIN_SPEED;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MAX_SPEED;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MIN_LIFE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MAX_LIFE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MIN_COLOR;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_MAX_COLOR;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_OFFSET;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_PER_SECOND;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_ADHERENCE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_PLANE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_REFLECTION_REFLECTIVENESS;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_SPAWN_NODE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PARTICLE_TIME_OFFSET;
 //	@}
 // ------------------------------------------------------------
 //!	@name Path node and waypoint
 //	@{
-extern cStr_t NODE_TYPE_PATH;
-extern cStr_t NODE_TYPE_WAYPOINT;
-extern const Util::StringIdentifier ATTR_PATHNODE_LOOPING;
-extern const Util::StringIdentifier ATTR_WAYPOINT_TIME;
-extern cStr_t BEHAVIOUR_TYPE_FOLLOW_PATH;
+MINSGAPI extern cStr_t NODE_TYPE_PATH;
+MINSGAPI extern cStr_t NODE_TYPE_WAYPOINT;
+MINSGAPI extern const Util::StringIdentifier ATTR_PATHNODE_LOOPING;
+MINSGAPI extern const Util::StringIdentifier ATTR_WAYPOINT_TIME;
+MINSGAPI extern cStr_t BEHAVIOUR_TYPE_FOLLOW_PATH;
 // behaviour attributes
-extern const Util::StringIdentifier ATTR_FOLLOW_PATH_PATH_ID;
+MINSGAPI extern const Util::StringIdentifier ATTR_FOLLOW_PATH_PATH_ID;
 //	@}
 // ------------------------------------------------------------
 //!	@name Projected size filter state
 //	@{
-extern cStr_t STATE_TYPE_PROJ_SIZE_FILTER_STATE;
-extern const Util::StringIdentifier ATTR_PSFS_MAXIMUM_PROJECTED_SIZE;
-extern const Util::StringIdentifier ATTR_PSFS_MINIMUM_DISTANCE;
-extern const Util::StringIdentifier ATTR_PSFS_SOURCE_CHANNEL;
-extern const Util::StringIdentifier ATTR_PSFS_TARGET_CHANNEL;
-extern const Util::StringIdentifier ATTR_PSFS_FORCE_CLOSED_NODES;
+MINSGAPI extern cStr_t STATE_TYPE_PROJ_SIZE_FILTER_STATE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PSFS_MAXIMUM_PROJECTED_SIZE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PSFS_MINIMUM_DISTANCE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PSFS_SOURCE_CHANNEL;
+MINSGAPI extern const Util::StringIdentifier ATTR_PSFS_TARGET_CHANNEL;
+MINSGAPI extern const Util::StringIdentifier ATTR_PSFS_FORCE_CLOSED_NODES;
 //	@}
 // ------------------------------------------------------------
 //!	@name LOD Renderer
 //	@{
-extern cStr_t STATE_TYPE_LOD_RENDERER;
-extern const Util::StringIdentifier ATTR_LOD_RENDERER_MIN_COMPLEXITY;
-extern const Util::StringIdentifier ATTR_LOD_RENDERER_MAX_COMPLEXITY;
-extern const Util::StringIdentifier ATTR_LOD_RENDERER_REL_COMPLEXITY;
-extern const Util::StringIdentifier ATTR_LOD_RENDERER_SOURCE_CHANNEL;
+MINSGAPI extern cStr_t STATE_TYPE_LOD_RENDERER;
+MINSGAPI extern const Util::StringIdentifier ATTR_LOD_RENDERER_MIN_COMPLEXITY;
+MINSGAPI extern const Util::StringIdentifier ATTR_LOD_RENDERER_MAX_COMPLEXITY;
+MINSGAPI extern const Util::StringIdentifier ATTR_LOD_RENDERER_REL_COMPLEXITY;
+MINSGAPI extern const Util::StringIdentifier ATTR_LOD_RENDERER_SOURCE_CHANNEL;
 //	@}
 // ------------------------------------------------------------
 //!	@name Spherical Visibility Sampling
 //	@{
-extern cStr_t STATE_TYPE_SVS_RENDERER;
-extern const Util::StringIdentifier ATTR_SVS_INTERPOLATION_METHOD;
-extern const Util::StringIdentifier ATTR_SVS_RENDERER_SPHERE_OCCLUSION_TEST;
-extern const Util::StringIdentifier ATTR_SVS_RENDERER_GEOMETRY_OCCLUSION_TEST;
-extern cStr_t STATE_TYPE_SVS_BUDGETRENDERER;
-extern const Util::StringIdentifier ATTR_SVS_BUDGETRENDERER_BUDGET;
+MINSGAPI extern cStr_t STATE_TYPE_SVS_RENDERER;
+MINSGAPI extern const Util::StringIdentifier ATTR_SVS_INTERPOLATION_METHOD;
+MINSGAPI extern const Util::StringIdentifier ATTR_SVS_RENDERER_SPHERE_OCCLUSION_TEST;
+MINSGAPI extern const Util::StringIdentifier ATTR_SVS_RENDERER_GEOMETRY_OCCLUSION_TEST;
+MINSGAPI extern cStr_t STATE_TYPE_SVS_BUDGETRENDERER;
+MINSGAPI extern const Util::StringIdentifier ATTR_SVS_BUDGETRENDERER_BUDGET;
 //	@}
 // ------------------------------------------------------------
 //!	@name Valuated region
 //	@{
-extern cStr_t NODE_TYPE_VALUATED_REGION;
-extern const Util::StringIdentifier ATTR_VALREGION_BOX;
-extern const Util::StringIdentifier ATTR_VALREGION_RESOLUTION;
-extern const Util::StringIdentifier ATTR_VALREGION_COLOR;
-extern const Util::StringIdentifier ATTR_VALREGION_HEIGHT;
-extern const Util::StringIdentifier ATTR_VALREGION_VALUE;
-extern const Util::StringIdentifier ATTR_VALREGION_VALUE_TYPE;
+MINSGAPI extern cStr_t NODE_TYPE_VALUATED_REGION;
+MINSGAPI extern const Util::StringIdentifier ATTR_VALREGION_BOX;
+MINSGAPI extern const Util::StringIdentifier ATTR_VALREGION_RESOLUTION;
+MINSGAPI extern const Util::StringIdentifier ATTR_VALREGION_COLOR;
+MINSGAPI extern const Util::StringIdentifier ATTR_VALREGION_HEIGHT;
+MINSGAPI extern const Util::StringIdentifier ATTR_VALREGION_VALUE;
+MINSGAPI extern const Util::StringIdentifier ATTR_VALREGION_VALUE_TYPE;
 //	@}
 // ------------------------------------------------------------
 //!	@name Shadow state
 //	@{
-extern cStr_t STATE_TYPE_SHADOW_STATE;
-extern const Util::StringIdentifier ATTR_SHADOW_TEXTURE_SIZE;
-extern const Util::StringIdentifier ATTR_SHADOW_LIGHT_NODE;
-extern const Util::StringIdentifier ATTR_SHADOW_STATIC;
+MINSGAPI extern cStr_t STATE_TYPE_SHADOW_STATE;
+MINSGAPI extern const Util::StringIdentifier ATTR_SHADOW_TEXTURE_SIZE;
+MINSGAPI extern const Util::StringIdentifier ATTR_SHADOW_LIGHT_NODE;
+MINSGAPI extern const Util::StringIdentifier ATTR_SHADOW_STATIC;
 //	@}
 // ------------------------------------------------------------
 

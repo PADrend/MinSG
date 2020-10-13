@@ -18,8 +18,8 @@ class Node;
 //! @ingroup ext
 namespace ImpostorFactory {
 
-GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node);
-GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node * node);
+MINSGAPI GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node);
+MINSGAPI GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node * node);
 
 }
 }

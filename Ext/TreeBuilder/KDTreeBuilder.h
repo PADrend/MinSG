@@ -22,12 +22,12 @@ class KDTreeBuilder: public AbstractTreeBuilder {
 
 public:
 
-	KDTreeBuilder(Util::GenericAttributeMap & options);
-	virtual ~KDTreeBuilder();
+	MINSGAPI KDTreeBuilder(Util::GenericAttributeMap & options);
+	MINSGAPI virtual ~KDTreeBuilder();
 
 protected:
 
-	list_t split(NodeWrapper & source) override;
+	MINSGAPI list_t split(NodeWrapper & source) override;
 };
 
 }

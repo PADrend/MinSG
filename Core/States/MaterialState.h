@@ -36,11 +36,11 @@ class MaterialState: public RenderingParametersState<Rendering::MaterialParamete
 		 * Multiply the color values of the material with the alpha value.
 		 * This is needed for alpha blending when using premultiplied-alpha colors.
 		 */
-		void preMultiplyAlpha();
+		MINSGAPI void preMultiplyAlpha();
 
 	private:
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 };
 
 }

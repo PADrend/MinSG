@@ -114,7 +114,7 @@ class CacheContext {
 		 * otherwise.
 		 * @note @a cacheObjectsMutex and the cache level have to be locked
 		 */
-		object_pos_t getFirstMissing(const CacheLevel & level) const;
+		MINSGAPI object_pos_t getFirstMissing(const CacheLevel & level) const;
 
 		/**
 		 * Get the last contained cache object for the given cache level.
@@ -125,17 +125,17 @@ class CacheContext {
 		 * otherwise.
 		 * @note @a cacheObjectsMutex and the cache level have to be locked
 		 */
-		rev_object_pos_t getLastContained(const CacheLevel & level) const;
+		MINSGAPI rev_object_pos_t getLastContained(const CacheLevel & level) const;
 	public:
-		CacheContext();
+		MINSGAPI CacheContext();
 
-		~CacheContext();
+		MINSGAPI ~CacheContext();
 
 		//! Inform the context about a new cache object.
-		void addObject(CacheObject * object);
+		MINSGAPI void addObject(CacheObject * object);
 
 		//! Remove an existing cache object.
-		void removeObject(CacheObject * object);
+		MINSGAPI void removeObject(CacheObject * object);
 
 		/**
 		 * Inform the context that the frame has ended. It will perform
@@ -143,7 +143,7 @@ class CacheContext {
 		 * @a sortedCacheObjects incorporating the priority changes of the
 		 * last frame.
 		 */
-		void onEndFrame(const std::vector<CacheLevel *> & levels);
+		MINSGAPI void onEndFrame(const std::vector<CacheLevel *> & levels);
 
 		/**
 		 * Update the user priority of a cache object. If the new user
@@ -152,7 +152,7 @@ class CacheContext {
 		 * @param object Cache object to update
 		 * @return Previous user priority
 		 */
-		uint16_t updateUserPriority(CacheObject * object, 
+		MINSGAPI uint16_t updateUserPriority(CacheObject * object, 
 									uint16_t userPriority);
 
 		/**
@@ -164,7 +164,7 @@ class CacheContext {
 		 * @param object Cache object to update
 		 * @param frameNumber Frame number in which the cache object was used
 		 */
-		void updateFrameNumber(CacheObject * object, uint32_t frameNumber);
+		MINSGAPI void updateFrameNumber(CacheObject * object, uint32_t frameNumber);
 
 		/**
 		 * Return the cache object with the highest priority that is not
@@ -174,7 +174,7 @@ class CacheContext {
 		 * @param level Cache level
 		 * @return Most important missing cache object, or @c nullptr
 		 */
-		CacheObject * getMostImportantMissingObject(const CacheLevel & level);
+		MINSGAPI CacheObject * getMostImportantMissingObject(const CacheLevel & level);
 
 		/**
 		 * Return the cache object with the smallest priority that is stored
@@ -185,7 +185,7 @@ class CacheContext {
 		 * @param level Cache level
 		 * @return Least important stored cache object, or @c nullptr
 		 */
-		CacheObject * getLeastImportantStoredObject(const CacheLevel & level);
+		MINSGAPI CacheObject * getLeastImportantStoredObject(const CacheLevel & level);
 
 		/**
 		 * Check if the target state for the given cache level has been
@@ -196,20 +196,20 @@ class CacheContext {
 		 * @param level Cache level
 		 * @return @c true if the cache level has reached the target state
 		 */
-		bool isTargetStateReached(const CacheLevel & level) const;
+		MINSGAPI bool isTargetStateReached(const CacheLevel & level) const;
 
 		//! Access the content of the given cache object.
-		Rendering::Mesh * getContent(CacheObject * object);
+		MINSGAPI Rendering::Mesh * getContent(CacheObject * object);
 		//! Read the content of the given cache object.
-		const Rendering::Mesh * getContent(CacheObject * object) const;
+		MINSGAPI const Rendering::Mesh * getContent(CacheObject * object) const;
 		//! Update the content of the given cache object.
-		void setContent(CacheObject * object, Rendering::Mesh * newContent);
+		MINSGAPI void setContent(CacheObject * object, Rendering::Mesh * newContent);
 
 		//! Lock @a contentMutex
-		void lockContentMutex();
+		MINSGAPI void lockContentMutex();
 
 		//! Unlock @a contentMutex
-		void unlockContentMutex();
+		MINSGAPI void unlockContentMutex();
 
 		/**
 		 * Inform the cache context that a cache object is to be added to a
@@ -218,7 +218,7 @@ class CacheContext {
 		 * @param object Cache object that will be added
 		 * @param level Cache level that will contain the cache object
 		 */
-		void addObjectToLevel(CacheObject * object, const CacheLevel & level);
+		MINSGAPI void addObjectToLevel(CacheObject * object, const CacheLevel & level);
 
 		/**
 		 * Inform the cache context that a cache object is to be remove from a
@@ -227,7 +227,7 @@ class CacheContext {
 		 * @param object Cache object that will be removed
 		 * @param level Cache level that currently contains the cache object
 		 */
-		void removeObjectFromLevel(CacheObject * object, const CacheLevel & level);
+		MINSGAPI void removeObjectFromLevel(CacheObject * object, const CacheLevel & level);
 
 		/**
 		 * Check if a cache level contains a specific cache object.
@@ -237,11 +237,11 @@ class CacheContext {
 		 * @return @c true if the given cache level contains the cache object,
 		 * @c false otherwise
 		 */
-		bool isObjectStoredInLevel(const CacheObject * object, const CacheLevel & level) const;
+		MINSGAPI bool isObjectStoredInLevel(const CacheObject * object, const CacheLevel & level) const;
 		
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
 		//! Return all cache objects that are stored in a cache level.
-		std::vector<CacheObject *> getObjectsInLevel(const CacheLevel & level) const;
+		MINSGAPI std::vector<CacheObject *> getObjectsInLevel(const CacheLevel & level) const;
 #endif /* MINSG_EXT_OUTOFCORE_DEBUG */
 };
 

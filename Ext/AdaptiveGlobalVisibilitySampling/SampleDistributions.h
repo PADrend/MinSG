@@ -33,16 +33,16 @@ class SampleDistributions {
 		std::unique_ptr<Implementation<float>> impl;
 
 	public:
-		SampleDistributions(const Geometry::Box & viewSpaceBounds,
+		MINSGAPI SampleDistributions(const Geometry::Box & viewSpaceBounds,
 							const GroupNode * scene);
-		~SampleDistributions();
+		MINSGAPI ~SampleDistributions();
 		
 		/**
 		 * Generate a sample from a random sample distribution.
 		 * 
 		 * @see section 4.2 "Adaptive Mixture Distribution"
 		 */
-		Sample<float> generateSample() const;
+		MINSGAPI Sample<float> generateSample() const;
 
 		/**
 		 * Use the contribution of a sample to update the contribution of the
@@ -53,7 +53,7 @@ class SampleDistributions {
 		 * sample
 		 * @param viewCell View cell containing the origin of the sample
 		 */
-		void updateWithSample(const Sample<float> & sample,
+		MINSGAPI void updateWithSample(const Sample<float> & sample,
 							  const contribution_t & contribution,
 							  ValuatedRegionNode * viewCell);
 
@@ -62,7 +62,7 @@ class SampleDistributions {
 		 * 
 		 * @see section 4.2 "Adaptive Mixture Distribution"
 		 */
-		void calculateDistributionProbabilities();
+		MINSGAPI void calculateDistributionProbabilities();
 
 		/**
 		 * Estimate the pixel error. Check if the estimated pixel error is below
@@ -72,7 +72,7 @@ class SampleDistributions {
 		 * @see section 4.5 "Termination of the computation"
 		 * @return @c true if the sampling is finished, @c false otherwise
 		 */
-		bool terminate() const;
+		MINSGAPI bool terminate() const;
 };
 
 }

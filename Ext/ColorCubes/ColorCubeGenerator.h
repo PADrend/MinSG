@@ -56,17 +56,17 @@ class ColorCubeGenerator {
 	public:
 
 		//! [ctor]
-		ColorCubeGenerator();
+		MINSGAPI ColorCubeGenerator();
 
 		//! [dtor]
-		~ColorCubeGenerator();
+		MINSGAPI ~ColorCubeGenerator();
 
 		/**
 		 * generates color cubes for all nodes of the specified subtree
 		 * @param context : current frame context
 		 * @param node    : the root of the subtree
 		 */
-		void generateColorCubes(FrameContext& context, Node * node, uint32_t nodeCount, uint32_t triangleCount);
+		MINSGAPI void generateColorCubes(FrameContext& context, Node * node, uint32_t nodeCount, uint32_t triangleCount);
 
 	private:
 		/**
@@ -74,7 +74,7 @@ class ColorCubeGenerator {
 		 * @param context 	current rendering context
 		 * @param node		root of the subtree
 		 */
-		void processColorCubes(FrameContext& context, Node * _node, uint32_t nodeCount, uint32_t triangleCount);
+		MINSGAPI void processColorCubes(FrameContext& context, Node * _node, uint32_t nodeCount, uint32_t triangleCount);
 
 		/**
 		 * processes the color cube of the specified node
@@ -84,7 +84,7 @@ class ColorCubeGenerator {
 		 * @param node 		node whose color cube have to be processed
 		 * @param children 	reference to the list of children of the specified node
 		 */
-		void processColorCube(FrameContext& context, Node* node, std::deque<Node*> &children);
+		MINSGAPI void processColorCube(FrameContext& context, Node* node, std::deque<Node*> &children);
 
 		/**
 		 * prepares the camera: will set viewport, near/far-plane, unit scale and enables the camera if width and height
@@ -96,7 +96,7 @@ class ColorCubeGenerator {
 		 * @param side	side of the box to which the camera should be pointed
 		 * @return true if camera was successfully set, otherwise false
 		 */
-		bool prepareCamera(FrameContext& context, const Geometry::Box& box, Geometry::side_t);
+		MINSGAPI bool prepareCamera(FrameContext& context, const Geometry::Box& box, Geometry::side_t);
 };
 
 }

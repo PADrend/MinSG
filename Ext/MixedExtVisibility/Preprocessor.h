@@ -28,7 +28,7 @@ class AbstractCameraNode;
 //! @ingroup ext
 namespace MixedExtVisibility {
 
-std::vector<Util::Reference<Node>> filterAndSortNodesByExtVisibility(FrameContext & context,
+MINSGAPI std::vector<Util::Reference<Node>> filterAndSortNodesByExtVisibility(FrameContext & context,
 																	const std::vector<Util::Reference<MinSG::Node>>& nodes,
 																	const std::vector<Util::Reference<AbstractCameraNode>>& cameras,
 																	size_t polygonLimit=0);

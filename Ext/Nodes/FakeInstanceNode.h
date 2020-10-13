@@ -44,9 +44,9 @@ class FakeInstanceNode : public Node {
 	public:
 		FakeInstanceNode() : Node(), fakePrototype() {
 		}
-		virtual ~FakeInstanceNode();
+		MINSGAPI virtual ~FakeInstanceNode();
 
-		void doDisplay(FrameContext & frameContext, const RenderParam & rp) override;
+		MINSGAPI void doDisplay(FrameContext & frameContext, const RenderParam & rp) override;
 
 		Node * getFakePrototype() const {
 			return fakePrototype.get();
@@ -57,7 +57,7 @@ class FakeInstanceNode : public Node {
 	private:
 		/// ---|> [Node]
 		FakeInstanceNode * doClone()const override	{	return new FakeInstanceNode(*this);	}
-		const Geometry::Box& doGetBB() const override;		
+		MINSGAPI const Geometry::Box& doGetBB() const override;		
 };
 
 }

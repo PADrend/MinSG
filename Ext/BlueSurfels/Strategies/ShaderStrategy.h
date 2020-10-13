@@ -27,10 +27,10 @@ namespace BlueSurfels {
 class ShaderStrategy : public AbstractSurfelStrategy {
 	PROVIDES_TYPE_NAME(ShaderStrategy)
 	public:
-		ShaderStrategy();
-		virtual bool prepare(MinSG::FrameContext& context, MinSG::Node* node);
-		virtual bool beforeRendering(MinSG::FrameContext& context);
-		virtual void afterRendering(MinSG::FrameContext& context);
+		MINSGAPI ShaderStrategy();
+		MINSGAPI virtual bool prepare(MinSG::FrameContext& context, MinSG::Node* node);
+		MINSGAPI virtual bool beforeRendering(MinSG::FrameContext& context);
+		MINSGAPI virtual void afterRendering(MinSG::FrameContext& context);
 		
 		GETSET(std::string, ShaderVS, "")
 		GETSET(std::string, ShaderFS, "")
@@ -50,7 +50,7 @@ class ShaderStrategy : public AbstractSurfelStrategy {
 		}
 		bool getSurfelDynSize() const { return surfelDynSize; }
 		
-		void refreshShader();
+		MINSGAPI void refreshShader();
 		Util::FileLocator& getFileLocator() { return locator; }
 	private:
 		Util::FileLocator locator;

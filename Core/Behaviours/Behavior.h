@@ -52,12 +52,12 @@ class Behavior :
 		//! (dtor)
 		virtual ~Behavior() {}
 
-		Util::Reference<BehaviorStatus> createBehaviorStatus();
-		behaviourResult_t execute(BehaviorStatus & state,timestamp_t currentTimeSec);
+		MINSGAPI Util::Reference<BehaviorStatus> createBehaviorStatus();
+		MINSGAPI behaviourResult_t execute(BehaviorStatus & state,timestamp_t currentTimeSec);
 		
 		/*! Finalize the given BehaviorState.
 			\note An already finalized state is silently ignored.	*/
-		void finalize(BehaviorStatus & state);
+		MINSGAPI void finalize(BehaviorStatus & state);
 		
 	private:
 		/*! ---o

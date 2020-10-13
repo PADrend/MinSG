@@ -45,10 +45,10 @@ class Octree : public TriangleTree {
 		 * @param trianglesPerNode Maximum number of triangles to store inside a node. Bigger nodes will be split.
 		 * @param enlargementFactor Increase of the size of the bounding box. Must not be smaller than one. If larger than one, this Octree will be an Loose Octree.
 		 */
-		explicit Octree(Rendering::Mesh * mesh, uint32_t trianglesPerNode, float enlargementFactor);
+		MINSGAPI explicit Octree(Rendering::Mesh * mesh, uint32_t trianglesPerNode, float enlargementFactor);
 
 		//! Clean up memory for possible children.
-		virtual ~Octree();
+		MINSGAPI virtual ~Octree();
 
 		/**
 		 * Tell if the node is a leaf node.
@@ -88,7 +88,7 @@ class Octree : public TriangleTree {
 		 * @param index Index of triangle stored in this node.
 		 * @return Indices stored in this node.
 		 */
-		const TriangleAccessor & getTriangle(uint32_t index) const override;
+		MINSGAPI const TriangleAccessor & getTriangle(uint32_t index) const override;
 
 		/**
 		 * Return the number of triangles that are stored in this tree node.
@@ -112,7 +112,7 @@ class Octree : public TriangleTree {
 		 * Split this node if it is a leaf. It creates two children
 		 * and converts this node into an inner node.
 		 */
-		void split();
+		MINSGAPI void split();
 
 		/**
 		 * Check if the triangle fits into the bounding box of the tree
@@ -122,14 +122,14 @@ class Octree : public TriangleTree {
 		 * @return @c true if the triangle is inside or at most
 		 * touching the bounds.
 		 */
-		bool contains(const TriangleAccessor & triangle) const override;
+		MINSGAPI bool contains(const TriangleAccessor & triangle) const override;
 
 		/**
 		 * Add attributes specific to this object to the given container.
 		 *
 		 * @param container Container for attributes.
 		 */
-		void fetchAttributes(Util::AttributeProvider * container) const override;
+		MINSGAPI void fetchAttributes(Util::AttributeProvider * container) const override;
 
 	protected:
 		//! Internal storage of the triangles inside this node.
@@ -156,7 +156,7 @@ class Octree : public TriangleTree {
 		 * @param parent Parent node which is used to copy the
 		 * parameters from.
 		 */
-		explicit Octree(const Geometry::Box & childBound, const Octree & parent);
+		MINSGAPI explicit Octree(const Geometry::Box & childBound, const Octree & parent);
 
 		//! Return a child node. Needed for polymorphism.
 		virtual Octree * createChild(const Geometry::Box & childBound, const Octree & parent) const {

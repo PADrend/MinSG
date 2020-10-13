@@ -32,9 +32,9 @@ class ProjSizeFilterState : public NodeRendererState {
 
 		bool forceClosed; //! all leaf nodes are moved, independent from their projected size.
 
-		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 	public:
-		ProjSizeFilterState();
+		MINSGAPI ProjSizeFilterState();
 
 		Util::StringIdentifier getTargetChannel() const	{	return targetChannel;	}
 		void setTargetChannel(Util::StringIdentifier s) 	{	targetChannel = s;		}
@@ -48,7 +48,7 @@ class ProjSizeFilterState : public NodeRendererState {
 		bool isForceClosed() const					{	return forceClosed;		}
 		void setForceClosed(bool b) 				{	forceClosed = b;		}
 
-		ProjSizeFilterState * clone() const override;
+		MINSGAPI ProjSizeFilterState * clone() const override;
 };
 
 }

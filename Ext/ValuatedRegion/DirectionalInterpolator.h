@@ -47,11 +47,11 @@ class DirectionalInterpolator{
 		};
 
 		/** Default constructor */
-		DirectionalInterpolator();
+		MINSGAPI DirectionalInterpolator();
 		/** Default destructor */
-		~DirectionalInterpolator();
+		MINSGAPI ~DirectionalInterpolator();
 
-		Util::GenericAttribute * calculateValue(Rendering::RenderingContext & renderingContext,
+		MINSGAPI Util::GenericAttribute * calculateValue(Rendering::RenderingContext & renderingContext,
 					ValuatedRegionNode * node,
 					const Geometry::Frustum & frustum,
 					float measurementApertureAngle_deg=90.0);
@@ -62,10 +62,10 @@ class DirectionalInterpolator{
 		 * @param frustum
 		 * @param measurementApertureAngle_deg Size in degree of the (possibly) overlapping cube sides
 		 */
-		void calculateRatio(Rendering::RenderingContext & renderingContext, float ratio[6],const Geometry::Frustum & frustum,float measurementApertureAngle_deg=90.0 );
+		MINSGAPI void calculateRatio(Rendering::RenderingContext & renderingContext, float ratio[6],const Geometry::Frustum & frustum,float measurementApertureAngle_deg=90.0 );
 
 
-		Util::GenericAttribute * getValueForSide(ValuatedRegionNode * node,side_t side);
+		MINSGAPI Util::GenericAttribute * getValueForSide(ValuatedRegionNode * node,side_t side);
 
 		std::map<side_t, int> assignement_sides_valueIndice;
 };

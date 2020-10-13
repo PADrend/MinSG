@@ -47,7 +47,7 @@ uint32_t TriangleTree::countTriangles() const {
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 #pragma omp parallel for reduction(+:sum)
-		for(uint_fast32_t c = 0; c < childCount; ++c) {
+		for(int_fast32_t c = 0; c < childCount; ++c) {
 			sum += children[c]->countTriangles();
 		}
 	}
@@ -65,7 +65,7 @@ uint32_t TriangleTree::countInnerTriangles() const {
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 #pragma omp parallel for reduction(+:sum)
-	for(uint_fast32_t c = 0; c < childCount; ++c) {
+	for(int_fast32_t c = 0; c < childCount; ++c) {
 		sum += children[c]->countInnerTriangles();
 	}
 COMPILER_WARN_POP
@@ -80,7 +80,7 @@ uint32_t TriangleTree::countTrianglesOutside() const {
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 #pragma omp parallel for reduction(+:sum)
-		for(uint_fast32_t c = 0; c < childCount; ++c) {
+		for(int_fast32_t c = 0; c < childCount; ++c) {
 			sum += children[c]->countTrianglesOutside();
 		}
 COMPILER_WARN_POP

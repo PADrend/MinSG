@@ -44,7 +44,7 @@ namespace VisibilityTester {
  * @note The depth buffer has to be filled already.
  * The visibility tests are performned using the current content of the depth buffer.
  */
-std::deque<std::pair<GeometryNode *, uint32_t>> testNodes(FrameContext & context, const std::deque<GeometryNode *> & nodes);
+MINSGAPI std::deque<std::pair<GeometryNode *, uint32_t>> testNodes(FrameContext & context, const std::deque<GeometryNode *> & nodes);
 
 }
 

@@ -26,7 +26,7 @@ class BlendingState : public RenderingParametersState<Rendering::BlendingParamet
 		//!	@name Main
 		//@{
 	public:
-		BlendingState();
+		MINSGAPI BlendingState();
 		explicit BlendingState(const Rendering::BlendingParameters & newParameter) :
 			RenderingParametersState<Rendering::BlendingParameters>(newParameter), depthWritesEnabled(true) {}
 		BlendingState(const BlendingState & other) :
@@ -45,8 +45,8 @@ class BlendingState : public RenderingParametersState<Rendering::BlendingParamet
 	private:
 		bool depthWritesEnabled;
 
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 	public:
 		bool getBlendDepthMask() const				{	return depthWritesEnabled;	}

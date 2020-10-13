@@ -33,9 +33,9 @@ static const uint32_t SAVE_TO_FILE			= (1<<2);
 static const uint32_t PRIVATE_ATTRIBUTE		= 0;
 static const uint32_t DEFAULT_ATTRIBUTE		= COPY_TO_CLONES|SAVE_TO_FILE;
 
-Util::StringIdentifier create(const std::string& mainKey, uint32_t flags );
+MINSGAPI Util::StringIdentifier create(const std::string& mainKey, uint32_t flags );
 
-uint32_t getFlags(const std::string &);
+MINSGAPI uint32_t getFlags(const std::string &);
 inline uint32_t getFlags(const Util::StringIdentifier & key)			{		return getFlags(key.toString());	}
 
 inline bool isCopiedToClone( const Util::StringIdentifier & key)		{		return getFlags(key)&COPY_TO_CLONES;	}

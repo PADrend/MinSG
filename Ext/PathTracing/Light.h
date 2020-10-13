@@ -48,9 +48,9 @@ public:
 
 class MinSGLight : public Light {
 public:
-  MinSGLight(LightNode* node);
+  MINSGAPI MinSGLight(LightNode* node);
   
-  virtual SampleResult sampleIncidentRadiance(const SurfacePoint& surface, const Geometry::Vec3& sample) const;
+  MINSGAPI virtual SampleResult sampleIncidentRadiance(const SurfacePoint& surface, const Geometry::Vec3& sample) const;
   virtual bool isDeltaLight() const { return true; };
 private:
   Util::Reference<LightNode> node;
@@ -58,9 +58,9 @@ private:
 
 class DiffuseAreaLight : public Light  {
 public:
-  DiffuseAreaLight(GeometryNode* node, Util::Color4f emission);
+  MINSGAPI DiffuseAreaLight(GeometryNode* node, Util::Color4f emission);
   
-  virtual SampleResult sampleIncidentRadiance(const SurfacePoint& surface, const Geometry::Vec3& sample) const;
+  MINSGAPI virtual SampleResult sampleIncidentRadiance(const SurfacePoint& surface, const Geometry::Vec3& sample) const;
 private:
   Util::Reference<GeometryNode> node;
   Util::Reference<Rendering::MeshUtils::TriangleAccessor> tAcc;

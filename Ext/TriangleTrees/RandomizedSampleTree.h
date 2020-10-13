@@ -55,9 +55,9 @@ class RandomizedSampleTree : public Octree {
 		 *
 		 * @see Figure 3 of the original article
 		 */
-		void createSample();
+		MINSGAPI void createSample();
     
-        void createSample(const std::function<double(const TriangleAccessor &)> & calcTriangleWeight);
+        MINSGAPI void createSample(const std::function<double(const TriangleAccessor &)> & calcTriangleWeight);
 
 	protected:
 		/**
@@ -83,7 +83,7 @@ class RandomizedSampleTree : public Octree {
 		 * @param sumTriangleAreas Sum of triangle areas
 		 * @return Sample size
 		 */
-		double calcSampleSize(double sumTriangleAreas) const;
+		MINSGAPI double calcSampleSize(double sumTriangleAreas) const;
 };
 
 }

@@ -112,7 +112,7 @@ void Octree::split() {
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 #pragma omp parallel for schedule(static,2) num_threads(3)
-	for(uint_fast8_t c = 0; c < 8; ++c) {
+	for(int_fast8_t c = 0; c < 8; ++c) {
 		if (children[c]->shouldSplit()) {
 			children[c]->split();
 		}

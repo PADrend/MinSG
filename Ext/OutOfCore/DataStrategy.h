@@ -57,14 +57,14 @@ class DataStrategy : public Rendering::MeshDataStrategy {
 		virtual ~DataStrategy() {
 		}
 
-		void assureLocalVertexData(Rendering::Mesh * m) override;
+		MINSGAPI void assureLocalVertexData(Rendering::Mesh * m) override;
 
-		void assureLocalIndexData(Rendering::Mesh * m) override;
+		MINSGAPI void assureLocalIndexData(Rendering::Mesh * m) override;
 
 		void prepare(Rendering::Mesh * /*mesh*/) override {
 		}
 
-		void displayMesh(Rendering::RenderingContext & context, Rendering::Mesh * m, uint32_t startIndex, uint32_t indexCount) override;
+		MINSGAPI void displayMesh(Rendering::RenderingContext & context, Rendering::Mesh * m, uint32_t startIndex, uint32_t indexCount) override;
 
 		missing_mode_t getMissingMode() const {
 			return missingMode;

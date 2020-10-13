@@ -22,12 +22,12 @@ class OcTreeBuilder: public AbstractTreeBuilder {
 
 public:
 
-	OcTreeBuilder(Util::GenericAttributeMap & options);
-	virtual ~OcTreeBuilder();
+	MINSGAPI OcTreeBuilder(Util::GenericAttributeMap & options);
+	MINSGAPI virtual ~OcTreeBuilder();
 
 protected:
 
-	list_t split(NodeWrapper & source) override;
+	MINSGAPI list_t split(NodeWrapper & source) override;
 
 	bool exactCubes;
 };

@@ -28,10 +28,10 @@ namespace MinSG {
 namespace Triangulation {
 
 //! Create a mesh for a 2D triangle
-Rendering::Mesh * createTriangle2DMesh(const Geometry::Vec2f & a, const Geometry::Vec2f & b, const Geometry::Vec2f & c);
+MINSGAPI Rendering::Mesh * createTriangle2DMesh(const Geometry::Vec2f & a, const Geometry::Vec2f & b, const Geometry::Vec2f & c);
 
 //! Create a mesh for a tetrahedron
-Rendering::Mesh * createTetrahedronMesh(const Geometry::Tetrahedron<float> & tetrahedron);
+MINSGAPI Rendering::Mesh * createTetrahedronMesh(const Geometry::Tetrahedron<float> & tetrahedron);
 
 template<typename Point_t>
 struct NodeGenerator2D {

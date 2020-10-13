@@ -23,11 +23,11 @@ private:
 	float relComplexity;
 
 public:
-    LODRenderer();
+    MINSGAPI LODRenderer();
 	
-	NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+	MINSGAPI NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 	
-	void generateLODsRecursiv(Node * node);
+	MINSGAPI void generateLODsRecursiv(Node * node);
 	
 	uint32_t getMinComplexity() const { return minComplexity;}
 	

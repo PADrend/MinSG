@@ -48,10 +48,10 @@ class NodeRendererState : public State {
 
 	protected:
 		//! Register the node renderer at the configured channel.
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 		//! Remove the node renderer from the configured channel.
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 	public:
 		/**
@@ -59,10 +59,10 @@ class NodeRendererState : public State {
 		 * 
 		 * @param newChannel Rendering channel identifier
 		 */
-		NodeRendererState(Util::StringIdentifier newChannel);
+		MINSGAPI NodeRendererState(Util::StringIdentifier newChannel);
 
-		NodeRendererState(const NodeRendererState & other);
-		~NodeRendererState();
+		MINSGAPI NodeRendererState(const NodeRendererState & other);
+		MINSGAPI ~NodeRendererState();
 
 		/**
 		 * Return the channel that is treated by the node renderer.

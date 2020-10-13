@@ -36,10 +36,10 @@ class CameraNode;
 class ShadowState : public State {
 	PROVIDES_TYPE_NAME(ShadowState)
 	public:
-		ShadowState(uint16_t textureSize);
+		MINSGAPI ShadowState(uint16_t textureSize);
 		virtual ~ShadowState() = default;
 
-		ShadowState * clone() const override;
+		MINSGAPI ShadowState * clone() const override;
 
 		/**
 		 * Specify the light for which the shadow should be created.
@@ -110,9 +110,9 @@ class ShadowState : public State {
 		//! Prevent usage.
 		ShadowState & operator=(const ShadowState &) = delete;
 
-		void updateShadowMap(FrameContext & context, Node * node, const RenderParam & rp);
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void updateShadowMap(FrameContext & context, Node * node, const RenderParam & rp);
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 };
 }
 

@@ -35,8 +35,8 @@ class MutationCandidates {
 		std::unique_ptr<Implementation<float>> impl;
 
 	public:
-		MutationCandidates();
-		~MutationCandidates();
+		MINSGAPI MutationCandidates();
+		MINSGAPI ~MutationCandidates();
 
 		/**
 		 * Add a sample that has contributed at least one object to view cells.
@@ -48,15 +48,15 @@ class MutationCandidates {
 		 * @param contribution The contribution of the sample
 		 * @param viewCell View cell containing the origin of the sample
 		 */
-		void addMutationCandidate(const Sample<float> & sample,
+		MINSGAPI void addMutationCandidate(const Sample<float> & sample,
 								  const contribution_t & contribution,
 								  ValuatedRegionNode * viewCell);
 
 		//! Return @c true if there are no mutation candidates available.
-		bool isEmpty() const;
+		MINSGAPI bool isEmpty() const;
 
 		//! Return a mutation candidate with minimum number of mutations.
-		const MutationCandidate<float> & getMutationCandidate();
+		MINSGAPI const MutationCandidate<float> & getMutationCandidate();
 };
 
 }

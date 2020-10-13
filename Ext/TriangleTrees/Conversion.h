@@ -46,7 +46,7 @@ class TriangleTree;
  * triangles stored in a mesh
  * @return Output of the conversion: A SolidTree directly storing the triangles
  */
-SolidTree_3f convertTree(const TriangleTree * treeNode);
+MINSGAPI SolidTree_3f convertTree(const TriangleTree * treeNode);
 
 /**
  * Convert the data structure stored in a TriangleTree into a SolidTree.
@@ -61,7 +61,7 @@ SolidTree_3f convertTree(const TriangleTree * treeNode);
  * @return Output of the conversion: A SolidTree directly storing the triangles
  * and pointers to GeometryNodes
  */
-SolidTree_3f_GeometryNode convertTree(const TriangleTree * treeNode,
+MINSGAPI SolidTree_3f_GeometryNode convertTree(const TriangleTree * treeNode,
 									  const Rendering::VertexAttribute & idAttr,
 									  const std::vector<GeometryNode *> & idLookup);
 

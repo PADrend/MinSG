@@ -45,7 +45,7 @@ class VisibilityVector {
 		typedef std::pair<node_ptr, benefits_t> node_benefits_pair_t;
 
 		//! Equality comparison
-		bool operator==(const VisibilityVector & other) const;
+		MINSGAPI bool operator==(const VisibilityVector & other) const;
 
 		/**
 		 * Set the benefits of one node. If the node was
@@ -54,14 +54,14 @@ class VisibilityVector {
 		 * @param node Pointer to the node.
 		 * @param nodeBenefits Benefits of the node.
 		 */
-		void setNode(node_ptr node, benefits_t nodeBenefits);
+		MINSGAPI void setNode(node_ptr node, benefits_t nodeBenefits);
 
 		/**
 		 * Remove a node from the vector
 		 *
 		 * @param node Pointer to the node.
 		 */
-		void removeNode(node_ptr node);
+		MINSGAPI void removeNode(node_ptr node);
 
 		/**
 		 * Get the costs of one node.
@@ -69,7 +69,7 @@ class VisibilityVector {
 		 * @param node Pointer to the node.
 		 * @return Costs of the node, or 0 if the node is not stored here.
 		 */
-		costs_t getCosts(node_ptr node) const;
+		MINSGAPI costs_t getCosts(node_ptr node) const;
 
 		/**
 		 * Get the benefits of one node.
@@ -77,7 +77,7 @@ class VisibilityVector {
 		 * @param node Pointer to the node.
 		 * @return Benefits of the node, or 0 if the node is not stored here.
 		 */
-		benefits_t getBenefits(node_ptr node) const;
+		MINSGAPI benefits_t getBenefits(node_ptr node) const;
 
 		/**
 		 * Increase the benefits of a node. If the node has not been stored here
@@ -94,7 +94,7 @@ class VisibilityVector {
 		 * @return The benefits of the node before the increase, or zero if the
 		 * node has not been stored here before.
 		 */
-		benefits_t increaseBenefits(node_ptr node, benefits_t benefitsIncr);
+		MINSGAPI benefits_t increaseBenefits(node_ptr node, benefits_t benefitsIncr);
 
 		/**
 		 * Return the number of indices for the data stored here.
@@ -104,7 +104,7 @@ class VisibilityVector {
 		 * @note This is number is one larger than what is allowed as parameter
 		 * in @a getNode(uint32_t), @a getCosts(uint32_t), or @a getBenefits(uint32_t).
 		 */
-		uint32_t getIndexCount() const;
+		MINSGAPI uint32_t getIndexCount() const;
 
 		/**
 		 * Get a node.
@@ -112,7 +112,7 @@ class VisibilityVector {
 		 * @param index Index of the node from [0, @a getIndexCount)
 		 * @return Pointer to the node, or @c nullptr if the index is invalid.
 		 */
-		node_ptr getNode(uint32_t index) const;
+		MINSGAPI node_ptr getNode(uint32_t index) const;
 
 		/**
 		 * Get the costs of one node.
@@ -120,7 +120,7 @@ class VisibilityVector {
 		 * @param index Index of the node from [0, @a getIndexCount)
 		 * @return Costs of the node, or 0 if the index is invalid.
 		 */
-		costs_t getCosts(uint32_t index) const;
+		MINSGAPI costs_t getCosts(uint32_t index) const;
 
 		/**
 		 * Get the benefits of one node.
@@ -128,28 +128,28 @@ class VisibilityVector {
 		 * @param index Index of the node from [0, @a getIndexCount)
 		 * @return Benefits of the node, or 0 if the index is invalid.
 		 */
-		benefits_t getBenefits(uint32_t index) const;
+		MINSGAPI benefits_t getBenefits(uint32_t index) const;
 
 		/**
 		 * Get the sum of all costs stored in this vector.
 		 *
 		 * @return Overall costs.
 		 */
-		costs_t getTotalCosts() const;
+		MINSGAPI costs_t getTotalCosts() const;
 
 		/**
 		 * Get the sum of all costs stored in this vector.
 		 *
 		 * @return Overall costs.
 		 */
-		benefits_t getTotalBenefits() const;
+		MINSGAPI benefits_t getTotalBenefits() const;
 
 		/**
 		 * Return the number of nodes stored in this vector.
 		 *
 		 * @return Number of nodes
 		 */
-		std::size_t getVisibleNodeCount() const;
+		MINSGAPI std::size_t getVisibleNodeCount() const;
 
 		/**
 		 * Return a minimal visibility vector calculated from the values of two visibility vectors.
@@ -159,7 +159,7 @@ class VisibilityVector {
 		 * @param vv2 Second visibility vector.
 		 * @return Visibility vector containing the minimal vector.
 		 */
-		static VisibilityVector makeMin(const VisibilityVector & vv1, const VisibilityVector & vv2);
+		MINSGAPI static VisibilityVector makeMin(const VisibilityVector & vv1, const VisibilityVector & vv2);
 
 		/**
 		 * Return a maximal visibility vector calculated from the values of two visibility vectors.
@@ -169,7 +169,7 @@ class VisibilityVector {
 		 * @param vv2 Second visibility vector.
 		 * @return Visibility vector containing the maximal vector.
 		 */
-		static VisibilityVector makeMax(const VisibilityVector & vv1, const VisibilityVector & vv2);
+		MINSGAPI static VisibilityVector makeMax(const VisibilityVector & vv1, const VisibilityVector & vv2);
 
 		/**
 		 * Return a difference visibility vector calculated from the values of two visibility vectors.
@@ -179,7 +179,7 @@ class VisibilityVector {
 		 * @param vv2 Second visibility vector.
 		 * @return Visibility vector containing the difference vector.
 		 */
-		static VisibilityVector makeDifference(const VisibilityVector & vv1, const VisibilityVector & vv2);
+		MINSGAPI static VisibilityVector makeDifference(const VisibilityVector & vv1, const VisibilityVector & vv2);
 
 		/**
 		 * Return a symmetric difference visibility vector calculated from the values of two visibility vectors.
@@ -189,7 +189,7 @@ class VisibilityVector {
 		 * @param vv2 Second visibility vector.
 		 * @return Visibility vector containing the symmetric difference vector.
 		 */
-		static VisibilityVector makeSymmetricDifference(const VisibilityVector & vv1, const VisibilityVector & vv2);
+		MINSGAPI static VisibilityVector makeSymmetricDifference(const VisibilityVector & vv1, const VisibilityVector & vv2);
 
 		/**
 		 * Return a visibility vector calculated from the values of three visibility vectors.
@@ -205,7 +205,7 @@ class VisibilityVector {
 		 * @param vv3 Third visibility vector.
 		 * @param[out] result Visibility vector containing the weighted visibility vector.
 		 */
-		static VisibilityVector makeWeightedThree(float w1, const VisibilityVector & vv1,
+		MINSGAPI static VisibilityVector makeWeightedThree(float w1, const VisibilityVector & vv1,
 												  float w2, const VisibilityVector & vv2,
 												  float w3, const VisibilityVector & vv3);
 
@@ -218,7 +218,7 @@ class VisibilityVector {
 		 * @param[out] benefitsDiff Difference in benefits.
 		 * @param[out] sameCount Number of entries pointing to the same object.
 		 */
-		static void diff(const VisibilityVector & vv1, const VisibilityVector & vv2,
+		MINSGAPI static void diff(const VisibilityVector & vv1, const VisibilityVector & vv2,
 						 costs_t & costsDiff, benefits_t & benefitsDiff, std::size_t & sameCount);
 
 		/**
@@ -226,7 +226,7 @@ class VisibilityVector {
 		 *
 		 * @return Textual representation of this object.
 		 */
-		std::string toString() const;
+		MINSGAPI std::string toString() const;
 
 		/**
 		 * Calculate the amount of memory that is required to store the
@@ -234,7 +234,7 @@ class VisibilityVector {
 		 * 
 		 * @return Overall amount of memory in bytes
 		 */
-		size_t getMemoryUsage() const;
+		MINSGAPI size_t getMemoryUsage() const;
 
 		//! @name Serialization
 		//@{
@@ -246,7 +246,7 @@ class VisibilityVector {
 		 * @param sceneManager Reference to the scene manager that is needed to
 		 * look up registered nodes
 		 */
-		void serialize(std::ostream & out,
+		MINSGAPI void serialize(std::ostream & out,
 					   const SceneManagement::SceneManager & sceneManager) const;
 
 		/**
@@ -257,7 +257,7 @@ class VisibilityVector {
 		 * look up registered nodes
 		 * @return New visibility vector
 		 */
-		static VisibilityVector unserialize(std::istream & in,
+		MINSGAPI static VisibilityVector unserialize(std::istream & in,
 											const SceneManagement::SceneManager & sceneManager);
 		//@}
 

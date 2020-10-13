@@ -33,8 +33,8 @@ class PolygonModeState: public RenderingParametersState<Rendering::PolygonModePa
 		}
 
 	private:
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 };
 
 }

@@ -37,10 +37,10 @@ class TextureState;
 class MirrorState : public State {
 	PROVIDES_TYPE_NAME(MirrorState)
 	public:
-		MirrorState(uint16_t textureSize);
-		virtual ~MirrorState();
+		MINSGAPI MirrorState(uint16_t textureSize);
+		MINSGAPI virtual ~MirrorState();
 
-		MirrorState * clone() const override;
+		MINSGAPI MirrorState * clone() const override;
 
 		void setRoot(GroupNode * newRoot) {
 			rootNode = newRoot;
@@ -73,14 +73,14 @@ class MirrorState : public State {
 		Geometry::Vec3f lastCamPos;
 
 		//! Prevent usage.
-		MirrorState(const MirrorState &);
+		MINSGAPI MirrorState(const MirrorState &);
 
 		//! Prevent usage.
-		MirrorState & operator=(const MirrorState &);
+		MINSGAPI MirrorState & operator=(const MirrorState &);
 
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 };
 }
 

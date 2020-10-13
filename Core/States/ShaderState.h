@@ -27,9 +27,9 @@ class ShaderState : public State {
 	public:
 		typedef std::map<std::string, Rendering::Uniform> uniformMap_t;
 
-		ShaderState(Rendering::Shader * _shader=nullptr);
-		ShaderState(const ShaderState & source);
-		virtual ~ShaderState();
+		MINSGAPI ShaderState(Rendering::Shader * _shader=nullptr);
+		MINSGAPI ShaderState(const ShaderState & source);
+		MINSGAPI virtual ~ShaderState();
 
 		void setShader(Rendering::Shader * s)			{   shader=s;   }
 		Rendering::Shader * getShader()					{	return shader.get();	}
@@ -38,32 +38,32 @@ class ShaderState : public State {
 		 * sets the uniform value for this shader state.
 		 * the uniform will be applied on next enable.
 		 */
-		void setUniform(const Rendering::Uniform & value);
+		MINSGAPI void setUniform(const Rendering::Uniform & value);
 
 		/**
 		 * sets the uniform value for this shader state.
 		 * if the shader is active the uniform will be
 		 * applied immediately otherwise on next enable.
 		 */
-		void setUniform(FrameContext & context, const Rendering::Uniform & value);
+		MINSGAPI void setUniform(FrameContext & context, const Rendering::Uniform & value);
 
 		const uniformMap_t & getUniforms() const      			{   return uMap;    }
 		bool hasUniform(const std::string & name) const  		{   return uMap.count(name)!=0; }
-		Rendering::Uniform getUniform(const std::string & name)const;
+		MINSGAPI Rendering::Uniform getUniform(const std::string & name)const;
 
 		inline void removeUniform(const std::string & name)     {   uMap.erase(name);   }
 		inline void removeUniform(const Rendering::Uniform & u) {   removeUniform(u.getName()); }
 		inline void removeUniforms()    						{   uMap.clear(); }
 
 		/// ---|> [State]
-		ShaderState * clone()const override;
+		MINSGAPI ShaderState * clone()const override;
 
 	protected:
 		uniformMap_t uMap;
 		Util::Reference<Rendering::Shader> shader;
 
-		stateResult_t doEnableState(FrameContext & context,Node *, const RenderParam & rp) override;
-		void doDisableState(FrameContext & context,Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context,Node *, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context,Node *, const RenderParam & rp) override;
 };
 }
 #endif // ShaderState_H

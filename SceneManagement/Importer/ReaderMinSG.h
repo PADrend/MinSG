@@ -28,7 +28,7 @@ namespace ReaderMinSG {
  * @param in Input stream containing the scene data
  * @return Description of the loaded scene
  */
-const DescriptionMap * loadScene(std::istream & in);
+MINSGAPI const DescriptionMap * loadScene(std::istream & in);
 
 }
 }

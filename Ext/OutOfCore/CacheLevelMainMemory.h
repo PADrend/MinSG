@@ -44,33 +44,33 @@ class CacheLevelMainMemory : public CacheLevel {
 		bool active;
 
 		//! Helper function that is executed by the thread.
-		static void * threadRun(void * data);
+		MINSGAPI static void * threadRun(void * data);
 
 		//! Store the cache object in main memory.
-		void doAddCacheObject(CacheObject * object) override;
+		MINSGAPI void doAddCacheObject(CacheObject * object) override;
 
 		//! Delete the cache object from main memory.
-		void doRemoveCacheObject(CacheObject * object) override;
+		MINSGAPI void doRemoveCacheObject(CacheObject * object) override;
 
 		//! Return @c true if the mesh is contained in main memory.
-		bool doLoadCacheObject(CacheObject * object) override;
+		MINSGAPI bool doLoadCacheObject(CacheObject * object) override;
 
 		//! Return the memory size of the cache object.
-		uint64_t getCacheObjectSize(CacheObject * object) const override;
+		MINSGAPI uint64_t getCacheObjectSize(CacheObject * object) const override;
 
 		//! If necessary, wake up the worker thread.
-		void doWork() override;
+		MINSGAPI void doWork() override;
 
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
 		//! Check all cache objects stored in this cache level for inconsistencies.
-		void doVerify() const override;
+		MINSGAPI void doVerify() const override;
 #endif /* MINSG_EXT_OUTOFCORE_DEBUG */
 	public:
-		CacheLevelMainMemory(uint64_t cacheSize, CacheContext & cacheContext);
-		virtual ~CacheLevelMainMemory();
+		MINSGAPI CacheLevelMainMemory(uint64_t cacheSize, CacheContext & cacheContext);
+		MINSGAPI virtual ~CacheLevelMainMemory();
 
 		//! Start the worker thread
-		void init() override;
+		MINSGAPI void init() override;
 };
 
 }

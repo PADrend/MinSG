@@ -25,19 +25,19 @@ class AbstractCameraNode : public Node {
 	protected:
 
 		/** Default constructor */
-		AbstractCameraNode();
+		MINSGAPI AbstractCameraNode();
 
 		/** Copy constructor */
-		AbstractCameraNode(const AbstractCameraNode & o);
+		MINSGAPI AbstractCameraNode(const AbstractCameraNode & o);
 
 	public:
 
 		typedef Util::Reference<AbstractCameraNode> ref_t;
 		
-		virtual ~AbstractCameraNode();
+		MINSGAPI virtual ~AbstractCameraNode();
 
 		/// ---|> [Node]
-		void doDisplay(FrameContext & context, const RenderParam & rp) override;
+		MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
 
 		int getWidth() const							{	return viewport.getWidth();		}
 		int getHeight() const							{	return viewport.getHeight();	}
@@ -55,7 +55,7 @@ class AbstractCameraNode : public Node {
 				setScissor(viewport);
 			}
 		}
-		void setNearFar(float near, float far);
+		MINSGAPI void setNearFar(float near, float far);
 		void setScissorEnabled(bool enabled)			{	scissorEnabled = enabled;	}
 		void setScissor(const Geometry::Rect_i & rect)	{	scissorRect = rect;	}
 

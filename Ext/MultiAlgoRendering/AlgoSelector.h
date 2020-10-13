@@ -46,11 +46,11 @@ class AlgoSelector : public State {
 		}
 		//@}
 
-		AlgoSelector();
+		MINSGAPI AlgoSelector();
 		AlgoSelector(const AlgoSelector & source) = delete;
-		virtual ~AlgoSelector();
+		MINSGAPI virtual ~AlgoSelector();
 
-		void setSampleContext(SampleContext * sc);
+		MINSGAPI void setSampleContext(SampleContext * sc);
         SampleContext * getSampleContext() const { return sampleContext.get(); }
 
         void setRegulationMode(REGULATION_MODE m){ regulationMode = m; }
@@ -65,22 +65,22 @@ class AlgoSelector : public State {
 		void setTargetTime(float millis){targetTime = millis/1000;};
 		float getTargetTime() const {return targetTime*1000;};
 
-        void waitForLP();
+        MINSGAPI void waitForLP();
 
-        void keepSamples(uint32_t amount);
+        MINSGAPI void keepSamples(uint32_t amount);
 
-		AlgoSelector * clone() const override;
+		MINSGAPI AlgoSelector * clone() const override;
 
         //! eval functions
-        uint32_t countMAGNsInFrustum()const;
-        float getTimReal()const;
-        float getTimCalc()const;
-        float getTimMini()const;
-        float getTimMaxi()const;
-        float getTimLPIn()const;
-        float getTimUser()const;
-        float getErrCalc()const;
-        uint32_t getAlgoUsage(MultiAlgoGroupNode::AlgoId algo)const;
+        MINSGAPI uint32_t countMAGNsInFrustum()const;
+        MINSGAPI float getTimReal()const;
+        MINSGAPI float getTimCalc()const;
+        MINSGAPI float getTimMini()const;
+        MINSGAPI float getTimMaxi()const;
+        MINSGAPI float getTimLPIn()const;
+        MINSGAPI float getTimUser()const;
+        MINSGAPI float getErrCalc()const;
+        MINSGAPI uint32_t getAlgoUsage(MultiAlgoGroupNode::AlgoId algo)const;
 
 	private:
         REGULATION_MODE regulationMode;
@@ -88,8 +88,8 @@ class AlgoSelector : public State {
         MultiAlgoGroupNode::AlgoId renderMode;
 		float targetTime;
 		Util::Reference<SampleContext> sampleContext;
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 };
 
 }

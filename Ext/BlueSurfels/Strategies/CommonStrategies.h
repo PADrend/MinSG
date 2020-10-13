@@ -28,7 +28,7 @@ class FixedSizeStrategy : public AbstractSurfelStrategy {
 	PROVIDES_TYPE_NAME(FixedSizeStrategy)
 	public:
 		FixedSizeStrategy() : AbstractSurfelStrategy(1000) {}		
-		virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
+		MINSGAPI virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
 		GETSET(float, Size, 2)
 };
 
@@ -36,7 +36,7 @@ class FixedCountStrategy : public AbstractSurfelStrategy {
 PROVIDES_TYPE_NAME(FixedCountStrategy)
 public:
 	FixedCountStrategy() : AbstractSurfelStrategy(900) {}
-	virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
+	MINSGAPI virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
 	GETSET(uint32_t, Count, 0)
 };
 
@@ -44,7 +44,7 @@ class FactorStrategy : public AbstractSurfelStrategy {
 PROVIDES_TYPE_NAME(FactorStrategy)
 public:
 	FactorStrategy() : AbstractSurfelStrategy(-1100) {}
-	virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
+	MINSGAPI virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
 	GETSET(float, CountFactor, 1)
 	GETSET(float, SizeFactor, 1)
 };
@@ -53,7 +53,7 @@ class BlendStrategy : public AbstractSurfelStrategy {
 	PROVIDES_TYPE_NAME(BlendStrategy)
 	public:
 		BlendStrategy() : AbstractSurfelStrategy(-1000) {}		
-		virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
+		MINSGAPI virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
 		GETSET(float, Blend, 0.3f)
 };
 	
@@ -61,7 +61,7 @@ class ReferencePointStrategy : public AbstractSurfelStrategy {
 	PROVIDES_TYPE_NAME(ReferencePointStrategy)
 	public:
 		ReferencePointStrategy() : AbstractSurfelStrategy(10000) {}		
-		virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
+		MINSGAPI virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
 		GETSET(ReferencePoint, ReferencePoint, ReferencePoint::CLOSEST_SURFEL)
 };
 
@@ -69,17 +69,17 @@ class DebugStrategy : public AbstractSurfelStrategy {
 	PROVIDES_TYPE_NAME(DebugStrategy)
 	public:
 		DebugStrategy();
-		virtual bool prepare(MinSG::FrameContext& context, MinSG::Node* node);
-		virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
-		virtual bool beforeRendering(MinSG::FrameContext& context);
-		virtual void afterRendering(MinSG::FrameContext& context);
+		MINSGAPI virtual bool prepare(MinSG::FrameContext& context, MinSG::Node* node);
+		MINSGAPI virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
+		MINSGAPI virtual bool beforeRendering(MinSG::FrameContext& context);
+		MINSGAPI virtual void afterRendering(MinSG::FrameContext& context);
 		inline bool getFixSurfels() const { return fixSurfels; }
-		void setFixSurfels(bool value);
+		MINSGAPI void setFixSurfels(bool value);
 		GETSET(bool, HideSurfels, false)
 		GETSET(uint32_t, FixedSurfelCount, 0)
 		GETSET(float, DebugColorScreen, 0)
-		void setHeatmap(Rendering::Texture* texture);
-		Rendering::Texture* getHeatmap() const;
+		MINSGAPI void setHeatmap(Rendering::Texture* texture);
+		MINSGAPI Rendering::Texture* getHeatmap() const;
 	private:
 		bool fixSurfels = false;
 		Util::Reference<MinSG::AbstractCameraNode> debugCamera;

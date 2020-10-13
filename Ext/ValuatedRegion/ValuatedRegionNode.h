@@ -32,9 +32,9 @@ class ValuatedRegionNode : public ListNode {
 
 	//! @name Main
 	//	@{
-		ValuatedRegionNode(Geometry::Box _region, Geometry::Vec3i resolution);
-		ValuatedRegionNode(const ValuatedRegionNode & cn);
-		virtual ~ValuatedRegionNode();
+		MINSGAPI ValuatedRegionNode(Geometry::Box _region, Geometry::Vec3i resolution);
+		MINSGAPI ValuatedRegionNode(const ValuatedRegionNode & cn);
+		MINSGAPI virtual ~ValuatedRegionNode();
 
 		/**
 		 * Create new ValuatedRegionNodes inside the current region.
@@ -46,14 +46,14 @@ class ValuatedRegionNode : public ListNode {
 		 * @param regionsY Number of resulting nodes in Y direction. At most the resolution in Y direction.
 		 * @param regionsZ Number of resulting nodes in Z direction. At most the resolution in Z direction.
 		 */
-		void splitUp(unsigned int regionsX, unsigned int regionsY, unsigned int regionsZ);
+		MINSGAPI void splitUp(unsigned int regionsX, unsigned int regionsY, unsigned int regionsZ);
 		bool isLeaf()const 			{	return countChildren() == 0;	}
 
 		//! ---o
-		ValuatedRegionNode * createNewNode(const Geometry::Box & _region, const Geometry::Vec3i & resolution) const;
+		MINSGAPI ValuatedRegionNode * createNewNode(const Geometry::Box & _region, const Geometry::Vec3i & resolution) const;
 
 		//! ---|> GroupNode
-		void doAddChild(Util::Reference<Node> child) override;
+		MINSGAPI void doAddChild(Util::Reference<Node> child) override;
 	private:
 		//! ---|> Node
 		ValuatedRegionNode * doClone()const override	{	return new ValuatedRegionNode(*this);	}
@@ -68,11 +68,11 @@ class ValuatedRegionNode : public ListNode {
 	//	@{
 	public:
 		//! ---|> Node
-		void doDisplay(FrameContext & context, const RenderParam & rp) override;
+		MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
 
 	protected:
 		Geometry::Box region;
-		void drawColorBox(FrameContext & context);
+		MINSGAPI void drawColorBox(FrameContext & context);
 
 	// @}
 
@@ -83,7 +83,7 @@ class ValuatedRegionNode : public ListNode {
 	private:
 		std::unique_ptr<Util::GenericAttribute> value;
 	public:
-		void setValue(Util::GenericAttribute * value);
+		MINSGAPI void setValue(Util::GenericAttribute * value);
 
 		//! Set the value to nullptr without deleting the old value first.
 		void clearValue() {
@@ -91,21 +91,21 @@ class ValuatedRegionNode : public ListNode {
 		}
 
 		Util::GenericAttribute * getValue()const 	{	return value.get();	}
-		Util::GenericAttribute * getValueAtPosition(const Geometry::Vec3 & absPos);
-		ValuatedRegionNode * getNodeAtPosition(const Geometry::Vec3 & absPos);
+		MINSGAPI Util::GenericAttribute * getValueAtPosition(const Geometry::Vec3 & absPos);
+		MINSGAPI ValuatedRegionNode * getNodeAtPosition(const Geometry::Vec3 & absPos);
 
 		/*! ---o
 			Convert the value of the region into a single number (e.g. for color computation).
 			By default, the value is expected to be one single number or a list of numbers
 			and the average value is returned.	*/
-		float getValueAsNumber() const;
+		MINSGAPI float getValueAsNumber() const;
 
 		/*! ---o
 			Convert the value of the region into a list of numbers (e.g. for color computation
 			for different directions).
 			By default, the value is expected to be one single number or a list of numbers
 			which are added to numbers without any computations.	*/
-		void getValueAsNumbers(std::list<float> & numbers) const;
+		MINSGAPI void getValueAsNumbers(std::list<float> & numbers) const;
 	// @}
 
 	// ----------
@@ -120,7 +120,7 @@ class ValuatedRegionNode : public ListNode {
 		int getYResolution()const						{	return resolution.y();	}
 		int getZResolution()const 						{	return resolution.z();	}
 		int getSize()const 								{	return getXResolution()*getYResolution()*getZResolution();	}
-		Geometry::Vec3 getPosition(float xCell, float yCell, float zCell) const;
+		MINSGAPI Geometry::Vec3 getPosition(float xCell, float yCell, float zCell) const;
 
 	// @}
 
@@ -139,10 +139,10 @@ class ValuatedRegionNode : public ListNode {
 		const additional_data_t * getAdditionalData() const {	return additionalData.get();	}
 
 	public:
-		void addColor(float r, float g, float b, float a);
-		void clearColors();
-		void setHeightScale(float s);
-		float getHeightScale() const;
+		MINSGAPI void addColor(float r, float g, float b, float a);
+		MINSGAPI void clearColors();
+		MINSGAPI void setHeightScale(float s);
+		MINSGAPI float getHeightScale() const;
 	// @}
 
 

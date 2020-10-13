@@ -46,7 +46,7 @@ public:
 
 class NiceRandomPositionGenerator:public SamplePositionGenerator{
 public:
-	virtual Geometry::Vec3f generateSamplePosition(const SampleContext * context, Geometry::Box bounds) override;
+	MINSGAPI virtual Geometry::Vec3f generateSamplePosition(const SampleContext * context, Geometry::Box bounds) override;
 	virtual ~NiceRandomPositionGenerator(){}
 };
 
@@ -55,7 +55,7 @@ public:
 class SampleContext : public Util::ReferenceCounter<SampleContext>{
 
 private:
-		SampleContext();
+		MINSGAPI SampleContext();
 
 		Util::Reference<SampleStorage> storage;
 
@@ -68,31 +68,31 @@ private:
 
 		//! @name Serialization
 		//@{
-			static SampleContext * create(std::istream & in);
-			void write(std::ostream & out)const;
+			MINSGAPI static SampleContext * create(std::istream & in);
+			MINSGAPI void write(std::ostream & out)const;
 		//@}
 			
-		SampleContext(const Geometry::Box & bounds);
-		virtual ~SampleContext();
+		MINSGAPI SampleContext(const Geometry::Box & bounds);
+		MINSGAPI virtual ~SampleContext();
 		
-		const regions_t getSampleRegions() const;
+		MINSGAPI const regions_t getSampleRegions() const;
 
-		SampleStorage * getSampleStorage() const;
+		MINSGAPI SampleStorage * getSampleStorage() const;
 
-		uint32_t getRegionCount() const;
+		MINSGAPI uint32_t getRegionCount() const;
 
-		SampleRegion* getMinSampleRegion() const;
+		MINSGAPI SampleRegion* getMinSampleRegion() const;
 
-		SampleRegion* getSampleRegionAtPosition(const Geometry::Vec3f & position) const;
+		MINSGAPI SampleRegion* getSampleRegionAtPosition(const Geometry::Vec3f & position) const;
 
-		void splitLowQualityRegion();
+		MINSGAPI void splitLowQualityRegion();
 		
-		size_t getMemoryUsage()const;
+		MINSGAPI size_t getMemoryUsage()const;
 
-		SamplePositionGenerator * getSamplePositionGenerator() const;
+		MINSGAPI SamplePositionGenerator * getSamplePositionGenerator() const;
 
-		void displaySamples(FrameContext & fc) const;
-		void displayRegions(FrameContext & fc, float alpha, float redGreenThreshold) const;
+		MINSGAPI void displaySamples(FrameContext & fc) const;
+		MINSGAPI void displayRegions(FrameContext & fc, float alpha, float redGreenThreshold) const;
 };
 
 }

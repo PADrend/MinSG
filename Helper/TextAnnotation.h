@@ -57,7 +57,7 @@ namespace TextAnnotation {
  * @param text The text string that is to be drawn
  * @param textColor Color of the text
  */
-void displayText(FrameContext & frameContext,
+MINSGAPI void displayText(FrameContext & frameContext,
 				 const Geometry::Vec3f & worldPos,
 				 const Geometry::Vec2i & pinVector,
 				 const float pinWidth,

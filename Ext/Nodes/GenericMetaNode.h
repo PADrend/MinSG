@@ -28,7 +28,7 @@ class GenericMetaNode : public Node {
 	public:
 		GenericMetaNode() : Node(), bb(Geometry::Vec3(0, 0, 0), 1) {
 		}
-		virtual ~GenericMetaNode();
+		MINSGAPI virtual ~GenericMetaNode();
 
 		void setBB(const Geometry::Box & newBB) {
 			bb = newBB;
@@ -36,7 +36,7 @@ class GenericMetaNode : public Node {
 		}
 
 		// ---|> Node
-		void doDisplay(FrameContext & context, const RenderParam & rp) override;
+		MINSGAPI void doDisplay(FrameContext & context, const RenderParam & rp) override;
 	private:
 		/// ---|> [Node]
 		GenericMetaNode * doClone()const override		{	return new GenericMetaNode(*this);	}		

@@ -61,7 +61,7 @@ kDTree::kDTree(Rendering::Mesh * mesh, uint32_t trianglesPerNode, float allowedB
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 #pragma omp parallel for schedule(static,1) num_threads(3)
-	for (uint_fast8_t dim = 0; dim < 3; ++dim) {
+	for (int_fast8_t dim = 0; dim < 3; ++dim) {
 		// Create one array and sort it.
 		sorted[dim].reserve(size);
 		for (uint_fast32_t i = 0; i < size; ++i) {

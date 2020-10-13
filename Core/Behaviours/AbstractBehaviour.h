@@ -30,7 +30,7 @@ class AbstractBehaviour : public Behavior {
 
 	public:
 
-		AbstractBehaviour();
+		MINSGAPI AbstractBehaviour();
 		virtual ~AbstractBehaviour() {}
 
 		timestamp_t getLastTime()const				{	return myStatus->getLastTime();	}
@@ -64,10 +64,10 @@ class AbstractNodeBehaviour : public AbstractBehaviour {
 		PROVIDES_TYPE_NAME(AbstractNodeBehaviour)
 	public:
 
-		AbstractNodeBehaviour(Node * node);
+		MINSGAPI AbstractNodeBehaviour(Node * node);
 		virtual ~AbstractNodeBehaviour()	{}
 
-		Node * getNode()const;
+		MINSGAPI Node * getNode()const;
 
 		/**
 		 * Sets the node of the AbstractNodeBehaviour.
@@ -78,7 +78,7 @@ class AbstractNodeBehaviour : public AbstractBehaviour {
 		 *
 		 * @note This method calls onNodeChanged(oldNode) to allow cleanup when needed.
 		 */
-		void setNode(Node * newNode);
+		MINSGAPI void setNode(Node * newNode);
 		
 		/// ---o
 		virtual void onNodeChanged(Node * /*oldNode*/) {}
@@ -91,10 +91,10 @@ class AbstractStateBehaviour : public AbstractBehaviour {
 		PROVIDES_TYPE_NAME(AbstractNodeBehaviour)
 	public:
 
-		AbstractStateBehaviour(State * state);
+		MINSGAPI AbstractStateBehaviour(State * state);
 		virtual ~AbstractStateBehaviour()	{}
 
-		State * getState()const;
+		MINSGAPI State * getState()const;
 };
 
 }

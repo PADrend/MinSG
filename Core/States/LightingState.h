@@ -30,13 +30,13 @@ class LightingState : public State {
 	PROVIDES_TYPE_NAME(LightingState)
 		bool originalState, enableLight;
 	public:
-		LightingState();
-		LightingState(LightNode * newLight);
-		LightingState(const LightingState & source);
+		MINSGAPI LightingState();
+		MINSGAPI LightingState(LightNode * newLight);
+		MINSGAPI LightingState(const LightingState & source);
 
 		LightNode * getLight() const 		{			return light.get();	}
 		void setLight(LightNode * newLight)	{			light = newLight;	}
-		LightingState * clone() const override;
+		MINSGAPI LightingState * clone() const override;
 		
 		bool getEnableLight() const			{			return enableLight;	}
 		void setEnableLight(bool b)			{			enableLight = b;	}
@@ -44,8 +44,8 @@ class LightingState : public State {
 	private:
 		Util::Reference<LightNode> light;
 
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 };
 
 }

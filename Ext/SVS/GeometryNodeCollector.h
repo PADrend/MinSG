@@ -41,16 +41,16 @@ class GeometryNodeCollector : public NodeRendererState {
 	private:
 		std::unordered_set<GeometryNode *> collectedNodes;
 
-		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 	protected:
 		//! Clear the set of collected nodes.
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 	public:
-		GeometryNodeCollector();
+		MINSGAPI GeometryNodeCollector();
 
-		GeometryNodeCollector * clone() const override;
+		MINSGAPI GeometryNodeCollector * clone() const override;
 
 		//! Read the set of collected nodes.
 		const std::unordered_set<GeometryNode *> & getCollectedNodes() const {

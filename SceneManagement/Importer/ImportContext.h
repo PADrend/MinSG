@@ -50,7 +50,7 @@ class ImportContext : public Util::AttributeProvider {
 		void addFinalizingAction(const FinalizeAction & action) {	finalizeActions.push_back(action);	}
 		void addSearchPath(std::string p) 					{	fileLocator.addSearchPath( std::move(p) );	}
 
-		void executeFinalizingActions();
+		MINSGAPI void executeFinalizingActions();
 		uint32_t getImportOptions()const					{	return importOptions;	}
 		const Util::FileName & getFileName()const			{	return fileName;	}
 		GroupNode * getRootNode()const						{	return rootNode;	}
@@ -93,16 +93,16 @@ class ImportContext : public Util::AttributeProvider {
 		meshRegistry_t & getMeshRegistry()					{	return registeredMeshes;	}
 //
 		/*!	Associates a Mesh with a name.  */
-		void registerMesh( const std::string & fileName, Rendering::Mesh * t);
+		MINSGAPI void registerMesh( const std::string & fileName, Rendering::Mesh * t);
 
 		/*!	The association of a Mesh with a given name is removed.
 			@param name A registered name.	*/
-		void unregisterMesh( const std::string & fileName);
+		MINSGAPI void unregisterMesh( const std::string & fileName);
 
 		/*!	Returns the Mesh registered to a name.
 			@param name The registered name.
 			@return The registered Mesh or nullptr.	*/
-		Rendering::Mesh * getRegisteredMesh( const std::string & fileName)const;
+		MINSGAPI Rendering::Mesh * getRegisteredMesh( const std::string & fileName)const;
 
 	private:
 		meshRegistry_t registeredMeshes;
@@ -124,7 +124,7 @@ class ImportContext : public Util::AttributeProvider {
 			@param hash The hash of the mesh.
 			@param mesh The Mesh for comparison.
 			@return The registered Mesh or nullptr.	*/
-		Rendering::Mesh * getRegisteredMesh(const uint32_t hash , Rendering::Mesh * m)const;
+		MINSGAPI Rendering::Mesh * getRegisteredMesh(const uint32_t hash , Rendering::Mesh * m)const;
 
 	private:
 		meshHasingRegistry_t registeredHashedMeshes;

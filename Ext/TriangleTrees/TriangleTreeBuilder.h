@@ -39,7 +39,7 @@ class Builder {
 		 * @return A new mesh containing all the mesh data.
 		 * @throw Exception describing what went wrong.
 		 */
-		static Rendering::Mesh * mergeGeometry(const std::vector<GeometryNode *> & geoNodes);
+		MINSGAPI static Rendering::Mesh * mergeGeometry(const std::vector<GeometryNode *> & geoNodes);
 
 		/**
 		 * Take the triangles from the given mesh and organize them in a hierarchical spatial data structure.
@@ -48,7 +48,7 @@ class Builder {
 		 * @param builder Builder specifying the way in which the tree will be built.
 		 * @return Root node of the tree.
 		 */
-		static Node * buildMinSGTree(Rendering::Mesh * mesh, Builder & builder);
+		MINSGAPI static Node * buildMinSGTree(Rendering::Mesh * mesh, Builder & builder);
 
 		/**
 		 * Take the triangles from the given mesh and organize them in the way that is defined by this builder.
@@ -71,7 +71,7 @@ class Builder {
 		 * @param vertexDesc Vertex description for the mesh data stored in the tree.
 		 * @return Converted MinSG node.
 		 */
-		static Node * convert(const TriangleTree * treeNode, const Rendering::VertexDescription & vertexDesc);
+		MINSGAPI static Node * convert(const TriangleTree * treeNode, const Rendering::VertexDescription & vertexDesc);
 };
 
 }

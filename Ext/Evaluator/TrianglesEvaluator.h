@@ -41,20 +41,20 @@ class GeometryNode;
 			PROVIDES_TYPE_NAME(TrianglesEvaluator)
 			public:
 				//! This uses always Evaluator::SINGLE_VALUE mode.
-				TrianglesEvaluator();
-				virtual ~TrianglesEvaluator();
+				MINSGAPI TrianglesEvaluator();
+				MINSGAPI virtual ~TrianglesEvaluator();
 
 				// ---|> Evaluator
-				virtual void beginMeasure() override;
-				virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
-				virtual void endMeasure(FrameContext & context) override;
+				MINSGAPI virtual void beginMeasure() override;
+				MINSGAPI virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+				MINSGAPI virtual void endMeasure(FrameContext & context) override;
 
 				/**
 				 * Return the number of visible triangles.
 				 *
 				 * @return Value of @a numTrianglesVisible
 				 */
-				virtual const Util::GenericAttributeList * getResults() override;
+				MINSGAPI virtual const Util::GenericAttributeList * getResults() override;
 
 			private:
 				//! Stores the number of triangles rendered for GeometryNodes.
@@ -70,7 +70,7 @@ class GeometryNode;
 				 * @param node Node which contains the triangles to test.
 				 * @return Number of visible triangles of @a node.
 				 */
-				static size_t getNumTrianglesVisible(FrameContext & context, GeometryNode * node);
+				MINSGAPI static size_t getNumTrianglesVisible(FrameContext & context, GeometryNode * node);
 		};
 	}
 }

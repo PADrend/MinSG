@@ -25,7 +25,7 @@ class GroupNode : public Node {
 		typedef Util::Reference<GroupNode> ref_t;
 		// -----------------
 
-		GroupNode();
+		MINSGAPI GroupNode();
 		virtual ~GroupNode(){}
 
 		/**
@@ -37,13 +37,13 @@ class GroupNode : public Node {
 
 		/*!	Add a child to this node and update the child's parent.
 			- May throw an exception on failure	*/
-		void addChild(Util::Reference<Node> child);
+		MINSGAPI void addChild(Util::Reference<Node> child);
 
 		bool hasChildren()const		{	return countChildren()>0;	}
 
 		/*!	Try to remove a child from this node.
 			@return @c true if @a child was removed.	*/
-		bool removeChild(Util::Reference<Node> child);
+		MINSGAPI bool removeChild(Util::Reference<Node> child);
 		
 		/*! (internal) Remove the given child from this node.
 			- called by removeChild(...).
@@ -68,7 +68,7 @@ class GroupNode : public Node {
 		}
 
 		//! Removes all children from the Node
-		void clearChildren();
+		MINSGAPI void clearChildren();
 
 	private:
 		/*! (internal) Add the given child to this node.

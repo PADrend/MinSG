@@ -31,7 +31,7 @@ namespace DataDirectory {
  * 
  * @return Absolute path to the data directory
  */
-std::string getPath();
+MINSGAPI std::string getPath();
 
 }
 

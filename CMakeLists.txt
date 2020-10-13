@@ -37,6 +37,17 @@ add_subdirectory(SceneManagement)
 get_property(MinSG_SOURCES GLOBAL PROPERTY MinSG_SRCS)
 add_library(MinSG SHARED ${MinSG_SOURCES})
 
+if(MSVC)
+	target_compile_definitions(MinSG PRIVATE NOMINMAX)
+	target_compile_definitions(MinSG PUBLIC "MINSG_DEPRECATED=__declspec(deprecated)")
+	target_compile_definitions(MinSG PRIVATE "MINSGAPI=__declspec(dllexport)")
+	target_compile_definitions(MinSG INTERFACE "MINSGAPI=__declspec(dllimport)")
+else()
+	target_compile_definitions(MinSG PUBLIC "MINSG_DEPRECATED=__attribute__((deprecated))")
+	target_compile_definitions(MinSG PRIVATE "MINSGAPI=")
+	target_compile_definitions(MinSG INTERFACE "MINSGAPI=")
+endif()
+
 # --- Required dependencies ---
 
 # Dependency to Geometry

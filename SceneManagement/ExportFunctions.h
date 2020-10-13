@@ -24,12 +24,12 @@ class SceneManager;
 /*!	Save MinSG nodes to a file. Throws an exception on failure.
 	@param fileName Path that the new MinSG XML file will be saved to
 	@param nodes Array of nodes that will be saved	*/
-void saveMinSGFile(SceneManager & sm, const Util::FileName & fileName, const std::deque<Node *> & nodes);
+MINSGAPI void saveMinSGFile(SceneManager & sm, const Util::FileName & fileName, const std::deque<Node *> & nodes);
 
 /*!	Save MinSG nodes to a stream. Throws an exception on failure.
 	@param out Output stream to which the MinSG XML data will be written
 	@param nodes Array of nodes that will be saved	 */
-void saveMinSGStream(SceneManager & sm, std::ostream & out, const std::deque<Node *> & nodes);
+MINSGAPI void saveMinSGStream(SceneManager & sm, std::ostream & out, const std::deque<Node *> & nodes);
 
 /*!	Traverses the scene graph below @a rootNode and saves all meshes
 	that are found in GeometryNodes and that are not saved yet into PLY
@@ -40,7 +40,7 @@ void saveMinSGStream(SceneManager & sm, std::ostream & out, const std::deque<Nod
 	@param saveRegisteredNodes If true, even already saved meshes are exported.
 
 	\todo Shouldn't this be a StdNodeVisitor or a static helper	function in Helper.cpp? */
-void saveMeshesInSubtreeAsPLY(Node * rootNode,const  std::string & dirName, bool saveRegisteredNodes=false);
+MINSGAPI void saveMeshesInSubtreeAsPLY(Node * rootNode,const  std::string & dirName, bool saveRegisteredNodes=false);
 
 /*!	Traverses the scene graph below @a rootNode and saves all meshes
 	that are found in GeometryNodes and that are not saved yet into MMF
@@ -50,7 +50,7 @@ void saveMeshesInSubtreeAsPLY(Node * rootNode,const  std::string & dirName, bool
 	@param dirName Name of directory that is used to store the meshes.
 	@param saveRegisteredNodes If true, even already saved meshes are exported.
 	\todo Shouldn't this be a StdNodeVisitor or a static helper	function in Helper.cpp? */
-void saveMeshesInSubtreeAsMMF(Node * rootNode,const  std::string & dirName, bool saveRegisteredNodes=false);
+MINSGAPI void saveMeshesInSubtreeAsMMF(Node * rootNode,const  std::string & dirName, bool saveRegisteredNodes=false);
 }
 }
 

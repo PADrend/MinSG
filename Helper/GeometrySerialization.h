@@ -12,7 +12,7 @@
 namespace MinSG {
 	
 //! Initialze serializers for objects from the Geometry library.
-bool initGeometrySerialization();
+MINSGAPI bool initGeometrySerialization();
 	
 } /* MinSG */
 

@@ -19,7 +19,7 @@ namespace BlueSurfels {
 class RandomSampler : public AbstractSurfelSampler {
 	PROVIDES_TYPE_NAME(RandomSampler)
 public:
-  virtual Rendering::Mesh* sampleSurfels(Rendering::Mesh* sourceMesh);
+	MINSGAPI virtual Rendering::Mesh* sampleSurfels(Rendering::Mesh* sourceMesh);
 };
 
 } /* BlueSurfels */

@@ -29,7 +29,7 @@ namespace Evaluators {
 class StatsEvaluator : public Evaluator {
 		PROVIDES_TYPE_NAME(StatsEvaluator)
 	public:
-		StatsEvaluator(DirectionMode mode = SINGLE_VALUE);
+		MINSGAPI StatsEvaluator(DirectionMode mode = SINGLE_VALUE);
 		virtual ~StatsEvaluator() {
 		}
 
@@ -55,9 +55,9 @@ class StatsEvaluator : public Evaluator {
 		}
 
 		// ---|> Evaluator
-		virtual void beginMeasure() override;
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
-		virtual void endMeasure(FrameContext & context) override;
+		MINSGAPI virtual void beginMeasure() override;
+		MINSGAPI virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		MINSGAPI virtual void endMeasure(FrameContext & context) override;
 
 	private:
 		double value;

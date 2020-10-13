@@ -28,8 +28,8 @@ class FollowPathBehaviour : public AbstractNodeBehaviour {
 	PROVIDES_TYPE_NAME(FollowPathBehaviour)
 
 	public:
-		FollowPathBehaviour(PathNode * pathNode, Node * node,float speed=1.0f);
-		virtual ~FollowPathBehaviour();
+		MINSGAPI FollowPathBehaviour(PathNode * pathNode, Node * node,float speed=1.0f);
+		MINSGAPI virtual ~FollowPathBehaviour();
 
 		void setPath(PathNode* pathNode)	{	path = pathNode;	}
 		PathNode* getPath() const 			{	return path.get();	}
@@ -40,7 +40,7 @@ class FollowPathBehaviour : public AbstractNodeBehaviour {
 		}
 		float getPosition()const			{return position;	}
 
-		behaviourResult_t doExecute() override;
+		MINSGAPI behaviourResult_t doExecute() override;
 
 	private:
 		Util::Reference<PathNode> path;

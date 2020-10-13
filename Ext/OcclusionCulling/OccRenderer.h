@@ -74,28 +74,28 @@ class OccRenderer : public State {
 		};
 		// -----
 
-		OccRenderer();
-		virtual ~OccRenderer();
+		MINSGAPI OccRenderer();
+		MINSGAPI virtual ~OccRenderer();
 
-		NodeInfo * getNodeInfo(Node * node)const;
+		MINSGAPI NodeInfo * getNodeInfo(Node * node)const;
 
 		renderMode getMode()const			{	return mode;	}
 		void setMode(renderMode newMode)	{	mode=newMode;	}
 
-		OccRenderer * clone() const override;
+		MINSGAPI OccRenderer * clone() const override;
 
 	private:
 		unsigned int frameNumber;
 		renderMode mode;
 
-		State::stateResult_t performCulling(FrameContext & context,Node * rootNode, const RenderParam & rp);
-		void updateNodeInformation(FrameContext & context,Node * rootNode)const;
-		void processNode(FrameContext & context,Node * node,NodeInfo * nodeInfo,NodeDistancePriorityQueue_F2B & distanceQueue,const RenderParam & rp);
+		MINSGAPI State::stateResult_t performCulling(FrameContext & context,Node * rootNode, const RenderParam & rp);
+		MINSGAPI void updateNodeInformation(FrameContext & context,Node * rootNode)const;
+		MINSGAPI void processNode(FrameContext & context,Node * node,NodeInfo * nodeInfo,NodeDistancePriorityQueue_F2B & distanceQueue,const RenderParam & rp);
 
-		State::stateResult_t showVisible(FrameContext & context,Node * rootNode, const RenderParam & rp);
-		State::stateResult_t showCulled(FrameContext & context,Node * rootNode, const RenderParam & rp);
+		MINSGAPI State::stateResult_t showVisible(FrameContext & context,Node * rootNode, const RenderParam & rp);
+		MINSGAPI State::stateResult_t showCulled(FrameContext & context,Node * rootNode, const RenderParam & rp);
 
-		stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
 
 };
 }

@@ -44,7 +44,7 @@ class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 				kinematicObjectMarker(false){}
 		BtPhysicObject(const BtPhysicObject&) = delete;
 		BtPhysicObject(BtPhysicObject&&) = default;
-		~BtPhysicObject();
+		MINSGAPI ~BtPhysicObject();
 
 		Node* getNode()const							{	return node.get();	}
 
@@ -58,7 +58,7 @@ class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 		void setBody(btRigidBody* _body)				{	body = _body;	}
 
 		BtCollisionShape* getShape()const				{	return shape.get();	}
-		void setShape(Util::Reference<CollisionShape> _shape);
+		MINSGAPI void setShape(Util::Reference<CollisionShape> _shape);
 		
 		float getMass()const							{	return mass;	}
 		void setMass(float f)							{	mass = f;	}
@@ -76,7 +76,7 @@ class BtPhysicObject : public Util::ReferenceCounter<BtPhysicObject>{
 		void setRollingFriction(float f)				{	rollingFriction = f;	}
 
 		const std::vector<Util::Reference<BtConstraintObject>>& getConstraints() const { return constraints; }
-		void removeConstraint(BtConstraintObject& constraint);
+		MINSGAPI void removeConstraint(BtConstraintObject& constraint);
 		void clearConstraints()							{	constraints.clear();	}
 
 		void addConstraintObject(BtConstraintObject& constraint) { constraints.emplace_back(&constraint); }

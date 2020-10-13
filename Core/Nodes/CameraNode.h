@@ -25,19 +25,19 @@ class CameraNode : public AbstractCameraNode {
 	
 		typedef Util::Reference<CameraNode> ref_t;
 
-		CameraNode();
+		MINSGAPI CameraNode();
 		virtual ~CameraNode() {
 		}
 
 		//! Set the four frustum angles using the given horizontal apex angle and the aspect ratio of the current viewport.
-		void applyHorizontalAngle(const Geometry::Angle & angle);
+		MINSGAPI void applyHorizontalAngle(const Geometry::Angle & angle);
 		void applyHorizontalAngle(float deg){	applyHorizontalAngle(Geometry::Angle::deg(deg));	}
 		
 		//! Set the four frustum angles using the given vertical apex angle and the aspect ratio of the current viewport.
-		void applyVerticalAngle(const Geometry::Angle & angle);
+		MINSGAPI void applyVerticalAngle(const Geometry::Angle & angle);
 		void applyVerticalAngle(float deg)	{	applyVerticalAngle(Geometry::Angle::deg(deg));	}
 
-		void setAngles(const Geometry::Angle & _fovLeft, const Geometry::Angle & _fovRight,
+		MINSGAPI void setAngles(const Geometry::Angle & _fovLeft, const Geometry::Angle & _fovRight,
 						const Geometry::Angle & _fovBottom, const Geometry::Angle & _fovTop);
 		void setAngles(float _fovLeftDeg, float _fovRightDeg, float _fovBottomDeg, float _fovTopDeg){
 			setAngles(Geometry::Angle::deg(_fovLeftDeg),Geometry::Angle::deg(_fovRightDeg),
@@ -56,7 +56,7 @@ class CameraNode : public AbstractCameraNode {
 		Geometry::Angle getTopAngle()const			{	return fovTop;	}
 		
 	private:
-		explicit CameraNode(const CameraNode & o);
+		MINSGAPI explicit CameraNode(const CameraNode & o);
 		/// ---|> [Node]
 		CameraNode * doClone()const override		{	return new CameraNode(*this);	}
 
@@ -66,7 +66,7 @@ class CameraNode : public AbstractCameraNode {
 		Geometry::Angle fovBottom;
 		Geometry::Angle fovTop;
 
-		void updateFrustum() override;
+		MINSGAPI void updateFrustum() override;
 };
 }
 

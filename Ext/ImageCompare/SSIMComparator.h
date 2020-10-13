@@ -30,14 +30,14 @@ class SSIMComparator: public AbstractOnGpuComparator {
 
 public:
 
-	SSIMComparator();
+	MINSGAPI SSIMComparator();
 
-	virtual ~SSIMComparator();
+	MINSGAPI virtual ~SSIMComparator();
 
-	virtual bool doCompare(Rendering::RenderingContext & context, Rendering::Texture * inA, Rendering::Texture * inB, double & quality,
+	MINSGAPI virtual bool doCompare(Rendering::RenderingContext & context, Rendering::Texture * inA, Rendering::Texture * inB, double & quality,
 			Rendering::Texture * out) override;
 
-	virtual bool init(Rendering::RenderingContext & context) override;
+	MINSGAPI virtual bool init(Rendering::RenderingContext & context) override;
 
 private:
 	Util::Reference<Rendering::Shader> shaderSSIM;

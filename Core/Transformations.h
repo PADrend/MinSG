@@ -23,18 +23,18 @@ namespace Transformations {
 	
 //! @name coordinate transformations
 //	@{
-Geometry::Vec3 localDirToWorldDir(const Node & node, const Geometry::Vec3 & localDir);
-Geometry::Vec3 localDirToRelDir(const Node & node, const Geometry::Vec3 & localDir);
-Geometry::Vec3 localPosToWorldPos(const Node & node, const Geometry::Vec3 & localPos);
-Geometry::Vec3 localPosToRelPos(const Node & node, const Geometry::Vec3 & localPos);
-Geometry::Vec3 relDirToWorldDir(const Node & node, const Geometry::Vec3 & relDir);
-Geometry::Vec3 relDirToLocalDir(const Node & node, const Geometry::Vec3 & relDir);
-Geometry::Vec3 relPosToWorldPos(const Node & node, const Geometry::Vec3 & relPos);
-Geometry::Vec3 relPosToLocalPos(const Node & node, const Geometry::Vec3 & relPos);
-Geometry::Vec3 worldDirToLocalDir(const Node & node, const Geometry::Vec3 & worldDir);
-Geometry::Vec3 worldDirToRelDir(const Node & node, const Geometry::Vec3 & worldDir);
-Geometry::Vec3 worldPosToLocalPos(const Node & node, const Geometry::Vec3 & worldPos);
-Geometry::Vec3 worldPosToRelPos(const Node & node, const Geometry::Vec3 & worldPos);
+MINSGAPI Geometry::Vec3 localDirToWorldDir(const Node & node, const Geometry::Vec3 & localDir);
+MINSGAPI Geometry::Vec3 localDirToRelDir(const Node & node, const Geometry::Vec3 & localDir);
+MINSGAPI Geometry::Vec3 localPosToWorldPos(const Node & node, const Geometry::Vec3 & localPos);
+MINSGAPI Geometry::Vec3 localPosToRelPos(const Node & node, const Geometry::Vec3 & localPos);
+MINSGAPI Geometry::Vec3 relDirToWorldDir(const Node & node, const Geometry::Vec3 & relDir);
+MINSGAPI Geometry::Vec3 relDirToLocalDir(const Node & node, const Geometry::Vec3 & relDir);
+MINSGAPI Geometry::Vec3 relPosToWorldPos(const Node & node, const Geometry::Vec3 & relPos);
+MINSGAPI Geometry::Vec3 relPosToLocalPos(const Node & node, const Geometry::Vec3 & relPos);
+MINSGAPI Geometry::Vec3 worldDirToLocalDir(const Node & node, const Geometry::Vec3 & worldDir);
+MINSGAPI Geometry::Vec3 worldDirToRelDir(const Node & node, const Geometry::Vec3 & worldDir);
+MINSGAPI Geometry::Vec3 worldPosToLocalPos(const Node & node, const Geometry::Vec3 & worldPos);
+MINSGAPI Geometry::Vec3 worldPosToRelPos(const Node & node, const Geometry::Vec3 & worldPos);
 //	@}
 
 
@@ -46,14 +46,14 @@ Geometry::Vec3 worldPosToRelPos(const Node & node, const Geometry::Vec3 & worldP
 	\note All functions defined here should also work for nodes having only matrixes (and no SRTs) -- if not noted otherwise.
 */
 //	@{
-Geometry::SRT worldSRTToRelSRT(const Node & node, const Geometry::SRT & worldSRT);
+MINSGAPI Geometry::SRT worldSRTToRelSRT(const Node & node, const Geometry::SRT & worldSRT);
 
-void rotateAroundLocalAxis(Node & node, const Geometry::Angle & angle,const Geometry::Line3 & localAxis);
-void rotateAroundRelAxis(Node & node, const Geometry::Angle & angle, const Geometry::Line3 & relAxis);
-void rotateAroundWorldAxis(Node & node, const Geometry::Angle & angle,const Geometry::Line3 & worldAxis);
+MINSGAPI void rotateAroundLocalAxis(Node & node, const Geometry::Angle & angle,const Geometry::Line3 & localAxis);
+MINSGAPI void rotateAroundRelAxis(Node & node, const Geometry::Angle & angle, const Geometry::Line3 & relAxis);
+MINSGAPI void rotateAroundWorldAxis(Node & node, const Geometry::Angle & angle,const Geometry::Line3 & worldAxis);
 
 /*! \note As no up vector is specified, the rotation is not fully determined (so just see what happens...) */
-void rotateToWorldDir(Node & node, const Geometry::Vec3& worldDir);
+MINSGAPI void rotateToWorldDir(Node & node, const Geometry::Vec3& worldDir);
 //	@}
 
 }

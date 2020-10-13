@@ -22,12 +22,12 @@ class QuadTreeBuilder: public OcTreeBuilder {
 
 public:
 
-	QuadTreeBuilder(Util::GenericAttributeMap & options);
-	virtual ~QuadTreeBuilder();
+	MINSGAPI QuadTreeBuilder(Util::GenericAttributeMap & options);
+	MINSGAPI virtual ~QuadTreeBuilder();
 
 protected:
 
-	list_t split(NodeWrapper & source) override;
+	MINSGAPI list_t split(NodeWrapper & source) override;
 };
 
 }

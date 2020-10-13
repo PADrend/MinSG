@@ -24,20 +24,20 @@ namespace MinSG {
 class ListNode : public GroupNode {
 		PROVIDES_TYPE_NAME(ListNode)
 	public:
-		ListNode();
-		ListNode(ListNode && source);
-		virtual ~ListNode();
+		MINSGAPI ListNode();
+		MINSGAPI ListNode(ListNode && source);
+		MINSGAPI virtual ~ListNode();
 
 		Node * getChild(size_t index) const {
 			return (index < children.size()) ? children[index].get() : nullptr;
 		}
 
 		/// ---|> [GroupNode]
-		size_t countChildren()const override;
+		MINSGAPI size_t countChildren()const override;
 
 		/// ---|> [Node]
-		NodeVisitor::status traverse(NodeVisitor & visitor)override;
-		void doDisplay(FrameContext & context,const RenderParam & rp)override;
+		MINSGAPI NodeVisitor::status traverse(NodeVisitor & visitor)override;
+		MINSGAPI void doDisplay(FrameContext & context,const RenderParam & rp)override;
 
 
 		/**
@@ -46,17 +46,17 @@ class ListNode : public GroupNode {
 		 * 
 		 * @return Amount of memory in bytes
 		 */
-		size_t getMemoryUsage() const override;
+		MINSGAPI size_t getMemoryUsage() const override;
 
 	protected:
-		void doAddChild(Util::Reference<Node> child)override;
-		bool doRemoveChild(Util::Reference<Node> child)override;
+		MINSGAPI void doAddChild(Util::Reference<Node> child)override;
+		MINSGAPI bool doRemoveChild(Util::Reference<Node> child)override;
 
 		void _pushChild(Util::Reference<Node> child)	{	children.push_back(child);	}
-		explicit ListNode(const ListNode & source);
+		MINSGAPI explicit ListNode(const ListNode & source);
 	private:
 		/// ---|> [Node]
-		const Geometry::Box& doGetBB() const override;		
+		MINSGAPI const Geometry::Box& doGetBB() const override;		
 		ListNode * doClone() const override	{	return new ListNode(*this);	}
 
 		/// ---|> [GroupNode]

@@ -45,13 +45,13 @@ class Server{
 		SceneManagement::SceneManager & sceneManager;
 		Util::Reference<Util::Network::DataBroadcaster> dataBroadcaster;
 	public:
-		Server(SceneManagement::SceneManager & sm, Util::Network::DataBroadcaster * _broadcaster);
+		MINSGAPI Server(SceneManagement::SceneManager & sm, Util::Network::DataBroadcaster * _broadcaster);
 		Server(const Server&) = delete;
-		~Server();
+		MINSGAPI ~Server();
 	
 		
-		void initNodeObserver(Node * rootNode);
-		void onNodeTransformed(Node * node);
+		MINSGAPI void initNodeObserver(Node * rootNode);
+		MINSGAPI void onNodeTransformed(Node * node);
 		
 };
 
@@ -61,14 +61,14 @@ class TreeSyncClient{
 		std::unordered_map<Util::StringIdentifier,Geometry::Matrix4x4> incomingMatrixes;
 		
 	public:
-		TreeSyncClient(Util::Network::DataConnection * _connection);
-		~TreeSyncClient();
+		MINSGAPI TreeSyncClient(Util::Network::DataConnection * _connection);
+		MINSGAPI ~TreeSyncClient();
 	
 		/*! Applies the received transformation updates.
 			Should be called once per frame.	*/
-		void execute(SceneManagement::SceneManager & sm);
+		MINSGAPI void execute(SceneManagement::SceneManager & sm);
 
-		void _handleIncomingKeyValue(uint16_t channel,const Util::StringIdentifier &,const Util::Network::DataConnection::dataPacket_t &);
+		MINSGAPI void _handleIncomingKeyValue(uint16_t channel,const Util::StringIdentifier &,const Util::Network::DataConnection::dataPacket_t &);
 		
 };
 

@@ -75,13 +75,13 @@ class AbstractSurfelStrategy : public Util::ReferenceCounter<AbstractSurfelStrat
 typedef std::function<void (Util::GenericAttributeMap& desc, AbstractSurfelStrategy* strategy)> SurfelStrategyExporter_t;
 typedef std::function<AbstractSurfelStrategy* (const Util::GenericAttributeMap* desc)> SurfelStrategyImporter_t;
 
-extern const std::string TYPE_STRATEGY;
-extern const Util::StringIdentifier ATTR_STRATEGY_TYPE;
+MINSGAPI extern const std::string TYPE_STRATEGY;
+MINSGAPI extern const Util::StringIdentifier ATTR_STRATEGY_TYPE;
 
-bool registerExporter(const Util::StringIdentifier& type, const SurfelStrategyExporter_t& exporter);
-bool registerImporter(const Util::StringIdentifier& type, const SurfelStrategyImporter_t& importer);
-std::unique_ptr<Util::GenericAttributeMap> exportStrategy(AbstractSurfelStrategy* strategy);
-AbstractSurfelStrategy* importStrategy(const Util::GenericAttributeMap * d);
+MINSGAPI bool registerExporter(const Util::StringIdentifier& type, const SurfelStrategyExporter_t& exporter);
+MINSGAPI bool registerImporter(const Util::StringIdentifier& type, const SurfelStrategyImporter_t& importer);
+MINSGAPI std::unique_ptr<Util::GenericAttributeMap> exportStrategy(AbstractSurfelStrategy* strategy);
+MINSGAPI AbstractSurfelStrategy* importStrategy(const Util::GenericAttributeMap * d);
 
 } /* BlueSurfels */
 } /* MinSG */

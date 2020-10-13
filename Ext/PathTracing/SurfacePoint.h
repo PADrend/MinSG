@@ -44,8 +44,8 @@ public:
 		};
 	}
   
-  BSDFSample getBSDF(const Geometry::Vec3 &woWorld, const Geometry::Vec3 &wiWorld) const;
-  BSDFSample sampleBSDF(const Geometry::Vec3 &woWorld, const Geometry::Vec2& sample) const;
+  MINSGAPI BSDFSample getBSDF(const Geometry::Vec3 &woWorld, const Geometry::Vec3 &wiWorld) const;
+  MINSGAPI BSDFSample sampleBSDF(const Geometry::Vec3 &woWorld, const Geometry::Vec2& sample) const;
 };
   
 }

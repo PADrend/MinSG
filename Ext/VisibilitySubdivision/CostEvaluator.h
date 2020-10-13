@@ -34,12 +34,12 @@ class CostEvaluator : public Evaluators::Evaluator {
 		PROVIDES_TYPE_NAME(CostEvaluator)
 	public:
 
-		CostEvaluator(DirectionMode mode);
-		virtual ~CostEvaluator();
+		MINSGAPI CostEvaluator(DirectionMode mode);
+		MINSGAPI virtual ~CostEvaluator();
 
-		void beginMeasure() override;
-		void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
-		void endMeasure(FrameContext &) override;
+		MINSGAPI void beginMeasure() override;
+		MINSGAPI void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		MINSGAPI void endMeasure(FrameContext &) override;
 };
 
 }

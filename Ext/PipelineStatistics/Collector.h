@@ -31,16 +31,16 @@ namespace PipelineStatistics {
 class Collector : public State {
 		PROVIDES_TYPE_NAME(PipelineStatistics::Collector)
 	public:
-		Collector();
-		Collector(const Collector & other);
+		MINSGAPI Collector();
+		MINSGAPI Collector(const Collector & other);
 
-		Collector * clone() const override;
+		MINSGAPI Collector * clone() const override;
 	protected:
 		//! Start queries.
-		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 		//! Stop queries. Pass results to statistics.
-		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 	private:
 		// Use Pimpl idiom
 		struct Implementation;

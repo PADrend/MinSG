@@ -27,11 +27,11 @@ class PyramidComparator: public AbstractOnGpuComparator {
 
 public:
 
-	PyramidComparator();
+	MINSGAPI PyramidComparator();
 
-	virtual ~PyramidComparator();
+	MINSGAPI virtual ~PyramidComparator();
 
-	virtual bool doCompare(Rendering::RenderingContext & context, Rendering::Texture * inA, Rendering::Texture * inB, double & quality, Rendering::Texture * out) override;
+	MINSGAPI virtual bool doCompare(Rendering::RenderingContext & context, Rendering::Texture * inA, Rendering::Texture * inB, double & quality, Rendering::Texture * out) override;
 
 	void setTextureDownloadSize(uint32_t sideLength) override {
 		AbstractOnGpuComparator::setTextureDownloadSize(sideLength);
@@ -48,12 +48,12 @@ public:
 // 		comparator->setFilterType(type);
 	}
 
-	void setFBO(Util::Reference<Rendering::FBO> _fbo) override;
+	MINSGAPI void setFBO(Util::Reference<Rendering::FBO> _fbo) override;
 
 	AbstractOnGpuComparator * getInternalComparator() {
 		return comparator.get();
 	}
-	void setInternalComparator(AbstractOnGpuComparator * comp);
+	MINSGAPI void setInternalComparator(AbstractOnGpuComparator * comp);
 
 	uint32_t getMinimalTestSize() {
 		return minTestSize;

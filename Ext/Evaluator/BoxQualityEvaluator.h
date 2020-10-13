@@ -36,13 +36,13 @@ namespace Evaluators {
 class BoxQualityEvaluator : public Evaluator {
 		PROVIDES_TYPE_NAME(BoxQualityEvaluator)
 	public:
-		BoxQualityEvaluator();
-		virtual ~BoxQualityEvaluator();
+		MINSGAPI BoxQualityEvaluator();
+		MINSGAPI virtual ~BoxQualityEvaluator();
 
 	// ---|> Evaluator
-		virtual void beginMeasure() override;
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
-		virtual void endMeasure(FrameContext & context) override;
+		MINSGAPI virtual void beginMeasure() override;
+		MINSGAPI virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		MINSGAPI virtual void endMeasure(FrameContext & context) override;
 
 		// constants determining position of the corresponding results in GenericAttrubuteList values.
 		static const uint8_t OBJECTS_CLASSIFIED_AS_VISIBLE = 0; //equivalent to visible boxes

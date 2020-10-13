@@ -50,7 +50,7 @@ class CacheLevelFiles : public CacheLevel {
 		bool active;
 
 		//! Helper function that is executed by the thread.
-		static void * threadRun(void * data);
+		MINSGAPI static void * threadRun(void * data);
 
 		//! Directory for storing the cache objects.
 		const Util::TemporaryDirectory cacheDir;
@@ -65,31 +65,31 @@ class CacheLevelFiles : public CacheLevel {
 		mutable std::unordered_map<CacheObject *, Util::Reference<Rendering::Mesh>> cacheObjectsToSave;
 
 		//! Create a file storing the cache object.
-		void doAddCacheObject(CacheObject * object) override;
+		MINSGAPI void doAddCacheObject(CacheObject * object) override;
 
 		//! Remove the file storing the cache object.
-		void doRemoveCacheObject(CacheObject * object) override;
+		MINSGAPI void doRemoveCacheObject(CacheObject * object) override;
 
 		//! Load a cache object from a file.
-		bool doLoadCacheObject(CacheObject * object) override;
+		MINSGAPI bool doLoadCacheObject(CacheObject * object) override;
 
 		//! Do nothing
 		void doWork() override {
 		}
 
 		//! Return the file size of the cache object.
-		uint64_t getCacheObjectSize(CacheObject * object) const override;
+		MINSGAPI uint64_t getCacheObjectSize(CacheObject * object) const override;
 
 #ifdef MINSG_EXT_OUTOFCORE_DEBUG
 		//! Check all cache objects stored in this cache level for inconsistencies.
-		void doVerify() const override;
+		MINSGAPI void doVerify() const override;
 #endif /* MINSG_EXT_OUTOFCORE_DEBUG */
 	public:
-		CacheLevelFiles(uint64_t cacheSize, CacheContext & cacheContext);
-		virtual ~CacheLevelFiles();
+		MINSGAPI CacheLevelFiles(uint64_t cacheSize, CacheContext & cacheContext);
+		MINSGAPI virtual ~CacheLevelFiles();
 
 		//! Start the worker thread
-		void init() override;
+		MINSGAPI void init() override;
 };
 
 }

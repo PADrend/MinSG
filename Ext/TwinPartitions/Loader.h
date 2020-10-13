@@ -28,7 +28,7 @@ namespace TwinPartitions {
  * @date 2010-09-22
  */
 struct Loader {
-	static Node * importPartitions(const Util::FileName & fileName);
+	MINSGAPI static Node * importPartitions(const Util::FileName & fileName);
 };
 
 }

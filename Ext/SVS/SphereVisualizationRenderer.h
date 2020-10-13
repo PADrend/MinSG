@@ -31,12 +31,12 @@ namespace SVS {
 class SphereVisualizationRenderer : public NodeRendererState {
 		PROVIDES_TYPE_NAME(SVS::SphereVisualizationRenderer)
 	private:
-		NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
+		MINSGAPI NodeRendererResult displayNode(FrameContext & context, Node * node, const RenderParam & rp) override;
 
 	public:
-		SphereVisualizationRenderer();
+		MINSGAPI SphereVisualizationRenderer();
 
-		SphereVisualizationRenderer * clone() const override;
+		MINSGAPI SphereVisualizationRenderer * clone() const override;
 };
 
 }

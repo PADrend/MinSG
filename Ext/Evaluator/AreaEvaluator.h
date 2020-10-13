@@ -29,15 +29,15 @@ namespace Evaluators{
 class AreaEvaluator : public Evaluator {
 		PROVIDES_TYPE_NAME(AreaEvaluator)
 	public:
-		static Util::Reference<Rendering::Shader> whiteShader;
+		MINSGAPI static Util::Reference<Rendering::Shader> whiteShader;
 
-		AreaEvaluator(DirectionMode mode=SINGLE_VALUE);
-		virtual ~AreaEvaluator();
+		MINSGAPI AreaEvaluator(DirectionMode mode=SINGLE_VALUE);
+		MINSGAPI virtual ~AreaEvaluator();
 
 	// ---|> Evaluator
-		virtual void beginMeasure() override;
-		virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
-		virtual void endMeasure(FrameContext & context) override;
+		MINSGAPI virtual void beginMeasure() override;
+		MINSGAPI virtual void measure(FrameContext & context, Node & node, const Geometry::Rect & r) override;
+		MINSGAPI virtual void endMeasure(FrameContext & context) override;
 
 	private:
 		int whitePixel;

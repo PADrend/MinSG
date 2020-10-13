@@ -19,7 +19,7 @@ class Statistics;
 //! Singleton holder object for occlusion culling related counters.
 class OcclusionCullingStatistics {
 	private:
-		explicit OcclusionCullingStatistics(Statistics & statistics);
+		MINSGAPI explicit OcclusionCullingStatistics(Statistics & statistics);
 		OcclusionCullingStatistics(OcclusionCullingStatistics &&) = delete;
 		OcclusionCullingStatistics(const OcclusionCullingStatistics &) = delete;
 		OcclusionCullingStatistics & operator=(OcclusionCullingStatistics &&) = delete;
@@ -35,7 +35,7 @@ class OcclusionCullingStatistics {
 		uint32_t culledGeometryNodeCounter;
 	public:
 		//! Return singleton instance.
-		static OcclusionCullingStatistics & instance(Statistics & statistics);
+		MINSGAPI static OcclusionCullingStatistics & instance(Statistics & statistics);
 
 		uint32_t getOccTestCounter() const {
 			return occTestCounter;

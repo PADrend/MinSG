@@ -43,10 +43,10 @@ class PVSRenderer : public State {
 		/**
 		 * Standard constructor.
 		 */
-		PVSRenderer();
-		PVSRenderer(const PVSRenderer &);
+		MINSGAPI PVSRenderer();
+		MINSGAPI PVSRenderer(const PVSRenderer &);
 		PVSRenderer(PVSRenderer &&) = delete;
-		virtual ~PVSRenderer();
+		MINSGAPI virtual ~PVSRenderer();
 
 		/**
 		 * Assign a new view cell hierarchy.
@@ -57,7 +57,7 @@ class PVSRenderer : public State {
 			viewCells = root;
 		}
 
-		PVSRenderer * clone() const override;
+		MINSGAPI PVSRenderer * clone() const override;
 
 	private:
 		//! Root of a view cell hierarchy.
@@ -66,7 +66,7 @@ class PVSRenderer : public State {
 		//! Cache for the view cell that was used for the last frame.
 		cell_ptr lastViewCell;
 
-		stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
+		MINSGAPI stateResult_t doEnableState(FrameContext & context, Node *, const RenderParam & rp) override;
 };
 
 }

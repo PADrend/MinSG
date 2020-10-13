@@ -26,7 +26,7 @@ class BehaviorNodeReference{
 		Node * getNode()const	{	return node.get();	}
 		void setNode(Node * n)	{	node = n;	}
 		//! Return the referenced Node or throw an exception if not set.
-		Node * requireNode()const;
+		MINSGAPI Node * requireNode()const;
 };
 
 // -------------------------------
@@ -38,7 +38,7 @@ class BehaviorStateReference{
 		State * getState()const		{	return state.get();	}
 		void setState(State * s)	{	state = s;	}
 		//! Return the referenced State or throw an exception if not set.
-		State * requireState()const;
+		MINSGAPI State * requireState()const;
 };
 
 }

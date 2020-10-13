@@ -169,7 +169,7 @@ COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 		std::vector<Node *> children;
 		children.reserve(childCount);
 #pragma omp parallel for
-		for(uint_fast32_t c = 0; c < childCount; ++c) {
+		for(int_fast32_t c = 0; c < childCount; ++c) {
 			Node * newChild = convert(treeChildren[c], vertexDesc);
 #pragma omp critical
 			{
