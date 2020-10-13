@@ -191,7 +191,7 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	if(!staticShadow || needsUpdate)
 		updateShadowMap(context, node, rp);
 
-	Rendering::Shader * shader = context.getRenderingContext().getActiveShader();
+	auto shader = context.getRenderingContext().getActiveShader();
 	if(shader != nullptr) {
 		shader->setUniform(context.getRenderingContext(), Rendering::Uniform("sg_shadowEnabled", true));
 		shader->setUniform(context.getRenderingContext(), Rendering::Uniform("sg_shadowMatrix", texMatrix));
@@ -204,7 +204,7 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 }
 
 void ShadowState::doDisableState(FrameContext & context, Node * node, const RenderParam & rp) {
-	Rendering::Shader * shader = context.getRenderingContext().getActiveShader();
+	auto shader = context.getRenderingContext().getActiveShader();
 	if(shader != nullptr) {
 		shader->setUniform(context.getRenderingContext(), Rendering::Uniform("sg_shadowEnabled", false));
 	}

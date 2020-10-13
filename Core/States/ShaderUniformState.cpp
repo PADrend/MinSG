@@ -50,7 +50,7 @@ const Rendering::Uniform & ShaderUniformState::getUniform(const Util::StringIden
 State::stateResult_t ShaderUniformState::doEnableState(FrameContext & context, Node *, const RenderParam & /*rp*/) {
 	priorValueStack.push( std::vector<Rendering::Uniform>() );
 
-	Rendering::Shader * shader = context.getRenderingContext().getActiveShader();
+	auto shader = context.getRenderingContext().getActiveShader();
 
 	if(shader!=nullptr){
 		// assure that possible changes in the renderingContext are applied to the sg-uniforms before querying the uniforms
@@ -70,7 +70,7 @@ State::stateResult_t ShaderUniformState::doEnableState(FrameContext & context, N
 
 //! ---|> [State]
 void ShaderUniformState::doDisableState(FrameContext & context, Node *, const RenderParam & /*rp*/) {
-	Rendering::Shader * shader = context.getRenderingContext().getActiveShader();
+	auto shader = context.getRenderingContext().getActiveShader();
 	if(shader!=nullptr){
 		for(const auto & uniform : priorValueStack.top()) {
 			shader->setUniform(context.getRenderingContext(), uniform, true); // warn if unused--> should not happen
