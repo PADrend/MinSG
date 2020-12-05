@@ -19,63 +19,63 @@
 #include <vector>
 
 namespace Util {
-    class FileName;
+	class FileName;
 }
 
 namespace MinSG {
-    class Node;
-    class AbstractJoint;
-    class SkeletalNode;
+	class Node;
+	class AbstractJoint;
+	class SkeletalNode;
 }
 
 namespace MinSG {
   //! @ingroup states
-    class SkeletalAbstractRendererState : public ShaderState {
-    protected:
-        bool validatedMatrices;
-        
-        std::vector<AbstractJoint *> matriceOrder;
-        
-        mutable SkeletalNode *rootJoint;
-        
-        uint32_t jointSize;
-        
+	class SkeletalAbstractRendererState : public ShaderState {
+	protected:
+		bool validatedMatrices;
+		
+		std::vector<AbstractJoint *> matriceOrder;
+		
+		mutable SkeletalNode *rootJoint;
+		
+		uint32_t jointSize;
+		
 		mutable Geometry::Matrix4x4 bindMatrix;
-        
-        mutable std::vector<Geometry::Matrix4x4> jointMats;
+		
+		mutable std::vector<Geometry::Matrix4x4> jointMats;
 		mutable std::vector<Geometry::Matrix4x4> inverseMatContainer;
-        
+		
 		int debugJointId;
-        
-        SkeletalAbstractRendererState();
-        SkeletalAbstractRendererState(const SkeletalAbstractRendererState &source);
-        
-    public:
-        virtual ~SkeletalAbstractRendererState() {}
-        
-        /****************************************************************
-         * Bind matrix for transforming geometry from model space
-         * into skeleton space.
-         ****************************************************************/
-		void setBindMatrix(std::vector<float> _matrix);
-		void setBindMatrix(const float _matrix[]);
-		void setBindMatrix(Geometry::Matrix4x4 _matrix);
+		
+		SkeletalAbstractRendererState();
+		SkeletalAbstractRendererState(const SkeletalAbstractRendererState &source);
+		
+	public:
+		virtual ~SkeletalAbstractRendererState() {}
+		
+		/****************************************************************
+		 * Bind matrix for transforming geometry from model space
+		 * into skeleton space.
+		 ****************************************************************/
+		MINSGAPI void setBindMatrix(std::vector<float> _matrix);
+		MINSGAPI void setBindMatrix(const float _matrix[]);
+		MINSGAPI void setBindMatrix(Geometry::Matrix4x4 _matrix);
 		const Geometry::Matrix4x4 &getBindMatrix() const { return bindMatrix; }
-        
-        /****************************************************************
-         * validates joint matrice order with vertex attribute jointId.
-         ****************************************************************/
-        virtual void validateMatriceOrder(Node *node);
-        
-        /****************************************************************
-         * Renders vertices with a color describing the influence of joint
-         * blue -> no influence -> 0
-         * red -> full influence -> 1
-         ****************************************************************/
+		
+		/****************************************************************
+		 * validates joint matrice order with vertex attribute jointId.
+		 ****************************************************************/
+		MINSGAPI virtual void validateMatriceOrder(Node *node);
+		
+		/****************************************************************
+		 * Renders vertices with a color describing the influence of joint
+		 * blue -> no influence -> 0
+		 * red -> full influence -> 1
+		 ****************************************************************/
 		void setDebugJointId(int _id) { debugJointId = _id; setUniform(Rendering::Uniform("debugJointId", debugJointId)); }
 		int getDebugJointId() const { return debugJointId; }
 
-    };
+	};
 }
 
 #endif /* defined(__PADrendComplete__SkeletalAbstractRendererState__) */

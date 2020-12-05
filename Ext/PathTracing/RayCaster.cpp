@@ -103,7 +103,7 @@ class IntersectionQuery {
 template<typename value_t>
 static void testTrianglesInNode(const SolidTree_ExtTriangle & node,
 								const std::vector<IntersectionQuery<value_t>> & queries,
-								Context<value_t> & context __attribute__((unused))) {
+								Context<value_t> & context) {
 
 	for(const auto & triangleData : node.getTriangles()) {
 		const auto & triangle = triangleData.pos;

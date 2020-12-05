@@ -54,10 +54,10 @@ Geometry::Vec3f ParticleEmitter::getADirection() {
 
 Util::Color4ub ParticleEmitter::getAColor() const {
 	return Util::Color4ub(
-			   std::uniform_int_distribution<uint8_t>(minColor.getR(), maxColor.getR())(engine),
-			   std::uniform_int_distribution<uint8_t>(minColor.getG(), maxColor.getG())(engine),
-			   std::uniform_int_distribution<uint8_t>(minColor.getB(), maxColor.getB())(engine),
-			   std::uniform_int_distribution<uint8_t>(minColor.getA(), maxColor.getA())(engine)
+			   static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>(minColor.getR(), maxColor.getR())(engine)),
+			   static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>(minColor.getG(), maxColor.getG())(engine)),
+			   static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>(minColor.getB(), maxColor.getB())(engine)),
+			   static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>(minColor.getA(), maxColor.getA())(engine))
 		   );
 }
 

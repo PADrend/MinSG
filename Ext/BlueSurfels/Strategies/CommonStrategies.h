@@ -68,7 +68,7 @@ class ReferencePointStrategy : public AbstractSurfelStrategy {
 class DebugStrategy : public AbstractSurfelStrategy {
 	PROVIDES_TYPE_NAME(DebugStrategy)
 	public:
-		DebugStrategy();
+		MINSGAPI DebugStrategy();
 		MINSGAPI virtual bool prepare(MinSG::FrameContext& context, MinSG::Node* node);
 		MINSGAPI virtual bool update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel);
 		MINSGAPI virtual bool beforeRendering(MinSG::FrameContext& context);

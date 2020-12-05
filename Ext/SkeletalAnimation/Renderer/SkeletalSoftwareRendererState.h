@@ -18,40 +18,40 @@
 #include <vector>
 
 namespace Geometry {
-    template<typename _T> class _Vec4;
-    typedef _Vec4<float> Vec4;
+	template<typename _T> class _Vec4;
+	typedef _Vec4<float> Vec4;
 }
 
 namespace MinSG {
-    class GeometryNode;
-    
-    //! @ingroup states
-    class SkeletalSoftwareRendererState : public SkeletalAbstractRendererState {
-        PROVIDES_TYPE_NAME(SkeletalSoftwareRendererState)
-    private:
-        struct VertexPair {
-            uint32_t vId;
-            std::vector<float> weights;
-            std::vector<uint32_t> jointIds;
-            Geometry::Vec4 bindPosition;
-        };
-        
-        typedef std::pair<GeometryNode*, std::vector<VertexPair> > MeshSkin_t;
-        std::vector<MeshSkin_t> meshSkins;
-        
-    public:
-        SkeletalSoftwareRendererState();
-        SkeletalSoftwareRendererState(const SkeletalSoftwareRendererState &source);
-        virtual ~SkeletalSoftwareRendererState() {}
-        
-        /// ---|> [SkeletalAbstractRendererState]
-        virtual void validateMatriceOrder(Node *node) override;
-        
-        /// ---|> [State]
-        stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
+	class GeometryNode;
+	
+	//! @ingroup states
+	class SkeletalSoftwareRendererState : public SkeletalAbstractRendererState {
+		PROVIDES_TYPE_NAME(SkeletalSoftwareRendererState)
+	private:
+		struct VertexPair {
+			uint32_t vId;
+			std::vector<float> weights;
+			std::vector<uint32_t> jointIds;
+			Geometry::Vec4 bindPosition;
+		};
+		
+		typedef std::pair<GeometryNode*, std::vector<VertexPair> > MeshSkin_t;
+		std::vector<MeshSkin_t> meshSkins;
+		
+	public:
+		MINSGAPI SkeletalSoftwareRendererState();
+		MINSGAPI SkeletalSoftwareRendererState(const SkeletalSoftwareRendererState &source);
+		virtual ~SkeletalSoftwareRendererState() {}
+		
+		/// ---|> [SkeletalAbstractRendererState]
+		virtual void validateMatriceOrder(Node *node) override;
+		
+		/// ---|> [State]
+		stateResult_t doEnableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		void doDisableState(FrameContext & context, Node * node, const RenderParam & rp) override;
 		SkeletalSoftwareRendererState *clone()const override;
-    };
+	};
 }
 
 #endif /* defined(__PADrendComplete__SkeletalSoftwareRendererState__) */

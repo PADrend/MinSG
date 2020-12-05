@@ -19,115 +19,115 @@
 #include <Geometry/Matrix4x4.h>
 
 namespace MinSG {
-    class AbstractJoint;
+	class AbstractJoint;
 }
 
 namespace MinSG {
-    /*
-     *  @Brief entry point for animation data.
-     *
-     *  Animation data is described by keyframes, timeline and interpolation type.
-     *  - Keyframe is a 4x4 matrix describing the joint position at a given time.
-     *  - Timeline the relative times for each keyframe.
-     *  - Interpolationtype describing the interpolation type between each keyframe.
-     *
-     *  Keyframe size and timeline size have to be the same. If no interpolationtype is
-     *  given a linear interpolation will be used.
-     *
-     */
-    class AbstractPose
-    {
-    private:
-        mutable AbstractJoint *node;
-        
-    protected:
-        mutable std::deque<Geometry::Matrix4x4> keyframes;
-        std::deque<double> timeline;
-        std::deque<uint32_t> interpolationTypes;
-        
-        uint32_t currentInterpolationType;
-        
-        int status;
-        double startTime;
-        
-        uint32_t maxPoseCount;
-        
-        /*
-         *  Do all initializatoin here.
-         */
-        virtual void init(std::deque<double> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes, double _startTime) = 0;
-        
-    public:
-        /****************************************************************
-         * enumeration representing the current playback state.
-         ****************************************************************/
-        enum poseStatus { STOPPED, RUNNING};
-        
-        /****************************************************************
-         * Interpolation types
-         * - Linear, linear interpolation using slices between keyframes
-         * - Constant, jumps after the middle to the target keyframe
-         * - Bezier, Currently not implemented. Should smoothly interpolate
-         *   using bezier curves.
-         ****************************************************************/
-        static const uint32_t LINEAR = 0;
-        static const uint32_t CONSTANT = 1;
-        static const uint32_t BEZIER = 2;
-        
-        AbstractPose(AbstractJoint *joint);
-        virtual ~AbstractPose(){ };
-        
-        /****************************************************************
-         * value access.
-         ****************************************************************/
-        virtual void setValues(std::deque<double> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes) = 0;
-        virtual void setValues(std::deque<Geometry::Matrix4x4> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes) = 0;
-    
-        virtual void addValue(Geometry::Matrix4x4 _value, double _timeline, uint32_t _interpolationType, uint32_t _index) = 0;
-        
-        virtual void removeValue(uint32_t _index) = 0;
-        
-        virtual void update(double timeSec) = 0;
-        virtual void restart() = 0;
-        
-        virtual AbstractPose* split(uint32_t start, uint32_t end) = 0;
-        
-        uint32_t getSize() { return timeline.size(); }
-        
-        std::deque<double> &getTimeline() { return timeline; }
-        bool setTimeline(std::deque<double> _timeline, bool relative=true);
-        
-        std::deque<uint32_t> *getInterpolationTypes() { return &interpolationTypes; }
+	/*
+	 *  @Brief entry point for animation data.
+	 *
+	 *  Animation data is described by keyframes, timeline and interpolation type.
+	 *  - Keyframe is a 4x4 matrix describing the joint position at a given time.
+	 *  - Timeline the relative times for each keyframe.
+	 *  - Interpolationtype describing the interpolation type between each keyframe.
+	 *
+	 *  Keyframe size and timeline size have to be the same. If no interpolationtype is
+	 *  given a linear interpolation will be used.
+	 *
+	 */
+	class AbstractPose
+	{
+	private:
+		mutable AbstractJoint *node;
+		
+	protected:
+		mutable std::deque<Geometry::Matrix4x4> keyframes;
+		std::deque<double> timeline;
+		std::deque<uint32_t> interpolationTypes;
+		
+		uint32_t currentInterpolationType;
+		
+		int status;
+		double startTime;
+		
+		uint32_t maxPoseCount;
+		
+		/*
+		 *  Do all initializatoin here.
+		 */
+		virtual void init(std::deque<double> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes, double _startTime) = 0;
+		
+	public:
+		/****************************************************************
+		 * enumeration representing the current playback state.
+		 ****************************************************************/
+		enum poseStatus { STOPPED, RUNNING};
+		
+		/****************************************************************
+		 * Interpolation types
+		 * - Linear, linear interpolation using slices between keyframes
+		 * - Constant, jumps after the middle to the target keyframe
+		 * - Bezier, Currently not implemented. Should smoothly interpolate
+		 *   using bezier curves.
+		 ****************************************************************/
+		static const uint32_t LINEAR = 0;
+		static const uint32_t CONSTANT = 1;
+		static const uint32_t BEZIER = 2;
+		
+		MINSGAPI AbstractPose(AbstractJoint *joint);
+		virtual ~AbstractPose(){ };
+		
+		/****************************************************************
+		 * value access.
+		 ****************************************************************/
+		virtual void setValues(std::deque<double> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes) = 0;
+		virtual void setValues(std::deque<Geometry::Matrix4x4> _values, std::deque<double> _timeline, std::deque<uint32_t> _interpolationTypes) = 0;
+	
+		virtual void addValue(Geometry::Matrix4x4 _value, double _timeline, uint32_t _interpolationType, uint32_t _index) = 0;
+		
+		virtual void removeValue(uint32_t _index) = 0;
+		
+		virtual void update(double timeSec) = 0;
+		virtual void restart() = 0;
+		
+		virtual AbstractPose* split(uint32_t start, uint32_t end) = 0;
+		
+		uint32_t getSize() { return timeline.size(); }
+		
+		std::deque<double> &getTimeline() { return timeline; }
+		MINSGAPI bool setTimeline(std::deque<double> _timeline, bool relative=true);
+		
+		std::deque<uint32_t> *getInterpolationTypes() { return &interpolationTypes; }
 
-        uint32_t getMaxPoseCount() { return maxPoseCount; }
+		uint32_t getMaxPoseCount() { return maxPoseCount; }
 
-        /****************************************************************
-         * play access.
-         ****************************************************************/
-        void play();
-        void stop();
-        
-        void setStartTime(double _startTime) { startTime = _startTime; }
-        double getStartTime() { return startTime; }
-        
-        double getMinTime() const { return timeline.front(); }
-        double getMaxTime() const { return timeline.back(); }
-        double getDuration() const { return timeline.back() - timeline.front(); }
+		/****************************************************************
+		 * play access.
+		 ****************************************************************/
+		MINSGAPI void play();
+		MINSGAPI void stop();
+		
+		void setStartTime(double _startTime) { startTime = _startTime; }
+		double getStartTime() { return startTime; }
+		
+		double getMinTime() const { return timeline.front(); }
+		double getMaxTime() const { return timeline.back(); }
+		double getDuration() const { return timeline.back() - timeline.front(); }
 
-        /****************************************************************
-         * Joint connection.
-         ****************************************************************/
-        virtual void bindToJoint(AbstractJoint *_node);
-        AbstractJoint *getBindetJoint() const { return node; }        
-        int getStatus() { return status; }
-        
-        std::deque<Geometry::Matrix4x4> & getKeyframes() { return keyframes; }
-        
-        /****************************************************************
-         *              ---|> State
-         ****************************************************************/
-        virtual AbstractPose *clone() const = 0;
-    };
+		/****************************************************************
+		 * Joint connection.
+		 ****************************************************************/
+		virtual void bindToJoint(AbstractJoint *_node);
+		AbstractJoint *getBindetJoint() const { return node; }        
+		int getStatus() { return status; }
+		
+		std::deque<Geometry::Matrix4x4> & getKeyframes() { return keyframes; }
+		
+		/****************************************************************
+		 *              ---|> State
+		 ****************************************************************/
+		virtual AbstractPose *clone() const = 0;
+	};
 }
 
 #endif

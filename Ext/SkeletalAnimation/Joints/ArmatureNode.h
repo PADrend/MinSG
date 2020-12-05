@@ -13,12 +13,12 @@
 #define PADrend_ArmatureNode_h
 
 namespace Geometry {
-    template<typename _T> class _Matrix4x4;
-    typedef _Matrix4x4<float> Matrix4x4;
+		template<typename _T> class _Matrix4x4;
+		typedef _Matrix4x4<float> Matrix4x4;
 }
 
 namespace MinSG {
-    class JointNode;
+		class JointNode;
 }
 
 #include "AbstractJoint.h"
@@ -47,11 +47,11 @@ namespace MinSG {
 		Geometry::Matrix4x4 identityMatrix;
 
 	public:
-		ArmatureNode();
+		MINSGAPI ArmatureNode();
 		virtual ~ArmatureNode() {}
 
 		void generateJointNodeMap(std::unordered_map<std::string, AbstractJoint *> &jMap) override;
-        void catchJointNodes(std::deque<JointNode *> *nodes);
+		MINSGAPI void catchJointNodes(std::deque<JointNode *> *nodes);
 
 	private:
 		ArmatureNode(const ArmatureNode&) = default;

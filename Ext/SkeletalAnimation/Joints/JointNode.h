@@ -17,16 +17,16 @@
 
 namespace MinSG {
 
-    /*
-     *  @brief representation of an abstract joint within a skeleton.
-     *
-     *  Provides abstract organization of joints. Specially interconnection with
-     *  animationdata.
-     *
-     *  JointNode ---|> AbstractJoint ---|> ListNode ---|> GroupNode ---|> Node
-     * @ingroup nodes
-     *
-     */
+		/*
+		 *  @brief representation of an abstract joint within a skeleton.
+		 *
+		 *  Provides abstract organization of joints. Specially interconnection with
+		 *  animationdata.
+		 *
+		 *  JointNode ---|> AbstractJoint ---|> ListNode ---|> GroupNode ---|> Node
+		 * @ingroup nodes
+		 *
+		 */
 	class JointNode : public AbstractJoint
 	{
 		PROVIDES_TYPE_NAME(JointNode)
@@ -36,20 +36,20 @@ namespace MinSG {
 
 	public:
 		JointNode() : AbstractJoint() { }
-		JointNode(uint32_t _id, std::string _name);
-        
+		MINSGAPI JointNode(uint32_t _id, std::string _name);
+				
 
 		void generateJointNodeMap(std::unordered_map<std::string, AbstractJoint *> &jMap) override;
-        
-        void catchJointNodes(std::deque<JointNode *> *nodes);
-        
+				
+		MINSGAPI void catchJointNodes(std::deque<JointNode *> *nodes);
+				
 //        /****************************************************************
 //         *                  ---|> Node
 //         ****************************************************************/
 //		JointNode * clone()const;
 //		JointNode * clone(std::unordered_map<std::string, AbstractJoint *> &jMap);
-        
-        // bounding box
+				
+				// bounding box
 	protected:
 		JointNode(const JointNode &source);
 	private:
