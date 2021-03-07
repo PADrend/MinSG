@@ -59,10 +59,10 @@ void TransparencyRenderer::doDisableState(FrameContext & context, Node * node, c
 	childParams.setFlag(USE_WORLD_MATRIX);
 	childParams.setChannel(FrameContext::TRANSPARENCY_CHANNEL);
 
-	const DistanceSetB2F<Node> tempNodes = std::move(*nodes);
-	nodes.reset();
+	std::unique_ptr<DistanceSetB2F<Node>> tempNodes;
+	tempNodes.swap(nodes);
 
-	for (auto & elem : tempNodes) {
+	for (auto & elem : *tempNodes) {
 		if(elem == node) {
 			WARN("TransparencyRenderer is attached to a node that it shall display.\n" \
 			     "         This may be caused by a BlendingState attached to the same node.\n" \
