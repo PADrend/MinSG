@@ -289,8 +289,14 @@ static bool importTextureState(ImportContext & ctxt, const std::string & stateTy
 			texture = Rendering::Serialization::loadTexture(
 											dataDesc->getString(Consts::ATTR_DATA_FORMAT,"png"), std::string(rawData.begin(), rawData.end()),
 											textureType, numLayers);
-		}else{
-			WARN("importTextureState: Invalid or no Texture data.");
+		} else {
+			auto* textureWrapper = dynamic_cast<Util::ReferenceAttribute<Rendering::Texture>*>(dataDesc->getValue(Consts::ATTR_TEXTURE_DATA));
+			if(!textureWrapper) {
+				WARN("importTextureState: Invalid or no Texture data.");
+			} else {
+				// A Texture-Object is already contained in the description.
+				texture = textureWrapper->get();
+			}
 		}
 		if(!texture)
 			texture = createFallbackTexture(textureType, numLayers);
