@@ -23,7 +23,7 @@ namespace TriangleTrees {
 
 TriangleAccessor::TriangleAccessor(const Rendering::Mesh * _mesh, uint32_t _triangleIndex) : mesh(_mesh), triangleIndex(_triangleIndex) {
 	const Rendering::VertexAttribute & posAttr = mesh->getVertexDescription().getAttribute(Rendering::VertexAttributeIds::POSITION);
-	const uint16_t offset = posAttr.getOffset();
+	const auto offset = posAttr.getOffset();
 	vertexPositions[0] = reinterpret_cast<const float *>(getVertexData(0) + offset);
 	vertexPositions[1] = reinterpret_cast<const float *>(getVertexData(1) + offset);
 	vertexPositions[2] = reinterpret_cast<const float *>(getVertexData(2) + offset);

@@ -43,7 +43,7 @@ uint32_t TriangleTree::countTriangles() const {
 	uint32_t sum = getTriangleCount();
 	if (!isLeaf()) {
 		const auto children = getChildren();
-		const uint32_t childCount = children.size();
+		const int32_t childCount = static_cast<int32_t>(children.size());
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 #pragma omp parallel for reduction(+:sum)
@@ -61,7 +61,7 @@ uint32_t TriangleTree::countInnerTriangles() const {
 	}
 	uint32_t sum = getTriangleCount();
 	const auto children = getChildren();
-	const uint32_t childCount = children.size();
+	const int32_t childCount = static_cast<int32_t>(children.size());
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 #pragma omp parallel for reduction(+:sum)
@@ -76,7 +76,7 @@ uint32_t TriangleTree::countTrianglesOutside() const {
 	uint32_t sum = 0;
 	if (!isLeaf()) {
 		const auto children = getChildren();
-		const uint32_t childCount = children.size();
+		const int32_t childCount = static_cast<int32_t>(children.size());
 COMPILER_WARN_PUSH
 COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 #pragma omp parallel for reduction(+:sum)

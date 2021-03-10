@@ -129,8 +129,8 @@ Rendering::Mesh * ColorCubeRenderer::getColorCubesMesh(FrameContext& context, st
 	const VertexDescription & desc = vd.getVertexDescription();
 
 	uint8_t * dataCursor = vd.data();
-	const uint8_t vertexOffset = desc.getAttribute(VertexAttributeIds::POSITION).getOffset();
-	const uint8_t colorOffset  = desc.getAttribute(VertexAttributeIds::COLOR).getOffset();
+	const uint64_t vertexOffset = desc.getAttribute(VertexAttributeIds::POSITION).getOffset();
+	const uint64_t colorOffset  = desc.getAttribute(VertexAttributeIds::COLOR).getOffset();
 
 	for (uint32_t index=0; index<meshsize; ++index) {
 

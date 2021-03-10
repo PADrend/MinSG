@@ -133,7 +133,7 @@ bool KeyFrameAnimationNode::updateMesh(float timeStampSec){
 			lastTimeStamp = timeStampSec;
 		}
 
-		float numFrames = activeAnimation.second[1] - activeAnimation.second[0] + 1;
+		int numFrames = activeAnimation.second[1] - activeAnimation.second[0] + 1;
 		float animationTime = numFrames / static_cast<float>(activeAnimation.second[2] * speedFactor);
 
 		curTime += timeStampSec-lastTimeStamp;
@@ -199,7 +199,7 @@ bool KeyFrameAnimationNode::setAnimationPosition(const float & value){
 
 	curAnimationPosition = value - static_cast<int>(value);
 
-	float numFrames = activeAnimation.second[1] - activeAnimation.second[0] + 1;
+	int numFrames = activeAnimation.second[1] - activeAnimation.second[0] + 1;
 
 	short startFrame = static_cast<short>(curAnimationPosition * numFrames);
 	short endFrame = (startFrame + 1) % static_cast<short>(numFrames);

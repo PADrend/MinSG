@@ -76,7 +76,7 @@ void * CacheLevelFiles::threadRun(void * data) {
 			if (!Rendering::Serialization::saveMesh(mesh, path)) {
 				throw std::logic_error("Unable to store the cache object.");
 			}
-			const uint32_t fileSize = Util::FileUtils::fileSize(path);
+			const uint64_t fileSize = Util::FileUtils::fileSize(path);
 			level->locations.insert(std::make_pair(objectToSave, std::make_pair(path, fileSize)));
 			level->cacheObjectsToSave.erase(level->cacheObjectsToSave.begin());
 		}
@@ -141,7 +141,7 @@ bool CacheLevelFiles::doLoadCacheObject(CacheObject * object) {
 		return false;
 	}
 
-	const auto maxMemory = 0.95 * getOverallMemory();
+	const uint64_t maxMemory = static_cast<uint64_t>(0.95 * getOverallMemory());
 	removeUnimportantCacheObjects(maxMemory);
 	addCacheObject(object);
 	return true;

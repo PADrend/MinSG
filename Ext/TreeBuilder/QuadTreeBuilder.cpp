@@ -38,7 +38,7 @@ AbstractTreeBuilder::list_t QuadTreeBuilder::split(NodeWrapper & source) {
 		source.looseBox.resizeRel(looseFactor);
 	}
 
-	static float sq2 = sqrt(2);
+	static float sq2 = static_cast<float>(std::sqrt(2));
 	uint32_t x = 2, y = 1, z = 2;
 	Geometry::Box toSplit;
 

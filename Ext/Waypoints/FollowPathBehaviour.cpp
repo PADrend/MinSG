@@ -42,7 +42,7 @@ AbstractBehaviour::behaviourResult_t FollowPathBehaviour::doExecute() {
 	if (getNode()==nullptr || path.isNull()) {
 		return CONTINUE;
 	}
-	position = position + getTimeDelta() * speed;
+	position += static_cast<float>(getTimeDelta() * speed);
 
 	// don't update the position while we're not moving
 	if(speed == 0.0f) {

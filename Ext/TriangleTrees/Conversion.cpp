@@ -29,7 +29,7 @@ SolidTree_3f convertTree(const TriangleTree * treeNode) {
 	SolidTree_3f::triangles_t triangles;
 	const auto triangleCount = treeNode->getTriangleCount();
 	triangles.reserve(triangleCount);
-	for(std::size_t t = 0; t < triangleCount; ++t) {
+	for(uint32_t t = 0; t < triangleCount; ++t) {
 		const auto & triangleAccessor = treeNode->getTriangle(t);
 		triangles.emplace_back(triangleAccessor.getTriangle());
 	}
@@ -57,7 +57,7 @@ SolidTree_3f_GeometryNode convertTree(const TriangleTree * treeNode,
 	SolidTree_3f_GeometryNode::triangles_t triangles;
 	const auto triangleCount = treeNode->getTriangleCount();
 	triangles.reserve(triangleCount);
-	for(std::size_t t = 0; t < triangleCount; ++t) {
+	for(uint32_t t = 0; t < triangleCount; ++t) {
 		const auto & triangleAccessor = treeNode->getTriangle(t);
 		const auto idA = *reinterpret_cast<const uint32_t *>(triangleAccessor.getVertexData(0) + idAttr.getOffset());
 		const auto idB = *reinterpret_cast<const uint32_t *>(triangleAccessor.getVertexData(1) + idAttr.getOffset());

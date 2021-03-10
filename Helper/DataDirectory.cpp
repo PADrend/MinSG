@@ -6,6 +6,11 @@
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
+
+#if defined(_WIN32) || defined(_WIN64)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include "DataDirectory.h"
 #include <Util/IO/FileName.h>
 #include <Util/IO/FileUtils.h>

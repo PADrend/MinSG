@@ -92,7 +92,7 @@ namespace MinSG {
 		
 		virtual AbstractPose* split(uint32_t start, uint32_t end) = 0;
 		
-		uint32_t getSize() { return timeline.size(); }
+		uint32_t getSize() { return static_cast<uint32_t>(timeline.size()); }
 		
 		std::deque<double> &getTimeline() { return timeline; }
 		MINSGAPI bool setTimeline(std::deque<double> _timeline, bool relative=true);

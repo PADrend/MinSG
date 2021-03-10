@@ -168,7 +168,7 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 	bool matrixMustBePopped=false;
 
 	// - apply transformations
-	if( (rp.getFlag(USE_WORLD_MATRIX))>0 && getWorldTransformationMatrixPtr() ){
+	if( rp.getFlag(USE_WORLD_MATRIX) && getWorldTransformationMatrixPtr() ){
 		matrixMustBePopped = true;
 		context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
 		context.getRenderingContext().multMatrix_modelToCamera(*getWorldTransformationMatrixPtr());

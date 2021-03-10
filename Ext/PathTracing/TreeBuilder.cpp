@@ -71,7 +71,7 @@ SolidTree_ExtTriangle buildSolidExtTree(GroupNode * scene, std::vector<std::uniq
 			}
 			const Rendering::VertexDescription & vertexDesc = inputMesh->getVertexDescription();
 			const Rendering::VertexAttribute & posAttr = vertexDesc.getAttribute(Rendering::VertexAttributeIds::POSITION);
-			if(posAttr.getNumValues() != 3) {
+			if(posAttr.getComponentCount() != 3) {
 				throw std::invalid_argument("Cannot handle vertices where the number of coordinates is not three.");
 			}
 
@@ -149,7 +149,7 @@ SolidTree_ExtTriangle convertTree(const TriangleTree * treeNode,
 	SolidTree_ExtTriangle::triangles_t triangles;
 	const auto triangleCount = treeNode->getTriangleCount();
 	triangles.reserve(triangleCount);
-	for(std::size_t t = 0; t < triangleCount; ++t) {
+	for(uint32_t t = 0; t < triangleCount; ++t) {
 		const auto & triangleAccessor = treeNode->getTriangle(t);
 		
 		uint32_t idxA, idxB, idxC;

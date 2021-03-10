@@ -103,20 +103,20 @@ std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& 
 	Util::Reference<Rendering::PositionAttributeAccessor> positionAccessor(Rendering::PositionAttributeAccessor::create(mesh.openVertexData(), Rendering::VertexAttributeIds::POSITION));
 	
 	Geometry::Box bb = mesh.getBoundingBox();
-	bb.resizeRel( 1.01 );
+	bb.resizeRel( 1.01f );
 	
 	typedef Geometry::Point<Geometry::Vec3> P;
-	Geometry::PointOctree<P> octree(bb,bb.getExtentMax()*0.01,8);
+	Geometry::PointOctree<P> octree(bb,bb.getExtentMax()*0.01f,8);
 	
 	float currentClosestDistance = bb.getDiameter();
 	
-	const size_t endIndex = mesh.getVertexCount();
+	const uint32_t endIndex = mesh.getVertexCount();
 
 	std::vector<float> progressiveClosestDistances;
 	progressiveClosestDistances.reserve(endIndex-1);
 	
 	std::deque<P> closestNeighbors;
-	for(size_t vIndex = 0 ; vIndex<endIndex; ++vIndex){
+	for(uint32_t vIndex = 0 ; vIndex<endIndex; ++vIndex){
 		const auto pos = positionAccessor->getPosition(vIndex);
 	
 		closestNeighbors.clear();
@@ -135,7 +135,7 @@ std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& 
 	return progressiveClosestDistances;
 }
 
-std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength, bool geodesic/*=false*/){
+std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,uint32_t prefixLength, bool geodesic/*=false*/){
 
 	Util::Reference<Rendering::PositionAttributeAccessor> pAcc(Rendering::PositionAttributeAccessor::create(mesh.openVertexData(), Rendering::VertexAttributeIds::POSITION));
 	
@@ -156,9 +156,9 @@ std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefix
 	// collect samples and create octree
 	std::deque<Sample> samples;
 	Geometry::Box bb = mesh.getBoundingBox();
-	bb.resizeRel( 1.01 );	
-	Geometry::PointOctree<Sample> octree(bb,bb.getExtentMax()*0.01,8);
-	prefixLength = prefixLength > 0 ? std::min<size_t>(prefixLength, mesh.getVertexCount()) : mesh.getVertexCount();
+	bb.resizeRel( 1.01f );	
+	Geometry::PointOctree<Sample> octree(bb,bb.getExtentMax()*0.01f,8);
+	prefixLength = prefixLength > 0 ? std::min<uint32_t>(prefixLength, mesh.getVertexCount()) : mesh.getVertexCount();
 	for(uint32_t i=0; i<prefixLength; ++i) {
 		auto p = pAcc->getPosition(i);
 		if(geodesic) {
@@ -200,30 +200,30 @@ std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefix
 	return closestDistances;
 }
 
-float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour){
+float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, uint32_t prefixLength, uint32_t nThNeighbour){
 	if(mesh.getVertexCount()<=nThNeighbour)
 		return 0;
 	
 	auto positionAccessor = Rendering::PositionAttributeAccessor::create(mesh.openVertexData(), Rendering::VertexAttributeIds::POSITION);
-	const size_t endIndex = std::min(static_cast<size_t>(mesh.getVertexCount()),prefixLength);
+	const uint32_t endIndex = std::min(static_cast<uint32_t>(mesh.getVertexCount()),prefixLength);
 	
 	
 	struct OctreeEntry : public Geometry::Point<Geometry::Vec3f> {
-		size_t surfelId;
-		OctreeEntry(size_t i,const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), surfelId(i) {}
+		uint32_t surfelId;
+		OctreeEntry(uint32_t i,const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), surfelId(i) {}
 	};
 
 	const auto bb = mesh.getBoundingBox();
-	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01,8);
+	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01f,8);
 	
 	std::deque<OctreeEntry> closestNeighbours;
-	for(size_t vIndex = 0; vIndex<endIndex; ++vIndex)
+	for(uint32_t vIndex = 0; vIndex<endIndex; ++vIndex)
 		octree.insert( OctreeEntry(vIndex, positionAccessor->getPosition(vIndex)) );
 
 	std::vector<float> nThClosestDistances;
 
 	std::vector<float> distances;
-	for(size_t vIndex = 0; vIndex<endIndex; ++vIndex){
+	for(uint32_t vIndex = 0; vIndex<endIndex; ++vIndex){
 		distances.clear();
 		
 		const auto pos = positionAccessor->getPosition(vIndex);
@@ -239,7 +239,7 @@ float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength
 	}
 
 	std::sort(nThClosestDistances.begin(), nThClosestDistances.end());
-	return nThClosestDistances[ nThClosestDistances.size()*0.5 ];
+	return nThClosestDistances[ nThClosestDistances.size()>>1 ];
 }
 
 float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node * node, ReferencePoint ref) {
@@ -309,7 +309,7 @@ float computeSurfelPacking(Rendering::Mesh* mesh) {
 	//float r = getMedianOfNthClosestNeighbours(*mesh, count, 1);
 	auto dist = getMinimalVertexDistances(*mesh, count);
 	//float r = *std::min_element(dist.begin(), dist.end());
-	float r = std::accumulate(dist.begin(), dist.end(), 0.0)/count;
+	float r = static_cast<float>(std::accumulate(dist.begin(), dist.end(), 0.0)/count);
 	return r * r * static_cast<float>(count);
 }
 
@@ -354,7 +354,7 @@ Rendering::Mesh* getSurfels(MinSG::Node * node) {
 
 // -------------------
 
-Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution, uint32_t count, bool geodetic, bool adaptive) {
+Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, uint32_t resolution, uint32_t count, bool geodetic, bool adaptive) {
 	
 	// mesh
 	count = count > 0 ? std::min(count, mesh->getVertexCount()) : mesh->getVertexCount();
@@ -385,7 +385,7 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 	
 	// parameter
 	//Sphere_f sphere({0.0,0.0,0.0}, diff_max);
-	Box queryBox({0,0,0}, diff_max*2*std::sqrt(2));
+	Box queryBox({0,0,0}, static_cast<float>(diff_max*2*std::sqrt(2)));
 	const float cell_size = 2*diff_max/resolution;
 	const int kernel_size = 4; // size of the gaussian convolution kernel
 	const Vec2i imgCenter(resolution>>1,resolution>>1);
@@ -395,8 +395,8 @@ Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, 
 	// collect samples and create octree
 	std::deque<Sample> neighbors;
 	std::deque<Sample> samples;
-	bb.resizeRel( 1.01 );
-	Geometry::PointOctree<Sample> octree(bb,bb.getExtentMax()*0.01,8);
+	bb.resizeRel( 1.01f );
+	Geometry::PointOctree<Sample> octree(bb,bb.getExtentMax()*0.01f,8);
 	for(uint32_t i=0; i<count; ++i) {
 		auto p = pAcc->getPosition(i);
 		if(geodetic) {
@@ -492,8 +492,8 @@ std::vector<Radial> getRadialMeanVariance(const Util::Reference<Util::Bitmap>& s
 	
 	for(uint32_t x=0; x<spectrum->getWidth(); ++x) {
 		for(uint32_t y=0; y<spectrum->getHeight(); ++y) {
-			Geometry::Vec2 v(x-spectrum->getWidth()/2.0, y-spectrum->getHeight()/2.0);
-			uint32_t entry = v.length();
+			Geometry::Vec2 v(x-spectrum->getWidth()/2.0f, y-spectrum->getHeight()/2.0f);
+			uint32_t entry = static_cast<uint32_t>(v.length());
 			if(entry < result.size()) {
 				float value = acc->readSingleValueFloat(x, y);
 				result[entry].mean += value;
@@ -507,8 +507,8 @@ std::vector<Radial> getRadialMeanVariance(const Util::Reference<Util::Bitmap>& s
 		
 	for(uint32_t x=0; x<spectrum->getWidth(); ++x) {
 		for(uint32_t y=0; y<spectrum->getHeight(); ++y) {
-			Geometry::Vec2 v(x-spectrum->getWidth()/2.0, y-spectrum->getHeight()/2.0);
-			uint32_t entry = v.length();
+			Geometry::Vec2 v(x-spectrum->getWidth()/2.0f, y-spectrum->getHeight()/2.0f);
+			uint32_t entry = static_cast<uint32_t>(v.length());
 			if(entry < result.size()) {
 				float var = acc->readSingleValueFloat(x, y) - result[entry].mean;
 				result[entry].variance += var*var;

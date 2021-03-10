@@ -62,7 +62,7 @@ AbstractBehaviour::behaviourResult_t ParticleGravityAffector::doExecute() {
 	// start affecting!
 	ParticleSystemNode* psn = dynamic_cast<ParticleSystemNode*>(this->getNode());
 
-	Geometry::Vec3f scaledGravity(gravity*getTimeDelta());
+	Geometry::Vec3f scaledGravity(gravity*static_cast<float>(getTimeDelta()));
 
 	std::vector<Particle> & particles = psn->getParticles();
 	for(auto & particle : particles) {
@@ -88,7 +88,7 @@ AbstractBehaviour::behaviourResult_t ParticleReflectionAffector::doExecute() {
 			
 			if( plane.getNormal().dot( particle.direction ) < 0.0f ){
 				const Geometry::Vec3 dir = particle.direction.reflect( plane.getNormal() ) * reflectiveness;
-				particle.direction = dir * (1.0-adherence) + (plane.getProjection(dir+particle.position)-particle.position) * adherence;
+				particle.direction = dir * (1.0f-adherence) + (plane.getProjection(dir+particle.position)-particle.position) * adherence;
 			}
 		}
 	}
@@ -115,7 +115,7 @@ AbstractBehaviour::behaviourResult_t ParticleFadeOutAffector::doExecute() {
 	std::vector<Particle> & particles = psn->getParticles();
 	for(auto & particle : particles) {
 		// be careful: Particle::color is a Color4ub!
-		particle.color.setA(std::round(static_cast<double>(particle.color.getA()) * (1.0 - (getTimeDelta() / static_cast<double>(particle.timeLeft)))));
+		particle.color.setA(static_cast<uint8_t>(std::round(static_cast<double>(particle.color.getA()) * (1.0 - (getTimeDelta() / static_cast<double>(particle.timeLeft))))));
 	}
 
 	return AbstractBehaviour::CONTINUE;

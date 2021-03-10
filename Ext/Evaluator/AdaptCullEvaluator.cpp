@@ -63,7 +63,7 @@ void AdaptCullEvaluator::measure(FrameContext & context,Node & node,const Geomet
 	node.display(context,USE_WORLD_MATRIX|FRUSTUM_CULLING);
 
 	if (getMaxValue()->toInt() == 0.0) {
-		setMaxValue_i(collectNodes<GeometryNode>(&node).size());
+		setMaxValue_i(static_cast<uint32_t>(collectNodes<GeometryNode>(&node).size()));
 	}
 
 	if (mode==SINGLE_VALUE) {
@@ -76,7 +76,7 @@ void AdaptCullEvaluator::measure(FrameContext & context,Node & node,const Geomet
 
 
 		// setup occlusion queries
-		int numQueries=objectsInVFList.size();
+		size_t numQueries=objectsInVFList.size();
 		if (numQueries==0) return;
 
 		auto queries = new Rendering::OcclusionQuery[numQueries];
@@ -135,14 +135,14 @@ void AdaptCullEvaluator::measure(FrameContext & context,Node & node,const Geomet
 
 	} else {//mode == DIRECTION_VALUES
 		const auto nodes = collectVisibleNodes(&node, context);
-		values->push_back(new Util::_NumberAttribute<float>(nodes.size()));
+		values->push_back(new Util::_NumberAttribute<float>(static_cast<float>(nodes.size())));
 	}
 }
 
 //! ---|> Evaluator
 void AdaptCullEvaluator::endMeasure(FrameContext & ) {
 	if (mode==SINGLE_VALUE) {
-		values->push_back(new Util::_NumberAttribute<float>(visibleObjects.size()));
+		values->push_back(new Util::_NumberAttribute<float>(static_cast<float>(visibleObjects.size())));
 	}
 }
 

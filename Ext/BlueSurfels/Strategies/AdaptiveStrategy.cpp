@@ -42,7 +42,7 @@ bool AdaptiveStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, S
 
 void AdaptiveStrategy::afterRendering(MinSG::FrameContext& context) {
 	context.getRenderingContext().finish();
-	float factor = timer.getMilliseconds() / getTargetTime();
+	float factor = static_cast<float>(timer.getMilliseconds() / getTargetTime());
 	if(factor > 1.1f || factor < 0.9f) {
 		size = std::min(std::max((3.0f*size + size*factor)/4.0f, 1.0f), getMaxSize());
 	}

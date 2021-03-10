@@ -8,6 +8,11 @@
 	You should have received a copy of the MPL along with this library; see the 
 	file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 */
+
+#if defined(_WIN32) || defined(_WIN64)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include "WriterDAE.h"
 #include "../SceneDescription.h"
 #include "../../Core/Nodes/AbstractCameraNode.h"
@@ -566,17 +571,17 @@ bool WriterDAE::saveFile(const FileName & fileName, Node * scene) {
 				out << "\t\t\t\t\t<input offset=\"0\" "
 					<< "semantic=\"VERTEX\" source=\"#"
 					<< it->second << "-Vertex\" />\n";
-				if (!desc.getAttribute(VertexAttributeIds::NORMAL).empty()) {
+				if (desc.getAttribute(VertexAttributeIds::NORMAL).isValid()) {
 					out << "\t\t\t\t\t<input offset=\"0\" "
 						<< "semantic=\"NORMAL\" source=\"#"
 						<< it->second << "-Normal\" />\n";
 				}
-				if (!desc.getAttribute(VertexAttributeIds::TEXCOORD0).empty()) {
+				if (desc.getAttribute(VertexAttributeIds::TEXCOORD0).isValid()) {
 					out << "\t\t\t\t\t<input offset=\"0\" "
 						<< "semantic=\"TEXCOORD\" source=\"#"
 						<< it->second << "-Texcoord\" />\n";
 				}
-				if (!desc.getAttribute(VertexAttributeIds::COLOR).empty()) {
+				if (desc.getAttribute(VertexAttributeIds::COLOR).isValid()) {
 					out << "\t\t\t\t\t<input offset=\"0\" "
 						<< "semantic=\"COLOR\" source=\"#"
 						<< it->second << "-Color\" />\n";

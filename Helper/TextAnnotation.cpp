@@ -34,7 +34,7 @@ void displayText(FrameContext & frameContext,
 				 const Util::Color4f & textColor) {
 	Rendering::RenderingContext & renderingContext = frameContext.getRenderingContext();
 	const auto screenPos = frameContext.convertWorldPosToScreenPos(worldPos);
-	const auto pinEnd = Geometry::Vec2i(screenPos.getX(), screenPos.getY()) + pinVector;
+	const auto pinEnd = Geometry::Vec2i(static_cast<int32_t>(screenPos.getX()), static_cast<int32_t>(screenPos.getY())) + pinVector;
 
 	const auto wideText = Util::StringUtils::utf8_to_utf32(text);
 	const auto textRect = textRenderer.getTextSize(wideText);
@@ -42,13 +42,13 @@ void displayText(FrameContext & frameContext,
 	const auto borderWidth = textRenderer.getWidthOfM() / 3.0f;
 	const auto borderHeight = textRenderer.getHeightOfX() / 3.0f;
 
-	const Geometry::Rect bgRect(pinEnd.getX(),
+	const Geometry::Rect bgRect(static_cast<float>(pinEnd.getX()),
 								pinEnd.getY() - (textRect.getHeight() / 2.0f) - borderHeight,
 								textRect.getWidth() + 2.0f * borderWidth,
 								textRect.getHeight() + 2.0f * borderHeight);
 
-	const Geometry::Vec2i textPos(bgRect.getX() - textRect.getX() + borderWidth,
-								  bgRect.getY() - textRect.getY() + borderHeight);
+	const Geometry::Vec2i textPos(static_cast<int32_t>(bgRect.getX() - textRect.getX() + borderWidth),
+								  static_cast<int32_t>(bgRect.getY() - textRect.getY() + borderHeight));
 
 	if(frameContext.hasCamera())
 		Rendering::enable2DMode(renderingContext,frameContext.getCamera()->getViewport());
@@ -61,7 +61,7 @@ void displayText(FrameContext & frameContext,
 	renderingContext.applyChanges(true);
 
 	Rendering::drawRect(renderingContext, bgRect, backgroundColor);
-	Rendering::drawVector(renderingContext, screenPos, Geometry::Vec3f(pinEnd.getX(), pinEnd.getY(), 0.0f), backgroundColor);
+	Rendering::drawVector(renderingContext, screenPos, Geometry::Vec3f(static_cast<float>(pinEnd.getX()), static_cast<float>(pinEnd.getY()), 0.0f), backgroundColor);
 
 	renderingContext.popLine();
 	renderingContext.popLighting();

@@ -110,7 +110,7 @@ VisibilityVector::benefits_t VisibilityVector::increaseBenefits(node_ptr node,
 }
 
 uint32_t VisibilityVector::getIndexCount() const {
-	return visibility.size();
+	return static_cast<uint32_t>(visibility.size());
 }
 
 VisibilityVector::node_ptr VisibilityVector::getNode(uint32_t index) const {
@@ -212,7 +212,7 @@ static void makeWeightedOne(float wA,
 							container_t & result) {
 	// Add the elements of the single map.
 	while(a != aEnd) {
-		const VisibilityVector::benefits_t weightedBenefits = (wA * a->second);
+		const VisibilityVector::benefits_t weightedBenefits = static_cast<VisibilityVector::benefits_t>(wA * a->second);
 		if(weightedBenefits > 0) {
 			result.emplace_back(a->first, weightedBenefits);
 		}
@@ -231,19 +231,19 @@ static void makeWeightedTwo(float wA,
 	// Compare elements of the two maps.
 	while(a != aEnd && b != bEnd) {
 		if(a->first < b->first) {           // Object is only in map of vvA.
-			const VisibilityVector::benefits_t weightedBenefits = (wA * a->second);
+			const VisibilityVector::benefits_t weightedBenefits = static_cast<VisibilityVector::benefits_t>(wA * a->second);
 			if(weightedBenefits > 0) {
 				result.emplace_back(a->first, weightedBenefits);
 			}
 			++a;
 		} else if(b->first < a->first) {    // Object is only in map of vvB.
-			const VisibilityVector::benefits_t weightedBenefits = (wB * b->second);
+			const VisibilityVector::benefits_t weightedBenefits = static_cast<VisibilityVector::benefits_t>(wB * b->second);
 			if(weightedBenefits > 0) {
 				result.emplace_back(b->first, weightedBenefits);
 			}
 			++b;
 		} else {                            // Object is in both maps.
-			const VisibilityVector::benefits_t weightedBenefits = (wA * a->second + wB * b->second);
+			const VisibilityVector::benefits_t weightedBenefits = static_cast<VisibilityVector::benefits_t>(wA * a->second + wB * b->second);
 			if(weightedBenefits > 0) {
 				result.emplace_back(a->first, weightedBenefits);
 			}
@@ -279,46 +279,46 @@ VisibilityVector VisibilityVector::makeWeightedThree(float w1, const VisibilityV
 		const auto & b = it2->first;
 		const auto & c = it3->first;
 		if(a < b && a < c) {            // a is only in vv1.
-			const benefits_t weightedBenefits = (w1 * it1->second);
+			const benefits_t weightedBenefits = static_cast<benefits_t>(w1 * it1->second);
 			if(weightedBenefits > 0) {
 				result.visibility.emplace_back(it1->first, weightedBenefits);
 			}
 			++it1;
 		} else if(b < a && b < c) {     // b is only in vv2.
-			const benefits_t weightedBenefits = (w2 * it2->second);
+			const benefits_t weightedBenefits = static_cast<benefits_t>(w2 * it2->second);
 			if(weightedBenefits > 0) {
 				result.visibility.emplace_back(it2->first, weightedBenefits);
 			}
 			++it2;
 		} else if(c < a && c < b) {     // c is only in vv3.
-			const benefits_t weightedBenefits = (w3 * it3->second);
+			const benefits_t weightedBenefits = static_cast<benefits_t>(w3 * it3->second);
 			if(weightedBenefits > 0) {
 				result.visibility.emplace_back(it3->first, weightedBenefits);
 			}
 			++it3;
 		} else if(a == b && a < c) {    // a is in vv1 and vv2.
-			const benefits_t weightedBenefits = (w1 * it1->second + w2 * it2->second);
+			const benefits_t weightedBenefits = static_cast<benefits_t>(w1 * it1->second + w2 * it2->second);
 			if(weightedBenefits > 0) {
 				result.visibility.emplace_back(it1->first, weightedBenefits);
 			}
 			++it1;
 			++it2;
 		} else if(a == c && a < b) {    // a is in vv1 and vv3.
-			const benefits_t weightedBenefits = (w1 * it1->second + w3 * it3->second);
+			const benefits_t weightedBenefits = static_cast<benefits_t>(w1 * it1->second + w3 * it3->second);
 			if(weightedBenefits > 0) {
 				result.visibility.emplace_back(it1->first, weightedBenefits);
 			}
 			++it1;
 			++it3;
 		} else if(b == c && b < a) {    // b is in vv2 and vv3.
-			const benefits_t weightedBenefits = (w2 * it2->second + w3 * it3->second);
+			const benefits_t weightedBenefits = static_cast<benefits_t>(w2 * it2->second + w3 * it3->second);
 			if(weightedBenefits > 0) {
 				result.visibility.emplace_back(it2->first, weightedBenefits);
 			}
 			++it2;
 			++it3;
 		} else {                        // a is in vv1, vv2, and vv3.
-			const benefits_t weightedBenefits = (w1 * it1->second + w2 * it2->second + w3 * it3->second);
+			const benefits_t weightedBenefits = static_cast<benefits_t>(w1 * it1->second + w2 * it2->second + w3 * it3->second);
 			if(weightedBenefits > 0) {
 				result.visibility.emplace_back(it1->first, weightedBenefits);
 			}

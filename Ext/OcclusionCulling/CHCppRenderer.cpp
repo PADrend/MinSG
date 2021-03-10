@@ -312,7 +312,7 @@ void CHCppRenderer::queryPreviouslyInvisibleNode(FrameContext & frameContext, No
 {
 	// calculate pKeep for node
 	NodeInfo * nodeInfo = getNodeInfo(node, chcppContext);
-	nodeInfo->pKeep = 0.99 - 0.7 * exp(-static_cast<int>(chcppContext.frameNumber - nodeInfo->lastVisible));
+	nodeInfo->pKeep = static_cast<float>(0.99 - 0.7 * exp(-static_cast<int>(chcppContext.frameNumber - nodeInfo->lastVisible)));
 
 	chcppContext.invisibleQueue.push_back(node);
 	if(chcppContext.invisibleQueue.size() >= maxPrevInvisNodesBatchSize)

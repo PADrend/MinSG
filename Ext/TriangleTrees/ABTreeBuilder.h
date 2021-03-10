@@ -31,7 +31,7 @@ class TriangleTree;
  */
 class ABTreeBuilder : public Builder {
 	public:
-		explicit ABTreeBuilder(std::size_t _trianglesPerNode, float _allowedBBEnlargement) :
+		explicit ABTreeBuilder(uint32_t _trianglesPerNode, float _allowedBBEnlargement) :
 				Builder(), trianglesPerNode(_trianglesPerNode), allowedBBEnlargement(_allowedBBEnlargement) {
 		}
 
@@ -46,7 +46,7 @@ class ABTreeBuilder : public Builder {
 
 	private:
 		//! Maximum number of triangles in a node. If this number is exceeded, the node will be split.
-		std::size_t trianglesPerNode;
+		uint32_t trianglesPerNode;
 
 		//! Share of extent that the bounding box might be enlarged to pick up triangles, which cut the splitting plane.
 		float allowedBBEnlargement;

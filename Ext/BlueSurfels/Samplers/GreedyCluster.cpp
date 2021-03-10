@@ -75,7 +75,7 @@ Rendering::Mesh* GreedyCluster::sampleSurfels(Rendering::Mesh* sourceMesh) {
 		OctreeEntry(uint32_t s, uint32_t i, const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), surfelIndex(s), index(i) {}
 	};
 	auto bb = sourceMesh->getBoundingBox();  
-	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01,16);
+	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01f,16);
 	auto acc = Rendering::PositionAttributeAccessor::create(sourceMesh->openVertexData(), Rendering::VertexAttributeIds::POSITION);
 	
 	uint32_t sampleCount = sourceMesh->getVertexCount();
@@ -114,7 +114,7 @@ Rendering::Mesh* GreedyCluster::sampleSurfels(Rendering::Mesh* sourceMesh) {
 	}
 	
 	if(getStatisticsEnabled()) {
-		statistics["t_init"] = t.getSeconds();
+		statistics["t_init"] = static_cast<float>(t.getSeconds());
 		t.reset();
 		sampleTimes.clear();
 	}
@@ -133,7 +133,7 @@ Rendering::Mesh* GreedyCluster::sampleSurfels(Rendering::Mesh* sourceMesh) {
 		
 		float radius = std::sqrt(q->data.distance);
 		uint32_t index = q->data.index;
-		uint32_t surfelIndex = result.size();
+		uint32_t surfelIndex = static_cast<uint32_t>(result.size());
 		auto pos = q->data.pos;
 		
 		if(radius < minRadius)
@@ -181,17 +181,17 @@ Rendering::Mesh* GreedyCluster::sampleSurfels(Rendering::Mesh* sourceMesh) {
 		--remainingSamples;
 		
 		if(getStatisticsEnabled() && result.size() % ipow(10, static_cast<uint32_t>(std::log10(result.size()))) == 0) {
-			sampleTimes.emplace(result.size(), t.getMilliseconds());
+			sampleTimes.emplace(static_cast<uint32_t>(result.size()), static_cast<float>(t.getMilliseconds()));
 		}
 	}
 	
 	if(getStatisticsEnabled()) {
-		statistics["t_heap"] = heapTime;
-		statistics["t_octree"] = octreeTime;
-		statistics["t_partition"] = updateTime;
-		statistics["t_sample"] = t.getSeconds();
-		statistics["num_samples"] = sampleCount;
-		statistics["num_surfels"] = result.size();
+		statistics["t_heap"] = static_cast<float>(heapTime);
+		statistics["t_octree"] = static_cast<float>(octreeTime);
+		statistics["t_partition"] = static_cast<float>(updateTime);
+		statistics["t_sample"] = static_cast<float>(t.getSeconds());
+		statistics["num_samples"] = static_cast<float>(sampleCount);
+		statistics["num_surfels"] = static_cast<float>(result.size());
 	}
 	
 	return finalizeMesh(sourceMesh, result);

@@ -119,10 +119,10 @@ Geometry::Vec3 sampleHemisphere(const Geometry::Vec2& sample) {
 			float theta, r;
 			if(std::abs(off.x()) > std::abs(off.y())) {
 				r = off.x();
-				theta = M_PI/4 * (off.y() / off.x());
+				theta = static_cast<float>(M_PI/4 * (off.y() / off.x()));
 			} else {
 				r = off.y();
-				theta = M_PI/2 - M_PI/4 * (off.x() / off.y());
+				theta = static_cast<float>(M_PI/2 - M_PI/4 * (off.x() / off.y()));
 			}
 			u.setValue(r * std::cos(theta), r * std::sin(theta));
 		} 
@@ -135,10 +135,10 @@ BSDFSample SurfacePoint::getBSDF(const Geometry::Vec3& woWorld, const Geometry::
 	// Currently only diffuse lambertian reflection
 	BSDFSample refl;
 	refl.wi = wiWorld;	
-	refl.f = albedo * PI_INV;
+	refl.f = albedo * static_cast<float>(PI_INV);
 	Geometry::Vec3 wo = worldToLocal(woWorld);	
 	Geometry::Vec3 wi = worldToLocal(wiWorld);	
-	refl.pdf = (wo.z()*wi.z()) > 0 ? std::abs(wi.z()) * PI_INV : 0;
+	refl.pdf = (wo.z()*wi.z()) > 0 ? static_cast<float>(std::abs(wi.z()) * PI_INV) : 0.0f;
 	return refl;
 }
 

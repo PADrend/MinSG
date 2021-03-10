@@ -76,11 +76,11 @@ namespace MinSG
 		MINSGAPI bool clearAnimation(std::string _name, BehaviourManager *manager);
 		MINSGAPI void clearAnimations(BehaviourManager *manager);
 
-		uint32_t getAnimationCount() { return animations.size(); }
+		uint32_t getAnimationCount() { return static_cast<uint32_t>(animations.size()); }
 		const std::unordered_map<std::string, AnimationBehaviour *> & getAnimations() { return animations;}
 
 		void setJointMap(std::unordered_map<std::string, AbstractJoint *> map) { jointMap = map; }
-		uint32_t getJointMapSize() { return jointMap.size(); }
+		uint32_t getJointMapSize() { return static_cast<uint32_t>(jointMap.size()); }
 
 		MINSGAPI bool splitAnimation(std::string sourceName, std::string targetName, int index);
 		MINSGAPI bool separateAnimation(std::string source, std::vector<std::string> names, std::vector<uint32_t> indices, BehaviourManager *manager);

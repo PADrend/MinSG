@@ -24,7 +24,7 @@ SimplePhysics::SimplePhysics(Node * node):AbstractNodeBehaviour(node) ,speed(Geo
 	int i = std::uniform_int_distribution<int>(0, 49)(engine);
 	int j = std::uniform_int_distribution<int>(0, 99)(engine);
 	int k = std::uniform_int_distribution<int>(0, 99)(engine);
-	speed=Geometry::Vec3( (j-50)/10.0,i/1.0,(k-50)/10.0);
+	speed=Geometry::Vec3( (j-50)/10.0f,i/1.0f,(k-50)/10.0f);
 	//ctor
 }//! [ctor]
 SimplePhysics::SimplePhysics(Node * node,Geometry::Vec3 v):AbstractNodeBehaviour(node) ,speed(std::move(v)),lastTime(-1){
@@ -45,10 +45,10 @@ Behavior::behaviourResult_t SimplePhysics::doExecute(){
 
 	if(lastTime==-1)
 		lastTime=timeSec;
-	float duration=timeSec-lastTime;
+	float duration=static_cast<float>(timeSec-lastTime);
 	lastTime=timeSec;
 
-	Geometry::Vec3 velocity(0,-9.81*duration,0);
+	Geometry::Vec3 velocity(0,-9.81f*duration,0);
 	speed+=velocity;
 	getNode()->moveRel(speed*duration);
 	float y=getNode()->getWorldOrigin().getY();
@@ -83,7 +83,7 @@ void SimplePhysics2::doBeforeInitialExecute(BehaviorStatus& status){
 
 	// set random initial speed
 	static std::default_random_engine engine;
-	std::normal_distribution<> d(1.0,0.5);
+	std::normal_distribution<float> d(1.0f,0.5f);
 	data.speed = Geometry::Vec3( 	initialDirection.x() * d(engine),
 									initialDirection.y() * d(engine),
 									initialDirection.z() * d(engine) );
@@ -98,9 +98,9 @@ Behavior::behaviourResult_t SimplePhysics2::doExecute2(BehaviorStatus& status){
 	auto data = Util::requireObjectExtension<SimplePhysicsData>(&status);						//! \see SimplePhysicsData
 	auto& speed = data->speed;
 	
-	const auto duration = status.getCurrentTime()-status.getLastTime();
+	const float duration = static_cast<float>(status.getCurrentTime()-status.getLastTime());
 
-	const Geometry::Vec3 velocity(0,-9.81*duration,0);
+	const Geometry::Vec3 velocity(0,-9.81f*duration,0);
 	speed+=velocity;
 	node->moveRel(speed*duration);
 	const float y = node->getWorldOrigin().getY();

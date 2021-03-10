@@ -119,7 +119,7 @@ void Statistics::countNode(const Node * node) {
 }
 
 uint32_t Statistics::addCounter(const std::string & description, const std::string & unit) {
-	const uint32_t newKey = counters.size();
+	const uint32_t newKey = static_cast<uint32_t>(counters.size());
 	counters.emplace_back(description, unit);
 	return newKey;
 }

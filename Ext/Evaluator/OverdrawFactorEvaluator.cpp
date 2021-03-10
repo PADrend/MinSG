@@ -44,7 +44,7 @@ void OverdrawFactorEvaluator::measure(FrameContext & frameContext, Node & node, 
 	// Set up FBO and texture
 	Util::Reference<Rendering::FBO> fbo = new Rendering::FBO;
 	renderingContext.pushAndSetFBO(fbo.get());
-	Util::Reference<Rendering::Texture> depthStencilTexture = Rendering::TextureUtils::createDepthStencilTexture(rect.getWidth(), rect.getHeight());
+	Util::Reference<Rendering::Texture> depthStencilTexture = Rendering::TextureUtils::createDepthStencilTexture(static_cast<uint32_t>(rect.getWidth()), static_cast<uint32_t>(rect.getHeight()));
 	fbo->attachDepthStencilTexture(renderingContext, depthStencilTexture.get());
 
 	// Disable color and depth writes
@@ -78,7 +78,7 @@ void OverdrawFactorEvaluator::measure(FrameContext & frameContext, Node & node, 
 	Util::Reference<Util::PixelAccessor> stencilAccessor = Rendering::TextureUtils::createStencilPixelAccessor(renderingContext, *depthStencilTexture.get());
 
 	std::vector<uint8_t> stencilValues;
-	stencilValues.reserve(rect.getWidth() * rect.getHeight());
+	stencilValues.reserve(static_cast<uint32_t>(rect.getWidth() * rect.getHeight()));
 	for(uint_fast32_t y = 0; y < rect.getHeight(); ++y) {
 		for(uint_fast32_t x = 0; x < rect.getWidth(); ++x) {
 			const uint8_t stencilValue = stencilAccessor->readSingleValueByte(x, y);
@@ -130,7 +130,7 @@ void OverdrawFactorEvaluator::measure(FrameContext & frameContext, Node & node, 
 		} else if(resultQuantile <= 0.0) {
 			result = *std::min_element(stencilValues.cbegin(), stencilValues.cend());
 		} else {
-			const std::size_t quantilePos = resultQuantile * stencilValues.size();
+			const std::size_t quantilePos = static_cast<std::size_t>(resultQuantile * stencilValues.size());
 			std::nth_element(stencilValues.begin(),
 							 std::next(stencilValues.begin(), static_cast<std::ptrdiff_t>(quantilePos)),
 							 stencilValues.end());

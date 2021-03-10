@@ -52,7 +52,7 @@ Rendering::Mesh * Builder::mergeGeometry(const std::vector<GeometryNode *> & geo
 			}
 			const Rendering::VertexDescription & vertexDesc = mesh->getVertexDescription();
 			const Rendering::VertexAttribute & posAttr = vertexDesc.getAttribute(Rendering::VertexAttributeIds::POSITION);
-			if (posAttr.getNumValues() != 3) {
+			if (posAttr.getComponentCount() != 3) {
 				throw std::invalid_argument("Cannot handle vertices where the number of coordinates is not three.");
 			}
 
@@ -132,13 +132,13 @@ Node * Builder::convert(const TriangleTree * treeNode, const Rendering::VertexDe
 		return nullptr;
 	}
 	GeometryNode * geoNode = nullptr;
-	const size_t num = treeNode->getTriangleCount();
+	const uint32_t num = treeNode->getTriangleCount();
 	if (num > 0) {
 		auto mesh = new Rendering::Mesh(vertexDesc, 3 * num, 3 * num);
 		uint8_t * vPos = mesh->openVertexData().data();
 		uint32_t * iPos = mesh->openIndexData().data();
-		const size_t stride = vertexDesc.getVertexSize();
-		for (size_t i = 0; i < num; ++i) {
+		const uint64_t stride = vertexDesc.getVertexSize();
+		for (uint32_t i = 0; i < num; ++i) {
 			const TriangleAccessor & triangle = treeNode->getTriangle(i);
 			for (unsigned char v = 0; v < 3; ++v) {
 				const uint8_t * sourceVertex = triangle.getVertexData(v);
@@ -165,7 +165,7 @@ COMPILER_WARN_OFF_CLANG(-Wunknown-pragmas)
 			treeNode->fetchAttributes(list);
 		}
 		const auto treeChildren = treeNode->getChildren();
-		const uint32_t childCount = treeChildren.size();
+		const int32_t childCount = static_cast<int32_t>(treeChildren.size());
 		std::vector<Node *> children;
 		children.reserve(childCount);
 #pragma omp parallel for

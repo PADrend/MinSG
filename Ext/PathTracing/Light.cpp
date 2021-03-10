@@ -81,7 +81,7 @@ Light::SampleResult DiffuseAreaLight::sampleIncidentRadiance(const SurfacePoint&
   SampleResult result;
   auto mesh = node->getMesh();
   //auto ta = MeshUtils::TriangleAccessor::create(mesh);
-  auto t = tAcc->getTriangle(sample.z() * mesh->getPrimitiveCount());
+  auto t = tAcc->getTriangle(static_cast<uint32_t>(sample.z() * mesh->getPrimitiveCount()));
   //float su0 = std::sqrt(sample.x());
   //Geometry::Vec2 b(1-su0, sample.y() * su0);
   //Geometry::Vec3 p = t.getVertexA() * b.x() + t.getVertexB() * b.y() + t.getVertexC() * (1.0f - b.x() - b.y());

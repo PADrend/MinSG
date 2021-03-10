@@ -113,11 +113,11 @@ PathNode::wayPointMap_t::iterator PathNode::getNextWaypoint(AbstractBehaviour::t
 Geometry::SRT PathNode::getPosition(AbstractBehaviour::timestamp_t time)const {
 	if (countWaypoints()==0)
 		return Geometry::SRT();
-	float maxTime=getMaxTime();
+	float maxTime=static_cast<float>(getMaxTime());
 	if (time>maxTime && looping) {
 		time-=floor(time/maxTime)*maxTime;
 	}
-	float minTime=countWaypoints()==0 ? 0 : waypoints.begin()->second->getTime();
+	float minTime=countWaypoints()==0 ? 0.0f : static_cast<float>(waypoints.begin()->second->getTime());
 	if(time<minTime && looping) {
 		time+=ceil(-time/maxTime)*maxTime;
 	}
@@ -133,7 +133,7 @@ Geometry::SRT PathNode::getPosition(AbstractBehaviour::timestamp_t time)const {
 	--it;
 	Waypoint * w2=it->second.get();
 	// TODO Check if Geometry::Interpolation can be used here
-	float blend=1.0f-((w2->getTime()-time)/(w2->getTime()-w1->getTime()));
+	float blend=static_cast<float>(1.0-((w2->getTime()-time)/(w2->getTime()-w1->getTime())));
 
 	return Geometry::SRT( w1->getRelTransformationSRT(),w2->getRelTransformationSRT(),blend);
 }

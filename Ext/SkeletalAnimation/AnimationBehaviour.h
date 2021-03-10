@@ -97,7 +97,7 @@ namespace MinSG
 		std::vector<AbstractPose *> &getPoses() const { return poses; }
 		MINSGAPI AbstractPose * getPoseWithJointId(const uint32_t jId) const;
 
-		int getPoseCount() const { return poses.size(); }
+		int getPoseCount() const { return static_cast<int>(poses.size()); }
 		
 		MINSGAPI void restartPoses();
 

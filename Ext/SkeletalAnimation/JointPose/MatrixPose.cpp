@@ -87,7 +87,7 @@ void MatrixPose::setValues(std::deque<double> _values, std::deque<double> _timel
     {
         Geometry::Matrix4x4 mat;
         for(uint32_t j=0; j<16; ++j)
-            mat[j] = _values[i*16+j];
+            mat[j] = static_cast<float>(_values[i*16+j]);
         keyframes.push_back(mat);
     }
 
@@ -104,7 +104,7 @@ void MatrixPose::setValues(std::deque<Geometry::Matrix4x4> _values, std::deque<d
     for(const auto mat : _values)
         keyframes.emplace_back(Matrix4x4(mat));
 
-    float timeOffset = _timeline[0];
+    double timeOffset = _timeline[0];
     for(const auto item : _timeline)
         timeline.push_back(item-timeOffset);
     
@@ -121,7 +121,7 @@ void MatrixPose::addValue(Geometry::Matrix4x4 _value, double _timeline, uint32_t
     keyframes.emplace_back(Geometry::Matrix4x4());
     timeline.emplace_back(0.0);
     interpolationTypes.emplace_back(0);
-    for(i=keyframes.size()-2; i>=_index; --i)
+    for(i=static_cast<uint32_t>(keyframes.size()-2); i>=_index; --i)
     {
         keyframes[i+1] = keyframes[i];
         timeline[i+1] = timeline[i];
@@ -196,7 +196,7 @@ void MatrixPose::update(double timeSec)
 
     currentInterpolationType = interpolationTypes[timeIndex];
 
-    double interpolFactor = (100/(timeline[timeIndex+1]-timeline[timeIndex]) * (timeSec-timeline[timeIndex]))/100;
+    float interpolFactor = static_cast<float>((100/(timeline[timeIndex+1]-timeline[timeIndex]) * (timeSec-timeline[timeIndex]))/100);
 
     Geometry::Matrix4x4 tmpMat;
     for(uint32_t i=0; i<16; ++i)

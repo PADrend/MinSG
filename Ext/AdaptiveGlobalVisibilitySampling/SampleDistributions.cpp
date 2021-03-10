@@ -134,11 +134,11 @@ struct SampleDistributions::Implementation {
 		gen(getGenerator()),
 		objects(collectNodes<GeometryNode>(scene)),
 		objectDist(0, objects.size() - 1),
-		zeroOneDist(0.0, 1.0),
+		zeroOneDist(static_cast<value_t>(0.0), static_cast<value_t>(1.0)),
 		viewSpaceXDist(bounds.getMinX(), bounds.getMaxX()),
 		viewSpaceYDist(bounds.getMinY(), bounds.getMaxY()),
 		viewSpaceZDist(bounds.getMinZ(), bounds.getMaxZ()),
-		azimuthDist(0.0, 2.0 * M_PI),
+		azimuthDist(static_cast<value_t>(0.0), static_cast<value_t>(2.0 * M_PI)),
 		sampleDists({{
 			{std::bind(&Implementation<value_t>::generateViewSpaceDirectionSample, this),
 				false},
@@ -208,7 +208,7 @@ struct SampleDistributions::Implementation {
 		const auto d = sampleSelectDist(gen);
 		auto sample = sampleDists[d].generator();
 		++sampleDists[d].numSamples;
-		sample.setDistributionId(d);
+		sample.setDistributionId(static_cast<uint8_t>(d));
 		return sample;
 	}
 
@@ -270,7 +270,7 @@ struct SampleDistributions::Implementation {
 	 */
 	Sample<value_t> generateViewSpaceDirectionSample() {
 		const vec3_t origin = generateRandomViewSpacePoint();
-		const value_t inclination = std::acos(1.0 - 2.0 * zeroOneDist(gen));
+		const value_t inclination = static_cast<value_t>(std::acos(1.0 - 2.0 * zeroOneDist(gen)));
 		const value_t azimuth = azimuthDist(gen);
 		const auto direction = Geometry::_Sphere<value_t>::calcCartesianCoordinateUnitSphere(inclination, azimuth);
 		return Sample<value_t>(ray_t(origin, direction));
@@ -288,7 +288,7 @@ struct SampleDistributions::Implementation {
 		const auto triangle = getRandomTriangle(object);
 
 		const auto u = zeroOneDist(gen);
-		std::uniform_real_distribution<value_t> barycentricVDist(0.0, 1.0 - u);
+		std::uniform_real_distribution<value_t> barycentricVDist(static_cast<value_t>(0.0), static_cast<value_t>(1.0) - u);
 		const auto origin = Transformations::localPosToWorldPos(*object, triangle.calcPoint(u, barycentricVDist(gen)));
 
 		Geometry::_Matrix3x3<value_t> rotation;
@@ -316,7 +316,7 @@ struct SampleDistributions::Implementation {
 		const auto triangle = getRandomTriangle(object);
 
 		const auto u = zeroOneDist(gen);
-		std::uniform_real_distribution<value_t> barycentricVDist(0.0, 1.0 - u);
+		std::uniform_real_distribution<value_t> barycentricVDist(static_cast<value_t>(0.0), static_cast<value_t>(1.0) - u);
 		const auto objectPoint = Transformations::localPosToWorldPos(*object, triangle.calcPoint(u, barycentricVDist(gen)));
 
 		const auto viewSpacePoint = generateRandomViewSpacePoint();
@@ -393,8 +393,8 @@ struct SampleDistributions::Implementation {
 
 		// Search on segment in randomDirection
 		// In contrast to the article, use two times the radius here
-		value_t searchBegin = 0.0;
-		value_t searchEnd = 2.0 * radius;
+		value_t searchBegin = static_cast<value_t>(0.0);
+		value_t searchEnd = static_cast<value_t>(2.0 * radius);
 
 		std::vector<ray_t> rays;
 		rays.reserve(3);
@@ -441,8 +441,8 @@ struct SampleDistributions::Implementation {
 		const auto dist = sampleDists.front();
 		const value_t epsilon = static_cast<value_t>(dist.numContributingSamples /* N_c */) / 
 								static_cast<value_t>(dist.numSamples /* N */);
-		const value_t k = 0.5;
-		const value_t P = 0.9;
+		const value_t k = static_cast<value_t>(0.5);
+		const value_t P = static_cast<value_t>(0.9);
 		// Equation (5)
 		const auto numSamplesRequired = (1 - epsilon) / (k * k * epsilon * (1 - P));
 		// One pixel per 1024 * 1024 pixels image

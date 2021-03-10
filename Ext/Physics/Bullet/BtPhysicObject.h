@@ -22,7 +22,7 @@
 #include <set>
 
 class btManifoldPoint;
-class btCollisionObjectWrapper;
+struct btCollisionObjectWrapper;
 class btRigidBody;
 
 namespace MinSG {

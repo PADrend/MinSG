@@ -116,11 +116,11 @@ size_t TrianglesEvaluator::getNumTrianglesVisible(FrameContext & context, Geomet
 
 	const VertexDescription & desc = mesh->getVertexDescription();
 	const VertexAttribute & posAttr=desc.getAttribute(VertexAttributeIds::POSITION);
-	if (posAttr.getNumValues() != 3 || mesh->getDrawMode() != Rendering::Mesh::DRAW_TRIANGLES) {
+	if (posAttr.getComponentCount() != 3 || mesh->getDrawMode() != Rendering::Mesh::DRAW_TRIANGLES) {
 		WARN( "TrianglesEvaluator::getNumTrianglesVisible: Unsupported mesh format.");
 		return 0;
 	}
-	const uint16_t vertexOffset = posAttr.getOffset();
+	const auto vertexOffset = posAttr.getOffset();
 	const std::size_t stride = desc.getVertexSize();
 
 	const MeshVertexData & vd = mesh->openVertexData();

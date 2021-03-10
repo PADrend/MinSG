@@ -62,7 +62,7 @@ bool FixedCountStrategy::update(MinSG::FrameContext& context, MinSG::Node* node,
 // FactorStrategy
     
 bool FactorStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, SurfelObject& surfel) {
-  surfel.prefix *= getCountFactor();
+  surfel.prefix = static_cast<uint32_t>(surfel.prefix * getCountFactor());
   surfel.sizeFactor = getSizeFactor();
   return false;
 }
@@ -76,7 +76,7 @@ bool BlendStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, Surf
   surfel.prefix = getPrefixForRadius(r, surfel.packing);  
   if(surfel.prefix > surfel.maxPrefix) {
     if(getBlend() > 0.0f) {
-      uint32_t diff = std::min<uint32_t>((surfel.prefix - surfel.maxPrefix) / getBlend(), surfel.maxPrefix);
+      uint32_t diff = std::min(static_cast<uint32_t>((surfel.prefix - surfel.maxPrefix) / getBlend()), surfel.maxPrefix);
       surfel.prefix = surfel.maxPrefix - diff;
     } else {
       surfel.prefix = 0;
@@ -216,7 +216,7 @@ static void exportBlendStrategy(Util::GenericAttributeMap& desc, AbstractSurfelS
 
 static AbstractSurfelStrategy* importBlendStrategy(const Util::GenericAttributeMap* desc) {
   auto strategy = new BlendStrategy;
-  strategy->setBlend(desc->getFloat(ATTR_BLEND, 0.3));
+  strategy->setBlend(desc->getFloat(ATTR_BLEND, 0.3f));
   return strategy;
 }
 

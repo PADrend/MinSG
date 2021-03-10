@@ -62,10 +62,10 @@ State::stateResult_t StrangeExampleRenderer::doEnableState(FrameContext & contex
 	Geometry::Matrix4x4 m;
 	float f=0;
 	for(const auto & geoNode : nodes) {
-		float f2=f+Util::Timer::now();
+		float f2=f+static_cast<float>(Util::Timer::now());
 		m.setIdentity();
-		m.scale(1.0+sin( f2)/40.0);
-		m.rotate_deg( sin( f2/0.7)/2.0,0,1,0);
+		m.scale(1.0f+sin( f2)/40.0f);
+		m.rotate_deg( sin( f2/0.7f)/2.0f,0,1,0);
 		context.getRenderingContext().pushMatrix_modelToCamera();
 		context.getRenderingContext().multMatrix_modelToCamera(m);
 		context.displayNode(geoNode,rp);

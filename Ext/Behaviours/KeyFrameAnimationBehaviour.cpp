@@ -24,7 +24,7 @@ KeyFrameAnimationBehaviour::~KeyFrameAnimationBehaviour() {
 }
 
 AbstractBehaviour::behaviourResult_t KeyFrameAnimationBehaviour::doExecute() {
-	const timestamp_t timeSec = getCurrentTime();
+	const float timeSec = static_cast<float>(getCurrentTime());
 	if ((static_cast<KeyFrameAnimationNode *>(getNode()))->updateMesh(timeSec)) {
 		return AbstractBehaviour::CONTINUE;
 	}

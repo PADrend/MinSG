@@ -24,7 +24,7 @@
 
 namespace MinSG{
 
-LODRenderer::LODRenderer() : NodeRendererState(FrameContext::DEFAULT_CHANNEL), minComplexity(pow(2,11)), maxComplexity(pow(2,24)), relComplexity(4.0){
+LODRenderer::LODRenderer() : NodeRendererState(FrameContext::DEFAULT_CHANNEL), minComplexity(static_cast<uint32_t>(pow(2,11))), maxComplexity(static_cast<uint32_t>(pow(2,24))), relComplexity(4.0f){
 }
 
 static const Util::StringIdentifier idMeshes("lodMeshes");
@@ -121,7 +121,7 @@ void LODRenderer::generateLODsRecursiv(Node* node)
 				mesh->getPrimitiveCount()/2,
 				0,
 				true,
-				0.1,
+				0.1f,
 				weights
 			);
 			lodMeshes->push_back(new Util::ReferenceAttribute<Rendering::Mesh>(mesh.get()));

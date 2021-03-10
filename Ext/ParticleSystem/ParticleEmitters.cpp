@@ -45,7 +45,7 @@ Geometry::Vec3f ParticleEmitter::getADirection() {
 	}
 
 	// rotate up by random angle around direction
-	const auto upRotation = Geometry::Matrix3x3f::createRotation(Geometry::Angle::rad(std::uniform_real_distribution<float>(0, 2.0 * M_PI)(engine)), direction);
+	const auto upRotation = Geometry::Matrix3x3f::createRotation(Geometry::Angle::rad(std::uniform_real_distribution<float>(0, static_cast<float>(2.0 * M_PI))(engine)), direction);
 	const Geometry::Vec3f rotatedUp(upRotation * up);
 	const auto dirRotation = Geometry::Matrix3x3f::createRotation(Geometry::Angle::rad(std::uniform_real_distribution<float>(0, directionVarianceAngle.rad())(engine)), rotatedUp);
 	// TODO variance

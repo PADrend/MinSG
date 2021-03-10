@@ -32,7 +32,7 @@ class SimplePhysics : public AbstractNodeBehaviour {
 
 	protected:
 		Geometry::Vec3 speed;
-		float lastTime;
+		timestamp_t lastTime;
 };
 
 /**

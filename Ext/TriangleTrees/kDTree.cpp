@@ -88,7 +88,7 @@ kDTree::~kDTree() {
 void kDTree::calculateSplittingPlane(uint32_t & numFirstChild, uint32_t & numSecondChild) {
 	// Split the triangles in two equally sized parts.
 	unsigned char splitDimension = getSplitDimension();
-	const uint32_t size = sorted[splitDimension].size();
+	const uint32_t size = static_cast<uint32_t>(sorted[splitDimension].size());
 	uint32_t half = size / 2; // Integer division = floor
 	splitValue = triangleStorage->at(sorted[splitDimension][half]).getMax(splitDimension);
 	// The loop handles the case when there are equal values.
@@ -163,7 +163,7 @@ void kDTree::split() {
 
 	// Cut triangles would have been assigned to second child.
 	// => Subtract here.
-	secondChildSize -= deletedTriangles.size();
+	secondChildSize -= static_cast<uint32_t>(deletedTriangles.size());
 	assert(firstChildSize + secondChildSize == sorted[splitDimension].size() - deletedTriangles.size());
 
 	// Distribute the triangles to the children.

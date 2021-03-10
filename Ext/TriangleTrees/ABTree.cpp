@@ -36,7 +36,7 @@ ABTree::~ABTree() {
 void ABTree::calculateSplittingPlane(uint32_t & numFirstChild, uint32_t & numSecondChild) {
 	float bestScore = std::numeric_limits<float>::max();
 	for (unsigned char dim = 0; dim < 3; ++dim) {
-		const uint32_t size = sorted[dim].size();
+		const uint32_t size = static_cast<uint32_t>(sorted[dim].size());
 		const float fSize = static_cast<float> (size);
 		/*
 		 * The following strategy uses the "Statistically Weighted

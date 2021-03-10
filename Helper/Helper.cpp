@@ -64,14 +64,14 @@ static void finalize(Rendering::MeshVertexData & vData, unsigned flags) {
 	}
 	if(flags & MESH_AUTO_CENTER_BOTTOM) {
 		Geometry::Matrix4x4f transMat;
-		Geometry::Vec3f v = -vData.getBoundingBox().getCenter() + Geometry::Vec3f(0, vData.getBoundingBox().getExtentY() / 2.0, 0);
+		Geometry::Vec3f v = -vData.getBoundingBox().getCenter() + Geometry::Vec3f(0, vData.getBoundingBox().getExtentY() / 2.0f, 0);
 		transMat.translate(v);
 		Rendering::MeshUtils::transform(vData, transMat);
 	}
 	if(flags & MESH_AUTO_SCALE) {
 		Geometry::Matrix4x4f transMat;
 		if(vData.getBoundingBox().getExtentMax() > 0) {
-			transMat.scale(1.0 / vData.getBoundingBox().getExtentMax());
+			transMat.scale(1.0f / vData.getBoundingBox().getExtentMax());
 		}
 		Rendering::MeshUtils::transform(vData, transMat);
 	}
@@ -257,7 +257,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 						for(unsigned short i = 1; i < framesData.size(); i++) {
 							bb.include(framesData[i].getBoundingBox());
 						}
-						Geometry::Vec3f v = -bb.getCenter() + Geometry::Vec3f(0, bb.getExtentY() / 2.0, 0);
+						Geometry::Vec3f v = -bb.getCenter() + Geometry::Vec3f(0, bb.getExtentY() / 2.0f, 0);
 						Geometry::Matrix4x4f translateMat;
 						translateMat.translate(v);
 						for(auto & framesData_i : framesData) {
@@ -271,7 +271,7 @@ Node * loadModel(const Util::FileName & filename, unsigned flags, Geometry::Matr
 							bb.include(framesData[i].getBoundingBox());
 						}
 						if(bb.getExtentMax() > 0)
-							translateMat.scale(1.0 / bb.getExtentMax());
+							translateMat.scale(1.0f / bb.getExtentMax());
 						for(auto & framesData_i : framesData) {
 							Rendering::MeshUtils::transform(framesData_i, translateMat);
 						}

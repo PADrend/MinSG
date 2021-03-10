@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -63,7 +63,7 @@ struct LightProbeData{
 	std::vector<LightProbe> lightProbes;
 		
 	LightProbeData(uint32_t _wx, uint32_t _wy, uint32_t _wz) : 
-			lightProbeOctree(Geometry::Box( vec3f(0,0,0),vec3f(_wx,_wy,_wz)),4,8){
+			lightProbeOctree(Geometry::Box( vec3f(0,0,0),vec3f(static_cast<float>(_wx),static_cast<float>(_wy),static_cast<float>(_wz))),4,8){
 	}
 	
 	Util::Color4f getVertexLightProbe(const vec3i& pos,const vec3i& normal)const{
@@ -138,7 +138,7 @@ struct VoxelGrid{
 		const vec3f step(dir*stepSize);
 		
 		vec3f v = source + dir*0.01f;
-		int32_t x=source.x()-10/*arbitrary invalid value*/, y=0, z=0;
+		int32_t x=static_cast<int32_t>(source.x()-10)/*arbitrary invalid value*/, y=0, z=0;
 		
 		for(float currentRayLength = 0.01f; currentRayLength<distance-0.01f; currentRayLength+=stepSize){
 			if(static_cast<int32_t>(v.x())!=x || static_cast<int32_t>(v.y())!=y || static_cast<int32_t>(v.z())!=z){
@@ -191,49 +191,49 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 	{
 		auto& m1 = matLib.access(1);
 		m1.setSolid(true);
-		m1.setColor( Util::Color4f(0.5,0.5,0.5,1.0));
+		m1.setColor( Util::Color4f(0.5f,0.5f,0.5f,1.0f));
 	}
 	{
 		auto& m1 = matLib.access(2);
 		m1.setSolid(true);
-		m1.setColor( Util::Color4f(1.0,1.0,1.0,1.0));
+		m1.setColor( Util::Color4f(1.0f,1.0f,1.0f,1.0f));
 	}
 	{
 		auto& m1 = matLib.access(3);
 		m1.setSolid(true);
-		m1.setColor( Util::Color4f(0.1,0.1,0.1,1.0));
+		m1.setColor( Util::Color4f(0.1f,0.1f,0.1f,1.0f));
 	}
 	{
 		auto& m1 = matLib.access(4);
 		m1.setSolid(true);
-		m1.setColor( Util::Color4f(0.2,0.1,0.1,1.0));
-		m1.setLight( Util::Color4f(1.2,0.1,0.1,1.0));
+		m1.setColor( Util::Color4f(0.2f,0.1f,0.1f,1.0f));
+		m1.setLight( Util::Color4f(1.2f,0.1f,0.1f,1.0f));
 	}
 	{
 		auto& m1 = matLib.access(5);
 		m1.setSolid(true);
-		m1.setColor( Util::Color4f(1.0,1.0,1.0,1.0));
-		m1.setLight( Util::Color4f(5.1,5.1,5.1,1.0));
+		m1.setColor( Util::Color4f(1.0f,1.0f,1.0f,1.0f));
+		m1.setLight( Util::Color4f(5.1f,5.1f,5.1f,1.0f));
 	}
 	{
 		auto& m1 = matLib.access(10);
 		m1.setSolid(false);
-		m1.setLight( Util::Color4f(10.1,0.1,0.1,1.0));
+		m1.setLight( Util::Color4f(10.1f,0.1f,0.1f,1.0f));
 	}
 	{
 		auto& m1 = matLib.access(11);
 		m1.setSolid(false);
-		m1.setLight( Util::Color4f(0.1,10.1,0.1,1.0));
+		m1.setLight( Util::Color4f(0.1f,10.1f,0.1f,1.0f));
 	}
 	{
 		auto& m1 = matLib.access(12);
 		m1.setSolid(false);
-		m1.setLight( Util::Color4f(0.1,0.1,10.1,1.0));
+		m1.setLight( Util::Color4f(0.1f,0.1f,10.1f,1.0f));
 	}
 	{
 		auto& m1 = matLib.access(13);
 		m1.setSolid(false);
-		m1.setLight( Util::Color4f(10.1,10.1,10.1,1.0));
+		m1.setLight( Util::Color4f(10.1f,10.1f,10.1f,1.0f));
 	}
 	
 	VoxelGrid grid(boundary.getExtentX(),boundary.getExtentY(),boundary.getExtentZ());
@@ -274,7 +274,7 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 				}
 			}
 		}
-		timings["10_fill grid"] = t.getMilliseconds();
+		timings["10_fill grid"] = static_cast<float>(t.getMilliseconds());
 		t.reset();
 	}
 	
@@ -319,7 +319,7 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 				initQuadLightProbes(pos, 2|4 ,4|8, 0,		vec3i(0,0,1),	*material);
 		}}}}}}
 				
-		timings["20_init light probes"] = t.getMilliseconds();
+		timings["20_init light probes"] = static_cast<float>(t.getMilliseconds());
 		t.reset();
 	}
 	// ---------------------------------------------------------------------------
@@ -328,14 +328,14 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 	{ //	2. connect surface probes to light sources
 		
 		// long range emitter
-		static const vec3f globalLight( 7.49,30.57,7.55);
+		static const vec3f globalLight( 7.49f,30.57f,7.55f);
 
 		for(const auto index : lighting.orderedVertexLightProbeIndices){
 			auto& probe = lighting.lightProbes[ index ];
 			if( probe.normal.dot( globalLight-probe.position )>0){
 				const float l = grid.cast( probe.position ,globalLight);
 				if(l>0)
-					probe.color += Util::Color4f( 5.0, 5.1 , 5.0,1.0  );
+					probe.color += Util::Color4f( 5.0f, 5.1f , 5.0f,1.0f  );
 			}
 		}
 		
@@ -377,14 +377,14 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 			auto& probe = lighting.lightProbes[ index ];
 			const vec3f pos(probe.position);
 			const vec3f normal(probe.normal);
-			const vec3f castSourcePos(pos - probe.normal * 0.0001); // use a slightly set back position to fix light bleeding on planes
+			const vec3f castSourcePos(pos - probe.normal * 0.0001f); // use a slightly set back position to fix light bleeding on planes
 			
 			if(pos.distanceSquared(probesAtPos)>10){
 				localProbes.clear();
 				lighting.lightProbeOctree.collectPointsWithinBox(Geometry::Box(pos,10,10,10),localProbes);
 				probesAtPos = pos;
 				++octreeQueries;
-				collectedPoints+=localProbes.size();
+				collectedPoints+=static_cast<int>(localProbes.size());
 			}
 
 			for(const auto& probePoint : localProbes){
@@ -401,7 +401,7 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 				
 				if(distanceSquared<0.001){
 					if(normal.dot(otherProbe.normal)>0 )
-						connectionPower = 0.05;
+						connectionPower = 0.05f;
 				}else if( //distanceSquared<16 && 
 							normal.dot(dir)>0.001f && otherProbe.normal.dot(pos-otherProbe.position)>0.001f ){
 					const float dist = grid.cast(castSourcePos, probePoint.position);
@@ -416,13 +416,13 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 				}
 
 			}
-			casts += probe.connectedProbes.size();
+			casts += static_cast<int>(probe.connectedProbes.size());
 		}
 		
-		timings["31_queries"] = octreeQueries;
-		timings["32_collected points"] = collectedPoints;
-		timings["33_casts"] = casts;
-		timings["30_light distribution"] = t.getMilliseconds();
+		timings["31_queries"] = static_cast<float>(octreeQueries);
+		timings["32_collected points"] = static_cast<float>(collectedPoints);
+		timings["33_casts"] = static_cast<float>(casts);
+		timings["30_light distribution"] = static_cast<float>(t.getMilliseconds());
 		t.reset();
 	}
 	
@@ -456,15 +456,15 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 										vertexColor.getB() * light.getB(), vertexColor.getA() );
 				
 				// perform gamma-correction
-				const float gamma = 2.1;
-				const float r2 = std::pow(rgb.r(),1.0f/gamma)*0.2;
-				const float g2 = std::pow(rgb.g(),1.0f/gamma)*0.2;
-				const float b2 = std::pow(rgb.b(),1.0f/gamma)*0.2;
+				const float gamma = 2.1f;
+				const float r2 = static_cast<float>(std::pow(rgb.r(),1.0f/gamma)*0.2);
+				const float g2 = static_cast<float>(std::pow(rgb.g(),1.0f/gamma)*0.2);
+				const float b2 = static_cast<float>(std::pow(rgb.b(),1.0f/gamma)*0.2);
 				vertexColor = Util::Color4f( r2,g2,b2, vertexColor.getA() );
 			}
 			mb.color( vertexColor );
 
-			mb.position(vec3f(x,y,z));
+			mb.position(vec3f(static_cast<float>(x),static_cast<float>(y),static_cast<float>(z)));
 			mb.addVertex();
 			return vertexColor;
 		};
@@ -508,7 +508,7 @@ Util::Reference<Rendering::Mesh> VoxelWorld::generateMesh( const simpleVoxelStor
 				}
 			}
 		}
-		timings["40_build mesh"] = t.getMilliseconds();
+		timings["40_build mesh"] = static_cast<float>(t.getMilliseconds());
 		t.reset();
 	}
 

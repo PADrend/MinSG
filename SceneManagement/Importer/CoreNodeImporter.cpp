@@ -127,7 +127,7 @@ static bool importCameraNode(ImportContext & ctxt, const std::string & nodeType,
 		viewport.setSize(w, h);
 	} else {
 		float ratio = Util::StringUtils::toNumber<float>(d.getString(Consts::ATTR_CAM_RATIO, "1.33"));
-		viewport.setWidth(ratio);
+		viewport.setWidth(static_cast<int>(ratio));
 	}
 	node->setViewport(viewport);
 	

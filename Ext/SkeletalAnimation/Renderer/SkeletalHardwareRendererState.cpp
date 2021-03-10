@@ -204,7 +204,7 @@ void SkeletalHardwareRendererState::validateMatriceOrder(Node *node)
     
     if(shaderType == TEXTURE)
     {        
-        texture = TextureUtils::createTextureDataArray_Vec4(9 + inverseMatContainer.size()*4 + jointMats.size()*4); 
+        texture = TextureUtils::createTextureDataArray_Vec4(static_cast<uint32_t>(9 + inverseMatContainer.size()*4 + jointMats.size()*4)); 
         texture.get()->allocateLocalData();
         
         pa = PixelAccessor::create(texture.get()->getLocalBitmap());
@@ -251,7 +251,7 @@ State::stateResult_t SkeletalHardwareRendererState::doEnableState(FrameContext &
     if(shaderType == TEXTURE)
     {
         SkeletalAnimationUtils::putMatrixInTexture(5, rootJoint->getWorldTransformationMatrix().inverse(), &pa);
-        SkeletalAnimationUtils::putMatricesInTexture(9+inverseMatContainer.size()*4, jointMats, &pa);
+        SkeletalAnimationUtils::putMatricesInTexture(static_cast<uint32_t>(9+inverseMatContainer.size()*4), jointMats, &pa);
         
         texture.get()->_uploadGLTexture(context.getRenderingContext());
         if(!textureUnitSet) {

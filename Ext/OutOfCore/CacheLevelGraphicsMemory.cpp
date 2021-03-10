@@ -90,7 +90,7 @@ void CacheLevelGraphicsMemory::doWork() {
 	Util::Timer duration;
 	duration.reset();
 
-	const auto maxMemory = 0.95 * getOverallMemory();
+	const uint64_t maxMemory = static_cast<uint64_t>(0.95 * getOverallMemory());
 
 	const uint64_t tenMilliseconds = 10000000;
 	while(duration.getNanoseconds() < tenMilliseconds) {

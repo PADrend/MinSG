@@ -345,7 +345,7 @@ static bool importLODRenderer(ImportContext & ctxt, const std::string & stateTyp
 
 	state->setMaxComplexity(d.getUInt(Consts::ATTR_LOD_RENDERER_MAX_COMPLEXITY));
 	state->setMinComplexity(d.getUInt(Consts::ATTR_LOD_RENDERER_MIN_COMPLEXITY));
-	state->setRelComplexity(d.getUInt(Consts::ATTR_LOD_RENDERER_REL_COMPLEXITY));
+	state->setRelComplexity(d.getFloat(Consts::ATTR_LOD_RENDERER_REL_COMPLEXITY));
 	state->setSourceChannel(d.getString(Consts::ATTR_LOD_RENDERER_SOURCE_CHANNEL));
 
 	ImporterTools::finalizeState(ctxt, state, d);

@@ -16,6 +16,7 @@
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/MeshUtils/MeshBuilder.h>
 #include <Rendering/MeshUtils/MeshUtils.h>
+#include <Rendering/MeshUtils/PrimitiveShapes.h>
 #include <Rendering/MeshUtils/PlatonicSolids.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Util/Macros.h>
@@ -103,11 +104,15 @@ void LightNode::switchOff(FrameContext & context) {
 }
 
 const Geometry::Box& LightNode::doGetBB() const {
-	static const Geometry::Box bb(-0.1,0.1,-0.1,0.1,-0.1,0.1);
+	static const Geometry::Box bb(-0.1f,0.1f,-0.1f,0.1f,-0.1f,0.1f);
 	return bb;
 }
 
-Rendering::Mesh * LightNode::createMetaMesh() {
+Rendering::Mesh * LightNode::createMetaMesh() {	
+	Rendering::VertexDescription vd;
+	vd.appendPosition3D();
+	vd.appendNormalByte();
+	vd.appendColorRGBAByte();
 	switch (parameters.type) {
 		case Rendering::LightParameters::SPOT: {
 			const float height = std::cos(Geometry::Convert::degToRad(parameters.cutoff));
@@ -117,9 +122,9 @@ Rendering::Mesh * LightNode::createMetaMesh() {
 			Geometry::Matrix4x4 transform;
 			transform.rotate_deg(-90.0f, 0.0f, 1.0f, 0.0f);
 			transform.translate(-height, 0.0f, 0.0f);
-			meshes.push_back(Rendering::MeshUtils::MeshBuilder::createDiscSector(radius, 64));
+			meshes.push_back(Rendering::MeshUtils::createDiscSector(vd, radius, 64));
 			transformations.push_back(transform);
-			meshes.push_back(Rendering::MeshUtils::MeshBuilder::createCone(radius, height, 64));
+			meshes.push_back(Rendering::MeshUtils::createCone(vd, radius, height, 64));
 			transformations.push_back(transform);
 			Rendering::Mesh * mesh = Rendering::MeshUtils::combineMeshes(meshes, transformations);
 			while (!meshes.empty()) {
@@ -140,14 +145,14 @@ Rendering::Mesh * LightNode::createMetaMesh() {
 			Geometry::Matrix4x4 transform;
 			transform.rotate_deg(-90.0f, 0.0f, 1.0f, 0.0f);
 			transform.translate(-0.1f, 0.0f, 0.0f);
-			meshes.push_back(Rendering::MeshUtils::MeshBuilder::createDiscSector(radiusBottom, 64));
+			meshes.push_back(Rendering::MeshUtils::createDiscSector(vd, radiusBottom, 64));
 			transformations.push_back(transform);
-			meshes.push_back(Rendering::MeshUtils::MeshBuilder::createConicalFrustum(radiusBottom, radiusTop, 0.2f, 64));
+			meshes.push_back(Rendering::MeshUtils::createConicalFrustum(vd, radiusBottom, radiusTop, 0.2f, 64));
 			transformations.push_back(transform);
 			transform.setIdentity();
 			transform.rotate_deg(-270.0f, 0.0f, 1.0f, 0.0f);
 			transform.translate(-0.1f, 0.0f, 0.0f);
-			meshes.push_back(Rendering::MeshUtils::MeshBuilder::createDiscSector(radiusTop, 64));
+			meshes.push_back(Rendering::MeshUtils::createDiscSector(vd, radiusTop, 64));
 			transformations.push_back(transform);
 			Rendering::Mesh * mesh = Rendering::MeshUtils::combineMeshes(meshes, transformations);
 			while (!meshes.empty()) {

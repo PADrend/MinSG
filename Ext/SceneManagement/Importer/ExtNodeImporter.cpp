@@ -251,7 +251,7 @@ static bool importValuatedRegionNode(ImportContext & ctxt,const std::string & ty
 	std::vector<float> resolution = Util::StringUtils::toFloats(d.getString(Consts::ATTR_VALREGION_RESOLUTION, "1 1 1"));
 	if(resolution.size() != 3) FAIL();
 	std::vector<float> color = Util::StringUtils::toFloats(d.getString(Consts::ATTR_VALREGION_COLOR, ""));
-	int numColors = color.size() / 4;
+	int numColors = static_cast<int>(color.size() / 4);
 
 	auto cn = new ValuatedRegionNode(Geometry::Box(Geometry::Vec3(box[0], box[1], box[2]), box[3], box[4], box[5]),
 			Geometry::Vec3i(static_cast<int>(resolution[0]), static_cast<int>(resolution[1]), static_cast<int>(resolution[2])));

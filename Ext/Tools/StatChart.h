@@ -51,7 +51,7 @@ class StatChart{
 		float getTimeRange()const					{	return timeRange;	}
 		void setTimeRange(float newRange)			{   timeRange=newRange;	}
 
-		int getRowCount()const						{	return dataRows.size();	}
+		int getRowCount()const						{	return static_cast<int>(dataRows.size());	}
 
 		void setRange(Statistics::eventType_t type,float range){
 			if(dataRows.size() <= type) dataRows.resize(type+1);

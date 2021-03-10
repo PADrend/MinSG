@@ -35,9 +35,9 @@ public:
 	
 	float getRelComplexity() const { return relComplexity;}
 	
-	void setMinComplexity(size_t c){ minComplexity = c;}
+	void setMinComplexity(uint32_t c){ minComplexity = c;}
 	
-	void setMaxComplexity(size_t c){ maxComplexity = c;}
+	void setMaxComplexity(uint32_t c){ maxComplexity = c;}
 	
 	void setRelComplexity(float c){ relComplexity = c;}
 

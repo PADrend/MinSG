@@ -52,8 +52,8 @@ void SkeletalSoftwareRendererState::validateMatriceOrder(Node *node) {
         
         const Rendering::VertexAttribute &positionAttr = vd.getAttribute("sg_Position");
         const Rendering::VertexAttribute &weightAttrCount = vd.getAttribute("sg_WeightsCount");
-        uint16_t weightIndexOffset = vd.getAttribute("sg_WeightsIndex1").getOffset();
-        uint16_t weightsOffset = vd.getAttribute("sg_Weights1").getOffset();
+        auto weightIndexOffset = vd.getAttribute("sg_WeightsIndex1").getOffset();
+        auto weightsOffset = vd.getAttribute("sg_Weights1").getOffset();
         
         meshSkins.emplace_back(std::make_pair(geoNode, std::vector<VertexPair>()));
         for(uint32_t i=0; i<vData.getVertexCount(); ++i) {
@@ -85,7 +85,7 @@ void SkeletalSoftwareRendererState::validateMatriceOrder(Node *node) {
                     weight = reinterpret_cast<float *>(vData[i]+weightsOffset);
                 }
                 
-                pair.jointIds.emplace_back(jointId[0]);
+                pair.jointIds.emplace_back(static_cast<uint32_t>(jointId[0]));
                 pair.weights.emplace_back(weight[0]);
             }
             
@@ -131,7 +131,7 @@ State::stateResult_t SkeletalSoftwareRendererState::doEnableState(FrameContext &
     return State::STATE_OK;
 }
 
-void SkeletalSoftwareRendererState::doDisableState(FrameContext & /*context*/, Node */*node*/, const RenderParam &/*rp*/) {
+void SkeletalSoftwareRendererState::doDisableState(FrameContext &, Node *, const RenderParam &) {
 
 }
 

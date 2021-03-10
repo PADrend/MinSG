@@ -211,8 +211,8 @@ void PathTracer::pimpl::reset() {
 	spp = 0;
 	
 	// generate tiles in spiral pattern
-	Geometry::Vec2i tileDim(std::ceil(resolution.x()/tileSize), std::ceil(resolution.y()/tileSize));
-	uint32_t maxTileDim = std::max(tileDim.x(), tileDim.y()); 
+	Geometry::Vec2i tileDim(static_cast<int32_t>(std::ceil(resolution.x()/tileSize)), static_cast<int32_t>(std::ceil(resolution.y()/tileSize)));
+	int32_t maxTileDim = std::max(tileDim.x(), tileDim.y()); 
 	
 	Geometry::Vec2i tileCoord(tileDim.x()/2, tileDim.y()/2);
 	uint32_t steps = 1;
@@ -223,7 +223,7 @@ void PathTracer::pimpl::reset() {
 		for(uint32_t d=0;d<2;++d) {
 			for(uint32_t s=0;s<steps;++s) {
 				// Create Tile
-				Geometry::Vec2i offset = Geometry::Vec2(tileCoord) * tileSize;
+				Geometry::Vec2i offset = Geometry::Vec2(tileCoord) * static_cast<float>(tileSize);
 				if(offset.x() >= 0 && offset.y() >= 0 && offset.x() < resolution.x() && offset.y() < resolution.y()) {
 					auto tile = new Tile(tileSize);
 					tile->offset = offset;
@@ -237,7 +237,7 @@ void PathTracer::pimpl::reset() {
 		}
 		++steps;
 	}
-	tileCount = tileQueue.size();
+	tileCount = static_cast<uint32_t>(tileQueue.size());
 	
 	finished = false;
 }
@@ -289,7 +289,7 @@ void PathTracer::pimpl::trace(Tile* tile) {
 			auto sample = sample3D();
 			sample.z(0);
 			auto worldToScreen = camera->getFrustum().getProjectionMatrix() * camera->getWorldTransformationMatrix().inverse();
-			Geometry::Vec3 win = Geometry::Vec3(x,y,0) + (antiAliasing ? sample : Geometry::Vec3(0.5f,0.5f,0));
+			Geometry::Vec3 win = Geometry::Vec3(static_cast<float>(x),static_cast<float>(y),0) + (antiAliasing ? sample : Geometry::Vec3(0.5f,0.5f,0));
 			Geometry::Rect vp(camera->getViewport());
 			Geometry::Vec3 target = Geometry::unProject<float>(win, worldToScreen, vp);
 
@@ -322,7 +322,7 @@ Util::Color4f PathTracer::pimpl::sampleLight(const Geometry::Ray3& ray, const Su
 	
 	// random light
 	// TODO: better light importance sampling
-	Light* light = sceneLights[sample1D()*sceneLights.size()].get();
+	Light* light = sceneLights[static_cast<size_t>(sample1D()*sceneLights.size())].get();
 	auto sample = sample3D();
 	auto lightSample = light->sampleIncidentRadiance(surface, sample);
 	LOG(2,"Estimate direct: " << sample << " -> Li: " << lightSample.l << ", wi: " << lightSample.wi << ", pdf: " << lightSample.pdf);
@@ -368,7 +368,7 @@ Util::Color4f PathTracer::pimpl::sampleLight(const Geometry::Ray3& ray, const Su
 		}
 	}*/
 		
-	return radiance * sceneLights.size();
+	return radiance * static_cast<float>(sceneLights.size());
 }
 //-------------------------------------------------------------------------
 
@@ -440,7 +440,7 @@ void PathTracer::pimpl::download(Util::PixelAccessor& image, float gamma) {
 				for(uint32_t x = 0; x < tileSize; ++x) {
 					auto pixel = tile->get(x,y);
 					if(tile->spp > 0) {
-						pixel /= tile->spp;
+						pixel /= static_cast<float>(tile->spp);
 						pixel.a(1);
 					} else {
 						pixel.set(0,0,0,0);
@@ -448,13 +448,13 @@ void PathTracer::pimpl::download(Util::PixelAccessor& image, float gamma) {
 					
 					// gamma correction
 					if(gamma > 0) {
-						pixel.r(std::pow(pixel.r(),1.0/gamma));
-						pixel.g(std::pow(pixel.g(),1.0/gamma));
-						pixel.b(std::pow(pixel.b(),1.0/gamma));
+						pixel.r(static_cast<float>(std::pow(pixel.r(),1.0/gamma)));
+						pixel.g(static_cast<float>(std::pow(pixel.g(),1.0/gamma)));
+						pixel.b(static_cast<float>(std::pow(pixel.b(),1.0/gamma)));
 					}
 					
 					Geometry::Vec2i imageCoords = tile->offset + Geometry::Vec2i(x,y);
-					if(imageCoords.x() < image.getWidth() && imageCoords.y() < image.getHeight())
+					if(static_cast<uint32_t>(imageCoords.x()) < image.getWidth() && static_cast<uint32_t>(imageCoords.y()) < image.getHeight())
 						image.writeColor(imageCoords.x(), imageCoords.y(), pixel);
 				}
 			}

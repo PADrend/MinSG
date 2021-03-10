@@ -1,6 +1,6 @@
 /*
 	This file is part of the MinSG library.
-	Copyright (C) 2014 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2014 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
 	You should have received a copy of the MPL along with this library; see the 
@@ -56,7 +56,7 @@ public:
 		const auto formerId = getMaterialId(name);
 		if(formerId.second)
 			return formerId.first;
-		materialId_t newId = materialNames.size()+1;
+		materialId_t newId = static_cast<materialId_t>(materialNames.size()+1);
 		materialNames[name] = newId;
 		return newId;
 	}

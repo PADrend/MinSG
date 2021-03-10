@@ -226,7 +226,7 @@ State::stateResult_t OccRenderer::performCulling(FrameContext & context,Node * r
 				// not processed yet?
 				if (nodeInfo->getProcessedFrameNumber()!=frameNumber) {
 					// TODO: Store and propagate in tree.
-					occludedGeometryNodes+=collectNodesInFrustum<GeometryNode>(node,context.getCamera()->getFrustum()).size();
+					occludedGeometryNodes+=static_cast<int>(collectNodesInFrustum<GeometryNode>(node,context.getCamera()->getFrustum()).size());
 
 					// mark the node as processed
 					nodeInfo->setProcessedFrameNumber(frameNumber);
