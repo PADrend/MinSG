@@ -12,6 +12,7 @@
 #define TRIANGLETREEBUILDER_H_
 
 #include <vector>
+#include <cstdint>
 
 namespace Rendering {
 class Mesh;

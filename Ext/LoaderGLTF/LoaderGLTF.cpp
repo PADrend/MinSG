@@ -85,13 +85,6 @@ struct imemstream : virtual membuf, std::istream {
 	imemstream(char const* base, size_t size) : membuf(base, size), std::istream(static_cast<std::streambuf*>(this)) {}
 };
 
-//--------------------------
-
-inline bool equalsIgnoreCase(const std::string& a, const std::string& b) {
-	return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](char a, char b) {
-		return std::tolower(a) == std::tolower(b);
-	});
-}
 
 //--------------------------
 
@@ -727,7 +720,7 @@ bool GLTFImportContext::loadFile(const Util::FileName& filename) {
 	//loader.SetImageLoader(&loadImageData, this);
 
 	bool success = false;
-	if(equalsIgnoreCase(filename.getEnding(), "glb")) {
+	if(filename.getEnding() == "glb" || filename.getEnding() == "GLB") {
 		success = loader.LoadBinaryFromFile(&model, &errorMsg, &warningMsg, filename.getPath());
 	} else {
 		success = loader.LoadASCIIFromFile(&model, &errorMsg, &warningMsg, filename.getPath());
