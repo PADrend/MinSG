@@ -14,6 +14,8 @@
 #include "../../SceneManagement/Exporter/ExporterTools.h"
 #include "../../Core/Nodes/ListNode.h"
 #include "../../Helper/StdNodeVisitors.h"
+#include "../SceneManagement/ExtConsts.h"
+#include "../States/PbrMaterialState.h"
 
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/MeshVertexData.h>
@@ -61,13 +63,30 @@ using namespace Rendering;
 
 //--------------------------
 
+static const Util::StringIdentifier JOINTS_ID("sg_Joints0");
+static const Util::StringIdentifier WEIGHTS_ID("sg_Weights0");
+
+
 static const std::unordered_map<std::string, Util::StringIdentifier> remappedAttributeNames{
 	{"POSITION", VertexAttributeIds::POSITION},
 	{"NORMAL", VertexAttributeIds::NORMAL},
 	{"TANGENT", VertexAttributeIds::TANGENT},
 	{"COLOR_0", VertexAttributeIds::COLOR},
 	{"TEXCOORD_0", VertexAttributeIds::TEXCOORD0},
-	{"TEXCOORD_1", VertexAttributeIds::TEXCOORD1}
+	{"TEXCOORD_1", VertexAttributeIds::TEXCOORD1},
+	{"JOINTS_0", JOINTS_ID},
+	{"WEIGHTS_0", WEIGHTS_ID},
+};
+
+static const std::unordered_map<Util::StringIdentifier, bool> normalizedAttr{
+	{VertexAttributeIds::POSITION, false},
+	{VertexAttributeIds::NORMAL, true},
+	{VertexAttributeIds::TANGENT, false},
+	{VertexAttributeIds::COLOR, true},
+	{VertexAttributeIds::TEXCOORD0, true},
+	{VertexAttributeIds::TEXCOORD1, true},
+	{JOINTS_ID, false},
+	{WEIGHTS_ID, true},
 };
 
 //--------------------------
@@ -98,22 +117,15 @@ inline std::string toString(const std::vector<T>& vec) {
 
 //--------------------------
 
-enum class AlphaMode : int32_t {
-	Undefined = -1,
-	Opaque = 0,
-	Mask=1,
-	Blend=2
-};
-
-inline AlphaMode decodeAlphaMode(const std::string& mode) {
+inline PbrAlphaMode decodeAlphaMode(const std::string& mode) {
 	if(mode == "OPAQUE")
-		return AlphaMode::Opaque;
+		return PbrAlphaMode::Opaque;
 	else if(mode == "MASK")
-		return AlphaMode::Mask;
+		return PbrAlphaMode::Mask;
 	else if(mode == "BLEND")
-		return AlphaMode::Blend;
+		return PbrAlphaMode::Blend;
 	else
-		return AlphaMode::Undefined;
+		return PbrAlphaMode::Undefined;
 }
 
 //--------------------------
@@ -150,7 +162,7 @@ static Util::AttributeAccessor::Ref createAttributeAccessor(tinygltf::Model& mod
 	Util::TypeConstant componentType = toTypeConstant(accessor.componentType);
 	uint32_t componentCount = tinygltf::GetNumComponentsInType(accessor.type);
 	// Normalize vector types with integral types (byte, short, int)
-	bool normalized = componentCount > 1 && componentType != Util::TypeConstant::FLOAT && componentType != Util::TypeConstant::DOUBLE;
+	bool normalized = false;//componentCount > 1 && componentType != Util::TypeConstant::FLOAT && componentType != Util::TypeConstant::DOUBLE;
 	Util::AttributeFormat format({}, componentType, componentCount, normalized, 0, static_cast<uint32_t>(accessor.byteOffset));
 	return Util::AttributeAccessor::create(buffer.data.data() + bufferView.byteOffset, static_cast<uint32_t>(bufferView.byteLength), format, static_cast<uint32_t>(bufferView.byteStride));
 }
@@ -159,7 +171,7 @@ static Util::AttributeAccessor::Ref createAttributeAccessor(tinygltf::Model& mod
 
 static VertexDescription buildVertexDescription(const tinygltf::Model& model, const tinygltf::Primitive& primitive) {
 	static const std::unordered_map<std::string, uint32_t> attributePriorities{
-		{"POSITION", 0}, {"NORMAL", 1}, {"TANGENT", 2}, {"COLOR_0", 3}, {"TEXCOORD_0", 4}, {"TEXCOORD_1", 5}
+		{"POSITION", 0}, {"NORMAL", 1}, {"TANGENT", 2}, {"COLOR_0", 3}, {"TEXCOORD_0", 4}, {"TEXCOORD_1", 5}, {"JOINTS_0", 6}, {"WEIGHTS_0", 7}
 	};
 
 	// sort attribute names s.t. standard attributes are at the front
@@ -187,8 +199,10 @@ static VertexDescription buildVertexDescription(const tinygltf::Model& model, co
 		Util::StringIdentifier attrName = (nameIt != remappedAttributeNames.end()) ? nameIt->second : Util::StringIdentifier(attr.first);
 		Util::TypeConstant componentType = toTypeConstant(accessor.componentType);
 		uint32_t componentCount = tinygltf::GetNumComponentsInType(accessor.type);
-		bool normalized = componentCount > 1 && componentType != Util::TypeConstant::FLOAT && componentType != Util::TypeConstant::DOUBLE;
-		vd.appendAttribute(attrName, componentType, componentCount, normalized);
+		auto nrmIt = normalizedAttr.find(attrName);
+		bool normalized = (nrmIt != normalizedAttr.end()) ? nrmIt->second : false;
+		//bool normalized = componentCount > 1 && componentType != Util::TypeConstant::FLOAT && componentType != Util::TypeConstant::DOUBLE;
+		vd.appendAttribute(attrName, componentType, componentCount, false);
 	}
 
 	return vd;
@@ -227,14 +241,17 @@ public:
 	std::vector<Util::Reference<Util::Bitmap>> images;
 	std::vector<Util::Reference<Rendering::Texture>> textures;
 	std::vector<bool> materialIsUsed;
+	std::vector<bool> skinIsUsed;
 	Util::FileLocator locator;
 	bool hasBlendMaterial = false;
+	int32_t activeSkin = -1;
 
 	Util::Reference<Rendering::Mesh> createMesh(uint32_t meshId, uint32_t primitiveId);
 	std::unique_ptr<DescriptionMap> initMeshNode(uint32_t meshId, uint32_t primitiveId);
 	Util::Reference<Rendering::Texture> createTexture(uint32_t textureId);
-	std::unique_ptr<DescriptionMap> createTextureDescription(uint32_t textureId, uint32_t textureUnit);
+	void addTextureDescription(const std::unique_ptr<DescriptionMap>& state, uint32_t textureId, const Util::StringIdentifier& id);
 	std::unique_ptr<DescriptionMap> createMaterialOrRef(uint32_t materialId);
+	std::unique_ptr<DescriptionMap> createSkinOrRef(uint32_t skinId);
 	std::unique_ptr<DescriptionMap> initGeometryNode(uint32_t nodeId, uint32_t meshId);
 	std::unique_ptr<DescriptionMap> createNode(uint32_t nodeId);
 	std::unique_ptr<DescriptionMap> createScene(uint32_t sceneId);
@@ -346,6 +363,9 @@ Util::Reference<Rendering::Mesh> GLTFImportContext::createMesh(uint32_t meshId, 
 		}
 	}
 	mesh->setGLDrawMode(primitive.mode);
+	if(indexCount == 0 || primitive.indices < 0) {
+		mesh->setUseIndexData(false);
+	}
 	vertexData.updateBoundingBox();
 	vertexData.markAsChanged();
 	indexData.markAsChanged();
@@ -404,19 +424,15 @@ Util::Reference<Rendering::Texture> GLTFImportContext::createTexture(uint32_t te
 
 //--------------------------
 
-std::unique_ptr<DescriptionMap> GLTFImportContext::createTextureDescription(uint32_t textureId, uint32_t textureUnit) {
+void GLTFImportContext::addTextureDescription(const std::unique_ptr<DescriptionMap>& state, uint32_t textureId, const Util::StringIdentifier& id) {
 	auto texture = textures[textureId];
-	std::unique_ptr<DescriptionMap> state(new DescriptionMap);
-	state->setString(Consts::TYPE, Consts::TYPE_STATE);
-	state->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_TEXTURE);
-	state->setString(Consts::ATTR_TEXTURE_UNIT, std::to_string(textureUnit));
 	if(texture) {
 		std::unique_ptr<DescriptionMap> dataDesc(new DescriptionMap);
 		dataDesc->setString(Consts::ATTR_DATA_TYPE, "image");
+		dataDesc->setString(Consts::ATTR_TEXTURE_ID, id.toString());
 		dataDesc->setValue(Consts::ATTR_TEXTURE_DATA, new Util::ReferenceAttribute<Rendering::Texture>(texture.get()));
 		ExporterTools::addDataEntry(*state.get(), std::move(dataDesc));
 	}
-	return state;
 }
 
 //--------------------------
@@ -428,131 +444,120 @@ std::unique_ptr<DescriptionMap> GLTFImportContext::createMaterialOrRef(uint32_t 
 	if(name.empty())
 		name = "material_" + std::to_string(materialId);
 
-	std::unique_ptr<DescriptionMap> material(new DescriptionMap);
-	material->setString(Consts::TYPE, Consts::TYPE_STATE);
-
 	if(materialIsUsed[materialId]) {
-		material->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_REFERENCE);
-		material->setString(Consts::ATTR_REFERENCED_STATE_ID, name);
-		return material;
+		std::unique_ptr<DescriptionMap> materialState(new DescriptionMap);
+		materialState->setString(Consts::TYPE, Consts::TYPE_STATE);
+		materialState->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_REFERENCE);
+		materialState->setString(Consts::ATTR_REFERENCED_STATE_ID, name);
+		return materialState;
 	}
 	materialIsUsed[materialId] = true;
-	
 
-	AlphaMode alphaMode = decodeAlphaMode(gltfMaterial.alphaMode);
-	material->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_GROUP);
-  material->setString(Consts::ATTR_STATE_ID, name);
-	if(alphaMode == AlphaMode::Blend)
+	auto state = std::make_unique<PbrMaterialState>();
+	PbrMaterial& material = state->getMaterial();
+	
+	std::vector<float> baseColor;
+	for(auto v : gltfMaterial.pbrMetallicRoughness.baseColorFactor)
+		baseColor.emplace_back(static_cast<float>(v));
+	if(baseColor.size() == 4)
+		material.baseColor.factor = Util::Color4f(baseColor);
+	if(gltfMaterial.pbrMetallicRoughness.baseColorTexture.texCoord >= 0)
+		material.baseColor.texCoord = static_cast<uint32_t>(gltfMaterial.pbrMetallicRoughness.baseColorTexture.texCoord);
+
+	material.metallicRoughness.metallicFactor = static_cast<float>(gltfMaterial.pbrMetallicRoughness.metallicFactor);
+	material.metallicRoughness.roughnessFactor = static_cast<float>(gltfMaterial.pbrMetallicRoughness.roughnessFactor);
+	if(gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture.texCoord >= 0)
+		material.metallicRoughness.texCoord = static_cast<uint32_t>(gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture.texCoord);
+	
+	material.normal.scale = static_cast<float>(gltfMaterial.normalTexture.scale);
+	if(gltfMaterial.normalTexture.texCoord >= 0)
+		material.normal.texCoord = static_cast<uint32_t>(gltfMaterial.normalTexture.texCoord);
+
+	material.occlusion.strength = static_cast<float>(gltfMaterial.occlusionTexture.strength);
+	if(gltfMaterial.occlusionTexture.texCoord >= 0)
+		material.occlusion.texCoord = static_cast<uint32_t>(gltfMaterial.occlusionTexture.texCoord);
+	
+	if(gltfMaterial.emissiveFactor.size() == 3)
+		material.emissive.factor = Geometry::Vec3(Geometry::Vec3d(gltfMaterial.emissiveFactor.data()));
+	if(gltfMaterial.emissiveTexture.texCoord >= 0)
+		material.emissive.texCoord = static_cast<uint32_t>(gltfMaterial.emissiveTexture.texCoord);
+
+	material.alphaMode = decodeAlphaMode(gltfMaterial.alphaMode);
+	material.alphaCutoff = static_cast<float>(gltfMaterial.alphaCutoff);
+	material.doubleSided = gltfMaterial.doubleSided;
+	
+	if(material.alphaMode == PbrAlphaMode::Blend)
 		hasBlendMaterial = true;
 	
-	// mark group state as PBR-Material
-	{
-		std::unique_ptr<DescriptionMap> pbrMaterialAttr(new DescriptionMap);
-		pbrMaterialAttr->setString(Consts::TYPE, Consts::TYPE_ATTRIBUTE);
-		pbrMaterialAttr->setString(Consts::ATTR_ATTRIBUTE_NAME, "pbr_material");
-		pbrMaterialAttr->setString(Consts::ATTR_ATTRIBUTE_TYPE, Consts::ATTRIBUTE_TYPE_BOOL);
-		pbrMaterialAttr->setString(Consts::ATTR_ATTRIBUTE_VALUE, "true");
-		ExporterTools::addChildEntry(*material.get(), std::move(pbrMaterialAttr));
-	}
-	
-	{ // shader state
-		std::unique_ptr<DescriptionMap> state(new DescriptionMap);
-		state->setString(Consts::TYPE, Consts::TYPE_STATE);
-		state->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SHADER);
-		// TODO: use shader variants based on material
-		state->setString(Consts::ATTR_SHADER_NAME, "pbr_default.shader");
-		ExporterTools::addChildEntry(*material.get(), std::move(state));
-	}
 
-	// uniform state
-	{
-		std::unique_ptr<DescriptionMap> uniform(new DescriptionMap);
-		uniform->setString(Consts::TYPE, Consts::TYPE_STATE);
-		uniform->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SHADER_UNIFORM);
-
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_VEC4F, "sg_pbrBaseColorFactor", toString(gltfMaterial.pbrMetallicRoughness.baseColorFactor)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_BOOL, "sg_pbrHasBaseColorTexture", std::to_string(gltfMaterial.pbrMetallicRoughness.baseColorTexture.index >= 0)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_INT, "sg_pbrBaseColorTexCoord", std::to_string(gltfMaterial.pbrMetallicRoughness.baseColorTexture.texCoord)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_BOOL, "sg_pbrHasMetallicRoughnessTexture", std::to_string(gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index >= 0)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_INT, "sg_pbrMetallicRoughnessTexCoord", std::to_string(gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture.texCoord)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_FLOAT, "sg_pbrMetallicFactor", std::to_string(gltfMaterial.pbrMetallicRoughness.metallicFactor)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_FLOAT, "sg_pbrRoughnessFactor", std::to_string(gltfMaterial.pbrMetallicRoughness.roughnessFactor)));
-
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_BOOL, "sg_pbrHasNormalTexture", std::to_string(gltfMaterial.normalTexture.index >= 0)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_INT, "sg_pbrNormalTexCoord", std::to_string(gltfMaterial.normalTexture.texCoord)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_FLOAT, "sg_pbrNormalScale", std::to_string(gltfMaterial.normalTexture.scale)));
-
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_BOOL, "sg_pbrHasOcclusionTexture", std::to_string(gltfMaterial.occlusionTexture.index >= 0)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_INT, "sg_pbrOcclusionTexCoord", std::to_string(gltfMaterial.occlusionTexture.texCoord)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_FLOAT, "sg_pbrOcclusionStrength", std::to_string(gltfMaterial.occlusionTexture.strength)));
-
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_VEC3F, "sg_pbrEmissiveFactor", toString(gltfMaterial.emissiveFactor)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_BOOL, "sg_pbrHasEmissiveTexture", std::to_string(gltfMaterial.emissiveTexture.index >= 0)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_INT, "sg_pbrEmissiveTexCoord", std::to_string(gltfMaterial.emissiveTexture.texCoord)));
-		
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_BOOL, "sg_pbrDoubleSided", std::to_string(gltfMaterial.doubleSided)));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_INT, "sg_pbrAlphaMode", std::to_string(static_cast<int32_t>(alphaMode))));
-		ExporterTools::addDataEntry(*uniform, createUniformData(Consts::SHADER_UNIFORM_TYPE_FLOAT, "sg_pbrAlphaCutoff", std::to_string(gltfMaterial.alphaCutoff)));
-		ExporterTools::addChildEntry(*material.get(), std::move(uniform));
-	}
-
-	// twosided
-	if(gltfMaterial.doubleSided) {
-		std::unique_ptr<DescriptionMap> state(new DescriptionMap);
-		state->setString(Consts::TYPE, Consts::TYPE_STATE);
-		state->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_CULL_FACE);
-		state->setString(Consts::ATTR_CULL_FACE, "DISABLED");
-		ExporterTools::addChildEntry(*material.get(), std::move(state));
-	}
-
-	switch(alphaMode) {
-		case AlphaMode::Mask: {
-			// alpha test state
-			std::unique_ptr<DescriptionMap> state(new DescriptionMap);
-			state->setString(Consts::TYPE, Consts::TYPE_STATE);
-			state->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_ALPHA_TEST);
-			state->setString(Consts::ATTR_ALPHA_TEST_MODE, Comparison::functionToString(Comparison::LESS));
-			state->setString(Consts::ATTR_ALPHA_REF_VALUE, std::to_string(gltfMaterial.alphaCutoff));
-			ExporterTools::addChildEntry(*material.get(), std::move(state));
-			break;
-		}
-		case AlphaMode::Blend: {
-			// blend state
-			std::unique_ptr<DescriptionMap> state(new DescriptionMap);
-			state->setString(Consts::TYPE, Consts::TYPE_STATE);
-			state->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_BLENDING);
-			state->setString(Consts::ATTR_BLEND_FUNC_SRC, BlendingParameters::functionToString(BlendingParameters::SRC_ALPHA));
-			state->setString(Consts::ATTR_BLEND_FUNC_DST, BlendingParameters::functionToString(BlendingParameters::ONE_MINUS_SRC_ALPHA));
-			state->setString(Consts::ATTR_BLEND_DEPTH_MASK, std::to_string(false));
-			ExporterTools::addChildEntry(*material.get(), std::move(state));
-			break;
-		}
-		default: break;
-	}
+	SceneManagement::SceneManager sm;
+	ExporterContext ctxt(sm);
+	std::unique_ptr<DescriptionMap> materialState = ExporterTools::createDescriptionForState(ctxt, state.get());
+	materialState->setString(Consts::ATTR_STATE_ID, name);
 
 	// textures
 	if(gltfMaterial.pbrMetallicRoughness.baseColorTexture.index >= 0) {
-		auto state = createTextureDescription(gltfMaterial.pbrMetallicRoughness.baseColorTexture.index, 0);
-		ExporterTools::addChildEntry(*material.get(), std::move(state));
+		addTextureDescription(materialState, gltfMaterial.pbrMetallicRoughness.baseColorTexture.index, Consts::ATTR_PBR_MAT_BASECOLOR_TEXTURE);
 	}
 	if(gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index >= 0) {
-		auto state = createTextureDescription(gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index, 1);
-		ExporterTools::addChildEntry(*material.get(), std::move(state));
+		addTextureDescription(materialState, gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index, Consts::ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXTURE);
 	}
 	if(gltfMaterial.normalTexture.index >= 0) {
-		auto state = createTextureDescription(gltfMaterial.normalTexture.index, 2);
-		ExporterTools::addChildEntry(*material.get(), std::move(state));
+		addTextureDescription(materialState, gltfMaterial.normalTexture.index, Consts::ATTR_PBR_MAT_NORMAL_TEXTURE);
 	}
 	if(gltfMaterial.occlusionTexture.index >= 0) {
-		auto state = createTextureDescription(gltfMaterial.occlusionTexture.index, 3);
-		ExporterTools::addChildEntry(*material.get(), std::move(state));
+		addTextureDescription(materialState, gltfMaterial.occlusionTexture.index, Consts::ATTR_PBR_MAT_OCCLUSION_TEXTURE);
 	}
 	if(gltfMaterial.emissiveTexture.index >= 0) {
-		auto state = createTextureDescription(gltfMaterial.emissiveTexture.index, 4);
-		ExporterTools::addChildEntry(*material.get(), std::move(state));
+		addTextureDescription(materialState, gltfMaterial.emissiveTexture.index, Consts::ATTR_PBR_MAT_EMISSIVE_TEXTURE);
 	}
 
-	return material;
+	return materialState;
+}
+
+//--------------------------
+
+std::unique_ptr<DescriptionMap> GLTFImportContext::createSkinOrRef(uint32_t skinId) {
+	const auto& gltfSkin = model.skins[skinId];
+	std::unique_ptr<DescriptionMap> skin(new DescriptionMap);
+	skin->setString(Consts::TYPE, Consts::TYPE_STATE);
+
+	// name
+  std::string name = gltfSkin.name;
+	if(name.empty())
+		name = "skin_" + std::to_string(skinId);
+	
+	if(skinIsUsed[skinId]) {
+		skin->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_REFERENCE);
+		skin->setString(Consts::ATTR_REFERENCED_STATE_ID, name);
+		return skin;
+	}
+	skinIsUsed[skinId] = true;
+	skin->setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_SKINNING_STATE);
+	skin->setString(Consts::ATTR_STATE_ID, name);
+
+	auto matAcc = createAttributeAccessor(model, gltfSkin.inverseBindMatrices);
+	WARN_AND_RETURN_IF(!matAcc || matAcc->getAttribute().getComponentCount() != 16, "Failed to import skin! Invalid matrix accessor!", nullptr);
+
+	for(uint64_t i=0; i<gltfSkin.joints.size(); ++i) {
+		auto jointId = gltfSkin.joints[i];
+		std::vector<float> values = matAcc->readValues<float>(i);
+		Geometry::Matrix4x4 mat(values.data());
+		mat.transpose();
+		std::string jointName = model.nodes[jointId].name;
+		if(jointName.empty())
+			jointName = "node_" + std::to_string(jointId);
+		
+		std::unique_ptr<DescriptionMap> joint(new DescriptionMap);
+		joint->setString(Consts::TYPE, Consts::TYPE_SKINNING_JOINT);
+		joint->setString(Consts::ATTR_SKINNING_JOINT_ID, jointName);
+		std::stringstream ss;
+		ss << mat;
+		joint->setString(Consts::ATTR_SKINNING_INVERSE_BINDING_MATRIX, ss.str());
+		ExporterTools::addChildEntry(*skin.get(), std::move(joint));
+	}
+
+	return skin;
 }
 
 //--------------------------
@@ -607,6 +612,10 @@ std::unique_ptr<DescriptionMap> GLTFImportContext::initGeometryNode(uint32_t nod
 std::unique_ptr<DescriptionMap> GLTFImportContext::createNode(uint32_t nodeId) {
 	const auto& gltfNode = model.nodes[nodeId];
 	std::unique_ptr<DescriptionMap> node;
+	
+	if(gltfNode.skin >= 0) {
+		activeSkin = gltfNode.skin;
+	}
 
 	if(gltfNode.mesh >= 0) {
 		if(gltfNode.children.empty()) {
@@ -623,7 +632,12 @@ std::unique_ptr<DescriptionMap> GLTFImportContext::createNode(uint32_t nodeId) {
 		node->setString(Consts::TYPE, Consts::TYPE_NODE);
 		node->setString(Consts::ATTR_NODE_TYPE, Consts::NODE_TYPE_LIST);
 	}
-	node->setString(Consts::ATTR_NODE_ID, gltfNode.name);
+	
+	// name
+  std::string name = gltfNode.name;
+	if(name.empty())
+		name = "node_" + std::to_string(nodeId);
+	node->setString(Consts::ATTR_NODE_ID, name);
 	
 	// transformation
 	if(!gltfNode.matrix.empty()) {
@@ -667,10 +681,19 @@ std::unique_ptr<DescriptionMap> GLTFImportContext::createNode(uint32_t nodeId) {
 		}
 	}
 
+	// skinning
+	if(gltfNode.skin >= 0) {
+		ExporterTools::addChildEntry(*node.get(), std::move(createSkinOrRef(gltfNode.skin)));
+	}
+
 	// child nodes
 	for(uint32_t childId : gltfNode.children) {
 		auto child = createNode(childId);
 		ExporterTools::addChildEntry(*node.get(), std::move(child));
+	}
+	
+	if(gltfNode.skin >= 0) {
+		activeSkin = -1;
 	}
 
 	return node;
@@ -744,8 +767,9 @@ bool GLTFImportContext::loadFile(const Util::FileName& filename) {
 		textures[textureId] = createTexture(textureId);
 	}
 
-	// init material counts
+	// init counts
 	materialIsUsed.resize(model.materials.size());
+	skinIsUsed.resize(model.skins.size());
 
 	return true;
 }
