@@ -352,6 +352,54 @@ MINSGAPI uint32_t getTreeDepth(Node * rootNode);
 
 // -----------------------------------------------------------------------------------------------
 
+
+template<typename T> inline Node* getNodePtr(const T& node) { return node; }
+template<> inline Node* getNodePtr(const Util::Reference<Node>& node) { return node.get(); }
+
+/**
+ * finds the common ancestor of a set of nodes
+ *
+ * @param begin begin iterator of a node container
+ * @param end end iterator of a node container
+ * @return Lowest common ancestor of nodes
+ */
+template<typename NodeIterator>
+Node* findCommonAncestor(const NodeIterator& begin, const NodeIterator& end) {
+	if(begin == end)
+		return nullptr;
+	std::deque<Node*> commonPath;
+	bool firstPath=true;
+	for(auto it = begin; it != end; ++it) {
+		std::deque<Node*> path1;
+		Node* node = getNodePtr(*it);
+		while(node) {
+			path1.emplace_front(node);
+			node = node->getParent();
+		}
+
+		if(firstPath) {
+			commonPath.swap(path1);
+			firstPath = false;
+		} else {
+			// compare current path with common path
+			std::deque<Node*> path2;
+			path2.swap(commonPath);
+			Node* n1 = nullptr;
+			Node* n2 = nullptr;
+			while(n1 == n2 && !path1.empty() && !path2.empty()) {
+				n1 = path1.front();
+				n2 = path2.front();
+				path1.pop_front();
+				path2.pop_front();
+				if(n1 == n2)
+					commonPath.emplace_back(n1);
+			}
+		}
+	}
+
+	return commonPath.back();
+}
+
 //! @}
 }
 #endif // STDNODEVISITORS_H
