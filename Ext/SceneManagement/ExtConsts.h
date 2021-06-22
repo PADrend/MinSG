@@ -188,6 +188,56 @@ MINSGAPI extern const Util::StringIdentifier ATTR_SHADOW_LIGHT_NODE;
 MINSGAPI extern const Util::StringIdentifier ATTR_SHADOW_STATIC;
 //	@}
 // ------------------------------------------------------------
+//!	@name Skinning state
+//	@{
+MINSGAPI extern cStr_t STATE_TYPE_SKINNING_STATE;
+MINSGAPI extern const Util::StringIdentifier ATTR_SKINNING_JOINT_ID;
+MINSGAPI extern const Util::StringIdentifier ATTR_SKINNING_INVERSE_BINDING_MATRIX;
+MINSGAPI extern cStr_t TYPE_SKINNING_JOINT;
+//	@}
+// ------------------------------------------------------------
+//!	@name IBL Environment state
+//	@{
+MINSGAPI extern cStr_t STATE_TYPE_IBL_ENV_STATE;
+MINSGAPI extern const Util::StringIdentifier ATTR_IBL_ENV_FILE;
+MINSGAPI extern const Util::StringIdentifier ATTR_IBL_ENV_TEXTURE;
+MINSGAPI extern const Util::StringIdentifier ATTR_IBL_ENV_DRAW_ENV;
+MINSGAPI extern const Util::StringIdentifier ATTR_IBL_ENV_LOD;
+//	@}
+// ------------------------------------------------------------
+//!	@name PBR Material state
+//	@{
+MINSGAPI extern cStr_t STATE_TYPE_PBR_MATERIAL_STATE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_BASECOLOR_FACTOR;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_BASECOLOR_TEXTURE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_BASECOLOR_TEXCOORD;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_BASECOLOR_TEXUNIT;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_METALLICFACTOR;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_ROUGHNESSFACTOR;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXTURE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXCOORD;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXUNIT;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_NORMAL_SCALE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_NORMAL_TEXTURE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_NORMAL_TEXCOORD;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_NORMAL_TEXUNIT;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_OCCLUSION_STRENGTH;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_OCCLUSION_TEXTURE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_OCCLUSION_TEXCOORD;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_OCCLUSION_TEXUNIT;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_FACTOR;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXTURE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXCOORD;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXUNIT;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_ALPHAMODE;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_ALPHACUTOFF;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_DOUBLESIDED;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_SHADINGMODEL;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_SKINNING;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_IBL;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_SHADOW;
+//	@}
+// ------------------------------------------------------------
 
 }
 }
