@@ -60,6 +60,7 @@
 #include <Rendering/Texture/TextureUtils.h>
 #include <Util/Serialization/Serialization.h>
 #include <Util/Encoding.h>
+#include <Util/Graphics/Bitmap.h>
 
 #include <cassert>
 
