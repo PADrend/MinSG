@@ -78,6 +78,7 @@
 #include <list>
 #include <functional>
 #include <cassert>
+#include <memory>
 
 namespace MinSG {
 namespace SceneManagement {
@@ -400,7 +401,7 @@ static bool importIBLEnvState(ImportContext & ctxt, const std::string & stateTyp
 	if(stateType != Consts::STATE_TYPE_IBL_ENV_STATE) // check parent != nullptr is done by SceneManager
 		return false;
 
-	std::unique_ptr<IBLEnvironmentState> state = std::make_unique<IBLEnvironmentState>();
+	std::unique_ptr<IBLEnvironmentState> state(new IBLEnvironmentState);
 	state->setDrawEnvironment(d.getBool(Consts::ATTR_IBL_ENV_DRAW_ENV));
 	state->setLOD(d.getFloat(Consts::ATTR_IBL_ENV_LOD));
 	const Util::FileName hdrFilename(d.getString(Consts::ATTR_IBL_ENV_FILE));
@@ -560,7 +561,7 @@ static bool importPbrMaterialState(ImportContext & ctxt, const std::string & sta
 		}
 	}
 
-	std::unique_ptr<PbrMaterialState> state = std::make_unique<PbrMaterialState>();
+	std::unique_ptr<PbrMaterialState> state(new PbrMaterialState);
 	state->setMaterial(material);
 	state->setSearchPaths(ctxt.fileLocator.getSearchPaths());
 	ImporterTools::finalizeState(ctxt, state.get(), d);

@@ -38,6 +38,8 @@
 #include <Geometry/Quaternion.h>
 #include <Geometry/SRT.h>
 
+#include <memory>
+
 #define REPEAT 10497
 #define NEAREST 9728
 #define NEAREST_MIPMAP_NEAREST 9984
@@ -453,7 +455,7 @@ std::unique_ptr<DescriptionMap> GLTFImportContext::createMaterialOrRef(uint32_t 
 	}
 	materialIsUsed[materialId] = true;
 
-	auto state = std::make_unique<PbrMaterialState>();
+	std::unique_ptr<PbrMaterialState> state(new PbrMaterialState);
 	PbrMaterial& material = state->getMaterial();
 	
 	std::vector<float> baseColor;

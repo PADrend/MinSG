@@ -347,7 +347,7 @@ void IBLEnvironmentState::loadEnvironmentMapFromHDR(const Util::FileName& filena
 
 void IBLEnvironmentState::setEnvironmentMap(const Util::Reference<Rendering::Texture>& texture) {
 	hdrEquirectangularMap = nullptr;
-	hdrFile = {};
+	hdrFile = Util::FileName{};
 	environmentMap = texture;
 	irradianceMap = nullptr;
 	prefilteredEnvMap = nullptr;
@@ -594,7 +594,7 @@ void IBLEnvironmentState::generateFromScene(FrameContext& context, Node* node, c
 	irradianceMap = nullptr;
 	prefilteredEnvMap = nullptr;
 	hdrEquirectangularMap = nullptr;
-	hdrFile = {};
+	hdrFile = Util::FileName{};
 	activate();
 }
 
