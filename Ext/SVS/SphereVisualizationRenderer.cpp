@@ -27,6 +27,7 @@
 #include <Rendering/Mesh/VertexDescription.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/MeshUtils/MeshBuilder.h>
+#include <Rendering/MeshUtils/PrimitiveShapes.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Draw.h>
