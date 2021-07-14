@@ -196,22 +196,27 @@ State::stateResult_t PbrMaterialState::doEnableState(FrameContext & context, Nod
 			return State::STATE_SKIP_RENDERING;
 		}
 	}
-	
-	if(pbrShader) {
-		rc.pushAndSetShader(pbrShader.get());
 
-		pbrShader->setUniform(rc, Uniform(sg_pbrBaseColorFactor, material.baseColor.factor), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrBaseColorTexCoord, static_cast<int32_t>(material.baseColor.texCoord)), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrMetallicRoughnessTexCoord, static_cast<int32_t>(material.metallicRoughness.texCoord)), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrMetallicFactor, material.metallicRoughness.metallicFactor), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrRoughnessFactor, material.metallicRoughness.roughnessFactor), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrNormalTexCoord, static_cast<int32_t>(material.normal.texCoord)), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrNormalScale, material.normal.scale), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrOcclusionTexCoord, static_cast<int32_t>(material.occlusion.texCoord)), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrOcclusionStrength, material.occlusion.strength), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrEmissiveTexCoord, static_cast<int32_t>(material.emissive.texCoord)), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrEmissiveFactor, material.emissive.factor), false);
-		pbrShader->setUniform(rc, Uniform(sg_pbrAlphaCutoff, material.alphaCutoff), false);
+	auto activeShader = pbrShader.get();
+	if(rp.getFlag(NO_SHADING)) {
+		activeShader = rc.getActiveShader();
+	} else if(activeShader) {
+		rc.pushAndSetShader(activeShader);
+	}
+	
+	if(activeShader) {
+		activeShader->setUniform(rc, Uniform(sg_pbrBaseColorFactor, material.baseColor.factor), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrBaseColorTexCoord, static_cast<int32_t>(material.baseColor.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrMetallicRoughnessTexCoord, static_cast<int32_t>(material.metallicRoughness.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrMetallicFactor, material.metallicRoughness.metallicFactor), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrRoughnessFactor, material.metallicRoughness.roughnessFactor), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrNormalTexCoord, static_cast<int32_t>(material.normal.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrNormalScale, material.normal.scale), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrOcclusionTexCoord, static_cast<int32_t>(material.occlusion.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrOcclusionStrength, material.occlusion.strength), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrEmissiveTexCoord, static_cast<int32_t>(material.emissive.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrEmissiveFactor, material.emissive.factor), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrAlphaCutoff, material.alphaCutoff), false);
 	}
 
 	if(material.baseColor.texture)
@@ -255,7 +260,7 @@ State::stateResult_t PbrMaterialState::doEnableState(FrameContext & context, Nod
 void PbrMaterialState::doDisableState(FrameContext & context, Node * /*node*/, const RenderParam & rp) {
 	auto& rc = context.getRenderingContext();
 
-	if(pbrShader) {
+	if(pbrShader && !rp.getFlag(NO_SHADING)) {
 		rc.popShader();
 	}
 

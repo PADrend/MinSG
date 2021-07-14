@@ -526,7 +526,7 @@ State::stateResult_t IBLEnvironmentState::doEnableState(FrameContext & context, 
 	if(!environmentMap)
 		return State::STATE_SKIPPED;
 
-	if(drawEnvironmentMap && environmentMap.isNotNull()) {
+	if(drawEnvironmentMap && environmentMap.isNotNull() && !rp.getFlag(NO_SHADING)) {
 		rc.pushAndSetShader(environmentShader.get());
 		environmentShader->setUniform(rc, Uniform("lod", lod));
 		rc.pushAndSetTexture(0, environmentMap.get());
