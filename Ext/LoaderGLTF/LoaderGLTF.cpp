@@ -39,6 +39,7 @@
 #include <Geometry/SRT.h>
 
 #include <memory>
+#include <unordered_set>
 
 #define REPEAT 10497
 #define NEAREST 9728
@@ -68,6 +69,7 @@ using namespace Rendering;
 static const Util::StringIdentifier JOINTS_ID("sg_Joints0");
 static const Util::StringIdentifier WEIGHTS_ID("sg_Weights0");
 
+static const Util::StringIdentifier KHR_texture_transform("KHR_texture_transform");
 
 static const std::unordered_map<std::string, Util::StringIdentifier> remappedAttributeNames{
 	{"POSITION", VertexAttributeIds::POSITION},
@@ -223,14 +225,39 @@ inline void addStringAttribute(const std::unique_ptr<DescriptionMap>& desc, cons
 
 //--------------------------
 
-static std::unique_ptr<DescriptionMap> createUniformData(const std::string& type, const std::string& name, const std::string& data) {
-	std::unique_ptr<DescriptionMap> nd(new DescriptionMap);
-	nd->setString(Consts::TYPE, Consts::TYPE_DATA);
-	nd->setString(Consts::ATTR_DATA_TYPE, Consts::DATA_TYPE_SHADER_UNIFORM);
-	nd->setString(Consts::ATTR_SHADER_UNIFORM_NAME, name);
-	nd->setString(Consts::ATTR_SHADER_UNIFORM_TYPE, type);
-	nd->setString(Consts::ATTR_SHADER_UNIFORM_VALUES, data);
-	return nd;
+// KHR_texture_transform
+static Geometry::Matrix3x3 getTextureTransform(const tinygltf::ExtensionMap& extensionMap) {
+	using namespace Geometry;
+	auto it = extensionMap.find("KHR_texture_transform");
+	if(it != extensionMap.end()) {
+		Vec2 offset(0.0f, 0.0f);
+		Vec2 scale(1.0f, 1.0f);
+		float rotation = 0.0f;
+		auto offsetValue = it->second.Get("offset");
+		if(offsetValue.IsArray() && offsetValue.Get<tinygltf::Value::Array>().size() >= 2) {
+			auto offsetValues = offsetValue.Get<tinygltf::Value::Array>();
+			offset = {static_cast<float>(offsetValues[0].GetNumberAsDouble()), static_cast<float>(offsetValues[1].GetNumberAsDouble())};
+		}
+		auto scaleValue = it->second.Get("scale");
+		if(scaleValue.IsArray() && scaleValue.Get<tinygltf::Value::Array>().size() >= 2) {
+			auto scaleValues = scaleValue.Get<tinygltf::Value::Array>();
+			scale = {static_cast<float>(scaleValues[0].GetNumberAsDouble()), static_cast<float>(scaleValues[1].GetNumberAsDouble())};
+		}
+		auto rotationValue = it->second.Get("rotation");
+		if(rotationValue.IsNumber()) {
+			rotation = static_cast<float>(rotationValue.GetNumberAsDouble());
+		}
+		Matrix3x3 T(1,0,0, 0,1,0, offset.x(), offset.y(), 1);
+		Matrix3x3 R(
+			cos(rotation), sin(rotation), 0,
+			-sin(rotation), cos(rotation), 0,
+									0, 						0, 1
+		);
+		Matrix3x3 S(scale.x(),0,0, 0,scale.y(),0, 0,0,1);
+		return T * R * S;
+	} else {
+		return {};
+	}
 }
 
 //--------------------------
@@ -244,6 +271,7 @@ public:
 	std::vector<Util::Reference<Rendering::Texture>> textures;
 	std::vector<bool> materialIsUsed;
 	std::vector<bool> skinIsUsed;
+	std::unordered_set<Util::StringIdentifier> extensions;
 	Util::FileLocator locator;
 	bool hasBlendMaterial = false;
 	int32_t activeSkin = -1;
@@ -491,6 +519,14 @@ std::unique_ptr<DescriptionMap> GLTFImportContext::createMaterialOrRef(uint32_t 
 	if(material.alphaMode == PbrAlphaMode::Blend)
 		hasBlendMaterial = true;
 	
+	// KHR_texture_transform
+	if(extensions.find(KHR_texture_transform) != extensions.end()) {
+		material.baseColor.texTransform = getTextureTransform(gltfMaterial.pbrMetallicRoughness.baseColorTexture.extensions);
+		material.metallicRoughness.texTransform = getTextureTransform(gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture.extensions);
+		material.normal.texTransform = getTextureTransform(gltfMaterial.normalTexture.extensions);
+		material.occlusion.texTransform = getTextureTransform(gltfMaterial.occlusionTexture.extensions);
+		material.emissive.texTransform = getTextureTransform(gltfMaterial.emissiveTexture.extensions);
+	}
 
 	SceneManagement::SceneManager sm;
 	ExporterContext ctxt(sm);
@@ -754,6 +790,10 @@ bool GLTFImportContext::loadFile(const Util::FileName& filename) {
 	WARN_IF(!warningMsg.empty(), warningMsg);
 	WARN_IF(!errorMsg.empty(), errorMsg);
 	WARN_AND_RETURN_IF(!success, "Failed to parse glTF", false);
+
+	for(const auto& ext : model.extensionsUsed) {
+		extensions.emplace(ext);
+	}
 
 	// create meshes
 	for(uint32_t meshId=0; meshId<model.meshes.size(); ++meshId) {

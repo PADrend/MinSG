@@ -515,26 +515,37 @@ static Rendering::Texture* importTextureFromData(ImportContext & ctxt, const Des
 static bool importPbrMaterialState(ImportContext & ctxt, const std::string & stateType, const DescriptionMap & d, Node * parent) {
 	if(stateType != Consts::STATE_TYPE_PBR_MATERIAL_STATE) // check parent != nullptr is done by SceneManager
 		return false;
+	
+	
+	auto deserializeMatrix = [](const std::string& s) {
+		auto values = Util::StringUtils::toFloats(s);
+		return values.size() >= 9 ? Geometry::Matrix3x3(values.data()) : Geometry::Matrix3x3();
+	};
 
 	PbrMaterial material{};
 	auto colValues = Util::StringUtils::toFloats(d.getString(Consts::ATTR_PBR_MAT_BASECOLOR_FACTOR));
 	if(colValues.size() == 4)
 		material.baseColor.factor = Util::Color4f(colValues);
+	material.baseColor.texTransform = deserializeMatrix(d.getString(Consts::ATTR_PBR_MAT_BASECOLOR_TEXTRANSFORM));
 	material.baseColor.texCoord = d.getUInt(Consts::ATTR_PBR_MAT_BASECOLOR_TEXCOORD, material.baseColor.texCoord);
 	material.baseColor.texUnit = static_cast<uint8_t>(d.getUInt(Consts::ATTR_PBR_MAT_BASECOLOR_TEXUNIT, material.baseColor.texUnit));
 	material.metallicRoughness.metallicFactor = d.getFloat(Consts::ATTR_PBR_MAT_METALLICFACTOR, material.metallicRoughness.metallicFactor);
 	material.metallicRoughness.roughnessFactor = d.getFloat(Consts::ATTR_PBR_MAT_ROUGHNESSFACTOR, material.metallicRoughness.roughnessFactor);
+	material.metallicRoughness.texTransform = deserializeMatrix(d.getString(Consts::ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXTRANSFORM));
 	material.metallicRoughness.texCoord = d.getUInt(Consts::ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXCOORD, material.metallicRoughness.texCoord);
 	material.metallicRoughness.texUnit = static_cast<uint8_t>(d.getUInt(Consts::ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXUNIT, material.metallicRoughness.texUnit));
 	material.normal.scale = d.getFloat(Consts::ATTR_PBR_MAT_NORMAL_SCALE, material.normal.scale);
+	material.normal.texTransform = deserializeMatrix(d.getString(Consts::ATTR_PBR_MAT_NORMAL_TEXTRANSFORM));
 	material.normal.texCoord = d.getUInt(Consts::ATTR_PBR_MAT_NORMAL_TEXCOORD, material.normal.texCoord);
 	material.normal.texUnit = static_cast<uint8_t>(d.getUInt(Consts::ATTR_PBR_MAT_NORMAL_TEXUNIT, material.normal.texUnit));
 	material.occlusion.strength = d.getFloat(Consts::ATTR_PBR_MAT_OCCLUSION_STRENGTH, material.occlusion.strength);
+	material.occlusion.texTransform = deserializeMatrix(d.getString(Consts::ATTR_PBR_MAT_OCCLUSION_TEXTRANSFORM));
 	material.occlusion.texCoord = d.getUInt(Consts::ATTR_PBR_MAT_OCCLUSION_TEXCOORD, material.occlusion.texCoord);
 	material.occlusion.texUnit = static_cast<uint8_t>(d.getUInt(Consts::ATTR_PBR_MAT_OCCLUSION_TEXUNIT, material.occlusion.texUnit));
 	auto emValues = Util::StringUtils::toFloats(d.getString(Consts::ATTR_PBR_MAT_EMISSIVE_FACTOR));
 	if(emValues.size() == 3)
 		material.emissive.factor = Geometry::Vec3(emValues.data());
+	material.emissive.texTransform = deserializeMatrix(d.getString(Consts::ATTR_PBR_MAT_EMISSIVE_TEXTRANSFORM));
 	material.emissive.texCoord = d.getUInt(Consts::ATTR_PBR_MAT_EMISSIVE_TEXCOORD, material.emissive.texCoord);
 	material.emissive.texUnit = static_cast<uint8_t>(d.getUInt(Consts::ATTR_PBR_MAT_EMISSIVE_TEXUNIT, material.emissive.texUnit));
 	material.alphaMode = static_cast<PbrAlphaMode>(d.getInt(Consts::ATTR_PBR_MAT_ALPHAMODE, static_cast<int32_t>(material.alphaMode)));

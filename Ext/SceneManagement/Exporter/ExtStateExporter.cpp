@@ -288,26 +288,37 @@ static void exportPbrMaterialState(ExporterContext &,DescriptionMap & desc,State
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_PBR_MATERIAL_STATE);
 	const auto& material = envState->getMaterial();
 
+	auto serializeMatrix = [](const Geometry::Matrix3x3& mat) {
+		std::stringstream ss;
+		ss << mat;
+		return Util::GenericAttribute::createString(ss.str());
+	};
+
 	std::stringstream colStr;
 	colStr << material.baseColor.factor;
 	desc.setValue(Consts::ATTR_PBR_MAT_BASECOLOR_FACTOR, Util::GenericAttribute::createString(colStr.str())); 
 	desc.setValue(Consts::ATTR_PBR_MAT_BASECOLOR_TEXCOORD, Util::GenericAttribute::createNumber(material.baseColor.texCoord)); 
-	desc.setValue(Consts::ATTR_PBR_MAT_BASECOLOR_TEXUNIT, Util::GenericAttribute::createNumber(material.baseColor.texUnit)); 
+	desc.setValue(Consts::ATTR_PBR_MAT_BASECOLOR_TEXUNIT, Util::GenericAttribute::createNumber(material.baseColor.texUnit));
+	desc.setValue(Consts::ATTR_PBR_MAT_BASECOLOR_TEXTRANSFORM, serializeMatrix(material.baseColor.texTransform)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_METALLICFACTOR, Util::GenericAttribute::createNumber(material.metallicRoughness.metallicFactor)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_ROUGHNESSFACTOR, Util::GenericAttribute::createNumber(material.metallicRoughness.roughnessFactor)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXCOORD, Util::GenericAttribute::createNumber(material.metallicRoughness.texCoord)); 
-	desc.setValue(Consts::ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXUNIT, Util::GenericAttribute::createNumber(material.metallicRoughness.texUnit)); 
+	desc.setValue(Consts::ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXUNIT, Util::GenericAttribute::createNumber(material.metallicRoughness.texUnit));
+	desc.setValue(Consts::ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXTRANSFORM, serializeMatrix(material.metallicRoughness.texTransform)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_NORMAL_SCALE, Util::GenericAttribute::createNumber(material.normal.scale)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_NORMAL_TEXCOORD, Util::GenericAttribute::createNumber(material.normal.texCoord)); 
-	desc.setValue(Consts::ATTR_PBR_MAT_NORMAL_TEXUNIT, Util::GenericAttribute::createNumber(material.normal.texUnit)); 
+	desc.setValue(Consts::ATTR_PBR_MAT_NORMAL_TEXUNIT, Util::GenericAttribute::createNumber(material.normal.texUnit));
+	desc.setValue(Consts::ATTR_PBR_MAT_NORMAL_TEXTRANSFORM, serializeMatrix(material.normal.texTransform)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_OCCLUSION_STRENGTH, Util::GenericAttribute::createNumber(material.occlusion.strength)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_OCCLUSION_TEXCOORD, Util::GenericAttribute::createNumber(material.occlusion.texCoord)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_OCCLUSION_TEXUNIT, Util::GenericAttribute::createNumber(material.occlusion.texUnit));
+	desc.setValue(Consts::ATTR_PBR_MAT_OCCLUSION_TEXTRANSFORM, serializeMatrix(material.occlusion.texTransform));
 	std::stringstream emStr;
 	emStr << material.emissive.factor;
 	desc.setValue(Consts::ATTR_PBR_MAT_EMISSIVE_FACTOR, Util::GenericAttribute::createString(emStr.str())); 
 	desc.setValue(Consts::ATTR_PBR_MAT_EMISSIVE_TEXCOORD, Util::GenericAttribute::createNumber(material.emissive.texCoord)); 
-	desc.setValue(Consts::ATTR_PBR_MAT_EMISSIVE_TEXUNIT, Util::GenericAttribute::createNumber(material.emissive.texUnit)); 
+	desc.setValue(Consts::ATTR_PBR_MAT_EMISSIVE_TEXUNIT, Util::GenericAttribute::createNumber(material.emissive.texUnit));
+	desc.setValue(Consts::ATTR_PBR_MAT_EMISSIVE_TEXTRANSFORM, serializeMatrix(material.emissive.texTransform)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_ALPHAMODE, Util::GenericAttribute::createNumber(static_cast<int32_t>(material.alphaMode))); 
 	desc.setValue(Consts::ATTR_PBR_MAT_ALPHACUTOFF, Util::GenericAttribute::createNumber(material.alphaCutoff)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_DOUBLESIDED, Util::GenericAttribute::createBool(material.doubleSided)); 

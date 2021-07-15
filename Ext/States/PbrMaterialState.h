@@ -15,6 +15,7 @@
 #include <Util/IO/FileLocator.h>
 #include <Util/Graphics/Color.h>
 #include <Geometry/Vec3.h>
+#include <Geometry/Matrix3x3.h>
 
 namespace Rendering {
 class Texture;
@@ -41,6 +42,7 @@ struct PbrBaseColor {
 	Util::Reference<Rendering::Texture> texture;
 	uint32_t texCoord = 0;
 	uint8_t texUnit = 0;
+	Geometry::Matrix3x3 texTransform;
 };
 
 struct PbrMetallicRoughness {
@@ -49,6 +51,7 @@ struct PbrMetallicRoughness {
 	Util::Reference<Rendering::Texture> texture;
 	uint32_t texCoord = 0;
 	uint8_t texUnit = 1;
+	Geometry::Matrix3x3 texTransform;
 };
 
 struct PbrNormal {
@@ -56,6 +59,7 @@ struct PbrNormal {
 	Util::Reference<Rendering::Texture> texture;
 	uint32_t texCoord = 0;
 	uint8_t texUnit = 2;
+	Geometry::Matrix3x3 texTransform;
 };
 
 struct PbrOcclusion {
@@ -63,6 +67,7 @@ struct PbrOcclusion {
 	Util::Reference<Rendering::Texture> texture;
 	uint32_t texCoord = 0;
 	uint8_t texUnit = 3;
+	Geometry::Matrix3x3 texTransform;
 };
 
 struct PbrEmissive {
@@ -70,6 +75,7 @@ struct PbrEmissive {
 	Util::Reference<Rendering::Texture> texture;
 	uint32_t texCoord = 0;
 	uint8_t texUnit = 4;
+	Geometry::Matrix3x3 texTransform;
 };
 
 struct PbrMaterial {
@@ -114,6 +120,8 @@ class PbrMaterialState : public State {
 		void setBaseColorTexUnit(uint32_t v) { material.baseColor.texUnit = static_cast<uint8_t>(v); dirty = true; }
 		const Util::Reference<Rendering::Texture>& getBaseColorTexture() const { return material.baseColor.texture; }
 		void setBaseColorTexture(const Util::Reference<Rendering::Texture>& v) { material.baseColor.texture = v; dirty = true; }
+		void setBaseColorTexTransform(const Geometry::Matrix3x3& mat) { material.baseColor.texTransform = mat; }
+		const Geometry::Matrix3x3& getBaseColorTexTransform() const { return material.baseColor.texTransform; }
 
 		float getMetallicFactor() const { return material.metallicRoughness.metallicFactor; }
 		void setMetallicFactor(float v) { material.metallicRoughness.metallicFactor = v; }
@@ -125,6 +133,8 @@ class PbrMaterialState : public State {
 		void setMetallicRoughnessTexUnit(uint32_t v) { material.metallicRoughness.texUnit = static_cast<uint8_t>(v); dirty = true; }
 		const Util::Reference<Rendering::Texture>& getMetallicRoughnessTexture() const { return material.metallicRoughness.texture; }
 		void setMetallicRoughnessTexture(const Util::Reference<Rendering::Texture>& v) { material.metallicRoughness.texture = v; dirty = true; }
+		void setMetallicRoughnessTexTransform(const Geometry::Matrix3x3& mat) { material.metallicRoughness.texTransform = mat; }
+		const Geometry::Matrix3x3& getMetallicRoughnessTexTransform() const { return material.metallicRoughness.texTransform; }
 
 		float getNormalScale() const { return material.normal.scale; }
 		void setNormalScale(float v) { material.normal.scale = v; }
@@ -134,6 +144,8 @@ class PbrMaterialState : public State {
 		void setNormalTexUnit(uint32_t v) { material.normal.texUnit = static_cast<uint8_t>(v); dirty = true; }
 		const Util::Reference<Rendering::Texture>& getNormalTexture() const { return material.normal.texture; }
 		void setNormalTexture(const Util::Reference<Rendering::Texture>& v) { material.normal.texture = v; dirty = true; }
+		void setNormalTexTransform(const Geometry::Matrix3x3& mat) { material.normal.texTransform = mat; }
+		const Geometry::Matrix3x3& getNormalTexTransform() const { return material.normal.texTransform; }
 
 		float getOcclusionStrength() const { return material.occlusion.strength; }
 		void setOcclusionStrength(float v) { material.occlusion.strength = v; }
@@ -143,6 +155,8 @@ class PbrMaterialState : public State {
 		void setOcclusionTexUnit(uint32_t v) { material.occlusion.texUnit = static_cast<uint8_t>(v); dirty = true; }
 		const Util::Reference<Rendering::Texture>& getOcclusionTexture() const { return material.occlusion.texture; }
 		void setOcclusionTexture(const Util::Reference<Rendering::Texture>& v) { material.occlusion.texture = v; dirty = true; }
+		void setOcclusionTexTransform(const Geometry::Matrix3x3& mat) { material.occlusion.texTransform = mat; }
+		const Geometry::Matrix3x3& getOcclusionTexTransform() const { return material.occlusion.texTransform; }
 
 		Geometry::Vec3 getEmissiveFactor() const { return material.emissive.factor; }
 		void setEmissiveFactor(const Geometry::Vec3& v) { material.emissive.factor = v; }
@@ -152,6 +166,8 @@ class PbrMaterialState : public State {
 		void setEmissiveTexUnit(uint32_t v) { material.emissive.texUnit = static_cast<uint8_t>(v); dirty = true; }
 		const Util::Reference<Rendering::Texture>& getEmissiveTexture() const { return material.emissive.texture; }
 		void setEmissiveTexture(const Util::Reference<Rendering::Texture>& v) { material.emissive.texture = v; dirty = true; }
+		void setEmissiveTexTransform(const Geometry::Matrix3x3& mat) { material.emissive.texTransform = mat; }
+		const Geometry::Matrix3x3& getEmissiveTexTransform() const { return material.emissive.texTransform; }
 
 		PbrAlphaMode getAlphaMode() const { return material.alphaMode; }
 		void setAlphaMode(PbrAlphaMode v) { material.alphaMode = v; dirty = true; }

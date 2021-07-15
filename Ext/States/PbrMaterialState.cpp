@@ -32,19 +32,24 @@ using namespace Geometry;
 static const Uniform::UniformName sg_pbrBaseColorFactor("sg_pbrBaseColorFactor");
 static const Uniform::UniformName sg_pbrHasBaseColorTexture("sg_pbrHasBaseColorTexture");
 static const Uniform::UniformName sg_pbrBaseColorTexCoord("sg_pbrBaseColorTexCoord");
+static const Uniform::UniformName sg_pbrBaseColorTexTransform("sg_pbrBaseColorTexTransform");
 static const Uniform::UniformName sg_pbrHasMetallicRoughnessTexture("sg_pbrHasMetallicRoughnessTexture");
 static const Uniform::UniformName sg_pbrMetallicRoughnessTexCoord("sg_pbrMetallicRoughnessTexCoord");
+static const Uniform::UniformName sg_pbrMetallicRoughnessTexTransform("sg_pbrMetallicRoughnessTexTransform");
 static const Uniform::UniformName sg_pbrMetallicFactor("sg_pbrMetallicFactor");
 static const Uniform::UniformName sg_pbrRoughnessFactor("sg_pbrRoughnessFactor");
 static const Uniform::UniformName sg_pbrHasNormalTexture("sg_pbrHasNormalTexture");
 static const Uniform::UniformName sg_pbrNormalTexCoord("sg_pbrNormalTexCoord");
+static const Uniform::UniformName sg_pbrNormalTexTransform("sg_pbrNormalTexTransform");
 static const Uniform::UniformName sg_pbrNormalScale("sg_pbrNormalScale");
 static const Uniform::UniformName sg_pbrHasOcclusionTexture("sg_pbrHasOcclusionTexture");
 static const Uniform::UniformName sg_pbrOcclusionTexCoord("sg_pbrOcclusionTexCoord");
+static const Uniform::UniformName sg_pbrOcclusionTexTransform("sg_pbrOcclusionTexTransform");
 static const Uniform::UniformName sg_pbrOcclusionStrength("sg_pbrOcclusionStrength");
 static const Uniform::UniformName sg_pbrEmissiveFactor("sg_pbrEmissiveFactor");
 static const Uniform::UniformName sg_pbrHasEmissiveTexture("sg_pbrHasEmissiveTexture");
 static const Uniform::UniformName sg_pbrEmissiveTexCoord("sg_pbrEmissiveTexCoord");
+static const Uniform::UniformName sg_pbrEmissiveTexTransform("sg_pbrEmissiveTexTransform");
 static const Uniform::UniformName sg_pbrDoubleSided("sg_pbrDoubleSided");
 static const Uniform::UniformName sg_pbrAlphaMode("sg_pbrAlphaMode");
 static const Uniform::UniformName sg_pbrAlphaCutoff("sg_pbrAlphaCutoff");
@@ -139,26 +144,36 @@ bool PbrMaterialState::recreateShader(FrameContext& context) {
 			fso.addDefine("HAS_BASECOLOR_TEXTURE", "");
 			fso.addDefine("BASECOLOR_TEXCOORD", std::to_string(material.baseColor.texCoord));
 			fso.addDefine("BASECOLOR_TEXUNIT", std::to_string(material.baseColor.texUnit));
+			if(!material.baseColor.texture->getHasMipmaps())
+				material.baseColor.texture->planMipmapCreation();
 		}
 		if(material.metallicRoughness.texture) {
 			fso.addDefine("HAS_METALLICROUGHNESS_TEXTURE", "");
 			fso.addDefine("METALLICROUGHNESS_TEXCOORD", std::to_string(material.metallicRoughness.texCoord));
 			fso.addDefine("METALLICROUGHNESS_TEXUNIT", std::to_string(material.metallicRoughness.texUnit));
+			if(!material.metallicRoughness.texture->getHasMipmaps())
+				material.metallicRoughness.texture->planMipmapCreation();
 		}
 		if(material.normal.texture) {
 			fso.addDefine("HAS_NORMAL_TEXTURE", "");
 			fso.addDefine("NORMAL_TEXCOORD", std::to_string(material.normal.texCoord));
 			fso.addDefine("NORMAL_TEXUNIT", std::to_string(material.normal.texUnit));
+			if(!material.normal.texture->getHasMipmaps())
+				material.normal.texture->planMipmapCreation();
 		}
 		if(material.occlusion.texture) {
 			fso.addDefine("HAS_OCCLUSION_TEXTURE", "");
 			fso.addDefine("OCCLUSION_TEXCOORD", std::to_string(material.occlusion.texCoord));
 			fso.addDefine("OCCLUSION_TEXUNIT", std::to_string(material.occlusion.texUnit));
+			if(!material.occlusion.texture->getHasMipmaps())
+				material.occlusion.texture->planMipmapCreation();
 		}
 		if(material.emissive.texture) {
 			fso.addDefine("HAS_EMISSIVE_TEXTURE", "");
 			fso.addDefine("EMISSIVE_TEXCOORD", std::to_string(material.emissive.texCoord));
 			fso.addDefine("EMISSIVE_TEXUNIT", std::to_string(material.emissive.texUnit));
+			if(!material.emissive.texture->getHasMipmaps())
+				material.emissive.texture->planMipmapCreation();
 		}
 
 		pbrShader = Shader::createShader();
@@ -207,14 +222,19 @@ State::stateResult_t PbrMaterialState::doEnableState(FrameContext & context, Nod
 	if(activeShader) {
 		activeShader->setUniform(rc, Uniform(sg_pbrBaseColorFactor, material.baseColor.factor), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrBaseColorTexCoord, static_cast<int32_t>(material.baseColor.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrBaseColorTexTransform, material.baseColor.texTransform), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrMetallicRoughnessTexCoord, static_cast<int32_t>(material.metallicRoughness.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrMetallicRoughnessTexTransform, material.metallicRoughness.texTransform), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrMetallicFactor, material.metallicRoughness.metallicFactor), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrRoughnessFactor, material.metallicRoughness.roughnessFactor), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrNormalTexCoord, static_cast<int32_t>(material.normal.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrNormalTexTransform, material.normal.texTransform), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrNormalScale, material.normal.scale), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrOcclusionTexCoord, static_cast<int32_t>(material.occlusion.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrOcclusionTexTransform, material.occlusion.texTransform), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrOcclusionStrength, material.occlusion.strength), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrEmissiveTexCoord, static_cast<int32_t>(material.emissive.texCoord)), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrEmissiveTexTransform, material.emissive.texTransform), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrEmissiveFactor, material.emissive.factor), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrAlphaCutoff, material.alphaCutoff), false);
 	}
