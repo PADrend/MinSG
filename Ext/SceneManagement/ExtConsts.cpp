@@ -211,6 +211,7 @@ const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXTRANSFORM("emissive_textra
 const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXUNIT("emissive_texunit");
 const Util::StringIdentifier ATTR_PBR_MAT_ALPHAMODE("alphamode");
 const Util::StringIdentifier ATTR_PBR_MAT_ALPHACUTOFF("alphacutoff");
+const Util::StringIdentifier ATTR_PBR_MAT_IOR("ior");
 const Util::StringIdentifier ATTR_PBR_MAT_DOUBLESIDED("doublesided");
 const Util::StringIdentifier ATTR_PBR_MAT_SHADINGMODEL("shadingmodel");
 const Util::StringIdentifier ATTR_PBR_MAT_SKINNING("skinning");

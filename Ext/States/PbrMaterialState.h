@@ -86,6 +86,7 @@ struct PbrMaterial {
 	PbrEmissive emissive;
 	PbrAlphaMode alphaMode = PbrAlphaMode::Opaque;
 	float alphaCutoff = 0.5f;
+	float ior = 1.5f;
 	bool doubleSided = false;
 	bool useSkinning = false;
 	bool useIBL = true;
@@ -173,6 +174,8 @@ class PbrMaterialState : public State {
 		void setAlphaMode(PbrAlphaMode v) { material.alphaMode = v; dirty = true; }
 		float getAlphaCutoff() const { return material.alphaCutoff; }
 		void setAlphaCutoff(float v) { material.alphaCutoff = v; }
+		float getIOR() const { return material.ior; }
+		void setIOR(float v) { material.ior = v; }
 		bool getDoubleSided() const { return material.doubleSided; }
 		void setDoubleSided(bool v) { material.doubleSided = v; dirty = true; }
 		bool getUseSkinning() const { return material.useSkinning; }

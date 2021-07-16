@@ -550,6 +550,7 @@ static bool importPbrMaterialState(ImportContext & ctxt, const std::string & sta
 	material.emissive.texUnit = static_cast<uint8_t>(d.getUInt(Consts::ATTR_PBR_MAT_EMISSIVE_TEXUNIT, material.emissive.texUnit));
 	material.alphaMode = static_cast<PbrAlphaMode>(d.getInt(Consts::ATTR_PBR_MAT_ALPHAMODE, static_cast<int32_t>(material.alphaMode)));
 	material.alphaCutoff = d.getFloat(Consts::ATTR_PBR_MAT_ALPHACUTOFF, material.alphaCutoff);
+	material.ior = d.getFloat(Consts::ATTR_PBR_MAT_IOR, material.ior);
 	material.doubleSided = d.getBool(Consts::ATTR_PBR_MAT_DOUBLESIDED, material.doubleSided);
 	material.useSkinning = d.getBool(Consts::ATTR_PBR_MAT_SKINNING, material.useSkinning);
 	material.useIBL = d.getBool(Consts::ATTR_PBR_MAT_IBL, material.useIBL);

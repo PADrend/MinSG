@@ -70,6 +70,8 @@ static const Util::StringIdentifier JOINTS_ID("sg_Joints0");
 static const Util::StringIdentifier WEIGHTS_ID("sg_Weights0");
 
 static const Util::StringIdentifier KHR_texture_transform("KHR_texture_transform");
+static const Util::StringIdentifier KHR_materials_ior("KHR_materials_ior");
+static const Util::StringIdentifier KHR_materials_unlit("KHR_materials_unlit");
 
 static const std::unordered_map<std::string, Util::StringIdentifier> remappedAttributeNames{
 	{"POSITION", VertexAttributeIds::POSITION},
@@ -91,6 +93,12 @@ static const std::unordered_map<Util::StringIdentifier, bool> normalizedAttr{
 	{VertexAttributeIds::TEXCOORD1, true},
 	{JOINTS_ID, false},
 	{WEIGHTS_ID, true},
+};
+
+static const std::unordered_set<Util::StringIdentifier> supportedExtensions{
+	KHR_texture_transform,
+	KHR_materials_ior,
+	KHR_materials_unlit,
 };
 
 //--------------------------
@@ -262,6 +270,22 @@ static Geometry::Matrix3x3 getTextureTransform(const tinygltf::ExtensionMap& ext
 
 //--------------------------
 
+// KHR_texture_transform
+static float getIOR(const tinygltf::ExtensionMap& extensionMap) {
+	using namespace Geometry;
+	auto it = extensionMap.find("KHR_materials_ior");
+	if(it != extensionMap.end()) {
+		auto value = it->second.Get("ior");
+		if(value.IsNumber()) {
+			return static_cast<float>(value.GetNumberAsDouble());
+		}
+	}
+	return 1.5f;
+}
+
+
+//--------------------------
+
 class GLTFImportContext {
 public:
 	tinygltf::Model model;
@@ -412,8 +436,8 @@ Util::Reference<Rendering::Texture> GLTFImportContext::createTexture(uint32_t te
 
 	Texture::Format format;
 	format.glTextureType = TextureUtils::textureTypeToGLTextureType(TextureType::TEXTURE_2D);
-	format.sizeY = static_cast<uint32_t>(image.width);
-	format.sizeX = static_cast<uint32_t>(image.height);
+	format.sizeX = static_cast<uint32_t>(image.width);
+	format.sizeY = static_cast<uint32_t>(image.height);
 	format.numLayers = 1;
 	format.numSamples = 1;
 	format.pixelFormat = TextureUtils::pixelFormatToGLPixelFormat(pixelFormat);
@@ -526,6 +550,16 @@ std::unique_ptr<DescriptionMap> GLTFImportContext::createMaterialOrRef(uint32_t 
 		material.normal.texTransform = getTextureTransform(gltfMaterial.normalTexture.extensions);
 		material.occlusion.texTransform = getTextureTransform(gltfMaterial.occlusionTexture.extensions);
 		material.emissive.texTransform = getTextureTransform(gltfMaterial.emissiveTexture.extensions);
+	}
+	
+	// KHR_materials_ior
+	if(extensions.find(KHR_materials_ior) != extensions.end()) {
+		material.ior = getIOR(gltfMaterial.extensions);
+	}
+
+	// KHR_materials_unlit
+	if(extensions.find(KHR_materials_unlit) != extensions.end()) {
+		material.shadingModel = PbrShadingModel::Unlit;
 	}
 
 	SceneManagement::SceneManager sm;
@@ -793,6 +827,12 @@ bool GLTFImportContext::loadFile(const Util::FileName& filename) {
 
 	for(const auto& ext : model.extensionsUsed) {
 		extensions.emplace(ext);
+	}
+	for(const auto& ext : model.extensionsRequired) {
+		extensions.emplace(ext);
+	}
+	for(const auto& ext : extensions) {
+		WARN_IF(supportedExtensions.find(ext) == supportedExtensions.end(), "glTF extension '" + ext.toString() + "' is not supported.");
 	}
 
 	// create meshes

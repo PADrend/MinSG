@@ -236,6 +236,7 @@ MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXUNIT;
 MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXTRANSFORM;
 MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_ALPHAMODE;
 MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_ALPHACUTOFF;
+MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_IOR;
 MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_DOUBLESIDED;
 MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_SHADINGMODEL;
 MINSGAPI extern const Util::StringIdentifier ATTR_PBR_MAT_SKINNING;

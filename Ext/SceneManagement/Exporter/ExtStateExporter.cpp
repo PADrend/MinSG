@@ -321,6 +321,7 @@ static void exportPbrMaterialState(ExporterContext &,DescriptionMap & desc,State
 	desc.setValue(Consts::ATTR_PBR_MAT_EMISSIVE_TEXTRANSFORM, serializeMatrix(material.emissive.texTransform)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_ALPHAMODE, Util::GenericAttribute::createNumber(static_cast<int32_t>(material.alphaMode))); 
 	desc.setValue(Consts::ATTR_PBR_MAT_ALPHACUTOFF, Util::GenericAttribute::createNumber(material.alphaCutoff)); 
+	desc.setValue(Consts::ATTR_PBR_MAT_IOR, Util::GenericAttribute::createNumber(material.ior)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_DOUBLESIDED, Util::GenericAttribute::createBool(material.doubleSided)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_SKINNING, Util::GenericAttribute::createBool(material.useSkinning)); 
 	desc.setValue(Consts::ATTR_PBR_MAT_IBL, Util::GenericAttribute::createBool(material.useIBL)); 

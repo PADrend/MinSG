@@ -53,6 +53,7 @@ static const Uniform::UniformName sg_pbrEmissiveTexTransform("sg_pbrEmissiveTexT
 static const Uniform::UniformName sg_pbrDoubleSided("sg_pbrDoubleSided");
 static const Uniform::UniformName sg_pbrAlphaMode("sg_pbrAlphaMode");
 static const Uniform::UniformName sg_pbrAlphaCutoff("sg_pbrAlphaCutoff");
+static const Uniform::UniformName sg_pbrIOR("sg_pbrIOR");
 
 //--------------------
 
@@ -237,6 +238,7 @@ State::stateResult_t PbrMaterialState::doEnableState(FrameContext & context, Nod
 		activeShader->setUniform(rc, Uniform(sg_pbrEmissiveTexTransform, material.emissive.texTransform), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrEmissiveFactor, material.emissive.factor), false);
 		activeShader->setUniform(rc, Uniform(sg_pbrAlphaCutoff, material.alphaCutoff), false);
+		activeShader->setUniform(rc, Uniform(sg_pbrIOR, material.ior), false);
 	}
 
 	if(material.baseColor.texture)
