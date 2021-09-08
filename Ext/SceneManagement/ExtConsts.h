@@ -203,6 +203,7 @@ MINSGAPI extern const Util::StringIdentifier ATTR_IBL_ENV_FILE;
 MINSGAPI extern const Util::StringIdentifier ATTR_IBL_ENV_TEXTURE;
 MINSGAPI extern const Util::StringIdentifier ATTR_IBL_ENV_DRAW_ENV;
 MINSGAPI extern const Util::StringIdentifier ATTR_IBL_ENV_LOD;
+MINSGAPI extern const Util::StringIdentifier ATTR_IBL_ENV_ROTATION;
 //	@}
 // ------------------------------------------------------------
 //!	@name PBR Material state

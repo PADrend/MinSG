@@ -124,11 +124,15 @@ static const std::string equiToCubeFragShader = R"glsl(#version 330 core
 static const std::string environmentMapVertShader = R"glsl(#version 330 core
 	uniform mat4 sg_matrix_modelToCamera;
 	uniform mat4 sg_matrix_cameraToClipping;
+	uniform float sg_envRotation = 0.0;
 	layout(location=0) in vec3 sg_Position;
 	out vec3 position_ms;
 	void main() {
 		position_ms = sg_Position;
-		mat4 modelToCameraEnv = mat4(mat3(sg_matrix_modelToCamera)); // remove translation from the view matrix
+		float sr = sin(sg_envRotation);
+		float cr = cos(sg_envRotation);
+		mat3 rotation = mat3(cr,0,sr ,0,1,0, -sr,0,cr);
+		mat4 modelToCameraEnv = mat4(mat3(sg_matrix_modelToCamera) * rotation); // remove translation from the view matrix
 		vec4 position_clip = sg_matrix_cameraToClipping * modelToCameraEnv * vec4(sg_Position, 1.0);
 		gl_Position = position_clip.xyww;
 	}
@@ -341,6 +345,9 @@ IBLEnvironmentState * IBLEnvironmentState::clone() const {
 void IBLEnvironmentState::loadEnvironmentMapFromHDR(const Util::FileName& filename) {
 	hdrFile = filename;
 	hdrEquirectangularMap = Serialization::loadTexture(filename);
+	environmentMap = nullptr;
+	irradianceMap = nullptr;
+	prefilteredEnvMap = nullptr;
 }
 
 //--------------------
@@ -529,6 +536,7 @@ State::stateResult_t IBLEnvironmentState::doEnableState(FrameContext & context, 
 	if(drawEnvironmentMap && environmentMap.isNotNull() && !rp.getFlag(NO_SHADING)) {
 		rc.pushAndSetShader(environmentShader.get());
 		environmentShader->setUniform(rc, Uniform("lod", lod));
+		environmentShader->setUniform(rc, Uniform("sg_envRotation", rotation));
 		rc.pushAndSetTexture(0, environmentMap.get());
 		rc.pushAndSetDepthBuffer(Rendering::DepthBufferParameters(true, false, Rendering::Comparison::LEQUAL));
 		rc.pushAndSetCullFace(CullFaceParameters::CULL_FRONT);
@@ -540,6 +548,7 @@ State::stateResult_t IBLEnvironmentState::doEnableState(FrameContext & context, 
 	}
 
 	rc.setGlobalUniform(Uniform("sg_envEnabled", true));
+	rc.setGlobalUniform(Uniform("sg_envRotation", rotation));
 	rc.setGlobalUniform(Uniform("sg_irradianceMap", static_cast<int32_t>(baseTextureUnit)));
 	rc.setGlobalUniform(Uniform("sg_prefilteredEnvMap", static_cast<int32_t>(baseTextureUnit+1)));
 	rc.setGlobalUniform(Uniform("sg_brdfLUT", static_cast<int32_t>(baseTextureUnit+2)));

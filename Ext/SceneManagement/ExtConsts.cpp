@@ -179,6 +179,7 @@ const Util::StringIdentifier ATTR_IBL_ENV_FILE("file");
 const Util::StringIdentifier ATTR_IBL_ENV_TEXTURE("texture");
 const Util::StringIdentifier ATTR_IBL_ENV_DRAW_ENV("drawEnv");
 const Util::StringIdentifier ATTR_IBL_ENV_LOD("lod");
+const Util::StringIdentifier ATTR_IBL_ENV_ROTATION("rotation");
 
 // ---------------------------------------------------------------------------
 // PBR Material state

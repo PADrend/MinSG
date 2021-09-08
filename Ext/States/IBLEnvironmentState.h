@@ -14,6 +14,7 @@
 
 #include "../../Core/States/State.h"
 #include <Util/IO/FileName.h>
+#include <Geometry/Convert.h>
 
 namespace Rendering {
 class Texture;
@@ -53,6 +54,10 @@ class IBLEnvironmentState : public State {
 		void setLOD(float v) { lod = v; }
 		bool isDrawEnvironmentEnabled() const { return drawEnvironmentMap; }
 		void setDrawEnvironment(bool b) { drawEnvironmentMap = b; }
+		float getRotation() const { return rotation; }
+		void setRotation(float rad) { rotation = rad; }
+		float getRotationDeg() const { return Geometry::Convert::radToDeg(rotation); }
+		void setRotationDeg(float deg) { rotation = Geometry::Convert::degToRad(deg); }
 
 		MINSGAPI void generateFromScene(FrameContext& context, Node* node, const RenderParam& rp);
 	private:
@@ -70,6 +75,7 @@ class IBLEnvironmentState : public State {
 		bool drawEnvironmentMap = true;
 		uint8_t baseTextureUnit = 7;
 		float lod=0.0;
+		float rotation=0.0;
 		Util::FileName hdrFile;
 		Util::Reference<Rendering::Texture> hdrEquirectangularMap; // will be converted to cube map
 		Util::Reference<Rendering::Texture> environmentMap;

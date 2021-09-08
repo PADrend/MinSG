@@ -214,6 +214,7 @@ static void exportIBLEnvState(ExporterContext &,DescriptionMap & desc,State * st
 	auto envState = dynamic_cast<IBLEnvironmentState *>(state);
 	desc.setString(Consts::ATTR_STATE_TYPE, Consts::STATE_TYPE_IBL_ENV_STATE);
 	desc.setValue(Consts::ATTR_IBL_ENV_LOD, Util::GenericAttribute::createNumber(envState->getLOD()));
+	desc.setValue(Consts::ATTR_IBL_ENV_ROTATION, Util::GenericAttribute::createNumber(envState->getRotationDeg()));
 	desc.setValue(Consts::ATTR_IBL_ENV_DRAW_ENV, Util::GenericAttribute::createBool(envState->isDrawEnvironmentEnabled()));
 	
 	const Util::FileName hdrFilename(envState->getHdrFile());

@@ -404,6 +404,7 @@ static bool importIBLEnvState(ImportContext & ctxt, const std::string & stateTyp
 	std::unique_ptr<IBLEnvironmentState> state(new IBLEnvironmentState);
 	state->setDrawEnvironment(d.getBool(Consts::ATTR_IBL_ENV_DRAW_ENV));
 	state->setLOD(d.getFloat(Consts::ATTR_IBL_ENV_LOD));
+	state->setRotationDeg(d.getFloat(Consts::ATTR_IBL_ENV_ROTATION));
 	const Util::FileName hdrFilename(d.getString(Consts::ATTR_IBL_ENV_FILE));
 	const auto dataDescList = ImporterTools::filterElements(Consts::TYPE_DATA, dynamic_cast<const DescriptionArray *>(d.getValue(Consts::CHILDREN)));
 	if(!hdrFilename.empty()) {
