@@ -29,7 +29,7 @@ class TriangleTree;
  */
 class OctreeBuilder : public Builder {
 	public:
-		explicit OctreeBuilder(std::size_t _trianglesPerNode, float _looseFactor) :
+		explicit OctreeBuilder(uint32_t _trianglesPerNode, float _looseFactor) :
 				Builder(), trianglesPerNode(_trianglesPerNode), looseFactor(_looseFactor) {
 		}
 
@@ -44,7 +44,7 @@ class OctreeBuilder : public Builder {
 
 	private:
 		//! Maximum number of triangles in a node. If this number is exceeded, the node will be split.
-		std::size_t trianglesPerNode;
+		uint32_t trianglesPerNode;
 
 		//! Factor by which the bounding boxes will be enlarged.
 		float looseFactor;

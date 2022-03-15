@@ -31,11 +31,11 @@ namespace BlueSurfels {
 typedef std::pair<float, uint32_t> DistSurfelPair_t;
 
 static std::vector<uint32_t> extractRandom(std::default_random_engine& rng, std::vector<uint32_t>& source, uint32_t num) {
-  num = std::min<uint32_t>(num, source.size());
+  num = std::min<uint32_t>(num, static_cast<uint32_t>(source.size()));
   static std::uniform_int_distribution<uint32_t> random;
   typedef typename std::uniform_int_distribution<uint32_t>::param_type param_t;
   std::vector<uint32_t> result(num);
-  uint32_t i=source.size()-1;
+  uint32_t i=static_cast<uint32_t>(source.size()-1);
   std::generate(result.begin(), result.end(), [&]() {
     std::swap(source[i], source[random(rng, param_t(0, i))]);
     return source[i--];
@@ -61,7 +61,7 @@ Rendering::Mesh* ProgressiveSampler::sampleSurfels(Rendering::Mesh* sourceMesh) 
   	OctreeEntry(uint32_t i,const Geometry::Vec3 & p) : Geometry::Point<Geometry::Vec3f>(p), surfelId(i) {}
   };  
   auto bb = sourceMesh->getBoundingBox();
-	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01,16);
+	Geometry::PointOctree<OctreeEntry> octree(bb,bb.getExtentMax()*0.01f,16);
   auto acc = Rendering::PositionAttributeAccessor::create(sourceMesh->openVertexData(), Rendering::VertexAttributeIds::POSITION);
     
   // initial surfel
@@ -76,7 +76,7 @@ Rendering::Mesh* ProgressiveSampler::sampleSurfels(Rendering::Mesh* sourceMesh) 
 	std::vector<DistSurfelPair_t> sortedSubset; // surfelId , distance to nearest other sample
   
 	while(surfelIndices.size() < targetCount) {
-    samplesPerRound = std::min<uint32_t>(samplesPerRound, sampleIndices.size());
+    samplesPerRound = std::min<uint32_t>(samplesPerRound, static_cast<uint32_t>(sampleIndices.size()));
 		const auto randomSubset = extractRandom(rng, sampleIndices, samplesPerRound);
 		for(const auto& index : randomSubset) {
 			const Geometry::Vec3& pos = acc->getPosition(index);
@@ -91,7 +91,7 @@ Rendering::Mesh* ProgressiveSampler::sampleSurfels(Rendering::Mesh* sourceMesh) 
 		for(uint32_t j = 0; j < accept && !sortedSubset.empty() && surfelIndices.size() < targetCount; ++j) {
 			auto& sample = sortedSubset.back();
 			sortedSubset.pop_back();
-			const size_t index = sample.second;
+			const uint32_t index = sample.second;
 			octree.insert(OctreeEntry(index, acc->getPosition(index)));
       surfelIndices.emplace_back(index);
 		}
@@ -106,16 +106,16 @@ Rendering::Mesh* ProgressiveSampler::sampleSurfels(Rendering::Mesh* sourceMesh) 
       
     sortedSubset.clear();
     if( (round%500) == 0){
-      samplesPerRound = std::max(samplesPerRound * 0.5f, 20.0f);
+      samplesPerRound = static_cast<uint32_t>(std::max(samplesPerRound * 0.5f, 20.0f));
       accept = std::min(static_cast<uint32_t>(samplesPerRound * 0.3), accept + 1);
     }
     ++round;
   }
   
 	if(getStatisticsEnabled()) {
-		statistics["t_sampling"] = t.getSeconds();
-		statistics["num_samples"] = sampleCount;
-		statistics["num_surfels"] = surfelIndices.size();
+		statistics["t_sampling"] = static_cast<float>(t.getSeconds());
+		statistics["num_samples"] = static_cast<float>(sampleCount);
+		statistics["num_surfels"] = static_cast<float>(surfelIndices.size());
 	}
   
   return finalizeMesh(sourceMesh, surfelIndices);

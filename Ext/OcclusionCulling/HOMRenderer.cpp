@@ -370,7 +370,7 @@ State::stateResult_t HOMRenderer::doEnableState(FrameContext & context,
 	renderingContext.clearColor(Util::Color4f(0.0f, 0.0f, 0.0f, 1.0f));
 	renderingContext.pushAndSetShader(occluderShader.get());
 
-	const float zPlane = drawOccluders(occluders, context);
+	const float zPlane = static_cast<float>(drawOccluders(occluders, context));
 
 	renderingContext.popShader();
 
@@ -511,7 +511,7 @@ int HOMRenderer::process(Node * node,
 
 
 	// - Overlap test with Occlusion Maps
-	const Geometry::Rect pyramidRect(0, 0, sideLength, sideLength);
+	const Geometry::Rect pyramidRect(0, 0, static_cast<float>(sideLength), static_cast<float>(sideLength));
 	const Geometry::Rect_f projectedRect = Geometry::projectBox(worldBB, cameraMatrix, projectionMatrix, pyramidRect);
 
 	// Check if rect is outside of viewport.
@@ -546,7 +546,7 @@ int HOMRenderer::process(Node * node,
 
 	if (sizeX > 0 && sizeY > 0) {
 		// Calculate the start level in the HOM pyramid from the size of the screen rectangle.
-		unsigned int level = static_cast<unsigned int>(logf(size) / 0.301029995663981198); // = log(2)
+		unsigned int level = static_cast<unsigned int>(logf(static_cast<float>(size)) / 0.301029995663981198f); // = log(2)
 		if (level >= numLevels) {
 			level = numLevels - 1;
 		}

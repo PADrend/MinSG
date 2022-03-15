@@ -46,9 +46,9 @@ struct Radial {
 };
 
 MINSGAPI std::vector<float> getProgressiveMinimalMinimalVertexDistances(Rendering::Mesh& mesh);
-MINSGAPI std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,size_t prefixLength, bool geodesic=false);
+MINSGAPI std::vector<float> getMinimalVertexDistances(Rendering::Mesh& mesh,uint32_t prefixLength, bool geodesic=false);
 
-MINSGAPI float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, size_t prefixLength, size_t nThNeighbour);
+MINSGAPI float getMedianOfNthClosestNeighbours(Rendering::Mesh& mesh, uint32_t prefixLength, uint32_t nThNeighbour);
 
 MINSGAPI float computeRelPixelSize(AbstractCameraNode* camera, MinSG::Node* node, ReferencePoint ref = ReferencePoint::CLOSEST_BB);
 
@@ -59,11 +59,11 @@ MINSGAPI float getSurfelPacking(MinSG::Node* node, Rendering::Mesh* surfels);
 MINSGAPI Rendering::Mesh* getSurfels(MinSG::Node * node);
 
 //! Differential domain analysis based on "Differential domain analysis for non-uniform sampling" by Wei et al. (ACM ToG 2011)
-MINSGAPI Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, int32_t resolution=256, uint32_t count=0, bool geodesic=true, bool adaptive=false);
+MINSGAPI Util::Reference<Util::Bitmap> differentialDomainAnalysis(Rendering::Mesh* mesh, float diff_max, uint32_t resolution=256, uint32_t count=0, bool geodesic=true, bool adaptive=false);
 MINSGAPI std::vector<Radial> getRadialMeanVariance(const Util::Reference<Util::Bitmap>& spectrum);
 
 inline uint32_t getPrefixForRadius(float radius, float packing) {
-	return radius > 0 ? packing/(radius*radius) : 0;
+	return radius > 0.0f ? static_cast<uint32_t>(packing/(radius*radius)) : 0;
 }
 
 inline float getRadiusForPrefix(uint32_t prefix, float packing) {

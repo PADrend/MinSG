@@ -73,7 +73,7 @@ void Octree::split() {
 	}
 
 	std::vector<TriangleAccessor> innerStorage;
-	const uint32_t numTriangles = triangleStorage.size();
+	const uint32_t numTriangles = static_cast<uint32_t>(triangleStorage.size());
 	for(uint_fast32_t t = 0; t < numTriangles; ++t) {
 		const TriangleAccessor & triangle = triangleStorage[t];
 		// Check into which child node the center of the triangle fits.

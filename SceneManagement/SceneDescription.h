@@ -215,6 +215,7 @@ MINSGAPI extern const Util::StringIdentifier ATTR_TEXTURE_ID;
 MINSGAPI extern const Util::StringIdentifier ATTR_TEXTURE_UNIT;
 MINSGAPI extern const Util::StringIdentifier ATTR_TEXTURE_NUM_LAYERS;
 MINSGAPI extern const Util::StringIdentifier ATTR_TEXTURE_TYPE;
+MINSGAPI extern const Util::StringIdentifier ATTR_TEXTURE_DATA;
 
 // DATA_TYPE = "mesh"
 MINSGAPI extern const Util::StringIdentifier ATTR_MESH_FILENAME;

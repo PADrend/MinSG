@@ -8,11 +8,7 @@
 # file LICENSE. If not, you can obtain one at http://mozilla.org/MPL/2.0/.
 #
 cmake_minimum_required(VERSION 3.1.0)
-project(MinSG VERSION 0.3.0)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project(MinSG VERSION 0.4.0)
 
 # Set up install directories
 include(GNUInstallDirs)
@@ -37,6 +33,9 @@ add_subdirectory(SceneManagement)
 get_property(MinSG_SOURCES GLOBAL PROPERTY MinSG_SRCS)
 add_library(MinSG SHARED ${MinSG_SOURCES})
 
+#set c++ standard to c++17
+target_compile_features(MinSG PUBLIC cxx_std_17)
+
 if(MSVC)
 	target_compile_definitions(MinSG PRIVATE NOMINMAX)
 	target_compile_definitions(MinSG PUBLIC "MINSG_DEPRECATED=__declspec(deprecated)")
@@ -58,13 +57,13 @@ target_link_libraries(MinSG LINK_PUBLIC Geometry)
 
 # Dependency to Rendering
 if(NOT TARGET Rendering)
-	find_package(Rendering 0.3.0 REQUIRED NO_MODULE)
+	find_package(Rendering 0.4.0 REQUIRED NO_MODULE)
 endif()
 target_link_libraries(MinSG LINK_PUBLIC Rendering)
 
 # Dependency to Util
 if(NOT TARGET Util)
-	find_package(Util 0.3.0 REQUIRED NO_MODULE)
+	find_package(Util 0.4.0 REQUIRED NO_MODULE)
 endif()
 target_link_libraries(MinSG LINK_PUBLIC Util)
 

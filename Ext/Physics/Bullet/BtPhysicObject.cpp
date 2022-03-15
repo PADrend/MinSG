@@ -2,7 +2,7 @@
 	This file is part of the MinSG library extension Physics.
 	Copyright (C) 2013 Mouns Almarrani
 	Copyright (C) 2009-2013 Benjamin Eikel <benjamin@eikel.org>
-	Copyright (C) 2009-2013 Claudius Jähn <claudius@uni-paderborn.de>
+	Copyright (C) 2009-2013 Claudius Jï¿½hn <claudius@uni-paderborn.de>
 	Copyright (C) 2009-2013 Ralf Petring <ralf@petring.net>
 
 	This library is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -27,7 +27,7 @@ COMPILER_WARN_OFF_GCC(-Wunused)
 COMPILER_WARN_OFF_GCC(-Wunused-parameter)
 COMPILER_WARN_OFF_GCC(-Wunused-variable)
 #include <btBulletDynamicsCommon.h>
-#if (BT_BULLET_VERSION == 282) and !defined(BULLET_WARNING_PATCH)
+#if (BT_BULLET_VERSION == 282) && !defined(BULLET_WARNING_PATCH)
 #define BULLET_WARNING_PATCH
 inline int _suppressUnusedVariableWarning(){  return btInfinityMask;} // on mingw, -Wunused-variable does not work here.
 #endif

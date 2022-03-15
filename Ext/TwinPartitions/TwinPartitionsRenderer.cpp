@@ -83,7 +83,7 @@ State::stateResult_t TwinPartitionsRenderer::doEnableState(FrameContext & contex
 	if (currentCell == INVALID_CELL || !data->cells[currentCell].bounds.contains(pos)) {
 		// Search the cell that contains the camera position.
 		bool cellFound = false;
-		const uint32_t cellCount = data->cells.size();
+		const uint32_t cellCount = static_cast<uint32_t>(data->cells.size());
 		for (uint_fast32_t cell = 0; cell < cellCount; ++cell) {
 			if (data->cells[cell].bounds.contains(pos)) {
 // #ifdef MINSG_EXT_OUTOFCORE

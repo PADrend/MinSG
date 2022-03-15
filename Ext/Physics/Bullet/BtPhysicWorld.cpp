@@ -53,7 +53,7 @@ COMPILER_WARN_OFF_GCC(-Wunused)
 COMPILER_WARN_OFF_GCC(-Wunused-parameter)
 COMPILER_WARN_OFF_GCC(-Wunused-variable)
 #include <LinearMath/btConvexHullComputer.h>
-#if (BT_BULLET_VERSION == 282) and !defined(BULLET_WARNING_PATCH)
+#if (BT_BULLET_VERSION == 282) && !defined(BULLET_WARNING_PATCH)
 #define BULLET_WARNING_PATCH
 inline int _suppressUnusedVariableWarning(){  return btInfinityMask;} // on mingw, -Wunused-variable does not work here.
 #endif
@@ -636,7 +636,7 @@ CollisionShape* _createShape_AABB(const Geometry::Box& aabb){
 	btTransform transformation;
 	transformation.setIdentity();
 	transformation.setOrigin(toBtVector3( aabb.getCenter() ));
-	shape->addChildShape( transformation,  new btBoxShape(btVector3(aabb.getExtentX()*0.5,aabb.getExtentY()*0.5,aabb.getExtentZ()*0.5)) );
+	shape->addChildShape( transformation,  new btBoxShape(btVector3(aabb.getExtentX()*0.5f,aabb.getExtentY()*0.5f,aabb.getExtentZ()*0.5f)) );
 	return new BtCollisionShape(shape);
 }
 

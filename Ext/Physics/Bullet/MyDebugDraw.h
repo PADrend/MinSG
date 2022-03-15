@@ -25,7 +25,7 @@ COMPILER_WARN_OFF_GCC(-Woverloaded-virtual)
 COMPILER_WARN_OFF_GCC(-Wshadow)
 COMPILER_WARN_OFF_GCC(-Wold-style-cast)
 #include <btBulletDynamicsCommon.h>
-#if (BT_BULLET_VERSION == 282) and !defined(BULLET_WARNING_PATCH)
+#if (BT_BULLET_VERSION == 282) && !defined(BULLET_WARNING_PATCH)
 #define BULLET_WARNING_PATCH
 inline int _suppressUnusedVariableWarning(){  return btInfinityMask;} // on mingw, -Wunused-variable does not work here.
 #endif

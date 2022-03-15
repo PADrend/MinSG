@@ -19,62 +19,62 @@
 #include <map>
 
 namespace MinSG {
-    class GeometryNode;
+	class GeometryNode;
 }
 
 namespace MinSG {
-    /*
-     *  @brief representation of an abstract joint within a skeleton.
-     *
-     *  Provides abstract organization of joints. Specially interconnection with
-     *  animationdata. 
-     *
-     *  AbstractJoint ---|> ListNode ---|> GroupNode ---|> Node
-     * @ingroup nodes
-     *
-     */
+	/*
+	 *  @brief representation of an abstract joint within a skeleton.
+	 *
+	 *  Provides abstract organization of joints. Specially interconnection with
+	 *  animationdata. 
+	 *
+	 *  AbstractJoint ---|> ListNode ---|> GroupNode ---|> Node
+	 * @ingroup nodes
+	 *
+	 */
 	class AbstractJoint : public ListNode
 	{
 	private:        
-        mutable Geometry::Matrix4x4 bindMatrix;
+		mutable Geometry::Matrix4x4 bindMatrix;
 
 	protected:
 		mutable uint32_t id;
-        mutable std::string name;
+		mutable std::string name;
 		mutable Geometry::Matrix4x4 invBindMatrix;
 
 		AbstractJoint();
-        AbstractJoint(uint32_t _id, std::string _name);
-        AbstractJoint(const AbstractJoint &source);
+		AbstractJoint(uint32_t _id, std::string _name);
+		AbstractJoint(const AbstractJoint &source);
 
 	public:
-        /****************************************************************
-         * id is using for identify joint inside skeleton, 
-         * name for displaying only. Name is not unique unlike id. 
-         ****************************************************************/
+		/****************************************************************
+		 * id is using for identify joint inside skeleton, 
+		 * name for displaying only. Name is not unique unlike id. 
+		 ****************************************************************/
 		uint32_t getId() const { return id; }
-        
-        void setName(std::string _name) { name = _name; }
+		
+		void setName(std::string _name) { name = _name; }
 		std::string getName() const { return name; }
-        
-        /****************************************************************
-         * Bind matrix brings mesh from mesh space into skeleton space
-         ****************************************************************/
-        void setBindMatrix(Geometry::Matrix4x4 _bindMatrix);
-        const Geometry::Matrix4x4 *getBindMatrix() const { return &bindMatrix; }
-        
-        const Geometry::Matrix4x4 & getInverseBindMatrix() const { return invBindMatrix; }
-        void setInverseBindMatrix(Geometry::Matrix4x4 _invBind) { invBindMatrix = _invBind; }
+		
+		/****************************************************************
+		 * Bind matrix brings mesh from mesh space into skeleton space
+		 ****************************************************************/
+		MINSGAPI void setBindMatrix(Geometry::Matrix4x4 _bindMatrix);
+		const Geometry::Matrix4x4 *getBindMatrix() const { return &bindMatrix; }
+		
+		const Geometry::Matrix4x4 & getInverseBindMatrix() const { return invBindMatrix; }
+		void setInverseBindMatrix(Geometry::Matrix4x4 _invBind) { invBindMatrix = _invBind; }
 
-        /****************************************************************
-         * Generates map for connecting with animation data. 
-         ****************************************************************/
+		/****************************************************************
+		 * Generates map for connecting with animation data. 
+		 ****************************************************************/
 		virtual void generateJointNodeMap(std::unordered_map<std::string, AbstractJoint *> &jMap) = 0;
-        
-        /****************************************************************
-         *                  ---|> GroupNode
-         ****************************************************************/
-        virtual void doAddChild(Util::Reference<Node> child) override;
+		
+		/****************************************************************
+		 *                  ---|> GroupNode
+		 ****************************************************************/
+		virtual void doAddChild(Util::Reference<Node> child) override;
 
 //        /****************************************************************
 //         *                  ---|> Node
@@ -82,9 +82,9 @@ namespace MinSG {
 //		virtual AbstractJoint * clone()const = 0;
 //		virtual AbstractJoint * clone(std::unordered_map<std::string, AbstractJoint *> &jMap) = 0;
 //        virtual NodeVisitor::status traverse(NodeVisitor & visitor);
-        
-        // do not visit children, in an armature structure there are not states and geometry!
-        void doDisplay(FrameContext & /*context*/,const RenderParam & /*rp*/) override { }
+		
+		// do not visit children, in an armature structure there are not states and geometry!
+		void doDisplay(FrameContext & /*context*/,const RenderParam & /*rp*/) override { }
 	};
 }
 

@@ -9,11 +9,14 @@
 minsg_add_sources(
 	BudgetAnnotationState.cpp
 	EnvironmentState.cpp
+	IBLEnvironmentState.cpp
 	LODRenderer.cpp
 	MirrorState.cpp
+	PbrMaterialState.cpp
 	ProjSizeFilterState.cpp
 	RandomColorRenderer.cpp
 	ShadowState.cpp
+	SkinningState.cpp
 	SkyboxState.cpp
 	StrangeExampleRenderer.cpp
 )

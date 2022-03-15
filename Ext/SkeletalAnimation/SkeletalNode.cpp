@@ -367,7 +367,7 @@ namespace MinSG {
             
             float sumTimes = 0.0f;
             for(auto animation : animationTracker)
-                sumTimes += animation->getMaxTime();
+                sumTimes += static_cast<float>(animation->getMaxTime());
             
             for(auto animation : animationTracker)
                 animation->setAnimationSpeed((animation->getMaxTime() / sumTimes) * duration);

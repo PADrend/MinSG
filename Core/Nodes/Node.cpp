@@ -168,7 +168,7 @@ void Node::display(FrameContext & context, const RenderParam & rp) {
 	bool matrixMustBePopped=false;
 
 	// - apply transformations
-	if( (rp.getFlag(USE_WORLD_MATRIX))>0 && getWorldTransformationMatrixPtr() ){
+	if( rp.getFlag(USE_WORLD_MATRIX) && getWorldTransformationMatrixPtr() ){
 		matrixMustBePopped = true;
 		context.getRenderingContext().pushAndSetMatrix_modelToCamera( context.getRenderingContext().getMatrix_worldToCamera() );
 		context.getRenderingContext().multMatrix_modelToCamera(*getWorldTransformationMatrixPtr());
@@ -534,8 +534,10 @@ void Node::transformationChanged() {
 				std::cout<<"Attribute is "<<n->getAttribute(attrName_transformationObservers)<<"\n";
 				continue;
 			}
-			for(auto & observer : **observers)
-				observer(this);
+			for(auto & observer : **observers) {
+				if(observer)
+					observer(this);
+			}
 		}
 	}
 }
@@ -545,7 +547,8 @@ void Node::informNodeAddedObservers(Node * addedNode){
 			auto observers = dynamic_cast<nodeAddedObserversContainer_t*>(n->getAttribute(attrName_nodeAddedObservers));
 			if(observers){
 				for(auto & observer:**observers)
-					observer( addedNode );
+					if(observer)
+						observer( addedNode );
 			}
 		}
 	}
@@ -556,13 +559,14 @@ void Node::informNodeRemovedObservers(GroupNode * parent, Node * removedNode){
 			auto observers = dynamic_cast<nodeRemovedObserversContainer_t*>(n->getAttribute(attrName_nodeRemovedObservers));
 			if(observers){
 				for(auto & observer:**observers)
-					observer( parent, removedNode );
+					if(observer)
+						observer( parent, removedNode );
 			}
 		}
 	}
 }
 
-void Node::addTransformationObserver(const transformationObserverFunc & func){
+Node::TransformationObserverHandle Node::addTransformationObserver(const transformationObserverFunc & func){
 	auto observers = dynamic_cast<transformationObserversContainer_t*>(getAttribute(attrName_transformationObservers));
 	if(observers==nullptr){
 		observers = new transformationObserversContainer_t;
@@ -571,8 +575,9 @@ void Node::addTransformationObserver(const transformationObserverFunc & func){
 	observers->ref().push_back(func);
 	setStatus(STATUS_CONTAINS_TRANSFORMATION_OBSERVER,true);
 	updateObservedStatus();
+	return observers->ref().size()-1;
 }
-void Node::addNodeAddedObserver(const nodeAddedObserverFunc & func){
+Node::NodeAddedObserverHandle Node::addNodeAddedObserver(const nodeAddedObserverFunc & func){
 	auto observers = dynamic_cast<nodeAddedObserversContainer_t*>(getAttribute(attrName_nodeAddedObservers));
 	if(observers==nullptr){
 		observers = new nodeAddedObserversContainer_t;
@@ -581,8 +586,9 @@ void Node::addNodeAddedObserver(const nodeAddedObserverFunc & func){
 	observers->ref().push_back(func);
 	setStatus(STATUS_CONTAINS_NODE_ADDED_OBSERVER,true);
 	updateObservedStatus();
+	return observers->ref().size()-1;
 }
-void Node::addNodeRemovedObserver(const nodeRemovedObserverFunc & func){
+Node::NodeRemovedObserverHandle Node::addNodeRemovedObserver(const nodeRemovedObserverFunc & func){
 	auto observers = dynamic_cast<nodeRemovedObserversContainer_t*>(getAttribute(attrName_nodeRemovedObservers));
 	if(observers==nullptr){
 		observers = new nodeRemovedObserversContainer_t;
@@ -591,7 +597,46 @@ void Node::addNodeRemovedObserver(const nodeRemovedObserverFunc & func){
 	observers->ref().push_back(func);
 	setStatus(STATUS_CONTAINS_NODE_REMOVED_OBSERVER,true);
 	updateObservedStatus();
+	return observers->ref().size()-1;
 }
+void Node::removeTransformationObserver(const TransformationObserverHandle& handle){
+	auto observers = dynamic_cast<transformationObserversContainer_t*>(getAttribute(attrName_transformationObservers));
+	if(observers!=nullptr){
+		if(handle < observers->ref().size()) {
+			observers->ref()[handle] = nullptr;
+		}
+		while(observers->ref().size() > 0 && !observers->ref().back())
+			observers->ref().pop_back();
+		if(observers->ref().empty())
+			clearTransformationObservers();
+	}
+}
+void Node::removeNodeAddedObserver(const NodeAddedObserverHandle& handle){
+	auto observers = dynamic_cast<nodeAddedObserversContainer_t*>(getAttribute(attrName_nodeAddedObservers));
+	if(observers!=nullptr){
+		if(handle < observers->ref().size()) {
+			observers->ref()[handle] = nullptr;
+		}
+		while(observers->ref().size() > 0 && !observers->ref().back())
+			observers->ref().pop_back();
+		if(observers->ref().empty())
+			clearNodeAddedObservers();
+	}
+}
+void Node::removeNodeRemovedObserver(const NodeRemovedObserverHandle& handle){
+	auto observers = dynamic_cast<nodeRemovedObserversContainer_t*>(getAttribute(attrName_nodeRemovedObservers));
+	if(observers!=nullptr){
+		if(handle < observers->ref().size()) {
+			observers->ref()[handle] = nullptr;
+		}
+		while(observers->ref().size() > 0 && !observers->ref().back())
+			observers->ref().pop_back();
+		if(observers->ref().empty())
+			clearNodeRemovedObservers();
+	}
+}
+
+
 void Node::clearTransformationObservers(){
 	unsetAttribute(attrName_transformationObservers);
 	setStatus(STATUS_CONTAINS_TRANSFORMATION_OBSERVER,false);

@@ -28,6 +28,7 @@
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Shader/Uniform.h>
+#include <Rendering/Shader/ShaderUtils.h>
 #include <Rendering/Texture/Texture.h>
 #include <Rendering/Texture/TextureUtils.h>
 #include <Rendering/FBO.h>
@@ -43,6 +44,7 @@ ShadowState::ShadowState(uint16_t textureSize) :
 		texSize(textureSize),
 		shadowTexture(new TextureState(Rendering::TextureUtils::createDepthTexture(texSize, texSize).get())),
 		fbo(new Rendering::FBO),
+		depthShader(Rendering::ShaderUtils::createDefaultShader()),
 		light(nullptr),
 		camera(new CameraNode),
 		staticShadow(false),
@@ -123,10 +125,7 @@ void ShadowState::updateShadowMap(FrameContext & context, Node * node, const Ren
 	context.getRenderingContext().pushAndSetColorBuffer(Rendering::ColorBufferParameters(false, false, false, false));
 	context.getRenderingContext().pushAndSetCullFace(Rendering::CullFaceParameters::CULL_BACK);
 	context.getRenderingContext().pushAndSetDepthBuffer(Rendering::DepthBufferParameters(true, true, Rendering::Comparison::LESS));
-	context.getRenderingContext().pushAndSetLighting(Rendering::LightingParameters(false));
-	context.getRenderingContext().pushShader();
-	context.getRenderingContext().setShader(nullptr);
-
+	context.getRenderingContext().pushAndSetShader(depthShader.get());
 	context.getRenderingContext().applyChanges();
 
 	context.getRenderingContext().pushFBO();
@@ -155,7 +154,6 @@ void ShadowState::updateShadowMap(FrameContext & context, Node * node, const Ren
 //	Rendering::TextureUtils::drawTextureToScreen(context.getRenderingContext(),Geometry::Rect_i(0,0,512,512),getTexture(),Geometry::Rect(0,0,1,1));
 
 	context.getRenderingContext().popShader();
-	context.getRenderingContext().popLighting();
 	context.getRenderingContext().popDepthBuffer();
 	context.getRenderingContext().popCullFace();
 	context.getRenderingContext().popColorBuffer();
@@ -191,23 +189,18 @@ State::stateResult_t ShadowState::doEnableState(FrameContext & context, Node * n
 	if(!staticShadow || needsUpdate)
 		updateShadowMap(context, node, rp);
 
-	auto shader = context.getRenderingContext().getActiveShader();
-	if(shader != nullptr) {
-		shader->setUniform(context.getRenderingContext(), Rendering::Uniform("sg_shadowEnabled", true));
-		shader->setUniform(context.getRenderingContext(), Rendering::Uniform("sg_shadowMatrix", texMatrix));
-		shader->setUniform(context.getRenderingContext(), Rendering::Uniform("sg_shadowTexture", shadowTexture->getTextureUnit()));
-		shader->setUniform(context.getRenderingContext(), Rendering::Uniform("sg_shadowTextureSize", texSize));
-	}
+	auto& rc = context.getRenderingContext();
+	rc.setGlobalUniform(Rendering::Uniform("sg_shadowEnabled", true));
+	rc.setGlobalUniform(Rendering::Uniform("sg_shadowMatrix", texMatrix));
+	rc.setGlobalUniform(Rendering::Uniform("sg_shadowTexture", shadowTexture->getTextureUnit()));
+	rc.setGlobalUniform(Rendering::Uniform("sg_shadowTextureSize", texSize));
 
 	// ##### Activate shadow texture #####
 	return shadowTexture->enableState(context, node, rp);
 }
 
 void ShadowState::doDisableState(FrameContext & context, Node * node, const RenderParam & rp) {
-	auto shader = context.getRenderingContext().getActiveShader();
-	if(shader != nullptr) {
-		shader->setUniform(context.getRenderingContext(), Rendering::Uniform("sg_shadowEnabled", false));
-	}
+	context.getRenderingContext().setGlobalUniform(Rendering::Uniform("sg_shadowEnabled", false));
 	shadowTexture->disableState(context, node, rp);
 }
 

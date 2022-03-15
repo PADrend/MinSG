@@ -45,7 +45,7 @@ Geometry::Vec3f ParticleEmitter::getADirection() {
 	}
 
 	// rotate up by random angle around direction
-	const auto upRotation = Geometry::Matrix3x3f::createRotation(Geometry::Angle::rad(std::uniform_real_distribution<float>(0, 2.0 * M_PI)(engine)), direction);
+	const auto upRotation = Geometry::Matrix3x3f::createRotation(Geometry::Angle::rad(std::uniform_real_distribution<float>(0, static_cast<float>(2.0 * M_PI))(engine)), direction);
 	const Geometry::Vec3f rotatedUp(upRotation * up);
 	const auto dirRotation = Geometry::Matrix3x3f::createRotation(Geometry::Angle::rad(std::uniform_real_distribution<float>(0, directionVarianceAngle.rad())(engine)), rotatedUp);
 	// TODO variance
@@ -54,10 +54,10 @@ Geometry::Vec3f ParticleEmitter::getADirection() {
 
 Util::Color4ub ParticleEmitter::getAColor() const {
 	return Util::Color4ub(
-			   std::uniform_int_distribution<uint8_t>(minColor.getR(), maxColor.getR())(engine),
-			   std::uniform_int_distribution<uint8_t>(minColor.getG(), maxColor.getG())(engine),
-			   std::uniform_int_distribution<uint8_t>(minColor.getB(), maxColor.getB())(engine),
-			   std::uniform_int_distribution<uint8_t>(minColor.getA(), maxColor.getA())(engine)
+			   static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>(minColor.getR(), maxColor.getR())(engine)),
+			   static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>(minColor.getG(), maxColor.getG())(engine)),
+			   static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>(minColor.getB(), maxColor.getB())(engine)),
+			   static_cast<uint8_t>(std::uniform_int_distribution<uint16_t>(minColor.getA(), maxColor.getA())(engine))
 		   );
 }
 

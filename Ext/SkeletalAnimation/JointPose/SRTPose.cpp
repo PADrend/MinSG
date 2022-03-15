@@ -85,7 +85,7 @@ void SRTPose::setValues(std::deque<double> _values, std::deque<double> _timeline
         {
             Geometry::Matrix4x4 mat;
             for(uint32_t j=0; j<16; ++j)
-                mat[j] = _values[i*16+j];
+                mat[j] = static_cast<float>(_values[i*16+j]);
             
             mats.emplace_back(Matrix4x4(mat));
         }
@@ -96,7 +96,7 @@ void SRTPose::setValues(std::deque<double> _values, std::deque<double> _timeline
 
 void SRTPose::addValue(Geometry::Matrix4x4 _value, double _time, uint32_t _interpolationType)
 {
-    addValue(_value, _time, _interpolationType, animationData.size());
+    addValue(_value, _time, _interpolationType, static_cast<uint32_t>(animationData.size()));
 }
 
 void SRTPose::addValue(Geometry::Matrix4x4 _value, double _time, uint32_t _interpolationType, uint32_t _index)
@@ -107,7 +107,7 @@ void SRTPose::addValue(Geometry::Matrix4x4 _value, double _time, uint32_t _inter
     keyframes.emplace_back(Matrix4x4());
     animationData.emplace_back(SRT());
     
-    for(i=timeline.size()-2; i>=_index; --i)
+    for(i=static_cast<uint32_t>(timeline.size()-2); i>=_index; --i)
     {
         timeline[i+1] = timeline[i];
         keyframes[i+1] = keyframes[i];
@@ -182,7 +182,7 @@ void SRTPose::update(double timeSec)
     currentInterpolationType = interpolationTypes[timeIndex];
     
     double interpolFactor = (timeSec-timeline[timeIndex]) / (timeline[timeIndex+1] - timeline[timeIndex]);
-    getBindetJoint()->setRelTransformation(SRT(animationData[timeIndex], animationData[timeIndex+1], interpolFactor));
+    getBindetJoint()->setRelTransformation(SRT(animationData[timeIndex], animationData[timeIndex+1], static_cast<float>(interpolFactor)));
 }
 
 void SRTPose::restart()

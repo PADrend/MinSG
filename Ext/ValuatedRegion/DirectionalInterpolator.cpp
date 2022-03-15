@@ -113,8 +113,8 @@ void DirectionalInterpolator::calculateRatio(Rendering::RenderingContext & rende
 	Rendering::OcclusionQuery queries[6];
 
 	{ // start tests
-		float tang = tan(measurementApertureAngle_deg*0.5 * (M_PI/180.0) );
-		float a=5.0;
+		float tang = static_cast<float>(std::tan(measurementApertureAngle_deg*0.5 * (M_PI/180.0) ));
+		float a=5.0f;
 		float b=a*tang;
 		float sides[6][12]={
 			{-a,+b,+b, -a,+b,-b, -a,-b,-b, -a,-b,+b }, // (left)

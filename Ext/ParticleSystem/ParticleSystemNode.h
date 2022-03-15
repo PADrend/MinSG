@@ -97,7 +97,7 @@ class ParticleSystemNode: public Node {
 		}
 
 		//! (internal) should only used by a ParticleAffector
-		uint32_t getParticleCount()const  		{ 	return particles.size(); }
+		uint32_t getParticleCount()const  		{ 	return static_cast<uint32_t>(particles.size()); }
 
 		uint32_t getMaxParticleCount()const  	{ 	return maxParticleCount; }
 		void setMaxParticleCount(uint32_t max) 	{ 	maxParticleCount = max; }

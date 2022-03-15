@@ -134,9 +134,9 @@ void ValuatedRegionNode::splitUp(unsigned int regionsX, unsigned int regionsY, u
 
 Geometry::Vec3 ValuatedRegionNode::getPosition(float xCell, float yCell, float zCell) const {
 	return Geometry::Vec3(
-				region.getMinX() + (region.getExtentX() / resolution.x())*(xCell + 0.5),
-				region.getMinY() + (region.getExtentY() / resolution.y())*(yCell + 0.5),
-				region.getMinZ() + (region.getExtentZ() / resolution.z())*(zCell + 0.5)
+				region.getMinX() + (region.getExtentX() / resolution.x())*(xCell + 0.5f),
+				region.getMinY() + (region.getExtentY() / resolution.y())*(yCell + 0.5f),
+				region.getMinZ() + (region.getExtentZ() / resolution.z())*(zCell + 0.5f)
 		   );
 }
 
@@ -326,7 +326,7 @@ void ValuatedRegionNode::drawColorBox(FrameContext & context) {
 	if(additionalData == nullptr) {
 		return;
 	}
-	unsigned int numColors = additionalData->colors.size();
+	auto numColors = additionalData->colors.size();
 	if (numColors == 1) {
 		Geometry::Box box(region);
 		if (additionalData->heightScale!=1.0) {
@@ -335,7 +335,7 @@ void ValuatedRegionNode::drawColorBox(FrameContext & context) {
 		Rendering::drawBox(context.getRenderingContext(), box, additionalData->colors.front());
 	} else if (numColors == 6) {
 		Geometry::Box box(region);
-		box.resizeRel(0.9);
+		box.resizeRel(0.9f);
 		const float dispX = box.getExtentX() * 0.05f;
 		const float dispY = box.getExtentY() * 0.05f;
 		const float dispZ = box.getExtentZ() * 0.05f;
@@ -431,7 +431,7 @@ void ValuatedRegionNode::getValueAsNumbers(std::list<float> & numbers) const {
 #ifdef MINSG_EXT_VISIBILITY_SUBDIVISION
 		const auto * vva = dynamic_cast<const VisibilityVectorAttribute *>(elem.get());
 		if(vva != nullptr) {
-			numbers.push_back(vva->ref().getTotalCosts());
+			numbers.push_back(static_cast<float>(vva->ref().getTotalCosts()));
 			continue;
 		}
 #endif

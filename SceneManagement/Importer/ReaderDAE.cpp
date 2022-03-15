@@ -1226,7 +1226,7 @@ Rendering::Mesh * VisitorContext::createSingleMesh(const std::deque<VertexPart> 
 	for(auto & vertexPart : vertexParts) {
 		if(vertexPart.type == VertexPart::POSITION) {
 			const VertexAttribute & attr = vd.getAttribute(VertexAttributeIds::POSITION);
-			if( !attr.empty() ) {
+			if( attr.isValid() ) {
 				WARN("POSITION used multiple times.");
 				return nullptr;
 			}
@@ -1235,7 +1235,7 @@ Rendering::Mesh * VisitorContext::createSingleMesh(const std::deque<VertexPart> 
 			orderedParts.push_front( vertexPart );
 		} else if(vertexPart.type == VertexPart::NORMAL) {
 			const VertexAttribute & attr = vd.getAttribute(VertexAttributeIds::NORMAL);
-			if( !attr.empty() ) {
+			if( attr.isValid() ) {
 				WARN("NORMAL used multiple times.");
 				return nullptr;
 			}
@@ -1243,7 +1243,7 @@ Rendering::Mesh * VisitorContext::createSingleMesh(const std::deque<VertexPart> 
 			orderedParts.push_back( vertexPart );
 		} else if(vertexPart.type == VertexPart::COLOR) {
 			const VertexAttribute & attr = vd.getAttribute(VertexAttributeIds::COLOR);
-			if( !attr.empty() ) {
+			if( attr.isValid() ) {
 				WARN("COLOR used multiple times.");
 				return nullptr;
 			}
@@ -1255,7 +1255,7 @@ Rendering::Mesh * VisitorContext::createSingleMesh(const std::deque<VertexPart> 
 			for(uint_fast8_t i = 0; i < 8; ++i) {
 				const Util::StringIdentifier texCoordId = VertexAttributeIds::getTextureCoordinateIdentifier(i);
 				const VertexAttribute & attr = vd.getAttribute(texCoordId);
-				if(attr.empty()){
+				if(!attr.isValid()){
 					vd.appendFloatAttribute(texCoordId, 2);
 					orderedParts.push_back(vertexPart);
 					inserted = true;
@@ -1285,7 +1285,7 @@ Rendering::Mesh * VisitorContext::createSingleMesh(const std::deque<VertexPart> 
 
 	if(!weights.empty())
 	{
-		if( ! vd.getAttribute(ATTR_ID_WEIGHTS1).empty() ) {
+		if( vd.getAttribute(ATTR_ID_WEIGHTS1).isValid() ) {
 			WARN("WEIGHTS used multiple times.");
 			return nullptr;
 		}
@@ -1295,7 +1295,7 @@ Rendering::Mesh * VisitorContext::createSingleMesh(const std::deque<VertexPart> 
 		vd.appendFloatAttribute(ATTR_ID_WEIGHTS3,4);
 		vd.appendFloatAttribute(ATTR_ID_WEIGHTS4,4);
 
-		if( ! vd.getAttribute(ATTR_ID_WEIGHTSINDEX1).empty() ) {
+		if( vd.getAttribute(ATTR_ID_WEIGHTSINDEX1).isValid() ) {
 			WARN("WEIGHTS used multiple times.");
 			return nullptr;
 		}
@@ -1304,7 +1304,7 @@ Rendering::Mesh * VisitorContext::createSingleMesh(const std::deque<VertexPart> 
 		vd.appendFloatAttribute(ATTR_ID_WEIGHTSINDEX3,4);
 		vd.appendFloatAttribute(ATTR_ID_WEIGHTSINDEX4,4);
 
-		if( ! vd.getAttribute(ATTR_ID_WEIGHTSCOUNT).empty() ) {
+		if( vd.getAttribute(ATTR_ID_WEIGHTSCOUNT).isValid() ) {
 			WARN("WEIGHTS used multiple times.");
 			return nullptr;
 		}
@@ -1532,7 +1532,7 @@ bool VisitorContext::createMeshes(const DescriptionMap * geoDesc, mesh_list_t & 
 				for(uint32_t i=0; i<countWeights; ++i)
 				{
 					SkinningPairs pair;
-					pair.vcount = vcountVector[i];
+					pair.vcount = static_cast<float>(vcountVector[i]);
 					weights[i] = pair;
 				}
 			}
@@ -1547,7 +1547,7 @@ bool VisitorContext::createMeshes(const DescriptionMap * geoDesc, mesh_list_t & 
 				{
 					for(k=0; k<vcountVector[j]; ++k)
 					{
-						weights[j].jointId.push_back(vIndexVector[i+offsetJoint]);
+						weights[j].jointId.push_back(static_cast<float>(vIndexVector[i+offsetJoint]));
 						weights[j].weight.push_back(weightsVector[vIndexVector[i+offsetWeight]]);
 						i+=2;
 					}

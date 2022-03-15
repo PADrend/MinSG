@@ -95,7 +95,7 @@ static TriangleTrees::SolidTree_3f_GeometryNode buildSolidGeoTree(GroupNode * sc
 			}
 			const Rendering::VertexDescription & vertexDesc = inputMesh->getVertexDescription();
 			const Rendering::VertexAttribute & posAttr = vertexDesc.getAttribute(Rendering::VertexAttributeIds::POSITION);
-			if(posAttr.getNumValues() != 3) {
+			if(posAttr.getComponentCount() != 3) {
 				throw std::invalid_argument("Cannot handle vertices where the number of coordinates is not three.");
 			}
 

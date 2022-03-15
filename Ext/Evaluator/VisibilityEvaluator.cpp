@@ -52,7 +52,7 @@ void VisibilityEvaluator::measure(FrameContext & context,Node & node,const Geome
 	node.display(context,USE_WORLD_MATRIX|FRUSTUM_CULLING);
 
 	if (getMaxValue()->toInt() == 0.0) {
-		setMaxValue_i(collectNodes<GeometryNode>(&node).size());
+		setMaxValue_i(static_cast<uint32_t>(collectNodes<GeometryNode>(&node).size()));
 	}
 
 	if (mode==SINGLE_VALUE) {
@@ -65,7 +65,7 @@ void VisibilityEvaluator::measure(FrameContext & context,Node & node,const Geome
 
 
 		// setup occlusion queries
-		int numQueries=objectsInVFList.size();
+		size_t numQueries=objectsInVFList.size();
 		if (numQueries==0) return;
 
 
@@ -131,9 +131,9 @@ void VisibilityEvaluator::measure(FrameContext & context,Node & node,const Geome
 			for(const auto & n : nodes) {
 				numPolys += n->getTriangleCount();
 			}
-			values->push_back(new Util::_NumberAttribute<float>(numPolys));
+			values->push_back(new Util::_NumberAttribute<float>(static_cast<float>(numPolys)));
 		}else{
-			values->push_back(new Util::_NumberAttribute<float>(nodes.size()));
+			values->push_back(new Util::_NumberAttribute<float>(static_cast<float>(nodes.size())));
 		}
 
 	}
@@ -149,10 +149,10 @@ void VisibilityEvaluator::endMeasure(FrameContext & /*context*/) {
 				if(gn)
 					numPolys+=gn->getTriangleCount();
 			}
-			values->push_back(new Util::_NumberAttribute<float>(numPolys));
+			values->push_back(new Util::_NumberAttribute<float>(static_cast<float>(numPolys)));
 
 		}else{
-			values->push_back(new Util::_NumberAttribute<float>(visibleObjects.size()));
+			values->push_back(new Util::_NumberAttribute<float>(static_cast<float>(visibleObjects.size())));
 		}
 
 	}

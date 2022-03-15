@@ -79,7 +79,7 @@ Node * Loader::importPartitions(const Util::FileName & fileName) {
 				WARN("Cannot load model.");
 			} else {
 				data->objects.push_back(mesh);
-				objectIdToIndex.insert(std::pair<std::string, uint32_t>(id, data->objects.size() - 1));
+				objectIdToIndex.insert(std::pair<std::string, uint32_t>(id, static_cast<uint32_t>(data->objects.size() - 1)));
 			}
 
 			++objectCount;
@@ -155,7 +155,7 @@ Node * Loader::importPartitions(const Util::FileName & fileName) {
 
 			std::sort(visibleSet.begin(), visibleSet.end());
 			data->visibleSets.push_back(visibleSet);
-			visibleSetIdToIndex.insert(std::pair<std::string, uint32_t>(id, data->visibleSets.size() - 1));
+			visibleSetIdToIndex.insert(std::pair<std::string, uint32_t>(id, static_cast<uint32_t>(data->visibleSets.size() - 1)));
 			++visibleSetCount;
 		}
 		if (visibleSetCount != numVisibleSets) {
@@ -223,7 +223,7 @@ Node * Loader::importPartitions(const Util::FileName & fileName) {
 					if(mesh == nullptr) {
 						WARN("Cannot load depth mesh.");
 					} else {
-						surroundingIds.push_back(data->depthMeshes.size());
+						surroundingIds.push_back(static_cast<uint32_t>(data->depthMeshes.size()));
 						data->depthMeshes.push_back(mesh);
 					}
 					if(textures[i].empty() || !Util::FileUtils::isFile(Util::FileName(textures[i]))) {

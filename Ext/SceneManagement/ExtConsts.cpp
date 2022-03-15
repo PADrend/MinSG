@@ -165,6 +165,61 @@ const Util::StringIdentifier ATTR_SHADOW_TEXTURE_SIZE("texture_size");
 const Util::StringIdentifier ATTR_SHADOW_LIGHT_NODE("light_node");
 const Util::StringIdentifier ATTR_SHADOW_STATIC("static");
 
+// ---------------------------------------------------------------------------
+// Skinning state
+cStr_t STATE_TYPE_SKINNING_STATE = "skinning";
+const Util::StringIdentifier ATTR_SKINNING_JOINT_ID("joint_id");
+const Util::StringIdentifier ATTR_SKINNING_INVERSE_BINDING_MATRIX("inverse_binding_matrix");
+cStr_t TYPE_SKINNING_JOINT = "joint";
+
+// ---------------------------------------------------------------------------
+// Skinning state
+cStr_t STATE_TYPE_IBL_ENV_STATE = "ibl_environment";
+const Util::StringIdentifier ATTR_IBL_ENV_FILE("file");
+const Util::StringIdentifier ATTR_IBL_ENV_TEXTURE("texture");
+const Util::StringIdentifier ATTR_IBL_ENV_DRAW_ENV("drawEnv");
+const Util::StringIdentifier ATTR_IBL_ENV_LOD("lod");
+const Util::StringIdentifier ATTR_IBL_ENV_ROTATION("rotation");
+
+// ---------------------------------------------------------------------------
+// PBR Material state
+cStr_t STATE_TYPE_PBR_MATERIAL_STATE = "pbr_material";
+const Util::StringIdentifier ATTR_PBR_MAT_BASECOLOR_FACTOR("basecolor_factor");
+const Util::StringIdentifier ATTR_PBR_MAT_BASECOLOR_TEXTURE("basecolor_texture");
+const Util::StringIdentifier ATTR_PBR_MAT_BASECOLOR_TEXCOORD("basecolor_texcoord");
+const Util::StringIdentifier ATTR_PBR_MAT_BASECOLOR_TEXTRANSFORM("basecolor_textransform");
+const Util::StringIdentifier ATTR_PBR_MAT_BASECOLOR_TEXUNIT("basecolor_texunit");
+const Util::StringIdentifier ATTR_PBR_MAT_METALLICFACTOR("metallicfactor");
+const Util::StringIdentifier ATTR_PBR_MAT_ROUGHNESSFACTOR("roughnessfactor");
+const Util::StringIdentifier ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXTURE("metallic_roughness_texture");
+const Util::StringIdentifier ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXCOORD("metallic_roughness_texcoord");
+const Util::StringIdentifier ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXTRANSFORM("metallic_roughness_textransform");
+const Util::StringIdentifier ATTR_PBR_MAT_METALLIC_ROUGHNESS_TEXUNIT("metallic_roughness_texunit");
+const Util::StringIdentifier ATTR_PBR_MAT_NORMAL_SCALE("normal_scale");
+const Util::StringIdentifier ATTR_PBR_MAT_NORMAL_TEXTURE("normal_texture");
+const Util::StringIdentifier ATTR_PBR_MAT_NORMAL_TEXCOORD("normal_texcoord");
+const Util::StringIdentifier ATTR_PBR_MAT_NORMAL_TEXTRANSFORM("normal_textransform");
+const Util::StringIdentifier ATTR_PBR_MAT_NORMAL_TEXUNIT("normal_texunit");
+const Util::StringIdentifier ATTR_PBR_MAT_OCCLUSION_STRENGTH("occlusion_strength");
+const Util::StringIdentifier ATTR_PBR_MAT_OCCLUSION_TEXTURE("occlusion_texture");
+const Util::StringIdentifier ATTR_PBR_MAT_OCCLUSION_TEXCOORD("occlusion_texcoord");
+const Util::StringIdentifier ATTR_PBR_MAT_OCCLUSION_TEXTRANSFORM("occlusion_textransform");
+const Util::StringIdentifier ATTR_PBR_MAT_OCCLUSION_TEXUNIT("occlusion_texunit");
+const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_FACTOR("emissive_factor");
+const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXTURE("emissive_texture");
+const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXCOORD("emissive_texcoord");
+const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXTRANSFORM("emissive_textransform");
+const Util::StringIdentifier ATTR_PBR_MAT_EMISSIVE_TEXUNIT("emissive_texunit");
+const Util::StringIdentifier ATTR_PBR_MAT_ALPHAMODE("alphamode");
+const Util::StringIdentifier ATTR_PBR_MAT_ALPHACUTOFF("alphacutoff");
+const Util::StringIdentifier ATTR_PBR_MAT_IOR("ior");
+const Util::StringIdentifier ATTR_PBR_MAT_DOUBLESIDED("doublesided");
+const Util::StringIdentifier ATTR_PBR_MAT_SHADINGMODEL("shadingmodel");
+const Util::StringIdentifier ATTR_PBR_MAT_SKINNING("skinning");
+const Util::StringIdentifier ATTR_PBR_MAT_IBL("ibl");
+const Util::StringIdentifier ATTR_PBR_MAT_SHADOW("shadow");
+
+
 
 }
 }

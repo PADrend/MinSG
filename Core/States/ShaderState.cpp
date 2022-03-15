@@ -53,8 +53,8 @@ Rendering::Uniform ShaderState::getUniform(const std::string & name) const {
 }
 
 //! ---|> [State]
-State::stateResult_t ShaderState::doEnableState(FrameContext & context, Node *, const RenderParam & /*rp*/) {
-	if( !shader )
+State::stateResult_t ShaderState::doEnableState(FrameContext & context, Node *, const RenderParam & rp) {
+	if( !shader || rp.getFlag(NO_SHADING))
 		return State::STATE_SKIPPED;
 
 	auto & rCtxt = context.getRenderingContext();

@@ -277,7 +277,7 @@ void FrameContext::showAnnotation(Node * node, const std::string & text, const i
 		Rendering::disable2DMode(*renderingContext);
 	}
 	
-	const int pinLength = flippedRect.getMinY() - screenPos.getY() - 10 - yPosOffset;
+	const int pinLength = static_cast<int>(flippedRect.getMinY() - screenPos.getY() - 10 - yPosOffset);
 
 	TextAnnotation::displayText(*this,
 								worldPos,

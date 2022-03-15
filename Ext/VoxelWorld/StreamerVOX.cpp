@@ -163,7 +163,7 @@ void  VoxelWorld::saveVoxels(std::ostream & output, const VoxelWorld::serializat
 		write(output, VOX_AREA_DATA); // block header
 		
 		const auto areaData = data.first;
-		const uint32_t numberOfAreas = areaData.size();
+		const uint32_t numberOfAreas = static_cast<uint32_t>(areaData.size());
 		// data size
 		write(output,static_cast<uint32_t>(sizeof(numberOfAreas) + numberOfAreas*( 3*sizeof(int32_t) + 2*sizeof(uint32_t))));
 		write(output,numberOfAreas);
@@ -188,7 +188,7 @@ void  VoxelWorld::saveVoxels(std::ostream & output, const VoxelWorld::serializat
 		
 		const auto blockData = data.second;
 
-		const uint32_t numberOfBlocks = blockData.size();
+		const uint32_t numberOfBlocks = static_cast<uint32_t>(blockData.size());
 		uint32_t dataSize = sizeof(numberOfBlocks);
 		std::vector<uint8_t> numbersOfRuns;
 		

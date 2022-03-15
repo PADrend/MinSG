@@ -29,7 +29,7 @@
 namespace MinSG{
 	
 void saveMeshesInSubtree(Node * rootNode, const std::string & s_dirName, bool saveRegisteredNodes, const std::string& ext) {
-	float start = Util::Timer::now();
+	float start = static_cast<float>(Util::Timer::now());
 	Util::FileName dirName = Util::FileName::createDirName(s_dirName);
 	const auto geoNodes = collectNodes<GeometryNode>(rootNode);
 	const size_t numMeshes = geoNodes.size();

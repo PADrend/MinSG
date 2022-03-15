@@ -29,7 +29,8 @@ enum RenderFlags {
 	SHOW_COORD_SYSTEM = 1 << 5,
 	USE_WORLD_MATRIX = 1 << 6,
 	NO_STATES = 1 << 7,
-	SKIP_RENDERER = 1 << 8
+	SKIP_RENDERER = 1 << 8,
+	NO_SHADING = 1 << 9
 };
 
 /*! Rendering parameter used during rendering.

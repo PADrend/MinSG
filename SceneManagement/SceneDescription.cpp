@@ -169,6 +169,7 @@ const Util::StringIdentifier ATTR_TEXTURE_ID("imageId");
 const Util::StringIdentifier ATTR_TEXTURE_UNIT("texture_unit");
 const Util::StringIdentifier ATTR_TEXTURE_NUM_LAYERS("numLayers");
 const Util::StringIdentifier ATTR_TEXTURE_TYPE("textureType");
+const Util::StringIdentifier ATTR_TEXTURE_DATA("data");
 
 const Util::StringIdentifier ATTR_MESH_FILENAME("filename");
 const Util::StringIdentifier ATTR_MESH_BB("bb");

@@ -82,7 +82,7 @@ void SkeletalAbstractRendererState::validateMatriceOrder(Node *node) {
         inverseMatContainer.emplace_back(item->getInverseBindMatrix());
     }
     
-    jointSize = inverseMatContainer.size();
+    jointSize = static_cast<uint32_t>(inverseMatContainer.size());
 
     validatedMatrices = true;
 }

@@ -69,7 +69,7 @@ void RandomizedSampleTree::createSample(const std::function<double(const Triangl
 	uint32_t sumChildTriangles = 0;
 	for(auto & elem : rstChildren) {
 		elem->createSample(calcTriangleWeight);
-		sumChildTriangles += elem->triangleStorage.size();
+		sumChildTriangles += static_cast<uint32_t>(elem->triangleStorage.size());
 	}
 
 	if(sumChildTriangles == 0) {
@@ -86,7 +86,7 @@ void RandomizedSampleTree::createSample(const std::function<double(const Triangl
 
 	// Only sample from the triangles of the direct child nodes as suggested in section 5.2 of the original article.
 	for(auto & elem : rstChildren) {
-		const uint32_t triangleCount = elem->triangleStorage.size();
+		const uint32_t triangleCount = static_cast<uint32_t>(elem->triangleStorage.size());
 		for (uint_fast32_t t = 0; t < triangleCount; ++t) {
 			sumArea += calcTriangleWeight(elem->triangleStorage[t]);
 			population.emplace_back(sumArea);
@@ -118,7 +118,7 @@ void RandomizedSampleTree::createSample(const std::function<double(const Triangl
 
 	uint_fast32_t p = 0;
 	for(auto & elem : rstChildren) {
-		const uint32_t triangleCount = elem->triangleStorage.size();
+		const uint32_t triangleCount = static_cast<uint32_t>(elem->triangleStorage.size());
 		std::vector<TriangleAccessor> newChildStorage;
 		newChildStorage.reserve(triangleCount);
 		for (uint_fast32_t t = 0; t < triangleCount; ++t) {

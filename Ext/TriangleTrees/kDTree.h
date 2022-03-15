@@ -120,7 +120,7 @@ class kDTree : public TriangleTree {
 		 * @return Triangle count
 		 */
 		uint32_t getTriangleCount() const override {
-			return sorted[getSplitDimension()].size();
+			return static_cast<uint32_t>(sorted[getSplitDimension()].size());
 		}
 
 		/**

@@ -16,7 +16,7 @@
 #include "../../Core/FrameContext.h"
 #include <Geometry/Matrix4x4.h>
 #include <Rendering/Mesh/Mesh.h>
-#include <Rendering/MeshUtils/MeshBuilder.h>
+#include <Rendering/MeshUtils/PrimitiveShapes.h>
 #include <Rendering/MeshUtils/MeshUtils.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Draw.h>
@@ -47,7 +47,11 @@ void Waypoint::doDisplay(FrameContext & context, const RenderParam & rp) {
 
 	static Util::Reference<Rendering::Mesh> arrowMesh;
 	if(arrowMesh.isNull()) {
-		arrowMesh = Rendering::MeshUtils::MeshBuilder::createArrow(0.1f, 1.0f);
+		Rendering::VertexDescription vd;
+		vd.appendPosition3D();
+		vd.appendNormalByte();
+		vd.appendColorRGBAByte();
+		arrowMesh = Rendering::MeshUtils::createArrow(vd, 0.1f, 1.0f);
 		Geometry::Matrix4x4f transformation;
 		transformation.rotate_deg(90.0f, 0.0f, 1.0f, 0.0f);
 		Rendering::MeshUtils::transform(arrowMesh->openVertexData(), transformation);

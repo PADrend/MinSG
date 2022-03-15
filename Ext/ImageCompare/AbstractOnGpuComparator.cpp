@@ -133,11 +133,11 @@ void AbstractOnGpuComparator::filter(Rendering::RenderingContext & context, TexR
 			double sum = 0.0;
 			for (int i = 0; i <= filterSize; i++) {
 				const double v = a * std::exp(-((i * i) / (2.0 * sigma * sigma)));
-				values.push_back(v);
+				values.push_back(static_cast<float>(v));
 				sum += (i == 0 ? v : 2 * v);
 			}
 			for (int i = 0; i <= filterSize; i++) {
-				values[i] /= sum;
+				values[i] = static_cast<float>(values[i] / sum);
 			}
 		}
 		else if (filterType == BOX) {
@@ -214,11 +214,11 @@ float AbstractOnGpuComparator::average(Rendering::RenderingContext & context, Te
 	auto localBitmap = in->get()->getLocalBitmap();
 	const float * tex = reinterpret_cast<const float *>(localBitmap->data());
 	const float * end = reinterpret_cast<const float *>(localBitmap->data() + localBitmap->getDataSize());
-	const uint32_t numFloats = end - tex;
+	const auto numFloats = end - tex;
 	while (tex != end) {
 		quality += *(tex++);
 	}
-	return quality /= numFloats;
+	return static_cast<float>(quality / numFloats);
 }
 
 void AbstractOnGpuComparator::setFBO(Util::Reference<Rendering::FBO> _fbo) {

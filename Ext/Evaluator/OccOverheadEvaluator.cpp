@@ -79,7 +79,7 @@ void OccOverheadEvaluator::measure(FrameContext & context,Node & node,const Geom
 		const auto groupNodesInVFList = collectNodesInFrustum<GroupNode>(&node,context.getCamera()->getFrustum());
 
 		// setup occlusion queries
-		int numQueries=groupNodesInVFList.size();
+		size_t numQueries=groupNodesInVFList.size();
 		if (numQueries==0) {
 			values->push_back(nullptr); // TODO!!!
 			return; // TODO??
@@ -166,7 +166,7 @@ void OccOverheadEvaluator::measure(FrameContext & context,Node & node,const Geom
 
 		context.getRenderingContext().finish();
 		timer.stop();
-		perfectRenderingTime=timer.getMilliseconds();
+		perfectRenderingTime=static_cast<float>(timer.getMilliseconds());
 	}
 
 //    // Test-costs:

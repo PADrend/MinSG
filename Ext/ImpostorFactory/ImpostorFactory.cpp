@@ -28,7 +28,7 @@
 #include <Rendering/FBO.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/VertexAttributeIds.h>
-#include <Rendering/MeshUtils/MeshBuilder.h>
+#include <Rendering/MeshUtils/PrimitiveShapes.h>
 #include <Rendering/MeshUtils/MeshUtils.h>
 #include <Rendering/MeshUtils/QuadtreeMeshBuilder.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
@@ -79,7 +79,7 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 	if (width < 1.0f || height < 1.0f) {
 		return nullptr;
 	}
-	cameraOrtho->setViewport(Geometry::Rect_i(0, 0, width, height));
+	cameraOrtho->setViewport(Geometry::Rect_i(0, 0, static_cast<int32_t>(width), static_cast<int32_t>(height)));
 
 	Rendering::RenderingContext & renderingContext = frameContext.getRenderingContext();
 
@@ -90,8 +90,8 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 	frameContext.pushAndSetCamera(cameraOrtho.get());
 
 	// First pass: Render to normal texture
-	Util::Reference<Texture> normalTexture = TextureUtils::createStdTexture(width, height, true);
-	Util::Reference<Texture> depthTexture = TextureUtils::createDepthTexture(width, height);
+	Util::Reference<Texture> normalTexture = TextureUtils::createStdTexture(static_cast<uint32_t>(width), static_cast<uint32_t>(height), true);
+	Util::Reference<Texture> depthTexture = TextureUtils::createDepthTexture(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 	fbo->attachColorTexture(renderingContext, normalTexture.get());
 	fbo->attachDepthTexture(renderingContext, depthTexture.get());
 
@@ -105,7 +105,7 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 	normalTexture->downloadGLTexture(renderingContext);
 
 	// First pass: Render to color texture
-	Util::Reference<Texture> colorTexture = TextureUtils::createStdTexture(width, height, true);
+	Util::Reference<Texture> colorTexture = TextureUtils::createStdTexture(static_cast<uint32_t>(width), static_cast<uint32_t>(height), true);
 	fbo->attachColorTexture(renderingContext, colorTexture.get());
 
 	// Render the node
@@ -122,7 +122,11 @@ GeometryNode * createReliefBoardForNode(FrameContext & frameContext, Node * node
 	vertexDescription.appendPosition3D();
 	vertexDescription.appendColorRGBAByte();
 	vertexDescription.appendNormalByte();
-	Util::Reference<Mesh> mesh = MeshUtils::MeshBuilder::createMeshFromBitmaps(vertexDescription, depthTexture->getLocalBitmap(), colorTexture->getLocalBitmap(), normalTexture->getLocalBitmap());
+	
+	Util::Reference<Util::PixelAccessor> depthAcc = Util::PixelAccessor::create(depthTexture->getLocalBitmap());
+	Util::Reference<Util::PixelAccessor> colorReader = Util::PixelAccessor::create(colorTexture->getLocalBitmap());
+	Util::Reference<Util::PixelAccessor> normalReader = Util::PixelAccessor::create(normalTexture->getLocalBitmap());
+	Util::Reference<Mesh> mesh = MeshUtils::createMeshFromBitmaps(vertexDescription, depthAcc, colorReader, normalReader);
 	if (mesh.isNull()) {
 		frameContext.popCamera();
 		return nullptr;
@@ -174,7 +178,7 @@ GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node 
 	if (width < 1.0f || height < 1.0f) {
 		return nullptr;
 	}
-	cameraOrtho->setViewport(Geometry::Rect_i(0, 0, width, height));
+	cameraOrtho->setViewport(Geometry::Rect_i(0, 0, static_cast<uint32_t>(width), static_cast<uint32_t>(height)));
 
 	Rendering::RenderingContext & renderingContext = frameContext.getRenderingContext();
 
@@ -182,12 +186,12 @@ GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node 
 	Util::Reference<FBO> fbo = new FBO();
 	renderingContext.pushAndSetFBO(fbo.get());
 
-	Util::Reference<Texture> depthStencilTexture = TextureUtils::createDepthStencilTexture(width, height);
+	Util::Reference<Texture> depthStencilTexture = TextureUtils::createDepthStencilTexture(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 
 	frameContext.pushAndSetCamera(cameraOrtho.get());
 
 	// First pass: Render to normal texture
-	Util::Reference<Texture> normalTexture = TextureUtils::createStdTexture(width, height, true);
+	Util::Reference<Texture> normalTexture = TextureUtils::createStdTexture(static_cast<uint32_t>(width), static_cast<uint32_t>(height), true);
 	fbo->attachColorTexture(renderingContext, normalTexture.get());
 	fbo->attachDepthStencilTexture(renderingContext, depthStencilTexture.get());
 
@@ -202,7 +206,7 @@ GeometryNode * createTexturedDepthMeshForNode(FrameContext & frameContext, Node 
 	normalTexture->downloadGLTexture(renderingContext);
 
 	// First pass: Render to color texture
-	Util::Reference<Texture> colorTexture = TextureUtils::createStdTexture(width, height, true);
+	Util::Reference<Texture> colorTexture = TextureUtils::createStdTexture(static_cast<uint32_t>(width), static_cast<uint32_t>(height), true);
 	fbo->attachColorTexture(renderingContext, colorTexture.get());
 	fbo->attachDepthStencilTexture(renderingContext, depthStencilTexture.get());
 

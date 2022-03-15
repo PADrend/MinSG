@@ -64,7 +64,7 @@ Histogram1D * createDistanceHistogram(const std::vector<Geometry::Vec3> & positi
 
 Histogram1D * createAngleHistogram(const std::vector<Geometry::Vec3> & positions,const uint32_t numBuckets){
 	auto hist=new Histogram1D(numBuckets);
-	hist->maxValue = 2.0f * M_PI;
+	hist->maxValue = static_cast<float>(2.0 * M_PI);
 
 	if(positions.empty())
 		return hist;
@@ -112,7 +112,7 @@ Histogram1D * createClosestPointDistanceHistogram(const std::vector<Geometry::Ve
 
 	// build octree
 	typedef Geometry::PointOctree<Geometry::Point<Geometry::Vec3f> > octree_t;
-	octree_t octree(bb,bb.getExtentMax()*0.01,20);
+	octree_t octree(bb,bb.getExtentMax()*0.01f,20);
 
 	for(auto & position : positions)
 		octree.insert(octree_t::point_t(position));
@@ -155,7 +155,7 @@ Util::Reference<Util::Bitmap> create2dDistanceHistogram(const std::vector<Geomet
 		bb.invalidate();
 		for(auto & position : positions)
 			bb.include(position);
-		maxDistance = bb.getDiameter();
+		maxDistance = static_cast<int>(bb.getDiameter());
 		if(maxDistance==0)
 			return std::move(result);
 	}
@@ -168,20 +168,20 @@ Util::Reference<Util::Bitmap> create2dDistanceHistogram(const std::vector<Geomet
 
 	{	// throw distances into buckets
 		const float invBucketSize = static_cast<float>(numBuckets) / maxDistance;
-		const Geometry::Vec2i center(numBuckets / 2,numBuckets / 2);
+		const Vec2i center(numBuckets / 2,numBuckets / 2);
 		for(auto referenceIt=positions.begin();referenceIt!=positions.end();++referenceIt){
 			const Vec3 referencePoint(*referenceIt);
 
 			for(auto it=referenceIt+1;it!=positions.end();++it){
 				const Vec3 diffVec(((*it)-referencePoint) * invBucketSize);
 
-				const Geometry::Vec2i pos1 = Geometry::Vec2i(diffVec.x(),diffVec.z()) + center;
+				const Vec2i pos1 = Vec2i(Vec2f(diffVec.x(),diffVec.z())) + center;
 				if(pos1.x()>=0 && pos1.x()<static_cast<int>(numBuckets) && pos1.y()>=0 && pos1.y()<static_cast<int>(numBuckets)){
 					++buckets[pos1.x()+pos1.y()*numBuckets];
 				}else{
 					// overflow
 				}
-				const Vec2i pos2 = center - Vec2i(diffVec.x(),diffVec.z());
+				const Vec2i pos2 = center - Vec2i(Vec2f(diffVec.x(),diffVec.z()));
 				if(pos2.x()>=0 && pos2.x()<static_cast<int>(numBuckets) && pos2.y()>=0 && pos2.y()<static_cast<int>(numBuckets)){
 					++buckets[pos2.x()+pos2.y()*numBuckets];
 				}else{
@@ -205,10 +205,10 @@ Util::Reference<Util::Bitmap> create2dDistanceHistogram(const std::vector<Geomet
 	{ 	// fill bitmap
 		Util::Reference<Util::PixelAccessor> resultPixels(Util::PixelAccessor::create(result));
 		uint32_t cursor = 0;
-		const float colorScale = 1.0 / logf(static_cast<float>(maxSize));
+		const float colorScale = 1.0f / logf(static_cast<float>(maxSize));
 		for(uint32_t row=0;row<numBuckets;++row){
 			for(uint32_t column=0;column<numBuckets;++column){
-				const float value = logf(buckets[cursor++]) * colorScale;
+				const float value = logf(static_cast<float>(buckets[cursor++])) * colorScale;
 				resultPixels->writeColor(column,row,Util::Color4f(value,value,value,1.0 ));
 			}
 		}

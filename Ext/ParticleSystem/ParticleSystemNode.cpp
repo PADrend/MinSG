@@ -85,12 +85,12 @@ void ParticleSystemNode::collectAndAnimateParticles(AbstractBehaviour::timestamp
 	for(auto & elem : particles) {
 		// Age
 		if(elem.lifeTime > 0.0f) {
-			elem.timeLeft -= elapsed;
+			elem.timeLeft -= static_cast<float>(elapsed);
 		}
 		// Translation
-		elem.position += elem.direction * elapsed;
+		elem.position += elem.direction * static_cast<float>(elapsed);
 		// Rotation
-		const Geometry::Matrix3x3f blendedRotation(id, elem.rotation, elapsed);
+		const Geometry::Matrix3x3f blendedRotation(id, elem.rotation, static_cast<float>(elapsed));
 		elem.direction = blendedRotation * elem.direction;
 
 		particleBounds.include(elem.position);

@@ -18,7 +18,7 @@ minsg_add_sources(
 	VisibilitySphere.cpp
 )
 
-minsg_add_extension(MINSG_EXT_SVS "Defines if the MinSG extension Spherical Visibility Sampling (SVS) is built." ${MINSG_RECOMMENDED_EXT})
+minsg_add_extension(MINSG_EXT_SVS "Defines if the MinSG extension Spherical Visibility Sampling (SVS) is built.")
 minsg_add_extension(MINSG_EXT_SVS_PROFILING "Defines if profiling information is generated for the MinSG extension Spherical Visibility Sampling (SVS).")
 minsg_add_dependencies(MINSG_EXT_SVS MINSG_EXT_EVALUATORS MINSG_EXT_TRIANGULATION MINSG_EXT_VISIBILITY_SUBDIVISION)
 minsg_add_dependencies(MINSG_EXT_SVS_PROFILING MINSG_EXT_SVS)

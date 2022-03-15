@@ -27,6 +27,7 @@
 #include <Rendering/Mesh/VertexDescription.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/MeshUtils/MeshBuilder.h>
+#include <Rendering/MeshUtils/PrimitiveShapes.h>
 #include <Rendering/RenderingContext/RenderingContext.h>
 #include <Rendering/Shader/Shader.h>
 #include <Rendering/Draw.h>
@@ -76,7 +77,7 @@ NodeRendererResult SphereVisualizationRenderer::displayNode(FrameContext & conte
 			vertexDescription.appendNormalFloat();
 			vertexDescription.appendColorRGBFloat();
 			vertexDescription.appendTexCoord();
-			Util::Reference<Rendering::Mesh> sphereMesh = Rendering::MeshUtils::MeshBuilder::createSphere(vertexDescription, 64, 64);
+			Util::Reference<Rendering::Mesh> sphereMesh = Rendering::MeshUtils::createSphere(vertexDescription, Geometry::Sphere_f(), 64, 64);
 			Util::Reference<GeometryNode> sphereNode = new GeometryNode(sphereMesh);
 			sphereNode->setWorldOrigin(sphere.getCenter());
 			sphereNode->setRelScaling(sphere.getRadius());

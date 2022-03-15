@@ -299,7 +299,7 @@ std::vector<GeometryNode *> collectVisibleNodes(Node * root, FrameContext & cont
 		return visibleObjects;
 	}
 
-	RenderParam param(USE_WORLD_MATRIX);
+	RenderParam param(USE_WORLD_MATRIX | NO_STATES);
 	param.setRenderingLayers(layers);
 	
 	if(fillDepthBuffer){

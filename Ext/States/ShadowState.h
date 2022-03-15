@@ -18,6 +18,7 @@
 
 namespace Rendering {
 class FBO;
+class Shader;
 }
 namespace MinSG {
 class FrameContext;
@@ -91,6 +92,9 @@ class ShadowState : public State {
 
 		//! Handle for frame buffer object used for shadow rendering.
 		Util::Reference<Rendering::FBO> fbo;
+
+		//! depth pass through shader
+		Util::Reference<Rendering::Shader> depthShader;
 
 		//! The light node to create shadow map for.
 		LightNode * light;

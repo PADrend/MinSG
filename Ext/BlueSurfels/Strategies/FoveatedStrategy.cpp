@@ -45,7 +45,7 @@ bool FoveatedStrategy::update(MinSG::FrameContext& context, MinSG::Node* node, S
   if(dist <= 0)
     return false;
       
-	float maxDist = std::sqrt(viewport.getWidth()*viewport.getWidth() + viewport.getHeight()*viewport.getHeight()) * 0.5f;
+	float maxDist = static_cast<float>(std::sqrt(viewport.getWidth()*viewport.getWidth() + viewport.getHeight()*viewport.getHeight()) * 0.5);
 	float z1 = 0;
 	float z2 = maxDist;
 	float c1 = surfel.pointSize;

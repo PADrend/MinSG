@@ -54,7 +54,7 @@ void BoxQualityEvaluator::measure(FrameContext & context,Node & node,const Geome
 
 
 	if (getMaxValue()->toInt() == 0.0) {
-		setMaxValue_i(collectNodes<GeometryNode>(&node).size());
+		setMaxValue_i(static_cast<uint32_t>(collectNodes<GeometryNode>(&node).size()));
 	}
 
 
@@ -66,7 +66,7 @@ void BoxQualityEvaluator::measure(FrameContext & context,Node & node,const Geome
 
 
 	// setup occlusion queries
-	int numQueries=objectsInVFList.size();
+	size_t numQueries=objectsInVFList.size();
 	if (numQueries==0) return;
 
 
@@ -142,8 +142,8 @@ void BoxQualityEvaluator::endMeasure(FrameContext & /*context*/) {
 	int32_t trianglesInVObjects = 0;
 	for (iter=objectsVisible.begin(); iter!=objectsVisible.end(); ++iter)
 		trianglesInVObjects += iter->second->getTriangleCount();
-	values->push_back(new Util::_NumberAttribute<int>(objectsClassifiedAsV.size()));
-	values->push_back(new Util::_NumberAttribute<int>(objectsVisible.size()));
+	values->push_back(new Util::_NumberAttribute<int>(static_cast<int>(objectsClassifiedAsV.size())));
+	values->push_back(new Util::_NumberAttribute<int>(static_cast<int>(objectsVisible.size())));
 	values->push_back(new Util::_NumberAttribute<int>(trianglesInAsVCObjects));
 	values->push_back(new Util::_NumberAttribute<int>(trianglesInVObjects));
 }

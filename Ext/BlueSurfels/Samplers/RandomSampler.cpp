@@ -36,14 +36,14 @@ Rendering::Mesh* RandomSampler::sampleSurfels(Rendering::Mesh* sourceMesh) {
   typedef typename std::uniform_int_distribution<uint32_t>::param_type param_t;  
   uint32_t i=0;
   std::generate(surfelIndices.begin(), surfelIndices.end(), [&]() {
-    std::swap(sampleIndices[i], sampleIndices[random(rng, param_t(i, sampleIndices.size()-1))]);
+    std::swap(sampleIndices[i], sampleIndices[random(rng, param_t(i, static_cast<uint32_t>(sampleIndices.size()-1)))]);
     return sampleIndices[i++];
   });
   
 	if(getStatisticsEnabled()) {
-		statistics["t_sampling"] = t.getSeconds();
-		statistics["num_samples"] = sampleCount;
-		statistics["num_surfels"] = surfelCount;
+		statistics["t_sampling"] = static_cast<float>(t.getSeconds());
+		statistics["num_samples"] = static_cast<float>(sampleCount);
+		statistics["num_surfels"] = static_cast<float>(surfelCount);
 	}
   
   return finalizeMesh(sourceMesh, surfelIndices);

@@ -98,7 +98,7 @@ cacheLevelId_t CacheManager::addCacheLevel(CacheLevelType type, uint64_t size) {
 		previousHighest->setUpper(levels.back().get());
 	}
 	levels.back()->init();
-	return levels.size() - 1;
+	return static_cast<cacheLevelId_t>(levels.size() - 1);
 }
 
 void CacheManager::clear() {

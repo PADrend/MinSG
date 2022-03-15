@@ -96,7 +96,7 @@ class Octree : public TriangleTree {
 		 * @return Triangle count
 		 */
 		uint32_t getTriangleCount() const override {
-			return triangleStorage.size();
+			return static_cast<uint32_t>(triangleStorage.size());
 		}
 
 		/**

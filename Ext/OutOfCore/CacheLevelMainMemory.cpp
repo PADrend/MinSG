@@ -44,7 +44,7 @@ CacheLevelMainMemory::~CacheLevelMainMemory() {
 
 void * CacheLevelMainMemory::threadRun(void * data) {
 	CacheLevelMainMemory * level = static_cast<CacheLevelMainMemory *>(data);
-	const auto maxMemory = 0.95 * level->getOverallMemory();
+	const uint64_t maxMemory = static_cast<uint64_t>(0.95 * level->getOverallMemory());
 	while(true) {
 		if(level->getLower() == nullptr) {
 			continue;

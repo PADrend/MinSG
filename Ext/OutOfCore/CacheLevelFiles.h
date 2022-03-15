@@ -59,7 +59,7 @@ class CacheLevelFiles : public CacheLevel {
 		mutable std::mutex internalMutex;
 
 		//! Mapping from cache objects to their locations.
-		std::unordered_map<CacheObject *, std::pair<Util::FileName, uint32_t>> locations;
+		std::unordered_map<CacheObject *, std::pair<Util::FileName, uint64_t>> locations;
 
 		//! Pending cache objects that have to be written to disk.
 		mutable std::unordered_map<CacheObject *, Util::Reference<Rendering::Mesh>> cacheObjectsToSave;

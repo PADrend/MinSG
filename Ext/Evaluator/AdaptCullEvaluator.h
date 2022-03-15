@@ -41,8 +41,8 @@ class AdaptCullEvaluator : public Evaluator {
 		MINSGAPI virtual void endMeasure(FrameContext & context) override;
 
 	private:
-		std::map<unsigned int,Node *> objectsInVF;
-		std::map<unsigned int,Node *> visibleObjects;
+		std::map<uintptr_t,Node *> objectsInVF;
+		std::map<uintptr_t,Node *> visibleObjects;
 };
 }
 }

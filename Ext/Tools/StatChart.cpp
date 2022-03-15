@@ -79,7 +79,7 @@ void StatChart::update(const Statistics & fStats) {
 		}
 	}
 
-	const float timeScale = getWidth() / (timeRange * 1000.0);
+	const float timeScale = getWidth() / (timeRange * 1000.0f);
 	for(size_t i = 0; i < fStats.getNumEvents(); ++i) {
 		const Statistics::Event & event = fStats.getEvent(i);
 		const int x = static_cast<int> (event.time * timeScale);

@@ -209,8 +209,8 @@ void ColorCube::drawColoredBox(FrameContext & context, const Box& box) const {
 	const Rendering::VertexDescription & desc=vd.getVertexDescription();
 
 	uint8_t * dataCursor = vd.data();
-	const uint8_t vertexOffset = desc.getAttribute( Rendering::VertexAttributeIds::POSITION ).getOffset();
-	const uint8_t colorOffset = desc.getAttribute( Rendering::VertexAttributeIds::COLOR ).getOffset();
+	const uint64_t vertexOffset = desc.getAttribute( Rendering::VertexAttributeIds::POSITION ).getOffset();
+	const uint64_t colorOffset = desc.getAttribute( Rendering::VertexAttributeIds::COLOR ).getOffset();
 	for (uint_fast8_t s = 0; s < 6; ++s) {
 		const Geometry::side_t side = static_cast<Geometry::side_t> (s);
 		const Geometry::corner_t * corners = Geometry::Helper::getCornerIndices(side);

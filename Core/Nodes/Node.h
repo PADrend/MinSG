@@ -431,13 +431,23 @@ class Node :
 		typedef std::function<void (Node *)> transformationObserverFunc;
 		typedef std::function<void (Node *)> nodeAddedObserverFunc;
 		typedef std::function<void (GroupNode *,Node *)> nodeRemovedObserverFunc;
+		typedef size_t TransformationObserverHandle;
+		typedef size_t NodeAddedObserverHandle;
+		typedef size_t NodeRemovedObserverHandle;
 
 		//! Register a function that is called whenever an observed node in the subtree is transformed.
-		MINSGAPI void addTransformationObserver(const transformationObserverFunc & func);
+		MINSGAPI TransformationObserverHandle addTransformationObserver(const transformationObserverFunc & func);
 		//! Register a function that is called whenever a node is added somewhere in the subtree.
-		MINSGAPI void addNodeAddedObserver(const nodeAddedObserverFunc & func);
+		MINSGAPI NodeAddedObserverHandle addNodeAddedObserver(const nodeAddedObserverFunc & func);
 		//! Register a function that is called whenever a node is removed somewhere in the subtree.
-		MINSGAPI void addNodeRemovedObserver(const nodeRemovedObserverFunc & func);
+		MINSGAPI NodeRemovedObserverHandle addNodeRemovedObserver(const nodeRemovedObserverFunc & func);
+
+		//! Remove single transformation observer function by handle.
+		MINSGAPI void removeTransformationObserver(const TransformationObserverHandle& handle);
+		//! Remove single nodeAdded observer function by handle.
+		MINSGAPI void removeNodeAddedObserver(const NodeAddedObserverHandle& handle);
+		//! Remove single nodeAdded observer function by handle.
+		MINSGAPI void removeNodeRemovedObserver(const NodeRemovedObserverHandle& handle);
 
 		//! Remove all transformation observer functions.
 		MINSGAPI void clearTransformationObservers();

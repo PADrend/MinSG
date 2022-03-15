@@ -108,7 +108,7 @@ bool SkeletalAnimationUtils::decomposeRotationMatrix2(Geometry::Matrix3x3 *sourc
     if(source->at(2, 0) != 1.0 && source->at(2, 0) != -1.0)
     {
         angles[0].setX(-std::asin(source->at(2, 0)));
-        angles[1].setX(M_PI - angles[0].x());
+        angles[1].setX(static_cast<float>(M_PI) - angles[0].x());
         
         angles[0].setY(std::atan2(source->at(2, 1)/std::cos(angles[0].x()), source->at(2, 2)/std::cos(angles[0].x())));
         angles[1].setY(std::atan2(source->at(2, 1)/std::cos(angles[1].x()), source->at(2, 2)/std::cos(angles[1].x())));
@@ -119,14 +119,14 @@ bool SkeletalAnimationUtils::decomposeRotationMatrix2(Geometry::Matrix3x3 *sourc
     {
         if(source->at(2, 0) == -1.0)
         {
-            angles[0].setX(M_PI_2);
+            angles[0].setX(static_cast<float>(M_PI_2));
             angles[1].setX(angles[0].x());
             
             angles[0].setY(angles[0].z() + std::atan2(source->at(0, 1), source->at(0, 2)));
             angles[1].setY(angles[0].y());
         }else
         {
-            angles[0].setX(-M_PI_2);
+            angles[0].setX(-static_cast<float>(M_PI_2));
             angles[1].setX(angles[0].x());
             
             angles[0].setY(-angles[0].z() + std::atan2(-source->at(0, 1), -source->at(0, 2)));
@@ -414,10 +414,10 @@ vector<GeometryNode *> SkeletalAnimationUtils::getGeometryListOfSkeleton(Skeleta
 bool SkeletalAnimationUtils::generateUniformTexture(const Matrix4x4 bindMatrix, std::vector<Matrix4x4> invBindMatrix, const std::vector<Matrix4x4> jointMatrix, Reference<PixelAccessor> *pa)
 {    
     Vec4 data;
-    data[0] = invBindMatrix.size();
-    data[1] = jointMatrix.size();
-    data[2] = 9; // inverse bind matrix index in array
-    data[3] = 9 + invBindMatrix.size()*4; // joint index in array    
+    data[0] = static_cast<float>(invBindMatrix.size());
+    data[1] = static_cast<float>(jointMatrix.size());
+    data[2] = 9.0f; // inverse bind matrix index in array
+    data[3] = static_cast<float>(9 + invBindMatrix.size()*4); // joint index in array    
     putVec4InTexture(0, data, pa);
     
     if(!putMatrixInTexture(1, bindMatrix, pa))
@@ -426,7 +426,7 @@ bool SkeletalAnimationUtils::generateUniformTexture(const Matrix4x4 bindMatrix, 
     if(!putMatricesInTexture(9, invBindMatrix, pa))
         return false;
     
-    if(!putMatricesInTexture(9+invBindMatrix.size()*4, jointMatrix, pa))
+    if(!putMatricesInTexture(static_cast<uint32_t>(9+invBindMatrix.size()*4), jointMatrix, pa))
         return false;
     
     return true;
@@ -454,7 +454,7 @@ bool SkeletalAnimationUtils::putVec4InTexture(const uint32_t offset, const Geome
 {
     if(pa->get() == nullptr)
         return false;
-    if(pa->get()->getBitmap()->getPixelFormat().getValueType() != Util::TypeConstant::FLOAT)
+    if(pa->get()->getBitmap()->getPixelFormat().getDataType() != Util::TypeConstant::FLOAT)
         return false;
     
     float *data = pa->get()->_ptr<float>(offset, 0);    
@@ -507,7 +507,7 @@ bool SkeletalAnimationUtils::writeDataIntoMesh(Rendering::MeshVertexData *mesh, 
     for(uint32_t i=0; i<mesh->getVertexCount(); ++i)
     {
         value = reinterpret_cast<float *>((*mesh)[i]+weightAttrCount.getOffset());
-        value[0] = (*pairs)[i].weights.size();
+        value[0] = static_cast<float>((*pairs)[i].weights.size());
         
         for(uint32_t j=0; j<(*pairs)[i].weights.size(); ++j)
         {
@@ -517,28 +517,28 @@ bool SkeletalAnimationUtils::writeDataIntoMesh(Rendering::MeshVertexData *mesh, 
                 value[j] = (*pairs)[i].weights[j];
                 
                 value = reinterpret_cast<float *>((*mesh)[i]+weightAttrIndex1.getOffset());
-                value[j] = (*pairs)[i].nodeIds[j];
+                value[j] = static_cast<float>((*pairs)[i].nodeIds[j]);
             }else if(j<8)
             {
                 value = reinterpret_cast<float *>((*mesh)[i]+weightAttr2.getOffset());
                 value[j-4] = (*pairs)[i].weights[j];
                 
                 value = reinterpret_cast<float *>((*mesh)[i]+weightAttrIndex2.getOffset());
-                value[j-4] = (*pairs)[i].nodeIds[j];
+                value[j-4] = static_cast<float>((*pairs)[i].nodeIds[j]);
             }else if(j<12)
             {
                 value = reinterpret_cast<float *>((*mesh)[i]+weightAttr3.getOffset());
                 value[j-8] = (*pairs)[i].weights[j];
                 
                 value = reinterpret_cast<float *>((*mesh)[i]+weightAttrIndex3.getOffset());
-                value[j-8] = (*pairs)[i].nodeIds[j];
+                value[j-8] = static_cast<float>((*pairs)[i].nodeIds[j]);
             }else if(j<16)
             {
                 value = reinterpret_cast<float *>((*mesh)[i]+weightAttr4.getOffset());
                 value[j-12] = (*pairs)[i].weights[j];
                 
                 value = reinterpret_cast<float *>((*mesh)[i]+weightAttrIndex4.getOffset());
-                value[j-12] = (*pairs)[i].nodeIds[j];
+                value[j-12] = static_cast<float>((*pairs)[i].nodeIds[j]);
             }
         }
     }
@@ -605,7 +605,7 @@ std::vector<SkeletalAnimationUtils::WeightPair> SkeletalAnimationUtils::getWeigh
             }
             
             pairs.back().weights.emplace_back(value[j-offset]);
-            pairs.back().nodeIds.emplace_back(id[j-offset]);
+            pairs.back().nodeIds.emplace_back(static_cast<uint32_t>(id[j-offset]));
         }
         
         value = id = reinterpret_cast<float *>((*mesh)[i]+position.getOffset());
@@ -629,7 +629,7 @@ bool SkeletalAnimationUtils::normalizeWeights(MeshVertexData *mesh, float precis
         
         if(fabs(sumWeights - 1.0) > precision)
             for(uint32_t i=0; i<pair.weights.size(); ++i)
-                pair.weights[i] = 1.0/pair.weights.size();
+                pair.weights[i] = 1.0f/pair.weights.size();
     }
     
     writeDataIntoMesh(mesh, &pairs);
@@ -652,7 +652,7 @@ bool SkeletalAnimationUtils::appendSkeletanDescriptionToMesh(MeshVertexData *mes
         for(uint32_t i=0; i<mesh->getVertexCount(); ++i)
         {
             value = reinterpret_cast<float *>((*mesh)[i]+attr.getOffset());
-            for(uint32_t j=0; j<attr.getNumValues(); ++j)
+            for(uint32_t j=0; j<attr.getComponentCount(); ++j)
                 values.back().emplace_back(value[j]);
         }
     }
@@ -683,7 +683,7 @@ bool SkeletalAnimationUtils::appendSkeletanDescriptionToMesh(MeshVertexData *mes
     vd.appendFloatAttribute(ATTR_ID_WEIGHTS3,4);
     vd.appendFloatAttribute(ATTR_ID_WEIGHTS4,4);
     
-    if ( ! vd.getAttribute(ATTR_ID_WEIGHTSINDEX1).empty() ) {
+    if ( vd.getAttribute(ATTR_ID_WEIGHTSINDEX1).isValid() ) {
         WARN("WEIGHTS used multiple times.");
         return false;
     }
@@ -692,7 +692,7 @@ bool SkeletalAnimationUtils::appendSkeletanDescriptionToMesh(MeshVertexData *mes
     vd.appendFloatAttribute(ATTR_ID_WEIGHTSINDEX3,4);
     vd.appendFloatAttribute(ATTR_ID_WEIGHTSINDEX4,4);
     
-    if ( ! vd.getAttribute(ATTR_ID_WEIGHTSCOUNT).empty() ) {
+    if ( vd.getAttribute(ATTR_ID_WEIGHTSCOUNT).isValid() ) {
         WARN("WEIGHTS used multiple times.");
         return false;
     }
@@ -703,8 +703,8 @@ bool SkeletalAnimationUtils::appendSkeletanDescriptionToMesh(MeshVertexData *mes
         for(uint32_t j=0; j<mesh->getVertexCount(); ++j)
         {
             value = reinterpret_cast<float *>((*mesh)[j]+attributes[i].getOffset());
-            for(uint32_t k=0; k<attributes[i].getNumValues(); ++k)
-                value[k] = values.at(i).at((j*attributes[i].getNumValues())+k);
+            for(uint32_t k=0; k<attributes[i].getComponentCount(); ++k)
+                value[k] = values.at(i).at((j*attributes[i].getComponentCount())+k);
         }
     
     return true;
@@ -783,7 +783,7 @@ SkeletalNode *SkeletalAnimationUtils::generateSkeletalNode(GeometryNode *mesh, A
         pairs.emplace_back(WeightPair());
         for(const auto & n : nodes)
         {
-            pairs.back().weights.emplace_back(1.0);
+            pairs.back().weights.emplace_back(1.0f);
             pairs.back().nodeIds.emplace_back(n->getId());
         }
         
@@ -791,7 +791,7 @@ SkeletalNode *SkeletalAnimationUtils::generateSkeletalNode(GeometryNode *mesh, A
     }
     
     writeDataIntoMesh(&vData, &pairs);
-    normalizeWeights(&vData, 0.01);
+    normalizeWeights(&vData, 0.01f);
 
     node->addState(new SkeletalHardwareRendererState());
     
