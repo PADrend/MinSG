@@ -229,7 +229,7 @@ void SkeletalHardwareRendererState::validateMatriceOrder(Node *node)
     
 State::stateResult_t SkeletalHardwareRendererState::doEnableState(FrameContext & context,Node *node, const RenderParam &  rp )
 {
-    Rendering::Shader *currentShader = context.getRenderingContext().getActiveShader();
+    auto currentShader = context.getRenderingContext().getActiveShader();
     if(currentShader != nullptr) {
         setUniform(context, currentShader->getUniform(Util::StringIdentifier("color")));
     }

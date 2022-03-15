@@ -16,6 +16,7 @@
 #include "../../Core/FrameContext.h"
 #include <Geometry/Matrix4x4.h>
 #include <Rendering/Mesh/Mesh.h>
+#include <Rendering/Mesh/VertexDescription.h>
 #include <Rendering/MeshUtils/PrimitiveShapes.h>
 #include <Rendering/MeshUtils/MeshUtils.h>
 #include <Rendering/RenderingContext/RenderingContext.h>

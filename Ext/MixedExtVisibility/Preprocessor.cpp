@@ -57,9 +57,9 @@ std::vector<Util::Reference<MinSG::Node>> MinSG::MixedExtVisibility::
 		size_t i = 0;
 		Rendering::OcclusionQuery::enableTestMode(context.getRenderingContext());
 		for(const auto & node : nodes) {
-			queries[i].begin();
+			queries[i].begin(context.getRenderingContext());
 			context.displayNode(node.get(), param);
-			queries[i].end();
+			queries[i].end(context.getRenderingContext());
 			++i;
 		}
 		Rendering::OcclusionQuery::disableTestMode(context.getRenderingContext());

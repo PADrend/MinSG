@@ -51,32 +51,34 @@ Collector::Collector() : State(), impl(new Implementation) {
 Collector::Collector(const Collector & other) : State(other), impl(new Implementation) {
 }
 
-State::stateResult_t Collector::doEnableState(FrameContext &, Node *, const RenderParam &) {
-	impl->verticesSubmittedQuery.begin();
-	impl->primitivesSubmittedQuery.begin();
-	impl->vertexShaderInvocationsQuery.begin();
-	impl->tessControlShaderPatchesQuery.begin();
-	impl->tessEvaluationShaderInvocationsQuery.begin();
-	impl->geometryShaderInvocationsQuery.begin();
-	impl->geometryShaderPrimitivesEmittedQuery.begin();
-	impl->fragmentShaderInvocationsQuery.begin();
-	impl->computeShaderInvocationsQuery.begin();
-	impl->clippingInputPrimitivesQuery.begin();
-	impl->clippingOutputPrimitivesQuery.begin();
+State::stateResult_t Collector::doEnableState(FrameContext & context, Node *, const RenderParam &) {
+	auto& rc = context.getRenderingContext();
+	impl->verticesSubmittedQuery.begin(rc);
+	impl->primitivesSubmittedQuery.begin(rc);
+	impl->vertexShaderInvocationsQuery.begin(rc);
+	impl->tessControlShaderPatchesQuery.begin(rc);
+	impl->tessEvaluationShaderInvocationsQuery.begin(rc);
+	impl->geometryShaderInvocationsQuery.begin(rc);
+	impl->geometryShaderPrimitivesEmittedQuery.begin(rc);
+	impl->fragmentShaderInvocationsQuery.begin(rc);
+	impl->computeShaderInvocationsQuery.begin(rc);
+	impl->clippingInputPrimitivesQuery.begin(rc);
+	impl->clippingOutputPrimitivesQuery.begin(rc);
 	return State::STATE_OK;
 }
 void Collector::doDisableState(FrameContext & context, Node *, const RenderParam &) {
-	impl->verticesSubmittedQuery.end();
-	impl->primitivesSubmittedQuery.end();
-	impl->vertexShaderInvocationsQuery.end();
-	impl->tessControlShaderPatchesQuery.end();
-	impl->tessEvaluationShaderInvocationsQuery.end();
-	impl->geometryShaderInvocationsQuery.end();
-	impl->geometryShaderPrimitivesEmittedQuery.end();
-	impl->fragmentShaderInvocationsQuery.end();
-	impl->computeShaderInvocationsQuery.end();
-	impl->clippingInputPrimitivesQuery.end();
-	impl->clippingOutputPrimitivesQuery.end();
+	auto& rc = context.getRenderingContext();
+	impl->verticesSubmittedQuery.end(rc);
+	impl->primitivesSubmittedQuery.end(rc);
+	impl->vertexShaderInvocationsQuery.end(rc);
+	impl->tessControlShaderPatchesQuery.end(rc);
+	impl->tessEvaluationShaderInvocationsQuery.end(rc);
+	impl->geometryShaderInvocationsQuery.end(rc);
+	impl->geometryShaderPrimitivesEmittedQuery.end(rc);
+	impl->fragmentShaderInvocationsQuery.end(rc);
+	impl->computeShaderInvocationsQuery.end(rc);
+	impl->clippingInputPrimitivesQuery.end(rc);
+	impl->clippingOutputPrimitivesQuery.end(rc);
 
 	MinSG::Statistics & statistics = context.getStatistics();
 	statistics.addValue(Statistics::instance(statistics).getVerticesSubmittedCounter(), impl->verticesSubmittedQuery.getResult());

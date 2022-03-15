@@ -213,7 +213,7 @@ State::stateResult_t PbrMaterialState::doEnableState(FrameContext & context, Nod
 		}
 	}
 
-	auto activeShader = pbrShader.get();
+	auto activeShader = pbrShader;
 	if(rp.getFlag(NO_SHADING)) {
 		activeShader = rc.getActiveShader();
 	} else if(activeShader) {

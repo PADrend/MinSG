@@ -108,7 +108,7 @@ static Util::Color4ub calculateColor(const Rendering::Texture * texture, const G
 	const uint32_t pixelCount = rect.getWidth() * rect.getHeight(); // calculate the number of pixels in the texture
 	if(pixelCount==0)
 		return Util::Color4ub(0,0,0,0);
-	const uint32_t rowSize = texture->getFormat().getRowSize();
+	const uint32_t rowSize = texture->getFormat().extent.x();
 
 	const uint8_t * yPtr = texture->getLocalData() + rect.getY() * rowSize;
 	uint32_t r_sum = 0, g_sum = 0, b_sum = 0, a_sum = 0;

@@ -24,6 +24,7 @@
 #include <Rendering/Texture/Texture.h>
 #include <Rendering/Texture/TextureUtils.h>
 #include <Rendering/RenderingContext/RenderingParameters.h>
+#include <Rendering/Core/Sampler.h>
 
 #include <Util/IO/FileName.h>
 #include <Util/IO/FileUtils.h>
@@ -116,6 +117,44 @@ struct imemstream : virtual membuf, std::istream {
 	imemstream(char const* base, size_t size) : membuf(base, size), std::istream(static_cast<std::streambuf*>(this)) {}
 };
 
+//--------------------------
+
+inline ImageAddressMode getAddressMode(int mode) {
+	switch(mode) {
+		case TINYGLTF_TEXTURE_WRAP_REPEAT: return ImageAddressMode::Repeat;
+		case TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE: return ImageAddressMode::ClampToEdge;
+		case TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT: return ImageAddressMode::MirroredRepeat;
+	}
+	return ImageAddressMode::Repeat;
+}
+
+//--------------------------
+
+inline ImageFilter getImageFilter(int filter) {
+	switch(filter) {
+		case TINYGLTF_TEXTURE_FILTER_NEAREST:
+		case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST:
+		case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR: return ImageFilter::Nearest;
+		case TINYGLTF_TEXTURE_FILTER_LINEAR:
+		case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR:
+		case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST: return ImageFilter::Linear;
+	}
+	return ImageFilter::Linear;
+}
+
+//--------------------------
+
+inline ImageFilter getMipFilter(int filter) {
+	switch(filter) {
+		case TINYGLTF_TEXTURE_FILTER_NEAREST:
+		case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST:
+		case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST: return ImageFilter::Nearest;
+		case TINYGLTF_TEXTURE_FILTER_LINEAR:
+		case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR:
+		case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR: return ImageFilter::Linear;
+	}
+	return ImageFilter::Linear;
+}
 
 //--------------------------
 
@@ -435,29 +474,23 @@ Util::Reference<Rendering::Texture> GLTFImportContext::createTexture(uint32_t te
 	Util::AttributeFormat pixelFormat({}, toTypeConstant(image.pixel_type), static_cast<uint32_t>(image.component));
 
 	Texture::Format format;
-	format.glTextureType = TextureUtils::textureTypeToGLTextureType(TextureType::TEXTURE_2D);
-	format.sizeX = static_cast<uint32_t>(image.width);
-	format.sizeY = static_cast<uint32_t>(image.height);
-	format.numLayers = 1;
-	format.numSamples = 1;
-	format.pixelFormat = TextureUtils::pixelFormatToGLPixelFormat(pixelFormat);
+	format.extent.setValue(static_cast<uint32_t>(image.width), static_cast<uint32_t>(image.height), 1);
+	format.layers = 1;
+	format.samples = 1;
+	format.pixelFormat = Rendering::toInternalFormat(pixelFormat);
 
+	Sampler::Configuration samplerConfig{};
 	if(gltfTexture.sampler >= 0) {
-		const auto& sampler = model.samplers[gltfTexture.sampler];
-		format.glWrapS = sampler.wrapS;
-		format.glWrapT = sampler.wrapT;
-		format.glWrapR = sampler.wrapR;
-		format.linearMagFilter = sampler.magFilter >= 0 && sampler.magFilter != NEAREST;
-		format.linearMinFilter = sampler.minFilter >= 0 && sampler.minFilter != NEAREST && sampler.minFilter != NEAREST_MIPMAP_NEAREST;
-	} else {
-		format.glWrapS = REPEAT;
-		format.glWrapT = REPEAT;
-		format.glWrapR = REPEAT;
-		format.linearMagFilter = true;
-		format.linearMinFilter = true;
+		const auto& sampler = model.samplers[gltfTexture.sampler];		
+		samplerConfig.addressModeU = getAddressMode(sampler.wrapS);
+		samplerConfig.addressModeV = getAddressMode(sampler.wrapT);
+		samplerConfig.addressModeW = getAddressMode(sampler.wrapR);
+		samplerConfig.magFilter = getImageFilter(sampler.magFilter);
+		samplerConfig.minFilter = getImageFilter(sampler.minFilter);
+		samplerConfig.mipmapMode = getMipFilter(sampler.minFilter);
 	}
 
-	Util::Reference<Texture> texture = new Texture(format);
+	Util::Reference<Texture> texture = Texture::create(Device::getDefault(), format, Sampler::create(Device::getDefault(), samplerConfig));
 	texture->allocateLocalData();
 	const uint8_t * pixels = image.image.data();
 	WARN_AND_RETURN_IF(texture->getDataSize() != static_cast<uint32_t>(image.image.size()), "Failed to create Texture. Image and texture size do not match.", nullptr);

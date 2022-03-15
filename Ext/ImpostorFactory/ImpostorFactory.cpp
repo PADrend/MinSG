@@ -28,6 +28,7 @@
 #include <Rendering/FBO.h>
 #include <Rendering/Mesh/Mesh.h>
 #include <Rendering/Mesh/VertexAttributeIds.h>
+#include <Rendering/Mesh/VertexDescription.h>
 #include <Rendering/MeshUtils/PrimitiveShapes.h>
 #include <Rendering/MeshUtils/MeshUtils.h>
 #include <Rendering/MeshUtils/QuadtreeMeshBuilder.h>
